@@ -115,7 +115,7 @@
   const $=s=>document.querySelector(s);
   const toast=msg=>{const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1500)};
   let current=routine.step;
-  let interval=null;
+  let tickerFrame=null;
   let wakeLock=null;
 
   function timerData(ex){
@@ -141,33 +141,46 @@
     if(wakeLock){try{await wakeLock.release();}catch{}wakeLock=null;}
   }
 
-  function stopInterval(){if(interval){clearInterval(interval);interval=null;}}
+  function stopInterval(){
+    if(tickerFrame!==null){
+      cancelAnimationFrame(tickerFrame);
+      tickerFrame=null;
+    }
+  }
 
   function updateTimerUI(){
     const ex=exercises[current],t=timerData(ex);
-    if(t.running&&t.endAt)t.remaining=Math.max(0,Math.ceil((t.endAt-Date.now())/1000));
-    if(t.running&&t.remaining<=0){
-      t.remaining=0;t.running=false;t.endAt=null;stopInterval();releaseWakeLock();
+    let preciseRemaining=t.remaining;
+    if(t.running&&t.endAt){
+      preciseRemaining=Math.max(0,(t.endAt-Date.now())/1000);
+      t.remaining=Math.max(0,Math.ceil(preciseRemaining));
+    }
+    if(t.running&&preciseRemaining<=0){
+      preciseRemaining=0;t.remaining=0;t.running=false;t.endAt=null;stopInterval();releaseWakeLock();save();
       if(navigator.vibrate)navigator.vibrate([180,100,180]);
       toast('Таймер завершён');
     }
-    const progress=t.duration>0?Math.min(100,Math.max(0,(1-t.remaining/t.duration)*100)):0;
-    $('#timerRing').style.setProperty('--timer-progress',progress);
+    const progress=t.duration>0?Math.min(100,Math.max(0,(1-preciseRemaining/t.duration)*100)):0;
+    $('#timerRing').style.setProperty('--timer-progress',progress.toFixed(3));
     $('#timerValue').textContent=fmt(t.remaining);
-    $('#timerState').textContent=t.running?'Идёт':t.remaining===0?'Готово':'Готов';
+    const stateLabel=t.running?'Таймер запущен':t.remaining===0?'Таймер завершён':'Таймер готов';
+    const timerState=$('#timerState'); if(timerState)timerState.textContent=stateLabel;
     $('#timerToggle').textContent=t.running?'Пауза':t.remaining===0?'Сначала':'Старт';
-    $('#timerLabel').textContent=t.running?'осталось':t.remaining===0?'завершено':'осталось';
+    $('#timerLabel').textContent=t.remaining===0?'завершено':'осталось';
     $('#timerRing').classList.toggle('is-running',t.running);
-    $('#timerState').classList.toggle('is-running',t.running);
     const timerCard=$('#timerCard'); if(timerCard)timerCard.classList.toggle('is-running',t.running);
-    save();
   }
 
   function startTicker(){
     stopInterval();
-    interval=setInterval(updateTimerUI,250);
+    const tick=()=>{
+      updateTimerUI();
+      const t=timerData(exercises[current]);
+      if(t.running)tickerFrame=requestAnimationFrame(tick);
+      else tickerFrame=null;
+    };
+    tickerFrame=requestAnimationFrame(tick);
   }
-
 
   function pauseCurrentTimer(){
     const t=timerData(exercises[current]);
@@ -192,6 +205,19 @@
     }
   }
 
+  function setDetailState(card,open){
+    card.classList.toggle('is-open',open);
+    const toggle=card.querySelector('.detail-card__toggle');
+    if(toggle)toggle.setAttribute('aria-expanded',String(open));
+  }
+
+  document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
+    toggle.addEventListener('click',()=>{
+      const card=toggle.closest('.detail-card');
+      setDetailState(card,!card.classList.contains('is-open'));
+    });
+  });
+
   function render(){
     stopInterval();
     routine.step=current; save();
@@ -210,7 +236,7 @@
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     $('#nextButton').textContent=current===exercises.length-1?'Завершить утро':'След. шаг';
-    document.querySelectorAll('.detail-card').forEach((el,index)=>{el.open=index===0;});
+    document.querySelectorAll('.detail-card').forEach((el,index)=>setDetailState(el,index===0));
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const progressText=$('#progressText'),progressBar=$('#sessionProgressBar');
     if(progressText)progressText.textContent=`${done} из ${exercises.length} упражнений`;

@@ -49,7 +49,7 @@
         <section class="timer-card timer-card--inline" id="timerCard" aria-label="Таймер упражнения">
           <div class="timer-card__topline">
             <span class="eyebrow">Таймер</span>
-            <span class="timer-state" id="timerState">Готов</span>
+            <span class="sr-only" id="timerState" aria-live="polite">Готов</span>
           </div>
 
           <div class="timer-inline-grid">
@@ -83,25 +83,41 @@
         </section>
 
         <section class="details-stack" aria-label="Дополнительные подсказки">
-          <details class="detail-card" open>
-            <summary><span>Что чувствовать</span><i>+</i></summary>
-            <div class="detail-card__content"><p id="feelText"></p></div>
-          </details>
+          <article class="detail-card is-open">
+            <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-feel">
+              <span>Что чувствовать</span><i aria-hidden="true">+</i>
+            </button>
+            <div class="detail-card__panel" id="detail-feel">
+              <div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div>
+            </div>
+          </article>
 
-          <details class="detail-card">
-            <summary><span>Частые ошибки</span><i>+</i></summary>
-            <div class="detail-card__content"><ul id="mistakesList"></ul></div>
-          </details>
+          <article class="detail-card">
+            <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
+              <span>Частые ошибки</span><i aria-hidden="true">+</i>
+            </button>
+            <div class="detail-card__panel" id="detail-mistakes">
+              <div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div>
+            </div>
+          </article>
 
-          <details class="detail-card">
-            <summary><span>Облегчённый вариант</span><i>+</i></summary>
-            <div class="detail-card__content"><p id="easyText"></p></div>
-          </details>
+          <article class="detail-card">
+            <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
+              <span>Облегчённый вариант</span><i aria-hidden="true">+</i>
+            </button>
+            <div class="detail-card__panel" id="detail-easy">
+              <div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div>
+            </div>
+          </article>
 
-          <details class="detail-card">
-            <summary><span>Как прогрессировать</span><i>+</i></summary>
-            <div class="detail-card__content"><p id="progressionText"></p></div>
-          </details>
+          <article class="detail-card">
+            <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
+              <span>Как прогрессировать</span><i aria-hidden="true">+</i>
+            </button>
+            <div class="detail-card__panel" id="detail-progression">
+              <div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div>
+            </div>
+          </article>
         </section>
       </article>
     </section>
