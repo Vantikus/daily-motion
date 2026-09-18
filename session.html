@@ -7,18 +7,22 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=16" />
+  <link rel="stylesheet" href="styles.css?v=17" />
 
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
 
-  <aside class="floating-step-indicator" aria-label="Текущее упражнение">
-    <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
-    <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
-  </aside>
+  <div class="exercise-app">
+    <div class="exercise-scroll" id="exerciseScroll">
+      <aside class="sticky-step-indicator" id="stickyStepIndicator" aria-hidden="true">
+        <div class="step-indicator step-indicator--sticky">
+          <strong id="stickyProgress">1 / 8</strong>
+          <div class="step-segments" id="stickySegments" aria-hidden="true"></div>
+        </div>
+      </aside>
 
-  <main class="container session-shell">
+      <main class="container session-shell">
     <section class="exercise-layout">
       <article class="exercise-main glass-card">
         <div class="exercise-toolbar" aria-label="Навигация комплекса">
@@ -26,7 +30,10 @@
           <div class="exercise-toolbar__center">
             <span id="routineName">Утро</span>
           </div>
-          <span class="exercise-toolbar__spacer" aria-hidden="true"></span>
+          <div class="step-indicator step-indicator--inline" id="inlineProgress" aria-label="Текущее упражнение">
+            <strong id="headerProgress">1 / 8</strong>
+            <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
+          </div>
         </div>
 
         <header class="exercise-head">
@@ -129,20 +136,20 @@
         </section>
       </article>
     </section>
-  </main>
+      </main>
+    </div>
 
-  <nav class="session-nav" aria-label="Навигация по упражнениям">
+    <nav class="session-nav" aria-label="Навигация по упражнениям">
     <div class="session-nav__inner">
       <button class="nav-button nav-button--secondary nav-button--back" id="prevButton" aria-label="Назад">
         <span class="nav-button__icon" aria-hidden="true">←</span>
         <span class="nav-button__label">Назад</span>
       </button>
       <span class="sr-only" id="navStepLabel">Шаг 1 из 8</span>
-      <button class="nav-button nav-button--primary nav-button--next" id="nextButton">
-        <span>След. шаг</span><span class="nav-button__arrow" aria-hidden="true">→</span>
-      </button>
+      <button class="nav-button nav-button--primary nav-button--next" id="nextButton">След. шаг</button>
     </div>
-  </nav>
+    </nav>
+  </div>
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="status" aria-live="polite">
@@ -153,6 +160,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="session.js?v=16"></script>
+  <script src="session.js?v=17"></script>
 </body>
 </html>

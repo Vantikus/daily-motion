@@ -5,6 +5,7 @@
     const names={day:'День',evening:'Вечер'};
     document.querySelector('#routineName').textContent=names[ROUTINE_KEY]||'Комплекс';
     document.querySelector('#headerProgress').textContent='Этап 3+';
+    const stickyStage=document.querySelector('#stickyProgress'); if(stickyStage) stickyStage.textContent='Этап 3+';
     document.querySelector('.session-progress-card')?.remove();
     document.querySelector('.timer-card').style.display='none';
     document.querySelector('.session-nav').style.display='none';
@@ -200,19 +201,22 @@
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
-    const badge=$('#headerProgress');
-    if(badge){
+    ['#headerProgress','#stickyProgress'].forEach(selector=>{
+      const badge=$(selector);
+      if(!badge)return;
       badge.classList.remove('is-updating');
       void badge.offsetWidth;
       badge.classList.add('is-updating');
-    }
+    });
   }
 
   function renderStepSegments(){
-    const wrap=$('#stepSegments');
-    if(!wrap)return;
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
-    wrap.innerHTML=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
+    const markup=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
+    ['#stepSegments','#stickySegments'].forEach(selector=>{
+      const wrap=$(selector);
+      if(wrap)wrap.innerHTML=markup;
+    });
   }
 
   function renderVisual(ex){
@@ -274,6 +278,7 @@
     $('#progressionText').textContent=ex.progression;
     $('#keyText').textContent=ex.key;
     $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
+    const stickyProgress=$('#stickyProgress'); if(stickyProgress)stickyProgress.textContent=`${current+1} / ${exercises.length}`;
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     updateNextButton();
@@ -286,7 +291,11 @@
     updateTimerUI();
     const t=timerData(ex); if(t.running){startTicker();requestWakeLock();}
     animateExercise(direction);
-    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:scrollMode}));
+    requestAnimationFrame(()=>{
+      const scroller=$('#exerciseScroll');
+      if(scroller)scroller.scrollTo({top:0,behavior:scrollMode});
+      else window.scrollTo({top:0,behavior:scrollMode});
+    });
   }
 
   $('#prevButton').addEventListener('click',()=>{
@@ -346,11 +355,37 @@
     }else releaseWakeLock();
   });
   window.addEventListener('beforeunload',()=>{routine.step=current;save();releaseWakeLock();});
+
+  function setupStickyProgress(){
+    const scroller=$('#exerciseScroll');
+    const inline=$('#inlineProgress');
+    const sticky=$('#stickyStepIndicator');
+    if(!scroller||!inline||!sticky)return;
+
+    const setVisible=(visible)=>{
+      sticky.classList.toggle('is-visible',visible);
+      sticky.setAttribute('aria-hidden',String(!visible));
+    };
+
+    if('IntersectionObserver' in window){
+      const observer=new IntersectionObserver(entries=>{
+        const entry=entries[0];
+        setVisible(!entry.isIntersecting && scroller.scrollTop>24);
+      },{root:scroller,threshold:.15});
+      observer.observe(inline);
+    }else{
+      const onScroll=()=>setVisible(scroller.scrollTop>72);
+      scroller.addEventListener('scroll',onScroll,{passive:true});
+      onScroll();
+    }
+  }
+
   window.addEventListener('load',()=>{
     setTimeout(()=>{
       $('#pageLoader').classList.add('is-hidden');
       if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
     },180);
   });
+  setupStickyProgress();
   render('forward','auto');
 })();

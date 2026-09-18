@@ -311,97 +311,49 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 }
 
 
-/* iOS / Telegram containment — v12
-   Strategy: do not paint browser chrome. Keep the page inside the browser viewport,
-   use a solid page-color footer behind the floating controls, and avoid sticky header
-   collisions with Telegram's collapsing URL bar on mobile. */
-html,body{background:var(--bg)}
-body.session-body{background:var(--bg);min-height:100vh}
+/* v17 — stable app shell + internal scroll + real action shelf */
 
-/* Solid header surface. On mobile it stays in document flow instead of chasing Telegram chrome. */
-.session-topbar{
-  background:#f7f8f5;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-
-/* The controls still look floating, but now sit over a full-width page-colored footer.
-   This removes the dark translucent rounded-corner artifacts in Telegram. */
-.session-nav{
-  left:0;
-  right:0;
-  bottom:0;
-  width:100%;
-  transform:none;
-  padding:8px 10px 10px;
-  background:#f5f6f2;
-  border-top:1px solid rgba(19,25,20,.055);
-  box-shadow:0 -12px 28px rgba(38,53,44,.035);
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-.session-nav__inner{
-  width:min(900px,100%);
-  margin:0 auto;
-  background:#fafbf8;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-  box-shadow:0 12px 30px rgba(30,43,34,.10);
-}
-.session-body{padding-bottom:112px}
-
-@media(max-width:700px){
-  /* Telegram's top URL bar can resize/overlay the visual viewport while scrolling.
-     A non-sticky mobile header is the stable option: it never jumps or gets trapped
-     under the browser pill. */
-  .session-topbar{
-    position:relative;
-    top:auto;
-    z-index:10;
-    padding-top:12px;
-    padding-bottom:10px;
-  }
-  .session-shell{padding-top:8px}
-  .session-nav{
-    width:100%;
-    padding:8px 10px 10px;
-  }
-  .session-nav__inner{
-    width:100%;
-    height:70px;
-    border-radius:24px;
-  }
-  .session-body{padding-bottom:106px}
-}
-
-
-/* v14 — stable mobile browser behavior.
-   Normal Telegram in-app browser chrome is outside the page; keep our header in document flow. */
-@media(max-width:700px){
-  body.session-body .session-topbar{
-    position:static !important;
-    top:auto !important;
-    inset:auto !important;
-    transform:none !important;
-  }
-}
-
-
-/* v15 — browser-integrated mobile layout */
+/* The workout page owns the viewport. Only the exercise content scrolls; the action shelf
+   is a real layout row, not an overlay. This keeps Telegram/Safari browser chrome from
+   pulling the controls around while it animates. */
 .session-body{
-  padding-bottom:104px;
+  height:100vh;
+  height:100svh;
+  min-height:100svh;
+  overflow:hidden;
+  padding:0 !important;
+  background:linear-gradient(180deg,#fafbf8 0,#f6f7f3 46%,#f3f5f1 100%);
+}
+.exercise-app{
+  height:100vh;
+  height:100svh;
+  min-height:100svh;
+  display:grid;
+  grid-template-rows:minmax(0,1fr) auto;
+  overflow:hidden;
+  background:transparent;
+}
+.exercise-scroll{
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+  position:relative;
 }
 .session-shell{
-  padding-top:12px;
+  padding:12px 0 24px;
 }
 .exercise-main{
   overflow:visible;
+  scroll-margin-top:12px;
 }
 
-/* The exercise toolbar lives inside the exercise card and scrolls away naturally. */
+/* Inline navigation. It scrolls away with the exercise instead of becoming a full sticky header. */
 .exercise-toolbar{
   display:grid;
-  grid-template-columns:44px 1fr 72px;
+  grid-template-columns:44px minmax(0,1fr) 82px;
   align-items:center;
   gap:12px;
   margin-bottom:24px;
@@ -415,285 +367,196 @@ body.session-body{background:var(--bg);min-height:100vh}
   font-weight:800;
   letter-spacing:-.015em;
 }
-.exercise-toolbar .session-step-wrap{
-  justify-self:end;
-}
-
-/* Bottom controls become a browser-friendly action bar: no floating outer capsule. */
-.session-nav{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  width:100%;
-  transform:none;
-  z-index:40;
-  padding:10px 12px max(10px, env(safe-area-inset-bottom));
-  background:rgba(245,246,242,.97);
-  border-top:1px solid rgba(19,25,20,.07);
-  box-shadow:0 -10px 28px rgba(30,43,34,.06);
-  -webkit-backdrop-filter:blur(14px);
-  backdrop-filter:blur(14px);
-  pointer-events:auto;
-}
-.session-nav__inner{
-  width:min(900px,100%);
-  height:auto;
-  min-height:56px;
-  margin:0 auto;
-  padding:0;
-  display:grid;
-  grid-template-columns:auto minmax(0,1fr);
-  align-items:center;
-  gap:10px;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-.nav-button{
-  height:52px;
-  border-radius:18px;
-}
-.nav-button--back{
-  width:auto;
-  min-width:52px;
-  padding:0 16px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
+.back-link--icon{
+  width:44px;
+  height:44px;
   background:#fff;
-  border:1px solid rgba(19,25,20,.09);
-  box-shadow:0 5px 16px rgba(30,43,34,.05);
+  border-color:rgba(19,25,20,.085);
+  box-shadow:0 5px 18px rgba(38,53,44,.045);
 }
-.nav-button--back .nav-button__icon{
-  font-size:20px;
+
+/* One unified progress component: number and segments are a single object. */
+.step-indicator{
+  width:82px;
+  min-width:82px;
+  height:52px;
+  padding:7px 9px 6px;
+  border-radius:18px;
+  display:grid;
+  align-content:center;
+  justify-items:center;
+  gap:5px;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.step-indicator strong{
+  font-size:14px;
   line-height:1;
+  font-weight:850;
+  letter-spacing:-.02em;
 }
-.nav-button--back .nav-button__label{
-  font-size:13px;
-}
-.nav-button--next{
-  min-width:0;
-  padding:0 20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  box-shadow:0 8px 18px rgba(23,25,23,.10);
-}
-.nav-button--next .nav-button__arrow{
-  font-size:16px;
-  transition:transform var(--motion-base) var(--ease-standard);
-}
-.nav-button--next:active .nav-button__arrow{
-  transform:translateX(2px);
-}
-.nav-button--secondary:disabled{
-  opacity:.28;
-  background:rgba(255,255,255,.72);
+.step-indicator strong.is-updating{animation:stepPop .28s ease}
+.step-indicator--inline{
+  justify-self:end;
+  background:#f7f8f5;
+  border:1px solid rgba(19,25,20,.07);
   box-shadow:none;
 }
-
-/* Old topbar rules are intentionally neutralized; no page-level sticky header remains. */
-.session-topbar{display:none!important}
-
-@media(max-width:700px){
-  .session-body{padding-bottom:94px}
-  .session-shell{padding-top:10px}
-  .exercise-main{padding-top:16px}
-  .exercise-toolbar{
-    grid-template-columns:42px 1fr 64px;
-    gap:10px;
-    margin-bottom:20px;
-  }
-  .exercise-toolbar__center span{font-size:14px}
-  .session-nav{
-    padding:8px 10px max(8px, env(safe-area-inset-bottom));
-  }
-  .session-nav__inner{
-    min-height:54px;
-    grid-template-columns:54px minmax(0,1fr);
-    gap:8px;
-  }
-  .nav-button{height:50px;border-radius:17px}
-  .nav-button--back{
-    min-width:54px;
-    width:54px;
-    padding:0;
-    border-radius:17px;
-  }
-  .nav-button--back .nav-button__label{display:none}
-  .nav-button--next{
-    padding:0 18px;
-    font-size:14px;
-  }
-}
-
-@media(max-width:430px){
-  .exercise-main{padding-top:14px}
-  .exercise-toolbar{margin-bottom:18px}
-  .session-nav{
-    padding-left:8px;
-    padding-right:8px;
-  }
-  .session-nav__inner{
-    grid-template-columns:50px minmax(0,1fr);
-  }
-  .nav-button--back{width:50px;min-width:50px}
-  .nav-button--next{font-size:13.5px}
-}
-
-/* v16 — persistent step indicator + browser-safe bottom actions */
-
-/* The current exercise number is intentionally independent from the content card.
-   It stays available while reading long technique sections. */
-.floating-step-indicator{
-  position:fixed;
-  z-index:38;
-  top:12px;
-  right:max(12px, calc((100vw - 1120px) / 2));
+.step-indicator .step-segments{
+  width:56px;
   display:grid;
-  justify-items:end;
-  gap:6px;
-  pointer-events:none;
-  transform:translateZ(0);
+  grid-template-columns:repeat(8,1fr);
+  gap:2px;
+  padding:0;
 }
-.floating-step-indicator .session-step-badge{
-  min-width:60px;
-  height:38px;
-  background:rgba(255,255,255,.96);
+.step-indicator .step-segments i{
+  height:3px;
+  border-radius:999px;
+  background:rgba(47,107,85,.12);
+  transition:background-color var(--motion-base) ease,transform var(--motion-base) var(--ease-standard);
+}
+.step-indicator .step-segments i.is-done{background:rgba(47,107,85,.38)}
+.step-indicator .step-segments i.is-current{background:var(--accent);transform:scaleY(1.28)}
+
+/* Only this compact chip persists after the inline progress has scrolled away. */
+.sticky-step-indicator{
+  position:sticky;
+  top:12px;
+  z-index:34;
+  width:min(900px,calc(100% - 32px));
+  height:0;
+  margin:0 auto;
+  display:flex;
+  justify-content:flex-end;
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-6px);
+  transition:opacity 180ms ease,transform 180ms var(--ease-soft),visibility 180ms linear;
+}
+.sticky-step-indicator.is-visible{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+.step-indicator--sticky{
+  background:rgba(248,249,246,.96);
   border:1px solid rgba(19,25,20,.08);
-  box-shadow:0 8px 24px rgba(30,43,34,.10);
+  box-shadow:0 8px 24px rgba(30,43,34,.09);
   -webkit-backdrop-filter:blur(12px);
   backdrop-filter:blur(12px);
 }
-.floating-step-indicator .step-segments{
-  width:60px;
-  padding-inline:3px;
-}
 
-.exercise-toolbar{
-  grid-template-columns:44px 1fr 44px;
-}
-.exercise-toolbar__spacer{width:44px;height:1px}
-
-/* Navigation buttons float above browser chrome, but there is no outer rounded capsule.
-   A soft full-width scrim keeps the controls readable without creating dark corner artefacts. */
+/* Bottom controls are a real shelf in the grid. No fixed positioning, no gradient mask,
+   no artificial content spacer. */
 .session-nav{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  inset:auto !important;
   z-index:40;
-  width:100%;
-  padding:0;
-  background:transparent;
-  border:0;
-  box-shadow:none;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-  pointer-events:none;
+  width:100% !important;
+  transform:none !important;
+  padding:10px 16px max(10px,env(safe-area-inset-bottom,0px)) !important;
+  background:#f7f8f5 !important;
+  border:0 !important;
+  border-top:1px solid rgba(19,25,20,.07) !important;
+  box-shadow:0 -8px 24px rgba(38,53,44,.04) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  pointer-events:auto !important;
 }
-.session-nav::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:112px;
-  background:linear-gradient(180deg,rgba(245,246,242,0),rgba(245,246,242,.86) 36%,#f5f6f2 72%);
-  pointer-events:none;
-}
+.session-nav::before{display:none !important}
 .session-nav__inner{
   position:relative;
-  width:min(860px,calc(100% - 24px));
-  min-height:58px;
-  height:auto;
-  margin:0 auto calc(16px + env(safe-area-inset-bottom));
-  padding:0;
+  width:min(900px,100%) !important;
+  min-height:56px;
+  height:auto !important;
+  margin:0 auto !important;
+  padding:0 !important;
   display:grid;
-  grid-template-columns:54px minmax(0,1fr);
+  grid-template-columns:56px minmax(0,1fr) !important;
   align-items:center;
-  gap:10px;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  pointer-events:auto;
+  gap:12px !important;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
 }
 .nav-button{
-  height:54px;
-  border-radius:18px;
+  height:56px !important;
+  border-radius:18px !important;
+  font-weight:850;
 }
 .nav-button--back{
-  width:54px;
-  min-width:54px;
-  padding:0;
-  border-radius:18px;
-  background:#fff;
-  border:1px solid rgba(19,25,20,.09);
-  box-shadow:0 8px 22px rgba(30,43,34,.08);
+  width:56px !important;
+  min-width:56px !important;
+  padding:0 !important;
+  background:#fff !important;
+  border:1px solid rgba(19,25,20,.085) !important;
+  box-shadow:none !important;
 }
-.nav-button--back .nav-button__label{display:none}
-.nav-button--back .nav-button__icon{font-size:21px}
+.nav-button--back .nav-button__label{display:none !important}
+.nav-button--back .nav-button__icon{font-size:21px;line-height:1}
 .nav-button--next{
   min-width:0;
-  padding:0 22px;
-  border-radius:18px;
-  box-shadow:0 10px 24px rgba(23,25,23,.13);
+  padding:0 22px !important;
+  background:var(--text) !important;
+  color:#fff !important;
+  border:0 !important;
+  box-shadow:none !important;
   font-size:14px;
+  letter-spacing:-.01em;
 }
+.nav-button--next:hover{box-shadow:none !important}
+.nav-button--primary.is-finish{background:var(--accent) !important}
 
-/* Reserve enough content space so the last accordion can always scroll completely above the controls. */
-.session-body{padding-bottom:132px}
+/* The last card gets normal breathing space only; the shelf already occupies real layout space. */
+.details-stack{margin-bottom:0}
+.session-body .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 
 @media(max-width:700px){
-  .floating-step-indicator{
-    top:10px;
-    right:10px;
-  }
-  .floating-step-indicator .session-step-badge{
-    min-width:58px;
-    height:36px;
-    font-size:11.5px;
-  }
-  .floating-step-indicator .step-segments{width:58px}
+  .container{width:min(100% - 20px,1120px)}
+  .session-shell{padding-top:10px;padding-bottom:24px}
+  .exercise-main{padding-top:16px}
   .exercise-toolbar{
-    grid-template-columns:42px 1fr 42px;
+    grid-template-columns:42px minmax(0,1fr) 78px;
+    gap:10px;
+    margin-bottom:22px;
   }
-  .exercise-toolbar__spacer{width:42px}
-  .session-nav__inner{
-    width:calc(100% - 20px);
-    margin-bottom:calc(14px + env(safe-area-inset-bottom));
-    grid-template-columns:52px minmax(0,1fr);
-    gap:9px;
-  }
-  .nav-button{height:52px;border-radius:17px}
-  .nav-button--back{width:52px;min-width:52px;border-radius:17px}
-  .nav-button--next{border-radius:17px;font-size:14px}
-  .session-body{padding-bottom:126px}
+  .exercise-toolbar__center span{font-size:14px}
+  .back-link--icon{width:42px;height:42px}
+  .step-indicator{width:78px;min-width:78px;height:50px;border-radius:17px;padding:7px 8px 6px}
+  .step-indicator strong{font-size:13.5px}
+  .step-indicator .step-segments{width:54px}
+  .sticky-step-indicator{top:10px;width:calc(100% - 20px)}
+  .session-nav{padding:10px 10px max(10px,env(safe-area-inset-bottom,0px)) !important}
+  .session-nav__inner{width:100% !important;grid-template-columns:54px minmax(0,1fr) !important;gap:10px !important}
+  .nav-button{height:54px !important;border-radius:17px !important}
+  .nav-button--back{width:54px !important;min-width:54px !important}
+  .nav-button--next{font-size:14px;padding-inline:18px !important}
 }
 
 @media(max-width:430px){
-  .floating-step-indicator{
-    top:8px;
-    right:8px;
-  }
-  .session-nav__inner{
-    width:calc(100% - 16px);
-    margin-bottom:calc(12px + env(safe-area-inset-bottom));
-    grid-template-columns:50px minmax(0,1fr);
-    gap:8px;
-  }
-  .nav-button{height:50px;border-radius:16px}
-  .nav-button--back{width:50px;min-width:50px;border-radius:16px}
-  .nav-button--next{border-radius:16px;font-size:13.5px}
+  .session-shell{padding-top:8px;padding-bottom:22px}
+  .exercise-main{padding-top:14px}
+  .exercise-toolbar{grid-template-columns:40px minmax(0,1fr) 76px;gap:9px;margin-bottom:20px}
+  .back-link--icon{width:40px;height:40px}
+  .step-indicator{width:76px;min-width:76px;height:48px;border-radius:16px}
+  .step-indicator strong{font-size:13px}
+  .step-indicator .step-segments{width:52px}
+  .sticky-step-indicator{top:8px;width:calc(100% - 16px)}
+  .session-nav{padding:9px 8px max(9px,env(safe-area-inset-bottom,0px)) !important}
+  .session-nav__inner{grid-template-columns:52px minmax(0,1fr) !important;gap:9px !important}
+  .nav-button{height:52px !important;border-radius:16px !important}
+  .nav-button--back{width:52px !important;min-width:52px !important}
+  .nav-button--next{font-size:13.5px;padding-inline:16px !important}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .floating-step-indicator .session-step-badge{transition:none!important}
+  .sticky-step-indicator{transition:none!important}
+  .step-indicator strong.is-updating{animation:none!important}
 }
