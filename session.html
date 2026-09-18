@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f8f5" />
+  <title>Утро — Daily Motion</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="session-body">
+  <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
+  <header class="session-topbar container">
+    <a class="back-link" href="index.html">← На главную</a>
+    <div class="session-topbar__meta">
+      <span id="routineName">Утро</span>
+      <strong id="headerProgress">1 / 8</strong>
+    </div>
+  </header>
+
+  <main class="container session-shell">
+    <section class="session-progress-card" aria-label="Прогресс комплекса">
+      <div class="session-progress-card__text">
+        <span class="eyebrow">Прогресс комплекса</span>
+        <strong id="progressText">0 из 8 упражнений</strong>
+      </div>
+      <div class="session-progress-track"><i id="sessionProgressBar"></i></div>
+    </section>
+
+    <section class="exercise-layout">
+      <article class="exercise-main glass-card">
+        <div class="exercise-head">
+          <div>
+            <span class="status-pill" id="exerciseNumber">Упражнение 1 из 8</span>
+            <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
+            <p class="exercise-goal" id="exerciseGoal"></p>
+          </div>
+          <div class="exercise-facts">
+            <div><span>Объём</span><strong id="exerciseVolume"></strong></div>
+            <div><span>Время</span><strong id="exerciseTime"></strong></div>
+          </div>
+        </div>
+
+        <div class="visual-placeholder" id="visualPlaceholder">
+          <div class="visual-placeholder__icon">◎</div>
+          <div><strong>Визуал упражнения</strong><span>Добавим и проверим на следующем этапе.</span></div>
+        </div>
+
+        <div class="technique-grid">
+          <section class="info-card info-card--wide">
+            <span class="info-kicker">Как делать правильно</span>
+            <ol id="howToList"></ol>
+          </section>
+          <section class="info-card"><span class="info-kicker">Что чувствовать</span><p id="feelText"></p></section>
+          <section class="info-card"><span class="info-kicker">Частые ошибки</span><ul id="mistakesList"></ul></section>
+          <section class="info-card"><span class="info-kicker">Облегчённый вариант</span><p id="easyText"></p></section>
+          <section class="info-card"><span class="info-kicker">Как прогрессировать</span><p id="progressionText"></p></section>
+        </div>
+
+        <div class="technique-key">
+          <span>Ключ к технике</span>
+          <strong id="keyText"></strong>
+        </div>
+      </article>
+
+      <aside class="timer-card glass-card" aria-label="Таймер упражнения">
+        <div class="timer-card__head">
+          <div><span class="eyebrow">Таймер</span><h2>Для этого упражнения</h2></div>
+          <span class="timer-state" id="timerState">Готов</span>
+        </div>
+        <div class="timer-ring" id="timerRing" style="--timer-progress:0">
+          <div class="timer-ring__inner">
+            <strong id="timerValue">01:00</strong>
+            <span id="timerLabel">осталось</span>
+          </div>
+        </div>
+        <div class="timer-controls">
+          <button class="timer-primary" id="timerToggle">Старт</button>
+          <button class="timer-secondary" id="timerReset">Сброс</button>
+        </div>
+        <div class="timer-adjustments">
+          <button id="minusTen">−10 сек</button>
+          <button id="plusTen">+10 сек</button>
+        </div>
+        <p class="timer-note" id="wakeLockNote">Экран не будет засыпать во время активного таймера, если браузер поддерживает Wake Lock.</p>
+      </aside>
+    </section>
+  </main>
+
+  <nav class="session-nav" aria-label="Навигация по упражнениям">
+    <div class="container session-nav__inner">
+      <button class="nav-button nav-button--secondary" id="prevButton">Назад</button>
+      <div class="session-nav__status"><span id="navStepLabel">Шаг 1 из 8</span><small>прогресс сохраняется автоматически</small></div>
+      <button class="nav-button nav-button--primary" id="nextButton">След. шаг</button>
+    </div>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="session.js"></script>
+</body>
+</html>
