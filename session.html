@@ -15,7 +15,10 @@
     <div class="session-topbar__center">
       <span id="routineName">Утро</span>
     </div>
-    <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
+    <div class="session-step-wrap">
+      <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
+      <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
+    </div>
   </header>
 
   <main class="container session-shell">
@@ -26,7 +29,7 @@
           <p class="exercise-goal" id="exerciseGoal"></p>
         </header>
 
-        <div class="visual-placeholder" id="visualPlaceholder" aria-label="Визуал упражнения">
+        <div class="exercise-visual visual-placeholder" id="exerciseVisual" aria-label="Визуал упражнения">
           <div class="visual-placeholder__inner">
             <span class="visual-placeholder__icon">◎</span>
             <div>
@@ -130,6 +133,14 @@
       <button class="nav-button nav-button--primary" id="nextButton">След. шаг</button>
     </div>
   </nav>
+
+  <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
+    <div class="completion-card" role="status" aria-live="polite">
+      <div class="completion-check" aria-hidden="true">✓</div>
+      <strong>Утро завершено</strong>
+      <span>8 из 8 упражнений</span>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="session.js"></script>

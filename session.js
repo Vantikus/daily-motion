@@ -111,12 +111,15 @@
   if(routine.step<0)routine.step=0;
   if(!state.timers[ROUTINE_KEY])state.timers[ROUTINE_KEY]={};
   save();
+  const resumedFromStep=!routine.completed && routine.step>0 ? routine.step : null;
 
   const $=s=>document.querySelector(s);
-  const toast=msg=>{const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1500)};
+  const toast=msg=>{const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1700)};
+  const haptic=(kind='tap')=>{if(!navigator.vibrate)return;const map={tap:10,soft:16,next:[14,28,14],success:[40,45,90]};try{navigator.vibrate(map[kind]||10)}catch{}};
   let current=routine.step;
   let tickerFrame=null;
   let wakeLock=null;
+  let lastFinishState=false;
 
   function timerData(ex){
     if(!state.timers[ROUTINE_KEY][ex.id])state.timers[ROUTINE_KEY][ex.id]={duration:ex.seconds,remaining:ex.seconds,running:false,endAt:null};
@@ -126,7 +129,6 @@
     if(t.running&&t.endAt){
       const left=Math.max(0,Math.ceil((t.endAt-Date.now())/1000));
       t.remaining=left;
-      if(left===0){t.running=false;t.endAt=null;}
     }
     return t;
   }
@@ -168,6 +170,7 @@
     $('#timerToggle').textContent=t.running?'Пауза':t.remaining===0?'Сначала':'Старт';
     $('#timerLabel').textContent=t.remaining===0?'завершено':'осталось';
     $('#timerRing').classList.toggle('is-running',t.running);
+    $('#timerRing').classList.toggle('is-ending',Boolean(t.running&&preciseRemaining>0&&preciseRemaining<=5));
     const timerCard=$('#timerCard'); if(timerCard)timerCard.classList.toggle('is-running',t.running);
   }
 
@@ -190,12 +193,12 @@
     }
   }
 
-  function animateExercise(){
+  function animateExercise(direction='forward'){
     const card=$('.exercise-main');
     if(card){
-      card.classList.remove('is-entering');
+      card.classList.remove('is-entering','enter-forward','enter-back');
       void card.offsetWidth;
-      card.classList.add('is-entering');
+      card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
     const badge=$('#headerProgress');
     if(badge){
@@ -204,6 +207,40 @@
       badge.classList.add('is-updating');
     }
   }
+
+  function renderStepSegments(){
+    const wrap=$('#stepSegments');
+    if(!wrap)return;
+    const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
+    wrap.innerHTML=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
+  }
+
+  function renderVisual(ex){
+    const box=$('#exerciseVisual');
+    if(!box)return;
+    if(Array.isArray(ex.visuals)&&ex.visuals.length){
+      box.classList.add('has-visuals');
+      box.style.removeProperty('aspect-ratio');
+      box.innerHTML=`<div class="visual-phases" style="--phase-count:${Math.min(ex.visuals.length,3)}">${ex.visuals.map((src,i)=>`<figure class="visual-phase"><img src="${src}" alt="${ex.title}, фаза ${i+1}" loading="eager" decoding="async"></figure>`).join('')}</div>`;
+    }else{
+      box.classList.remove('has-visuals');
+      box.innerHTML=`<div class="visual-placeholder__inner"><span class="visual-placeholder__icon">◎</span><div><strong>Визуал упражнения</strong><span>Здесь появятся понятные фазы движения.</span></div></div>`;
+    }
+  }
+
+  function updateNextButton(){
+    const button=$('#nextButton');
+    const isFinish=current===exercises.length-1;
+    button.textContent=isFinish?'Завершить утро':'След. шаг';
+    button.classList.toggle('is-finish',isFinish);
+    if(isFinish!==lastFinishState){
+      button.classList.remove('is-morphing');
+      void button.offsetWidth;
+      button.classList.add('is-morphing');
+      lastFinishState=isFinish;
+    }
+  }
+
 
   function setDetailState(card,open){
     card.classList.toggle('is-open',open);
@@ -214,14 +251,18 @@
   document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
     toggle.addEventListener('click',()=>{
       const card=toggle.closest('.detail-card');
-      setDetailState(card,!card.classList.contains('is-open'));
+      const willOpen=!card.classList.contains('is-open');
+      document.querySelectorAll('.detail-card').forEach(item=>setDetailState(item,false));
+      if(willOpen)setDetailState(card,true);
+      haptic('tap');
     });
   });
 
-  function render(){
+  function render(direction='forward',scrollMode='smooth'){
     stopInterval();
     routine.step=current; save();
     const ex=exercises[current];
+    renderVisual(ex);
     $('#exerciseTitle').textContent=ex.title;
     $('#exerciseGoal').textContent=ex.goal;
     $('#exerciseVolume').textContent=ex.volume;
@@ -235,7 +276,8 @@
     $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
-    $('#nextButton').textContent=current===exercises.length-1?'Завершить утро':'След. шаг';
+    updateNextButton();
+    renderStepSegments();
     document.querySelectorAll('.detail-card').forEach((el,index)=>setDetailState(el,index===0));
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const progressText=$('#progressText'),progressBar=$('#sessionProgressBar');
@@ -243,26 +285,29 @@
     if(progressBar)progressBar.style.width=`${done/exercises.length*100}%`;
     updateTimerUI();
     const t=timerData(ex); if(t.running){startTicker();requestWakeLock();}
-    animateExercise();
-    window.scrollTo({top:0,behavior:'smooth'});
+    animateExercise(direction);
+    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:scrollMode}));
   }
 
   $('#prevButton').addEventListener('click',()=>{
-    if(current>0){pauseCurrentTimer();current--;render();}
+    if(current>0){haptic('soft');pauseCurrentTimer();current--;render('back');}
   });
   $('#nextButton').addEventListener('click',()=>{
     pauseCurrentTimer();
     routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
     if(current<exercises.length-1){
-      current++; routine.step=current; save(); render();
+      haptic('next');current++; routine.step=current; save(); render('forward');
     }else{
       routine.completed=true; routine.completedUntil=exercises.length; routine.step=exercises.length-1; save();
-      toast('Утро завершено');
-      setTimeout(()=>location.href='index.html',450);
+      haptic('success');
+      const overlay=$('#completionOverlay');
+      if(overlay){overlay.classList.add('is-visible');overlay.setAttribute('aria-hidden','false');}
+      setTimeout(()=>location.href='index.html',1200);
     }
   });
 
   $('#timerToggle').addEventListener('click',()=>{
+    haptic('soft');
     const ex=exercises[current],t=timerData(ex);
     if(t.running){
       t.remaining=Math.max(0,Math.ceil((t.endAt-Date.now())/1000));t.running=false;t.endAt=null;stopInterval();releaseWakeLock();
@@ -273,10 +318,11 @@
     save();updateTimerUI();
   });
   $('#timerReset').addEventListener('click',()=>{
+    haptic('tap');
     const ex=exercises[current],t=timerData(ex);t.duration=ex.seconds;t.remaining=ex.seconds;t.running=false;t.endAt=null;stopInterval();releaseWakeLock();save();updateTimerUI();
   });
-  $('#minusTen').addEventListener('click',()=>adjustTimer(-10));
-  $('#plusTen').addEventListener('click',()=>adjustTimer(10));
+  $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10)});
+  $('#plusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(10)});
   function adjustTimer(delta){
     const ex=exercises[current],t=timerData(ex);
     if(t.running){
@@ -300,6 +346,11 @@
     }else releaseWakeLock();
   });
   window.addEventListener('beforeunload',()=>{routine.step=current;save();releaseWakeLock();});
-  window.addEventListener('load',()=>{setTimeout(()=>$('#pageLoader').classList.add('is-hidden'),180)});
-  render();
+  window.addEventListener('load',()=>{
+    setTimeout(()=>{
+      $('#pageLoader').classList.add('is-hidden');
+      if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
+    },180);
+  });
+  render('forward','auto');
 })();

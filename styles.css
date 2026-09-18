@@ -201,6 +201,111 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .timer-ring{margin:auto}
 }
 
+
+/* Session polish — v7 */
+.session-body{
+  --motion-fast:140ms;
+  --motion-base:210ms;
+  --motion-slow:320ms;
+  --motion-page:360ms;
+  --ease-standard:cubic-bezier(.2,.72,.2,1);
+  --ease-soft:cubic-bezier(.16,.8,.22,1);
+  padding-bottom:118px;
+}
+.session-topbar{grid-template-columns:44px 1fr 72px}
+.session-step-wrap{justify-self:end;display:grid;justify-items:end;gap:6px}
+.step-segments{width:56px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.step-segments i{display:block;height:3px;border-radius:999px;background:rgba(47,107,85,.12);transition:background-color var(--motion-base) ease,transform var(--motion-base) var(--ease-standard)}
+.step-segments i.is-done{background:rgba(47,107,85,.42)}
+.step-segments i.is-current{background:var(--accent);transform:scaleY(1.35)}
+.exercise-main{scroll-margin-top:76px}
+
+/* Visual block is ready for real phase images. On mobile phases stack vertically, never carousel. */
+.exercise-visual{position:relative}
+.exercise-visual.has-visuals{aspect-ratio:auto;border:0;background:transparent;display:block;overflow:visible}
+.visual-phases{display:grid;grid-template-columns:repeat(var(--phase-count,2),minmax(0,1fr));gap:var(--s3)}
+.visual-phase{margin:0;border-radius:var(--r-md);overflow:hidden;background:#eef2ee;border:1px solid var(--session-border)}
+.visual-phase img{width:100%;height:auto;display:block;object-fit:contain}
+
+/* Metadata should read as metadata, not as competing cards. */
+.exercise-facts{gap:var(--s3);margin-bottom:var(--s5)}
+.exercise-facts>div{padding:9px 4px 10px;background:transparent;border:0;border-bottom:1px solid rgba(19,25,20,.09);border-radius:0}
+.exercise-facts span{font-size:9px;letter-spacing:.095em}
+.exercise-facts strong{font-size:13.5px}
+
+/* Timer: clear hierarchy, calmer surface and better rhythm. */
+.timer-card--inline{padding:20px;margin-bottom:var(--s5);transition:border-color var(--motion-base) ease,box-shadow var(--motion-slow) ease,background-color var(--motion-base) ease,transform var(--motion-fast) ease}
+.timer-card__topline{margin-bottom:var(--s3)}
+.timer-inline-grid{grid-template-columns:132px minmax(0,1fr);gap:var(--s5)}
+.timer-ring{width:122px;transition:transform var(--motion-base) var(--ease-standard),box-shadow var(--motion-base) ease,filter var(--motion-base) ease}
+.timer-ring.is-running{animation:timerBreath 2.1s ease-in-out infinite}
+.timer-ring.is-ending{filter:saturate(1.18);box-shadow:0 0 0 8px rgba(47,107,85,.07);animation:timerEnding .72s ease-in-out infinite alternate}
+@keyframes timerEnding{from{transform:scale(1)}to{transform:scale(1.035)}}
+.timer-actions{gap:var(--s2)}
+.timer-primary{height:48px;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease}
+.timer-adjustments{gap:var(--s2)}
+.timer-adjustments button{height:42px}
+.timer-reset-link{margin-top:1px}
+
+/* Accordion: one item at a time, with smooth height/content reveal. */
+.detail-card__toggle{transition:background-color var(--motion-base) ease,color var(--motion-base) ease}
+.detail-card__toggle:hover{background:rgba(47,107,85,.025)}
+.detail-card__toggle i{transition:transform var(--motion-slow) var(--ease-soft),color var(--motion-base) ease}
+.detail-card__panel{transition:grid-template-rows var(--motion-slow) var(--ease-soft),opacity var(--motion-base) ease}
+.detail-card__inner{transition:transform var(--motion-slow) var(--ease-soft)}
+
+/* Floating navigation instead of a full-width bottom bar. */
+.session-nav{left:50%;right:auto;bottom:calc(10px + env(safe-area-inset-bottom));width:min(900px,calc(100% - 24px));transform:translateX(-50%);background:transparent;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+.session-nav__inner{width:100%;height:72px;padding:10px;border-radius:26px;background:rgba(249,250,247,.9);border:1px solid rgba(19,25,20,.08);box-shadow:0 14px 38px rgba(30,43,34,.13);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);pointer-events:auto;grid-template-columns:132px 1fr 168px}
+.nav-button{transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
+.nav-button--primary.is-finish{background:var(--accent);box-shadow:0 8px 22px rgba(47,107,85,.18)}
+.nav-button.is-morphing{animation:buttonMorph var(--motion-slow) var(--ease-soft)}
+@keyframes buttonMorph{0%{transform:scale(.96);opacity:.75}55%{transform:scale(1.025)}100%{transform:scale(1);opacity:1}}
+
+/* Direction-aware exercise transitions. */
+.exercise-main.enter-forward .exercise-head,.exercise-main.enter-back .exercise-head{animation-duration:var(--motion-page);animation-timing-function:var(--ease-soft);animation-fill-mode:both}
+.exercise-main.enter-forward .exercise-head{animation-name:dmEnterForward}
+.exercise-main.enter-back .exercise-head{animation-name:dmEnterBack}
+.exercise-main.enter-forward .exercise-visual{animation:dmEnterForward var(--motion-page) 35ms var(--ease-soft) both}
+.exercise-main.enter-back .exercise-visual{animation:dmEnterBack var(--motion-page) 35ms var(--ease-soft) both}
+.exercise-main.enter-forward .exercise-facts,.exercise-main.enter-back .exercise-facts{animation:dmFadeUp var(--motion-slow) 70ms var(--ease-soft) both}
+.exercise-main.enter-forward .technique-key--prominent,.exercise-main.enter-back .technique-key--prominent{animation:dmFadeUp var(--motion-slow) 95ms var(--ease-soft) both}
+.exercise-main.enter-forward .timer-card--inline,.exercise-main.enter-back .timer-card--inline{animation:dmFadeUp var(--motion-slow) 120ms var(--ease-soft) both}
+.exercise-main.enter-forward .how-card,.exercise-main.enter-back .how-card{animation:dmFadeUp var(--motion-slow) 145ms var(--ease-soft) both}
+.exercise-main.enter-forward .details-stack,.exercise-main.enter-back .details-stack{animation:dmFadeUp var(--motion-slow) 170ms var(--ease-soft) both}
+@keyframes dmEnterForward{from{opacity:0;transform:translate3d(14px,5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes dmEnterBack{from{opacity:0;transform:translate3d(-14px,5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+/* Completion moment. */
+.completion-overlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:rgba(243,246,242,.74);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);opacity:0;visibility:hidden;transition:opacity var(--motion-slow) ease,visibility var(--motion-slow) ease}
+.completion-overlay.is-visible{opacity:1;visibility:visible}
+.completion-card{min-width:min(320px,88vw);padding:30px 26px;border-radius:28px;background:#fff;border:1px solid var(--session-border);box-shadow:0 24px 70px rgba(30,43,34,.15);display:grid;justify-items:center;text-align:center;gap:7px;transform:translateY(10px) scale(.97);transition:transform var(--motion-slow) var(--ease-soft)}
+.completion-overlay.is-visible .completion-card{transform:translateY(0) scale(1)}
+.completion-check{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin-bottom:6px;background:var(--accent-2);color:var(--accent);font-size:28px;font-weight:900}
+.completion-overlay.is-visible .completion-check{animation:successPop .48s var(--ease-soft) both}
+.completion-card strong{font-size:22px;letter-spacing:-.03em}
+.completion-card span{font-size:13px;color:var(--muted)}
+.session-body .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
+@keyframes successPop{0%{transform:scale(.55) rotate(-12deg);opacity:0}70%{transform:scale(1.08) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+
+@media(max-width:700px){
+  .session-body{padding-bottom:110px}
+  .session-topbar{grid-template-columns:42px 1fr 64px}
+  .step-segments{width:54px}
+  .exercise-facts{gap:var(--s4);margin-bottom:var(--s5)}
+  .timer-card--inline{padding:17px;margin-bottom:var(--s5)}
+  .timer-inline-grid{grid-template-columns:118px 1fr;gap:var(--s4)}
+  .timer-ring{width:112px}
+  .session-nav{bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 20px)}
+  .session-nav__inner{height:70px;padding:9px;grid-template-columns:1fr 1.32fr;gap:var(--s2);border-radius:24px}
+  .visual-phases{grid-template-columns:1fr;gap:var(--s3)}
+}
+@media(max-width:430px){
+  .exercise-facts{gap:12px;margin-bottom:22px}
+  .timer-inline-grid{grid-template-columns:112px 1fr;gap:14px}
+  .timer-ring{width:106px}
+}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
