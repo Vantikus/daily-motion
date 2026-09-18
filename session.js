@@ -178,10 +178,17 @@
 
   function animateExercise(){
     const card=$('.exercise-main');
-    if(!card)return;
-    card.classList.remove('is-entering');
-    void card.offsetWidth;
-    card.classList.add('is-entering');
+    if(card){
+      card.classList.remove('is-entering');
+      void card.offsetWidth;
+      card.classList.add('is-entering');
+    }
+    const badge=$('#headerProgress');
+    if(badge){
+      badge.classList.remove('is-updating');
+      void badge.offsetWidth;
+      badge.classList.add('is-updating');
+    }
   }
 
   function render(){
@@ -202,6 +209,7 @@
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     $('#nextButton').textContent=current===exercises.length-1?'Завершить утро':'След. шаг';
+    document.querySelectorAll('.detail-card').forEach((el,index)=>{el.open=index===0;});
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const progressText=$('#progressText'),progressBar=$('#sessionProgressBar');
     if(progressText)progressText.textContent=`${done} из ${exercises.length} упражнений`;
