@@ -400,3 +400,74 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
     min-width:53px;
   }
 }
+
+
+/* Session polish — v9: iOS / Telegram in-app browser viewport guards */
+:root{
+  --browser-top-inset:0px;
+  --browser-bottom-inset:0px;
+  --visible-viewport-height:100dvh;
+}
+html{
+  scroll-padding-top:calc(58px + var(--browser-top-inset));
+}
+.session-body{
+  min-height:100dvh;
+  min-height:var(--visible-viewport-height,100dvh);
+  padding-bottom:calc(118px + var(--browser-bottom-inset) + env(safe-area-inset-bottom));
+}
+/* Sticky header tracks the visual viewport instead of the larger iOS layout viewport. */
+.session-topbar{
+  top:var(--browser-top-inset);
+  transform:translateZ(0);
+  will-change:top;
+}
+/* The dock must never sit beneath Telegram/Safari browser chrome. */
+.session-nav{
+  bottom:max(
+    8px,
+    var(--browser-bottom-inset),
+    calc(env(safe-area-inset-bottom) - 4px)
+  );
+  transform:translate3d(-50%,0,0);
+  will-change:bottom;
+}
+/* Keep the blurred tail attached to the dock instead of extending below the visible viewport. */
+.session-nav::before{
+  bottom:-12px;
+  height:46px;
+}
+.session-body .toast{
+  bottom:calc(96px + max(var(--browser-bottom-inset),env(safe-area-inset-bottom)));
+}
+.page-loader,.completion-overlay{
+  min-height:100dvh;
+  min-height:var(--visible-viewport-height,100dvh);
+}
+
+@media(max-width:700px){
+  .session-body{
+    padding-bottom:calc(112px + var(--browser-bottom-inset) + env(safe-area-inset-bottom));
+  }
+  .session-nav{
+    bottom:max(
+      7px,
+      var(--browser-bottom-inset),
+      calc(env(safe-area-inset-bottom) - 5px)
+    );
+  }
+  .session-nav::before{
+    bottom:-10px;
+    height:42px;
+  }
+}
+
+@media(max-width:430px){
+  .session-topbar{
+    padding-top:6px;
+    padding-bottom:7px;
+  }
+  .session-nav{
+    width:calc(100% - 18px);
+  }
+}
