@@ -385,3 +385,164 @@ body.session-body{background:var(--bg);min-height:100vh}
     transform:none !important;
   }
 }
+
+
+/* v15 — browser-integrated mobile layout */
+.session-body{
+  padding-bottom:104px;
+}
+.session-shell{
+  padding-top:12px;
+}
+.exercise-main{
+  overflow:visible;
+}
+
+/* The exercise toolbar lives inside the exercise card and scrolls away naturally. */
+.exercise-toolbar{
+  display:grid;
+  grid-template-columns:44px 1fr 72px;
+  align-items:center;
+  gap:12px;
+  margin-bottom:24px;
+}
+.exercise-toolbar__center{
+  text-align:center;
+  line-height:1.15;
+}
+.exercise-toolbar__center span{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.015em;
+}
+.exercise-toolbar .session-step-wrap{
+  justify-self:end;
+}
+
+/* Bottom controls become a browser-friendly action bar: no floating outer capsule. */
+.session-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  width:100%;
+  transform:none;
+  z-index:40;
+  padding:10px 12px max(10px, env(safe-area-inset-bottom));
+  background:rgba(245,246,242,.97);
+  border-top:1px solid rgba(19,25,20,.07);
+  box-shadow:0 -10px 28px rgba(30,43,34,.06);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  pointer-events:auto;
+}
+.session-nav__inner{
+  width:min(900px,100%);
+  height:auto;
+  min-height:56px;
+  margin:0 auto;
+  padding:0;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+.nav-button{
+  height:52px;
+  border-radius:18px;
+}
+.nav-button--back{
+  width:auto;
+  min-width:52px;
+  padding:0 16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  background:#fff;
+  border:1px solid rgba(19,25,20,.09);
+  box-shadow:0 5px 16px rgba(30,43,34,.05);
+}
+.nav-button--back .nav-button__icon{
+  font-size:20px;
+  line-height:1;
+}
+.nav-button--back .nav-button__label{
+  font-size:13px;
+}
+.nav-button--next{
+  min-width:0;
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  box-shadow:0 8px 18px rgba(23,25,23,.10);
+}
+.nav-button--next .nav-button__arrow{
+  font-size:16px;
+  transition:transform var(--motion-base) var(--ease-standard);
+}
+.nav-button--next:active .nav-button__arrow{
+  transform:translateX(2px);
+}
+.nav-button--secondary:disabled{
+  opacity:.28;
+  background:rgba(255,255,255,.72);
+  box-shadow:none;
+}
+
+/* Old topbar rules are intentionally neutralized; no page-level sticky header remains. */
+.session-topbar{display:none!important}
+
+@media(max-width:700px){
+  .session-body{padding-bottom:94px}
+  .session-shell{padding-top:10px}
+  .exercise-main{padding-top:16px}
+  .exercise-toolbar{
+    grid-template-columns:42px 1fr 64px;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .exercise-toolbar__center span{font-size:14px}
+  .session-nav{
+    padding:8px 10px max(8px, env(safe-area-inset-bottom));
+  }
+  .session-nav__inner{
+    min-height:54px;
+    grid-template-columns:54px minmax(0,1fr);
+    gap:8px;
+  }
+  .nav-button{height:50px;border-radius:17px}
+  .nav-button--back{
+    min-width:54px;
+    width:54px;
+    padding:0;
+    border-radius:17px;
+  }
+  .nav-button--back .nav-button__label{display:none}
+  .nav-button--next{
+    padding:0 18px;
+    font-size:14px;
+  }
+}
+
+@media(max-width:430px){
+  .exercise-main{padding-top:14px}
+  .exercise-toolbar{margin-bottom:18px}
+  .session-nav{
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .session-nav__inner{
+    grid-template-columns:50px minmax(0,1fr);
+  }
+  .nav-button--back{width:50px;min-width:50px}
+  .nav-button--next{font-size:13.5px}
+}

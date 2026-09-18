@@ -7,26 +7,26 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
 
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
 
-  <header class="session-topbar container">
-    <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
-    <div class="session-topbar__center">
-      <span id="routineName">Утро</span>
-    </div>
-    <div class="session-step-wrap">
-      <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
-      <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
-    </div>
-  </header>
-
   <main class="container session-shell">
     <section class="exercise-layout">
       <article class="exercise-main glass-card">
+        <div class="exercise-toolbar" aria-label="Навигация комплекса">
+          <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
+          <div class="exercise-toolbar__center">
+            <span id="routineName">Утро</span>
+          </div>
+          <div class="session-step-wrap">
+            <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
+            <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
+          </div>
+        </div>
+
         <header class="exercise-head">
           <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
           <p class="exercise-goal" id="exerciseGoal"></p>
@@ -130,10 +130,15 @@
   </main>
 
   <nav class="session-nav" aria-label="Навигация по упражнениям">
-    <div class="container session-nav__inner">
-      <button class="nav-button nav-button--secondary" id="prevButton">Назад</button>
-      <div class="session-nav__status"><span id="navStepLabel">Шаг 1 из 8</span></div>
-      <button class="nav-button nav-button--primary" id="nextButton">След. шаг</button>
+    <div class="session-nav__inner">
+      <button class="nav-button nav-button--secondary nav-button--back" id="prevButton" aria-label="Назад">
+        <span class="nav-button__icon" aria-hidden="true">←</span>
+        <span class="nav-button__label">Назад</span>
+      </button>
+      <span class="sr-only" id="navStepLabel">Шаг 1 из 8</span>
+      <button class="nav-button nav-button--primary nav-button--next" id="nextButton">
+        <span>След. шаг</span><span class="nav-button__arrow" aria-hidden="true">→</span>
+      </button>
     </div>
   </nav>
 
@@ -146,6 +151,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="session.js?v=14"></script>
+  <script src="session.js?v=15"></script>
 </body>
 </html>
