@@ -546,3 +546,154 @@ body.session-body{background:var(--bg);min-height:100vh}
   .nav-button--back{width:50px;min-width:50px}
   .nav-button--next{font-size:13.5px}
 }
+
+/* v16 — persistent step indicator + browser-safe bottom actions */
+
+/* The current exercise number is intentionally independent from the content card.
+   It stays available while reading long technique sections. */
+.floating-step-indicator{
+  position:fixed;
+  z-index:38;
+  top:12px;
+  right:max(12px, calc((100vw - 1120px) / 2));
+  display:grid;
+  justify-items:end;
+  gap:6px;
+  pointer-events:none;
+  transform:translateZ(0);
+}
+.floating-step-indicator .session-step-badge{
+  min-width:60px;
+  height:38px;
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(19,25,20,.08);
+  box-shadow:0 8px 24px rgba(30,43,34,.10);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+.floating-step-indicator .step-segments{
+  width:60px;
+  padding-inline:3px;
+}
+
+.exercise-toolbar{
+  grid-template-columns:44px 1fr 44px;
+}
+.exercise-toolbar__spacer{width:44px;height:1px}
+
+/* Navigation buttons float above browser chrome, but there is no outer rounded capsule.
+   A soft full-width scrim keeps the controls readable without creating dark corner artefacts. */
+.session-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:40;
+  width:100%;
+  padding:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  pointer-events:none;
+}
+.session-nav::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:112px;
+  background:linear-gradient(180deg,rgba(245,246,242,0),rgba(245,246,242,.86) 36%,#f5f6f2 72%);
+  pointer-events:none;
+}
+.session-nav__inner{
+  position:relative;
+  width:min(860px,calc(100% - 24px));
+  min-height:58px;
+  height:auto;
+  margin:0 auto calc(16px + env(safe-area-inset-bottom));
+  padding:0;
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  pointer-events:auto;
+}
+.nav-button{
+  height:54px;
+  border-radius:18px;
+}
+.nav-button--back{
+  width:54px;
+  min-width:54px;
+  padding:0;
+  border-radius:18px;
+  background:#fff;
+  border:1px solid rgba(19,25,20,.09);
+  box-shadow:0 8px 22px rgba(30,43,34,.08);
+}
+.nav-button--back .nav-button__label{display:none}
+.nav-button--back .nav-button__icon{font-size:21px}
+.nav-button--next{
+  min-width:0;
+  padding:0 22px;
+  border-radius:18px;
+  box-shadow:0 10px 24px rgba(23,25,23,.13);
+  font-size:14px;
+}
+
+/* Reserve enough content space so the last accordion can always scroll completely above the controls. */
+.session-body{padding-bottom:132px}
+
+@media(max-width:700px){
+  .floating-step-indicator{
+    top:10px;
+    right:10px;
+  }
+  .floating-step-indicator .session-step-badge{
+    min-width:58px;
+    height:36px;
+    font-size:11.5px;
+  }
+  .floating-step-indicator .step-segments{width:58px}
+  .exercise-toolbar{
+    grid-template-columns:42px 1fr 42px;
+  }
+  .exercise-toolbar__spacer{width:42px}
+  .session-nav__inner{
+    width:calc(100% - 20px);
+    margin-bottom:calc(14px + env(safe-area-inset-bottom));
+    grid-template-columns:52px minmax(0,1fr);
+    gap:9px;
+  }
+  .nav-button{height:52px;border-radius:17px}
+  .nav-button--back{width:52px;min-width:52px;border-radius:17px}
+  .nav-button--next{border-radius:17px;font-size:14px}
+  .session-body{padding-bottom:126px}
+}
+
+@media(max-width:430px){
+  .floating-step-indicator{
+    top:8px;
+    right:8px;
+  }
+  .session-nav__inner{
+    width:calc(100% - 16px);
+    margin-bottom:calc(12px + env(safe-area-inset-bottom));
+    grid-template-columns:50px minmax(0,1fr);
+    gap:8px;
+  }
+  .nav-button{height:50px;border-radius:16px}
+  .nav-button--back{width:50px;min-width:50px;border-radius:16px}
+  .nav-button--next{border-radius:16px;font-size:13.5px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .floating-step-indicator .session-step-badge{transition:none!important}
+}
