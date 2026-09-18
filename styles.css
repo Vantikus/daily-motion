@@ -184,3 +184,89 @@
   .timer-inline-grid{grid-template-columns:1fr}
   .timer-ring{margin:auto}
 }
+
+/* Exercise screen v3 — cleaner hierarchy, spacing and motion */
+.session-shell{gap:0;padding-top:8px}
+.exercise-main{overflow:hidden}
+.exercise-head h1{line-height:1.04;text-wrap:balance}
+.exercise-goal{line-height:1.58;max-width:680px}
+.visual-placeholder{margin:20px 0 12px}
+.exercise-facts{margin:8px 0 10px}
+.technique-key--prominent{margin:10px 0}
+.how-card{margin-top:10px}
+.details-stack{margin-top:8px}
+
+/* Compact timer with stronger visual hierarchy */
+.timer-card--inline{padding:13px 14px;margin:10px 0;border-radius:16px}
+.timer-card__topline{margin-bottom:7px;align-items:center}
+.timer-card__topline .eyebrow{font-size:9px}
+.timer-card__topline h2{font-size:15px;margin:1px 0 0;line-height:1.25}
+.timer-state{padding:5px 8px;font-size:9px;transition:transform .2s ease,background-color .2s ease}
+.timer-inline-grid{grid-template-columns:92px 1fr;gap:12px}
+.timer-ring{width:88px;transition:transform .2s ease,box-shadow .2s ease}
+.timer-ring:after{inset:6px}
+.timer-ring__inner strong{font-size:21px}
+.timer-ring__inner span{font-size:9px}
+.timer-primary,.timer-secondary,.timer-adjustments button{height:35px;border-radius:10px;font-size:11px;transition:transform .12s ease,box-shadow .12s ease,background-color .15s ease}
+.timer-adjustments{margin-top:6px}
+.timer-primary:active,.timer-secondary:active,.timer-adjustments button:active,.nav-button:active,.back-link--icon:active{transform:scale(.97)}
+.timer-ring.is-running{transform:scale(1.025);box-shadow:0 0 0 7px rgba(47,107,85,.055)}
+.timer-state.is-running{transform:translateY(-1px);background:#d7eadf}
+
+/* Motion: subtle on first load and when switching exercises */
+.exercise-main.is-entering .exercise-head{animation:dmFadeUp .28s ease both}
+.exercise-main.is-entering .visual-placeholder{animation:dmFadeUp .32s .035s ease both}
+.exercise-main.is-entering .exercise-facts{animation:dmFadeUp .32s .06s ease both}
+.exercise-main.is-entering .technique-key--prominent{animation:dmFadeUp .32s .085s ease both}
+.exercise-main.is-entering .timer-card--inline{animation:dmFadeUp .32s .11s ease both}
+.exercise-main.is-entering .how-card{animation:dmFadeUp .32s .135s ease both}
+.exercise-main.is-entering .details-stack{animation:dmFadeUp .32s .16s ease both}
+@keyframes dmFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.detail-card[open] .detail-card__content{animation:dmReveal .2s ease both}
+@keyframes dmReveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Focus/readability */
+button,.back-link--icon,summary{-webkit-tap-highlight-color:transparent}
+button:focus-visible,.back-link--icon:focus-visible,summary:focus-visible{outline:3px solid rgba(47,107,85,.22);outline-offset:2px}
+.how-card li,.detail-card__content p,.detail-card__content li{max-width:70ch}
+
+@media(max-width:700px){
+  .session-shell{padding-top:6px}
+  .exercise-main{padding:17px}
+  .exercise-head h1{font-size:clamp(28px,8vw,32px);line-height:1.04;margin:0 0 9px}
+  .exercise-goal{font-size:14px;line-height:1.58}
+  .visual-placeholder{margin:17px 0 10px}
+  .exercise-facts{margin:7px 0 9px}
+  .technique-key--prominent{padding:13px 15px;margin:9px 0}
+  .technique-key--prominent strong{line-height:1.5}
+  .timer-card--inline{padding:12px;margin:9px 0}
+  .timer-inline-grid{grid-template-columns:86px 1fr;gap:10px}
+  .timer-ring{width:82px}
+  .timer-ring__inner strong{font-size:20px}
+  .how-card{margin-top:9px;padding:15px}
+  .how-card__head h2{font-size:20px;line-height:1.18}
+  .how-card ol{margin-top:13px;gap:9px}
+  .how-card li{font-size:13.5px;line-height:1.58}
+  .detail-card summary{padding:14px 15px}
+}
+
+@media(max-width:430px){
+  .session-topbar{padding:9px 0 8px}
+  .session-shell{padding-top:4px}
+  .exercise-main{padding:16px 15px 17px;border-radius:21px}
+  .exercise-goal{font-size:13.5px}
+  .visual-placeholder{border-radius:15px}
+  .exercise-facts{gap:6px}
+  .exercise-facts>div{padding:7px 9px}
+  .exercise-facts strong{font-size:12px}
+  .timer-card__topline h2{font-size:14px}
+  .timer-inline-grid{grid-template-columns:80px 1fr;gap:9px}
+  .timer-ring{width:76px}
+  .timer-ring__inner strong{font-size:18px}
+  .timer-primary,.timer-secondary,.timer-adjustments button{height:34px;font-size:10.5px}
+  .how-card li{font-size:13px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}

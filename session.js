@@ -5,7 +5,7 @@
     const names={day:'День',evening:'Вечер'};
     document.querySelector('#routineName').textContent=names[ROUTINE_KEY]||'Комплекс';
     document.querySelector('#headerProgress').textContent='Этап 3+';
-    document.querySelector('.session-progress-card').style.display='none';
+    document.querySelector('.session-progress-card')?.remove();
     document.querySelector('.timer-card').style.display='none';
     document.querySelector('.session-nav').style.display='none';
     document.querySelector('.exercise-main').innerHTML=`<div class="stage-placeholder"><span class="status-pill">Следующий этап</span><h1>${names[ROUTINE_KEY]||'Этот комплекс'} пока не собран</h1><p>На текущем этапе полностью работает только утренний комплекс. День и вечер добавим после проверки утра.</p><a class="primary-button stage-placeholder__button" href="index.html">Вернуться на главную</a></div>`;
@@ -157,6 +157,8 @@
     $('#timerState').textContent=t.running?'Идёт':t.remaining===0?'Готово':'Готов';
     $('#timerToggle').textContent=t.running?'Пауза':t.remaining===0?'Сначала':'Старт';
     $('#timerLabel').textContent=t.running?'осталось':t.remaining===0?'завершено':'осталось';
+    $('#timerRing').classList.toggle('is-running',t.running);
+    $('#timerState').classList.toggle('is-running',t.running);
     save();
   }
 
@@ -172,6 +174,14 @@
       t.remaining=Math.max(0,Math.ceil((t.endAt-Date.now())/1000));
       t.running=false;t.endAt=null;stopInterval();releaseWakeLock();save();
     }
+  }
+
+  function animateExercise(){
+    const card=$('.exercise-main');
+    if(!card)return;
+    card.classList.remove('is-entering');
+    void card.offsetWidth;
+    card.classList.add('is-entering');
   }
 
   function render(){
@@ -193,10 +203,12 @@
     $('#prevButton').disabled=current===0;
     $('#nextButton').textContent=current===exercises.length-1?'Завершить утро':'След. шаг';
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
-    $('#progressText').textContent=`${done} из ${exercises.length} упражнений`;
-    $('#sessionProgressBar').style.width=`${done/exercises.length*100}%`;
+    const progressText=$('#progressText'),progressBar=$('#sessionProgressBar');
+    if(progressText)progressText.textContent=`${done} из ${exercises.length} упражнений`;
+    if(progressBar)progressBar.style.width=`${done/exercises.length*100}%`;
     updateTimerUI();
     const t=timerData(ex); if(t.running){startTicker();requestWakeLock();}
+    animateExercise();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
