@@ -9,87 +9,123 @@
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
+
   <header class="session-topbar container">
-    <a class="back-link" href="index.html">← На главную</a>
-    <div class="session-topbar__meta">
+    <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
+    <div class="session-topbar__center">
       <span id="routineName">Утро</span>
-      <strong id="headerProgress">1 / 8</strong>
+      <small>Daily Motion</small>
     </div>
+    <strong class="session-step-badge" id="headerProgress">1 / 8</strong>
   </header>
 
   <main class="container session-shell">
     <section class="session-progress-card" aria-label="Прогресс комплекса">
-      <div class="session-progress-card__text">
-        <span class="eyebrow">Прогресс комплекса</span>
-        <strong id="progressText">0 из 8 упражнений</strong>
-      </div>
       <div class="session-progress-track"><i id="sessionProgressBar"></i></div>
+      <div class="session-progress-card__text">
+        <strong id="progressText">0 из 8 упражнений</strong>
+        <span>Прогресс сохраняется автоматически</span>
+      </div>
     </section>
 
     <section class="exercise-layout">
       <article class="exercise-main glass-card">
-        <div class="exercise-head">
-          <div>
-            <span class="status-pill" id="exerciseNumber">Упражнение 1 из 8</span>
-            <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
-            <p class="exercise-goal" id="exerciseGoal"></p>
+        <header class="exercise-head">
+          <span class="status-pill" id="exerciseNumber">Упражнение 1 из 8</span>
+          <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
+          <p class="exercise-goal" id="exerciseGoal"></p>
+        </header>
+
+        <div class="visual-placeholder" id="visualPlaceholder" aria-label="Визуал упражнения">
+          <div class="visual-placeholder__inner">
+            <span class="visual-placeholder__icon">◎</span>
+            <div>
+              <strong>Визуал упражнения</strong>
+              <span>Здесь появятся понятные фазы движения.</span>
+            </div>
           </div>
-          <div class="exercise-facts">
-            <div><span>Объём</span><strong id="exerciseVolume"></strong></div>
-            <div><span>Время</span><strong id="exerciseTime"></strong></div>
-          </div>
         </div>
 
-        <div class="visual-placeholder" id="visualPlaceholder">
-          <div class="visual-placeholder__icon">◎</div>
-          <div><strong>Визуал упражнения</strong><span>Добавим и проверим на следующем этапе.</span></div>
+        <div class="exercise-facts" aria-label="Параметры упражнения">
+          <div><span>Объём</span><strong id="exerciseVolume"></strong></div>
+          <div><span>Примерное время</span><strong id="exerciseTime"></strong></div>
         </div>
 
-        <div class="technique-grid">
-          <section class="info-card info-card--wide">
-            <span class="info-kicker">Как делать правильно</span>
-            <ol id="howToList"></ol>
-          </section>
-          <section class="info-card"><span class="info-kicker">Что чувствовать</span><p id="feelText"></p></section>
-          <section class="info-card"><span class="info-kicker">Частые ошибки</span><ul id="mistakesList"></ul></section>
-          <section class="info-card"><span class="info-kicker">Облегчённый вариант</span><p id="easyText"></p></section>
-          <section class="info-card"><span class="info-kicker">Как прогрессировать</span><p id="progressionText"></p></section>
-        </div>
-
-        <div class="technique-key">
-          <span>Ключ к технике</span>
+        <div class="technique-key technique-key--prominent">
+          <span>Главный ключ</span>
           <strong id="keyText"></strong>
         </div>
-      </article>
 
-      <aside class="timer-card glass-card" aria-label="Таймер упражнения">
-        <div class="timer-card__head">
-          <div><span class="eyebrow">Таймер</span><h2>Для этого упражнения</h2></div>
-          <span class="timer-state" id="timerState">Готов</span>
-        </div>
-        <div class="timer-ring" id="timerRing" style="--timer-progress:0">
-          <div class="timer-ring__inner">
-            <strong id="timerValue">01:00</strong>
-            <span id="timerLabel">осталось</span>
+        <section class="timer-card timer-card--inline" aria-label="Таймер упражнения">
+          <div class="timer-card__topline">
+            <div>
+              <span class="eyebrow">Таймер</span>
+              <h2>Для текущего упражнения</h2>
+            </div>
+            <span class="timer-state" id="timerState">Готов</span>
           </div>
-        </div>
-        <div class="timer-controls">
-          <button class="timer-primary" id="timerToggle">Старт</button>
-          <button class="timer-secondary" id="timerReset">Сброс</button>
-        </div>
-        <div class="timer-adjustments">
-          <button id="minusTen">−10 сек</button>
-          <button id="plusTen">+10 сек</button>
-        </div>
-        <p class="timer-note" id="wakeLockNote">Экран не будет засыпать во время активного таймера, если браузер поддерживает Wake Lock.</p>
-      </aside>
+
+          <div class="timer-inline-grid">
+            <div class="timer-ring" id="timerRing" style="--timer-progress:0">
+              <div class="timer-ring__inner">
+                <strong id="timerValue">01:00</strong>
+                <span id="timerLabel">осталось</span>
+              </div>
+            </div>
+
+            <div class="timer-actions">
+              <div class="timer-controls">
+                <button class="timer-primary" id="timerToggle">Старт</button>
+                <button class="timer-secondary" id="timerReset">Сброс</button>
+              </div>
+              <div class="timer-adjustments">
+                <button id="minusTen">−10 сек</button>
+                <button id="plusTen">+10 сек</button>
+              </div>
+              <p class="timer-note" id="wakeLockNote">Во время активного таймера экран не будет засыпать, если браузер поддерживает Wake Lock.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="how-card">
+          <div class="how-card__head">
+            <div>
+              <span class="info-kicker">Техника</span>
+              <h2>Как делать правильно</h2>
+            </div>
+          </div>
+          <ol id="howToList"></ol>
+        </section>
+
+        <section class="details-stack" aria-label="Дополнительные подсказки">
+          <details class="detail-card" open>
+            <summary><span>Что чувствовать</span><i>+</i></summary>
+            <div class="detail-card__content"><p id="feelText"></p></div>
+          </details>
+
+          <details class="detail-card">
+            <summary><span>Частые ошибки</span><i>+</i></summary>
+            <div class="detail-card__content"><ul id="mistakesList"></ul></div>
+          </details>
+
+          <details class="detail-card">
+            <summary><span>Облегчённый вариант</span><i>+</i></summary>
+            <div class="detail-card__content"><p id="easyText"></p></div>
+          </details>
+
+          <details class="detail-card">
+            <summary><span>Как прогрессировать</span><i>+</i></summary>
+            <div class="detail-card__content"><p id="progressionText"></p></div>
+          </details>
+        </section>
+      </article>
     </section>
   </main>
 
   <nav class="session-nav" aria-label="Навигация по упражнениям">
     <div class="container session-nav__inner">
       <button class="nav-button nav-button--secondary" id="prevButton">Назад</button>
-      <div class="session-nav__status"><span id="navStepLabel">Шаг 1 из 8</span><small>прогресс сохраняется автоматически</small></div>
+      <div class="session-nav__status"><span id="navStepLabel">Шаг 1 из 8</span></div>
       <button class="nav-button nav-button--primary" id="nextButton">След. шаг</button>
     </div>
   </nav>
