@@ -2,10 +2,53 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f7f8f5" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#f5f6f2" />
+  <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Утро — Daily Motion</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <script>
+    (function(){
+      const barColor = [245,246,242,1]; // #F5F6F2
+      const siteName = 'Daily Motion';
+
+      function postTelegramBrowserEvent(type, data){
+        let sent = false;
+        try{
+          if(window.TelegramWebviewProxy && typeof window.TelegramWebviewProxy.postEvent === 'function'){
+            window.TelegramWebviewProxy.postEvent(type, JSON.stringify(data));
+            sent = true;
+          }
+        }catch(_){}
+
+        try{
+          if(!sent && window.external && typeof window.external.notify === 'function'){
+            window.external.notify(JSON.stringify({eventType:type,eventData:data}));
+            sent = true;
+          }
+        }catch(_){}
+        return sent;
+      }
+
+      function syncTelegramBrowserChrome(){
+        postTelegramBrowserEvent('actionBarColor', barColor);
+        postTelegramBrowserEvent('navigationBarColor', barColor);
+        postTelegramBrowserEvent('siteName', siteName);
+      }
+
+      syncTelegramBrowserChrome();
+      document.addEventListener('DOMContentLoaded', syncTelegramBrowserChrome, {once:true});
+      window.addEventListener('load', syncTelegramBrowserChrome, {once:true});
+      window.addEventListener('pageshow', syncTelegramBrowserChrome);
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState === 'visible') syncTelegramBrowserChrome();
+      });
+      setTimeout(syncTelegramBrowserChrome, 250);
+      setTimeout(syncTelegramBrowserChrome, 900);
+    })();
+  </script>
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>

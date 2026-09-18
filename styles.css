@@ -310,322 +310,66 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-/* Session polish — v8: compact header + lower iOS bottom dock */
-.session-topbar{
-  padding:8px 0 8px;
-}
-.back-link--icon{
-  width:40px;
-  height:40px;
-}
-.session-step-badge{
-  height:34px;
-  min-width:54px;
-}
-.session-shell{
-  padding-top:4px;
-}
 
-/* Keep controls visually lower while preserving the iPhone home-indicator area.
-   A soft blurred tail fills the space below the floating dock instead of leaving
-   a hard empty strip. */
-.session-nav{
-  bottom:max(6px,calc(env(safe-area-inset-bottom) - 12px));
-  isolation:isolate;
-}
-.session-nav::before{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  left:-14px;
-  right:-14px;
-  bottom:calc(-1 * max(6px,calc(env(safe-area-inset-bottom) - 12px)));
-  height:calc(44px + env(safe-area-inset-bottom));
-  pointer-events:none;
-  background:linear-gradient(
-    to bottom,
-    rgba(247,248,245,0),
-    rgba(247,248,245,.48) 34%,
-    rgba(247,248,245,.82) 72%,
-    rgba(247,248,245,.94) 100%
-  );
-  -webkit-backdrop-filter:blur(18px);
-  backdrop-filter:blur(18px);
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 42%,#000 100%);
-  mask-image:linear-gradient(to bottom,transparent 0,#000 42%,#000 100%);
-}
-
-@media(max-width:700px){
-  .session-topbar{
-    padding:6px 0 8px;
-    grid-template-columns:40px 1fr 64px;
-  }
-  .back-link--icon{
-    width:40px;
-    height:40px;
-  }
-  .session-shell{
-    padding-top:2px;
-  }
-  .session-nav{
-    bottom:max(4px,calc(env(safe-area-inset-bottom) - 14px));
-    width:calc(100% - 16px);
-  }
-  .session-nav__inner{
-    height:68px;
-    padding:8px;
-    border-radius:23px;
-  }
-  .session-nav::before{
-    left:-10px;
-    right:-10px;
-    bottom:calc(-1 * max(4px,calc(env(safe-area-inset-bottom) - 14px)));
-    height:calc(42px + env(safe-area-inset-bottom));
-  }
-}
-
-@media(max-width:430px){
-  .session-topbar{
-    padding-top:5px;
-    padding-bottom:7px;
-  }
-  .session-topbar__center span{
-    font-size:14.5px;
-  }
-  .session-step-wrap{
-    gap:5px;
-  }
-  .session-step-badge{
-    height:33px;
-    min-width:53px;
-  }
-}
-
-
-/* Session polish — v9: iOS / Telegram in-app browser viewport guards */
-:root{
-  --browser-top-inset:0px;
-  --browser-bottom-inset:0px;
-  --visible-viewport-height:100dvh;
-}
-html{
-  scroll-padding-top:calc(58px + var(--browser-top-inset));
-}
-.session-body{
-  min-height:100dvh;
-  min-height:var(--visible-viewport-height,100dvh);
-  padding-bottom:calc(118px + var(--browser-bottom-inset) + env(safe-area-inset-bottom));
-}
-/* Sticky header tracks the visual viewport instead of the larger iOS layout viewport. */
-.session-topbar{
-  top:var(--browser-top-inset);
-  transform:translateZ(0);
-  will-change:top;
-}
-/* The dock must never sit beneath Telegram/Safari browser chrome. */
-.session-nav{
-  bottom:max(
-    8px,
-    var(--browser-bottom-inset),
-    calc(env(safe-area-inset-bottom) - 4px)
-  );
-  transform:translate3d(-50%,0,0);
-  will-change:bottom;
-}
-/* Keep the blurred tail attached to the dock instead of extending below the visible viewport. */
-.session-nav::before{
-  bottom:-12px;
-  height:46px;
-}
-.session-body .toast{
-  bottom:calc(96px + max(var(--browser-bottom-inset),env(safe-area-inset-bottom)));
-}
-.page-loader,.completion-overlay{
-  min-height:100dvh;
-  min-height:var(--visible-viewport-height,100dvh);
-}
-
-@media(max-width:700px){
-  .session-body{
-    padding-bottom:calc(112px + var(--browser-bottom-inset) + env(safe-area-inset-bottom));
-  }
-  .session-nav{
-    bottom:max(
-      7px,
-      var(--browser-bottom-inset),
-      calc(env(safe-area-inset-bottom) - 5px)
-    );
-  }
-  .session-nav::before{
-    bottom:-10px;
-    height:42px;
-  }
-}
-
-@media(max-width:430px){
-  .session-topbar{
-    padding-top:6px;
-    padding-bottom:7px;
-  }
-  .session-nav{
-    width:calc(100% - 18px);
-  }
-}
-
-/* v10 — stable iOS / Telegram WebView viewport behavior.
-   Do not follow visualViewport toolbar animation: it makes fixed controls chase
-   Telegram/Safari chrome during a fast fling. Anchor UI to the stable small
-   viewport instead and reserve a constant safe gutter. */
-html{
-  min-height:100%;
-  scroll-padding-top:58px;
-  overscroll-behavior-y:none;
-  background:#f5f6f2;
-}
-.session-body{
-  min-height:100vh;
-  min-height:100svh;
-  padding-bottom:calc(122px + env(safe-area-inset-bottom));
-  overscroll-behavior-y:none;
-  -webkit-overflow-scrolling:touch;
-}
-
-/* Header remains at one fixed sticky origin instead of moving with the URL bar. */
-.session-topbar{
-  top:0 !important;
-  will-change:auto !important;
-  transform:translateZ(0);
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-}
-
-/* Bottom dock uses one stable offset. The extra 10px is intentional: it keeps
-   the controls clear of Telegram's transient bottom chrome without jumping
-   when that chrome hides or reappears. */
-.session-nav{
-  bottom:max(10px,env(safe-area-inset-bottom)) !important;
-  transform:translate3d(-50%,0,0) !important;
-  will-change:transform !important;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  contain:layout paint;
-}
-.session-nav::before{
-  bottom:-12px !important;
-  height:46px !important;
-}
-.session-body .toast{
-  bottom:calc(100px + max(10px,env(safe-area-inset-bottom))) !important;
-}
-.page-loader,.completion-overlay{
-  min-height:100vh;
-  min-height:100svh;
-}
-
-@media(max-width:700px){
-  .session-body{
-    padding-bottom:calc(116px + env(safe-area-inset-bottom));
-  }
-  .session-nav{
-    bottom:max(10px,env(safe-area-inset-bottom)) !important;
-    width:calc(100% - 18px);
-  }
-  .session-nav__inner{
-    transform:translateZ(0);
-  }
-}
-
-/* In iOS WebViews, suppress scroll-chain/rubber-band influence on the fixed
-   dock as much as the engine allows. The page itself still scrolls normally. */
-@supports (-webkit-touch-callout:none){
-  html,body{overscroll-behavior-y:none}
-  .session-nav{position:fixed}
-}
-
-
-/* Telegram / iOS browser chrome compensation — v11 */
+/* iOS / Telegram containment — v12
+   Strategy: do not paint browser chrome. Keep the page inside the browser viewport,
+   use a solid page-color footer behind the floating controls, and avoid sticky header
+   collisions with Telegram's collapsing URL bar on mobile. */
 html,body{background:var(--bg)}
-body.session-body{background:var(--bg)}
+body.session-body{background:var(--bg);min-height:100vh}
 
-.session-body{
-  min-height:100svh;
-  background:var(--bg);
-}
-
-/* Fill the translucent Telegram/Safari top overlay area so dark corners do not show through. */
+/* Solid header surface. On mobile it stays in document flow instead of chasing Telegram chrome. */
 .session-topbar{
-  position:sticky;
-  top:0;
-  isolation:isolate;
-  background:rgba(247,248,245,.96);
+  background:#f7f8f5;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }
-.session-topbar::before{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  left:calc(-1 * max(16px, env(safe-area-inset-left)));
-  right:calc(-1 * max(16px, env(safe-area-inset-right)));
-  top:calc(-1 * (env(safe-area-inset-top) + 56px));
-  height:calc(100% + env(safe-area-inset-top) + 56px);
-  background:var(--bg);
-}
-.session-topbar::after{
-  content:"";
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height:1px;
-  background:rgba(19,25,20,.06);
-}
-.back-link--icon,
-.session-step-badge{background:#fff}
 
-/* Give the content a little more room under the sticky header. */
-.session-shell{padding-top:10px}
-
-/* Fill the bottom translucent area and remove dark rounded-corner artifacts around the dock. */
+/* The controls still look floating, but now sit over a full-width page-colored footer.
+   This removes the dark translucent rounded-corner artifacts in Telegram. */
 .session-nav{
   left:0;
   right:0;
+  bottom:0;
   width:100%;
   transform:none;
-  bottom:0;
-  padding:0 0 calc(8px + env(safe-area-inset-bottom));
-  pointer-events:none;
-}
-.session-nav::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:calc(100% + env(safe-area-inset-bottom) + 18px);
-  background:linear-gradient(180deg, rgba(245,246,242,0) 0%, rgba(245,246,242,.82) 28%, rgba(245,246,242,.96) 58%, var(--bg) 100%);
-  pointer-events:none;
-}
-.session-nav__inner{
-  position:relative;
-  width:min(900px,calc(100% - 24px));
-  margin:0 auto;
-  height:74px;
-  padding:10px;
-  border-radius:26px;
-  background:#f8f9f5;
-  border:1px solid rgba(19,25,20,.08);
-  box-shadow:0 14px 38px rgba(30,43,34,.10);
+  padding:8px 10px 10px;
+  background:#f5f6f2;
+  border-top:1px solid rgba(19,25,20,.055);
+  box-shadow:0 -12px 28px rgba(38,53,44,.035);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }
-.nav-button--secondary{background:#ffffff}
-.nav-button--primary{box-shadow:none}
-
-/* ensure content never hides behind the dock */
-.session-body{padding-bottom:128px}
+.session-nav__inner{
+  width:min(900px,100%);
+  margin:0 auto;
+  background:#fafbf8;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  box-shadow:0 12px 30px rgba(30,43,34,.10);
+}
+.session-body{padding-bottom:112px}
 
 @media(max-width:700px){
-  .session-topbar{padding-top:14px}
-  .session-topbar::before{top:calc(-1 * (env(safe-area-inset-top) + 48px));height:calc(100% + env(safe-area-inset-top) + 48px)}
-  .session-nav{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-  .session-nav__inner{width:calc(100% - 20px);height:72px;border-radius:24px}
+  /* Telegram's top URL bar can resize/overlay the visual viewport while scrolling.
+     A non-sticky mobile header is the stable option: it never jumps or gets trapped
+     under the browser pill. */
+  .session-topbar{
+    position:relative;
+    top:auto;
+    z-index:10;
+    padding-top:12px;
+    padding-bottom:10px;
+  }
+  .session-shell{padding-top:8px}
+  .session-nav{
+    width:100%;
+    padding:8px 10px 10px;
+  }
+  .session-nav__inner{
+    width:100%;
+    height:70px;
+    border-radius:24px;
+  }
+  .session-body{padding-bottom:106px}
 }
