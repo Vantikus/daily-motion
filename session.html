@@ -46,12 +46,9 @@
           <strong id="keyText"></strong>
         </div>
 
-        <section class="timer-card timer-card--inline" aria-label="Таймер упражнения">
+        <section class="timer-card timer-card--inline" id="timerCard" aria-label="Таймер упражнения">
           <div class="timer-card__topline">
-            <div>
-              <span class="eyebrow">Таймер</span>
-              <h2>Для текущего упражнения</h2>
-            </div>
+            <span class="eyebrow">Таймер</span>
             <span class="timer-state" id="timerState">Готов</span>
           </div>
 
@@ -64,14 +61,12 @@
             </div>
 
             <div class="timer-actions">
-              <div class="timer-controls">
-                <button class="timer-primary" id="timerToggle">Старт</button>
-                <button class="timer-secondary" id="timerReset">Сброс</button>
-              </div>
+              <button class="timer-primary timer-primary--full" id="timerToggle">Старт</button>
               <div class="timer-adjustments">
                 <button id="minusTen">−10 сек</button>
                 <button id="plusTen">+10 сек</button>
               </div>
+              <button class="timer-reset-link" id="timerReset">↻ Сбросить таймер</button>
               <p class="timer-note" id="wakeLockNote">Во время активного таймера экран не будет засыпать, если браузер поддерживает Wake Lock.</p>
             </div>
           </div>

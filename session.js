@@ -159,6 +159,7 @@
     $('#timerLabel').textContent=t.running?'осталось':t.remaining===0?'завершено':'осталось';
     $('#timerRing').classList.toggle('is-running',t.running);
     $('#timerState').classList.toggle('is-running',t.running);
+    const timerCard=$('#timerCard'); if(timerCard)timerCard.classList.toggle('is-running',t.running);
     save();
   }
 
