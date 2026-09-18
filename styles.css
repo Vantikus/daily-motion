@@ -373,3 +373,15 @@ body.session-body{background:var(--bg);min-height:100vh}
   }
   .session-body{padding-bottom:106px}
 }
+
+
+/* v14 — stable mobile browser behavior.
+   Normal Telegram in-app browser chrome is outside the page; keep our header in document flow. */
+@media(max-width:700px){
+  body.session-body .session-topbar{
+    position:static !important;
+    top:auto !important;
+    inset:auto !important;
+    transform:none !important;
+  }
+}
