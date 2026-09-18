@@ -1,31 +1,4 @@
 (() => {
-  // Keep the workout UI inside the *visible* viewport.
-  // This matters on iOS in-app browsers (Telegram, Instagram, etc.),
-  // where browser chrome can overlay fixed/sticky elements.
-  const viewportRoot=document.documentElement;
-  let viewportSyncFrame=0;
-  function syncVisibleViewport(){
-    const vv=window.visualViewport;
-    const layoutHeight=window.innerHeight || document.documentElement.clientHeight || 0;
-    const top=vv?Math.max(0,Math.round(vv.offsetTop||0)):0;
-    const bottom=vv?Math.max(0,Math.round(layoutHeight-vv.height-(vv.offsetTop||0))):0;
-    const height=vv?Math.max(1,Math.round(vv.height)):layoutHeight;
-    viewportRoot.style.setProperty('--browser-top-inset',`${Math.min(top,160)}px`);
-    viewportRoot.style.setProperty('--browser-bottom-inset',`${Math.min(bottom,180)}px`);
-    viewportRoot.style.setProperty('--visible-viewport-height',`${height}px`);
-  }
-  function scheduleViewportSync(){
-    if(viewportSyncFrame)return;
-    viewportSyncFrame=requestAnimationFrame(()=>{viewportSyncFrame=0;syncVisibleViewport();});
-  }
-  syncVisibleViewport();
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize',scheduleViewportSync,{passive:true});
-    window.visualViewport.addEventListener('scroll',scheduleViewportSync,{passive:true});
-  }
-  window.addEventListener('resize',scheduleViewportSync,{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(syncVisibleViewport,120),{passive:true});
-
   const KEY='dailyMotionState.v1';
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
   if(ROUTINE_KEY!=='morning'){

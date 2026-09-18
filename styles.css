@@ -471,3 +471,73 @@ html{
     width:calc(100% - 18px);
   }
 }
+
+/* v10 — stable iOS / Telegram WebView viewport behavior.
+   Do not follow visualViewport toolbar animation: it makes fixed controls chase
+   Telegram/Safari chrome during a fast fling. Anchor UI to the stable small
+   viewport instead and reserve a constant safe gutter. */
+html{
+  min-height:100%;
+  scroll-padding-top:58px;
+  overscroll-behavior-y:none;
+  background:#f5f6f2;
+}
+.session-body{
+  min-height:100vh;
+  min-height:100svh;
+  padding-bottom:calc(122px + env(safe-area-inset-bottom));
+  overscroll-behavior-y:none;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Header remains at one fixed sticky origin instead of moving with the URL bar. */
+.session-topbar{
+  top:0 !important;
+  will-change:auto !important;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+
+/* Bottom dock uses one stable offset. The extra 10px is intentional: it keeps
+   the controls clear of Telegram's transient bottom chrome without jumping
+   when that chrome hides or reappears. */
+.session-nav{
+  bottom:max(10px,env(safe-area-inset-bottom)) !important;
+  transform:translate3d(-50%,0,0) !important;
+  will-change:transform !important;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  contain:layout paint;
+}
+.session-nav::before{
+  bottom:-12px !important;
+  height:46px !important;
+}
+.session-body .toast{
+  bottom:calc(100px + max(10px,env(safe-area-inset-bottom))) !important;
+}
+.page-loader,.completion-overlay{
+  min-height:100vh;
+  min-height:100svh;
+}
+
+@media(max-width:700px){
+  .session-body{
+    padding-bottom:calc(116px + env(safe-area-inset-bottom));
+  }
+  .session-nav{
+    bottom:max(10px,env(safe-area-inset-bottom)) !important;
+    width:calc(100% - 18px);
+  }
+  .session-nav__inner{
+    transform:translateZ(0);
+  }
+}
+
+/* In iOS WebViews, suppress scroll-chain/rubber-band influence on the fixed
+   dock as much as the engine allows. The page itself still scrolls normally. */
+@supports (-webkit-touch-callout:none){
+  html,body{overscroll-behavior-y:none}
+  .session-nav{position:fixed}
+}
