@@ -560,3 +560,52 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .sticky-step-indicator{transition:none!important}
   .step-indicator strong.is-updating{animation:none!important}
 }
+
+
+/* v18 — Safari polish: no blur leakage on persistent step indicator */
+html,body{
+  height:100%;
+  min-height:100%;
+}
+.session-body{
+  height:100svh;
+  min-height:100svh;
+  overscroll-behavior:none;
+}
+.exercise-app{
+  height:100%;
+  min-height:0;
+}
+
+/* Safari was not creating the blur here — our own backdrop-filter was. */
+.sticky-step-indicator{
+  top:max(14px, env(safe-area-inset-top, 0px));
+}
+.step-indicator--sticky{
+  background:#f7f8f5 !important;
+  border:1px solid rgba(19,25,20,.075) !important;
+  box-shadow:0 6px 18px rgba(30,43,34,.07) !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  isolation:isolate;
+  contain:paint;
+}
+
+/* Keep the bottom action shelf fully inside the stable viewport in Safari. */
+.session-nav{
+  padding-bottom:max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  background:#f7f8f5 !important;
+  box-shadow:0 -6px 18px rgba(38,53,44,.035) !important;
+}
+.session-nav__inner{
+  min-height:56px;
+}
+
+@media(max-width:700px){
+  .sticky-step-indicator{top:max(12px, env(safe-area-inset-top, 0px))}
+  .session-nav{padding-bottom:max(12px, env(safe-area-inset-bottom, 0px)) !important}
+}
+@media(max-width:430px){
+  .sticky-step-indicator{top:max(10px, env(safe-area-inset-top, 0px))}
+  .session-nav{padding-bottom:max(11px, env(safe-area-inset-bottom, 0px)) !important}
+}
