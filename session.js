@@ -178,7 +178,6 @@
     stopInterval();
     routine.step=current; save();
     const ex=exercises[current];
-    $('#exerciseNumber').textContent=`Упражнение ${current+1} из ${exercises.length}`;
     $('#exerciseTitle').textContent=ex.title;
     $('#exerciseGoal').textContent=ex.goal;
     $('#exerciseVolume').textContent=ex.volume;
