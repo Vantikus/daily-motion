@@ -309,3 +309,94 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* Session polish — v8: compact header + lower iOS bottom dock */
+.session-topbar{
+  padding:8px 0 8px;
+}
+.back-link--icon{
+  width:40px;
+  height:40px;
+}
+.session-step-badge{
+  height:34px;
+  min-width:54px;
+}
+.session-shell{
+  padding-top:4px;
+}
+
+/* Keep controls visually lower while preserving the iPhone home-indicator area.
+   A soft blurred tail fills the space below the floating dock instead of leaving
+   a hard empty strip. */
+.session-nav{
+  bottom:max(6px,calc(env(safe-area-inset-bottom) - 12px));
+  isolation:isolate;
+}
+.session-nav::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:-14px;
+  right:-14px;
+  bottom:calc(-1 * max(6px,calc(env(safe-area-inset-bottom) - 12px)));
+  height:calc(44px + env(safe-area-inset-bottom));
+  pointer-events:none;
+  background:linear-gradient(
+    to bottom,
+    rgba(247,248,245,0),
+    rgba(247,248,245,.48) 34%,
+    rgba(247,248,245,.82) 72%,
+    rgba(247,248,245,.94) 100%
+  );
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 42%,#000 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 42%,#000 100%);
+}
+
+@media(max-width:700px){
+  .session-topbar{
+    padding:6px 0 8px;
+    grid-template-columns:40px 1fr 64px;
+  }
+  .back-link--icon{
+    width:40px;
+    height:40px;
+  }
+  .session-shell{
+    padding-top:2px;
+  }
+  .session-nav{
+    bottom:max(4px,calc(env(safe-area-inset-bottom) - 14px));
+    width:calc(100% - 16px);
+  }
+  .session-nav__inner{
+    height:68px;
+    padding:8px;
+    border-radius:23px;
+  }
+  .session-nav::before{
+    left:-10px;
+    right:-10px;
+    bottom:calc(-1 * max(4px,calc(env(safe-area-inset-bottom) - 14px)));
+    height:calc(42px + env(safe-area-inset-bottom));
+  }
+}
+
+@media(max-width:430px){
+  .session-topbar{
+    padding-top:5px;
+    padding-bottom:7px;
+  }
+  .session-topbar__center span{
+    font-size:14.5px;
+  }
+  .session-step-wrap{
+    gap:5px;
+  }
+  .session-step-badge{
+    height:33px;
+    min-width:53px;
+  }
+}
