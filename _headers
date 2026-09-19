@@ -16,6 +16,13 @@
 /audio.js
   Cache-Control: no-cache
 
+/pwa.js
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+
 /app.js
   Cache-Control: no-cache
 
