@@ -12,14 +12,14 @@ body{margin:0;background:radial-gradient(circle at 12% 2%,#fff 0,transparent 34%
 /* Session / workout — clean */
 .session-page{--session-safe-top:0px;--session-safe-bottom:0px;height:100%;overflow:hidden;overscroll-behavior:none;background:#f7f8f5}
 .session-page.is-standalone{--session-safe-top:env(safe-area-inset-top,0px);--session-safe-bottom:env(safe-area-inset-bottom,0px)}
-.ios-safe-zone-bar{display:none}
-.session-page.is-standalone .ios-safe-zone-bar{
+.ios-safe-zone-bar{
   display:block;
   position:fixed;
   top:0;
   left:0;
   right:0;
-  height:var(--session-safe-top);
+  height:env(safe-area-inset-top,0px);
+  min-height:env(safe-area-inset-top,0px);
   background:#f7f8f5;
   z-index:80;
   pointer-events:none;
