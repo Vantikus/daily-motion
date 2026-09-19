@@ -17,25 +17,25 @@
     const samples=[];
 
     parts.forEach(part=>{
-      const duration=Math.max(.025,Number(part.duration)||.1);
+      const duration=Math.max(.03,Number(part.duration)||.1);
       const gap=Math.max(0,Number(part.gap)||0);
-      const frequency=Math.max(80,Number(part.frequency)||440);
-      const volume=Math.min(.35,Math.max(.01,Number(part.volume)||.12));
-      const attackSeconds=Math.max(.004,Number(part.attack)||.014);
-      const releaseSeconds=Math.max(.025,Math.min(duration*.8,Number(part.release)||.085));
-      const toneSamples=Math.floor(sampleRate*duration);
+      const frequency=Math.max(80,Number(part.frequency)||392);
+      const volume=Math.min(.2,Math.max(.005,Number(part.volume)||.05));
+      const attackSeconds=Math.max(.008,Number(part.attack)||.018);
+      const releaseSeconds=Math.max(.035,Math.min(duration*.9,Number(part.release)||.09));
+      const toneSamples=Math.max(1,Math.floor(sampleRate*duration));
       const gapSamples=Math.floor(sampleRate*gap);
       const attackSamples=Math.max(1,Math.floor(sampleRate*attackSeconds));
       const releaseSamples=Math.max(1,Math.floor(sampleRate*releaseSeconds));
 
       for(let i=0;i<toneSamples;i++){
-        const attack=Math.min(1,i/attackSamples);
-        const release=Math.min(1,(toneSamples-i)/releaseSamples);
+        const attackPhase=Math.min(1,i/attackSamples);
+        const releasePhase=Math.min(1,(toneSamples-i)/releaseSamples);
+        const attack=Math.sin(attackPhase*Math.PI*.5)**2;
+        const release=Math.sin(releasePhase*Math.PI*.5)**2;
         const envelope=Math.max(0,Math.min(attack,release));
         const phase=2*Math.PI*frequency*i/sampleRate;
-        const fundamental=Math.sin(phase);
-        const warmth=Math.sin(phase*.5)*.08;
-        samples.push((fundamental+warmth)*volume*envelope);
+        samples.push(Math.sin(phase)*volume*envelope);
       }
 
       for(let i=0;i<gapSamples;i++)samples.push(0);
@@ -71,33 +71,39 @@
     return 'data:audio/wav;base64,'+btoa(binary);
   };
 
-  // Quiet Motion: softer, lower and shorter than notification-style beeps.
+  // Quiet Motion v60: pure, low-gain sine cues tuned for phone speakers.
   const sources={
-    prime:makeWav([{frequency:330,duration:.025,volume:.01,release:.02}]),
-    tick:makeWav([{frequency:392,duration:.075,volume:.105,attack:.01,release:.055}]),
+    prime:makeWav([{frequency:330,duration:.03,volume:.005,release:.025}]),
+    tick:makeWav([{frequency:330,duration:.07,volume:.04,attack:.014,release:.055}]),
+    warning10:makeWav([{frequency:294,duration:.12,volume:.042,attack:.02,release:.09}]),
+    warning5:makeWav([
+      {frequency:330,duration:.08,volume:.045,gap:.035,attack:.016,release:.06},
+      {frequency:392,duration:.12,volume:.052,attack:.018,release:.09}
+    ]),
+    endingTick:makeWav([{frequency:349,duration:.06,volume:.046,attack:.012,release:.045}]),
     start:makeWav([
-      {frequency:440,duration:.10,volume:.12,gap:.035,release:.07},
-      {frequency:554,duration:.16,volume:.14,release:.11}
+      {frequency:349,duration:.09,volume:.05,gap:.04,attack:.018,release:.065},
+      {frequency:440,duration:.14,volume:.06,attack:.02,release:.10}
     ]),
     pause:makeWav([
-      {frequency:392,duration:.09,volume:.10,gap:.025,release:.06},
-      {frequency:330,duration:.12,volume:.085,release:.085}
+      {frequency:349,duration:.08,volume:.043,gap:.03,attack:.016,release:.055},
+      {frequency:294,duration:.11,volume:.038,attack:.018,release:.08}
     ]),
     resume:makeWav([
-      {frequency:392,duration:.08,volume:.09,gap:.025,release:.055},
-      {frequency:494,duration:.13,volume:.115,release:.09}
+      {frequency:330,duration:.08,volume:.043,gap:.03,attack:.016,release:.055},
+      {frequency:392,duration:.12,volume:.05,attack:.018,release:.085}
     ]),
-    ready:makeWav([{frequency:523,duration:.15,volume:.125,release:.105}]),
+    ready:makeWav([{frequency:392,duration:.13,volume:.05,attack:.02,release:.095}]),
     finish:makeWav([
-      {frequency:494,duration:.10,volume:.105,gap:.035,release:.07},
-      {frequency:659,duration:.19,volume:.135,release:.13}
+      {frequency:392,duration:.09,volume:.047,gap:.04,attack:.017,release:.065},
+      {frequency:494,duration:.16,volume:.057,attack:.02,release:.115}
     ]),
     complete:makeWav([
-      {frequency:440,duration:.10,volume:.095,gap:.035,release:.07},
-      {frequency:554,duration:.11,volume:.11,gap:.04,release:.075},
-      {frequency:659,duration:.22,volume:.14,release:.15}
+      {frequency:330,duration:.09,volume:.042,gap:.035,attack:.017,release:.065},
+      {frequency:392,duration:.10,volume:.048,gap:.04,attack:.018,release:.072},
+      {frequency:494,duration:.18,volume:.06,attack:.022,release:.13}
     ]),
-    confirm:makeWav([{frequency:523,duration:.11,volume:.095,release:.08}])
+    confirm:makeWav([{frequency:392,duration:.10,volume:.04,attack:.018,release:.075}])
   };
 
   const players=Object.fromEntries(
@@ -108,12 +114,12 @@
 
   Object.values(players).forEach(player=>{
     player.preload='auto';
-    player.volume=.82;
+    player.volume=.62;
   });
 
   const primePlayer=new Audio(sources.prime);
   primePlayer.preload='auto';
-  primePlayer.volume=.02;
+  primePlayer.volume=.01;
 
   const getContext=()=>{
     try{
@@ -159,7 +165,7 @@
     return mediaReady||webReady;
   };
 
-  const webTone=(frequency,duration=.13,volume=.075,delay=0)=>{
+  const webTone=(frequency,duration=.11,volume=.035,delay=0)=>{
     const ctx=getContext();
     if(!ctx||ctx.state!=='running')return;
     try{
@@ -169,47 +175,60 @@
       oscillator.type='sine';
       oscillator.frequency.setValueAtTime(frequency,startAt);
       gain.gain.setValueAtTime(.0001,startAt);
-      gain.gain.exponentialRampToValueAtTime(volume,startAt+.014);
+      gain.gain.exponentialRampToValueAtTime(volume,startAt+.02);
       gain.gain.exponentialRampToValueAtTime(.0001,startAt+duration);
       oscillator.connect(gain);
       gain.connect(ctx.destination);
       oscillator.start(startAt);
-      oscillator.stop(startAt+duration+.025);
+      oscillator.stop(startAt+duration+.03);
     }catch{}
   };
 
   const webFallback=kind=>{
     if(kind==='tick'){
-      webTone(392,.08,.055);
+      webTone(330,.07,.025);
+      return;
+    }
+    if(kind==='warning10'){
+      webTone(294,.12,.027);
+      return;
+    }
+    if(kind==='warning5'){
+      webTone(330,.08,.027);
+      webTone(392,.12,.031,.075);
+      return;
+    }
+    if(kind==='endingTick'){
+      webTone(349,.06,.028);
       return;
     }
     if(kind==='pause'){
-      webTone(392,.09,.055);
-      webTone(330,.12,.045,.08);
+      webTone(349,.08,.026);
+      webTone(294,.11,.022,.07);
       return;
     }
     if(kind==='resume'){
-      webTone(392,.08,.05);
-      webTone(494,.13,.06,.075);
+      webTone(330,.08,.025);
+      webTone(392,.12,.029,.07);
       return;
     }
     if(kind==='ready'||kind==='confirm'){
-      webTone(523,.14,.06);
+      webTone(392,.12,.028);
       return;
     }
     if(kind==='finish'){
-      webTone(494,.10,.055);
-      webTone(659,.19,.07,.09);
+      webTone(392,.09,.027);
+      webTone(494,.16,.032,.08);
       return;
     }
     if(kind==='complete'){
-      webTone(440,.10,.05);
-      webTone(554,.11,.06,.09);
-      webTone(659,.22,.075,.20);
+      webTone(330,.09,.024);
+      webTone(392,.10,.028,.08);
+      webTone(494,.18,.034,.18);
       return;
     }
-    webTone(440,.10,.06);
-    webTone(554,.16,.07,.09);
+    webTone(349,.09,.028);
+    webTone(440,.14,.033,.085);
   };
 
   const play=kind=>{

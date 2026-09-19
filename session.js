@@ -115,6 +115,8 @@
   let countdownTimer=null;
   let restTimer=null;
   let restFinish=null;
+  let lastExerciseCueKey=null;
+  let lastRestCueSecond=null;
   let executionStage='idle';
   let stageTimer=null;
   const Audio=window.DailyMotionAudio;
@@ -319,6 +321,7 @@
     unlockAudio();
     let remaining=seconds;
     const endAt=Date.now()+seconds*1000;
+    lastRestCueSecond=null;
     restFinish=afterRest;
     $('#restValue').textContent=String(remaining);
     $('#restNext').textContent=`Дальше: ${exercises[Math.min(current+1,exercises.length-1)].title}`;
@@ -328,7 +331,14 @@
     const tick=()=>{
       remaining=Math.max(0,Math.ceil((endAt-Date.now())/1000));
       $('#restValue').textContent=String(remaining);
-      if(remaining<=3&&remaining>0)sound('tick');
+
+      if(remaining!==lastRestCueSecond){
+        lastRestCueSecond=remaining;
+        if(remaining===10)sound('warning10');
+        else if(remaining===5)sound('warning5');
+        else if(remaining>0&&remaining<5)sound('endingTick');
+      }
+
       if(remaining<=0){
         clearInterval(restTimer);
         restTimer=null;
@@ -345,13 +355,17 @@
   }
 
   function onTimerFinished(){
-    sound('finish');
-    haptic('success');
+    const isLast=current===exercises.length-1;
+
+    if(!isLast){
+      sound('finish');
+      haptic('success');
+    }
+
     routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
     Store.save();
     releaseWakeLock();
 
-    const isLast=current===exercises.length-1;
     if(isLast){
       hideExecution();
       finishRoutine();
@@ -377,6 +391,18 @@
     if(timer.running&&timer.endAt){
       preciseRemaining=Math.max(0,(timer.endAt-Date.now())/1000);
       timer.remaining=Math.max(0,Math.ceil(preciseRemaining));
+    }
+
+    if(timer.running&&preciseRemaining>0){
+      const cueSecond=Math.ceil(preciseRemaining);
+      const cueKey=`${exercise.id}:${cueSecond}`;
+
+      if(cueKey!==lastExerciseCueKey){
+        lastExerciseCueKey=cueKey;
+        if(cueSecond===10)sound('warning10');
+        else if(cueSecond===5)sound('warning5');
+        else if(cueSecond>0&&cueSecond<5)sound('endingTick');
+      }
     }
 
     if(timer.running&&preciseRemaining<=0){
