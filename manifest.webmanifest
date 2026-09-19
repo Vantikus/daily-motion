@@ -46,6 +46,18 @@
           "type": "image/png"
         }
       ]
+    },
+    {
+      "name": "Прогресс",
+      "short_name": "Прогресс",
+      "url": "/progress.html",
+      "icons": [
+        {
+          "src": "/icons/daily-motion-192-v1.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

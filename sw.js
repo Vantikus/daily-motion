@@ -1,14 +1,16 @@
-const CACHE_NAME='daily-motion-v42';
+const CACHE_NAME='daily-motion-v43';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
-  '/styles.css?v=42',
-  '/state.js?v=42',
-  '/audio.js?v=42',
-  '/pwa.js?v=42',
-  '/app.js?v=42',
-  '/session.js?v=42',
+  '/progress.html',
+  '/styles.css?v=43',
+  '/state.js?v=43',
+  '/audio.js?v=43',
+  '/pwa.js?v=43',
+  '/app.js?v=43',
+  '/session.js?v=43',
+  '/progress.js?v=43',
   '/manifest.webmanifest',
   '/icons/daily-motion-32-v1.png',
   '/icons/daily-motion-180-v1.png',

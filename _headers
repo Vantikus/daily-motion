@@ -7,6 +7,9 @@
 /session.html
   Cache-Control: no-cache
 
+/progress.html
+  Cache-Control: no-cache
+
 /styles.css
   Cache-Control: no-cache
 
@@ -27,6 +30,9 @@
   Cache-Control: no-cache
 
 /session.js
+  Cache-Control: no-cache
+
+/progress.js
   Cache-Control: no-cache
 
 /manifest.webmanifest
