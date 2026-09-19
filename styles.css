@@ -1698,3 +1698,185 @@ html,body{background:var(--bg)}
   }
 }
 
+/* v64 — tactile micro-interactions and calmer motion system */
+button,
+a[href],
+.routine-card{
+  -webkit-tap-highlight-color:transparent;
+}
+
+.primary-button,
+.nav-button,
+.icon-button,
+.back-link--icon,
+.routine-card,
+.execution-primary,
+.execution-adjustments button,
+.execution-secondary button,
+.execution-close,
+.execution-text-action,
+.sheet-close,
+.settings-install,
+.settings-reset,
+.data-actions button,
+.detail-card__toggle,
+.pwa-banner__action{
+  transform-origin:center;
+  will-change:transform;
+}
+
+.primary-button.is-pressing,
+.nav-button.is-pressing,
+.execution-primary.is-pressing{
+  transform:scale(.965)!important;
+}
+
+.icon-button.is-pressing,
+.back-link--icon.is-pressing,
+.execution-close.is-pressing,
+.sheet-close.is-pressing{
+  transform:scale(.91)!important;
+}
+
+.routine-card.is-pressing{
+  transform:scale(.982)!important;
+  border-color:rgba(47,107,85,.18);
+  background:rgba(247,250,247,.96);
+}
+
+.execution-adjustments button.is-pressing,
+.execution-secondary button.is-pressing,
+.execution-text-action.is-pressing,
+.settings-install.is-pressing,
+.settings-reset.is-pressing,
+.data-actions button.is-pressing,
+.detail-card__toggle.is-pressing,
+.pwa-banner__action.is-pressing{
+  transform:scale(.975)!important;
+}
+
+:where(
+  .primary-button,
+  .nav-button,
+  .icon-button,
+  .back-link--icon,
+  .routine-card,
+  .execution-primary,
+  .execution-adjustments button,
+  .execution-secondary button,
+  .execution-close,
+  .execution-text-action,
+  .sheet-close,
+  .settings-install,
+  .settings-reset,
+  .data-actions button,
+  .detail-card__toggle,
+  .pwa-banner__action
+):focus-visible{
+  outline:3px solid rgba(47,107,85,.18);
+  outline-offset:3px;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .routine-card:hover{
+    transform:translateY(-1px);
+    border-color:rgba(47,107,85,.15);
+    box-shadow:0 10px 24px rgba(30,42,34,.055);
+  }
+  .primary-button:hover,
+  .nav-button--next:hover,
+  .execution-primary:hover{
+    transform:translateY(-1px);
+  }
+  .icon-button:hover,
+  .back-link--icon:hover{
+    transform:translateY(-1px);
+  }
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .settings-overlay.is-visible .settings-sheet{
+    animation:qmSheetIn 360ms cubic-bezier(.18,.82,.24,1) both;
+  }
+
+  .execution-overlay.is-visible .execution-top{
+    animation:qmFadeDown 260ms var(--ease) both;
+  }
+
+  .execution-stage:not([hidden]){
+    animation:qmStageIn 300ms cubic-bezier(.18,.78,.22,1) both;
+  }
+
+  .completion-overlay.is-visible .completion-check{
+    animation:qmCheckIn 420ms cubic-bezier(.16,1,.3,1) both;
+  }
+
+  .exercise-main.enter-forward .exercise-facts,
+  .exercise-main.enter-back .exercise-facts{
+    animation:fadeUp 260ms 45ms var(--ease) both;
+  }
+
+  .exercise-main.enter-forward .technique-key,
+  .exercise-main.enter-back .technique-key{
+    animation:fadeUp 280ms 80ms var(--ease) both;
+  }
+
+  .exercise-main.enter-forward .details-section,
+  .exercise-main.enter-back .details-section{
+    animation:fadeUp 300ms 110ms var(--ease) both;
+  }
+
+  .app-ready .routine-card{
+    animation:qmCardReveal 300ms var(--ease) both;
+  }
+  .app-ready .routine-card:nth-child(2){animation-delay:35ms}
+  .app-ready .routine-card:nth-child(3){animation-delay:70ms}
+
+  .app-ready .progress-metrics article{
+    animation:qmMetricReveal 320ms var(--ease) both;
+  }
+  .app-ready .progress-metrics article:nth-child(2){animation-delay:35ms}
+  .app-ready .progress-metrics article:nth-child(3){animation-delay:70ms}
+  .app-ready .progress-metrics article:nth-child(4){animation-delay:105ms}
+
+  .app-ready .progress-card{
+    animation:qmCardReveal 340ms var(--ease) both;
+  }
+  .app-ready .progress-card:nth-of-type(2){animation-delay:55ms}
+  .app-ready .progress-card:nth-of-type(3){animation-delay:90ms}
+  .app-ready .progress-card:nth-of-type(4){animation-delay:125ms}
+  .app-ready .progress-card:nth-of-type(5){animation-delay:160ms}
+}
+
+@keyframes qmSheetIn{
+  0%{transform:translateY(28px);opacity:.82}
+  70%{transform:translateY(-2px);opacity:1}
+  100%{transform:translateY(0);opacity:1}
+}
+
+@keyframes qmFadeDown{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:none}
+}
+
+@keyframes qmStageIn{
+  from{opacity:0;transform:translateY(10px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+@keyframes qmCheckIn{
+  0%{opacity:0;transform:scale(.65) rotate(-8deg)}
+  65%{opacity:1;transform:scale(1.08) rotate(2deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+
+@keyframes qmCardReveal{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:none}
+}
+
+@keyframes qmMetricReveal{
+  from{opacity:0;transform:translateY(8px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+

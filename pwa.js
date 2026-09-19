@@ -46,6 +46,60 @@
 
   installDoubleTapGuard();
 
+  const installPressFeedback=()=>{
+    const selector='button:not([disabled]),a[href],.routine-card';
+    let active=null;
+    let releaseTimer=null;
+
+    const clear=()=>{
+      if(releaseTimer!==null){
+        clearTimeout(releaseTimer);
+        releaseTimer=null;
+      }
+      if(active){
+        active.classList.remove('is-pressing');
+        active=null;
+      }
+    };
+
+    const press=target=>{
+      clear();
+      active=target;
+      target.classList.add('is-pressing');
+    };
+
+    document.addEventListener('pointerdown',event=>{
+      const target=event.target.closest?.(selector);
+      if(!target)return;
+      press(target);
+    },{passive:true,capture:true});
+
+    document.addEventListener('pointerup',()=>{
+      if(!active)return;
+      const target=active;
+      releaseTimer=setTimeout(()=>{
+        target.classList.remove('is-pressing');
+        if(active===target)active=null;
+        releaseTimer=null;
+      },70);
+    },{passive:true,capture:true});
+
+    document.addEventListener('pointercancel',clear,{passive:true,capture:true});
+    window.addEventListener('blur',clear);
+    window.addEventListener('scroll',clear,{passive:true,capture:true});
+
+    document.addEventListener('keydown',event=>{
+      if(event.repeat||!(event.key==='Enter'||event.key===' '))return;
+      const target=event.target.closest?.(selector);
+      if(target)press(target);
+    },true);
+    document.addEventListener('keyup',event=>{
+      if(event.key==='Enter'||event.key===' ')clear();
+    },true);
+  };
+
+  installPressFeedback();
+
   const ensureBanner=()=>{
     if(banner)return banner;
     banner=document.createElement('div');

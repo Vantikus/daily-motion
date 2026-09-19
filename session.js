@@ -271,6 +271,18 @@
     Audio?.[kind]?.();
   };
 
+  const animateValue=node=>{
+    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    node.animate(
+      [
+        {transform:'scale(.94)',opacity:.72},
+        {transform:'scale(1.055)',opacity:1,offset:.58},
+        {transform:'scale(1)',opacity:1}
+      ],
+      {duration:210,easing:'cubic-bezier(.2,.75,.2,1)'}
+    );
+  };
+
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
   const fmt=seconds=>{
     const value=Math.max(0,Math.round(seconds));
@@ -407,6 +419,7 @@
     let remaining=seconds;
     $('#countdownValue').textContent=String(remaining);
     showExecution('countdown');
+    animateValue($('#countdownValue'));
     sound('tick');
 
     countdownTimer=setInterval(()=>{
@@ -415,6 +428,7 @@
         clearInterval(countdownTimer);
         countdownTimer=null;
         $('#countdownValue').textContent='Старт';
+        animateValue($('#countdownValue'));
         sound('start');
         haptic('next');
         stageTimer=setTimeout(()=>{
@@ -425,6 +439,7 @@
         return;
       }
       $('#countdownValue').textContent=String(remaining);
+      animateValue($('#countdownValue'));
       sound('tick');
       haptic('tap');
     },1000);
@@ -462,9 +477,16 @@
 
       if(remaining!==lastRestCueSecond){
         lastRestCueSecond=remaining;
-        if(remaining===10)sound('warning10');
-        else if(remaining===5)sound('warning5');
-        else if(remaining>0&&remaining<5)sound('endingTick');
+        if(remaining===10){
+          animateValue($('#restValue'));
+          sound('warning10');
+        }else if(remaining===5){
+          animateValue($('#restValue'));
+          sound('warning5');
+        }else if(remaining>0&&remaining<5){
+          animateValue($('#restValue'));
+          sound('endingTick');
+        }
       }
 
       if(remaining<=0){
