@@ -8,6 +8,44 @@
 
   const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
 
+  const installDoubleTapGuard=()=>{
+    let lastTapAt=0;
+    let lastX=0;
+    let lastY=0;
+
+    document.addEventListener('touchstart',event=>{
+      if(event.touches.length>1)lastTapAt=0;
+    },{passive:true,capture:true});
+
+    document.addEventListener('touchend',event=>{
+      if(event.changedTouches.length!==1){
+        lastTapAt=0;
+        return;
+      }
+
+      const touch=event.changedTouches[0];
+      const now=Date.now();
+      const elapsed=now-lastTapAt;
+      const distance=Math.hypot(touch.clientX-lastX,touch.clientY-lastY);
+
+      if(lastTapAt&&elapsed>0&&elapsed<320&&distance<36){
+        event.preventDefault();
+        lastTapAt=0;
+        return;
+      }
+
+      lastTapAt=now;
+      lastX=touch.clientX;
+      lastY=touch.clientY;
+    },{passive:false,capture:true});
+
+    document.addEventListener('dblclick',event=>{
+      event.preventDefault();
+    },{passive:false,capture:true});
+  };
+
+  installDoubleTapGuard();
+
   const ensureBanner=()=>{
     if(banner)return banner;
     banner=document.createElement('div');
