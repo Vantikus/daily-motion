@@ -9,7 +9,7 @@ body{margin:0;background:radial-gradient(circle at 12% 2%,#fff 0,transparent 34%
 @media(max-width:430px){.quick-grid{grid-template-columns:1fr}.hero-card{padding:22px;border-radius:24px}.hero-card h2{font-size:34px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:1/-1}}
 
 
-/* Session / workout — v27 compact pinned iOS header */
+/* Session / workout — clean */
 .session-page{--session-safe-top:0px;--session-safe-bottom:0px;height:100%;overflow:hidden;overscroll-behavior:none;background:#f7f8f5}
 .session-page.is-standalone{--session-safe-top:env(safe-area-inset-top,0px);--session-safe-bottom:env(safe-area-inset-bottom,0px)}
 .session-body{
@@ -176,6 +176,9 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 
 @media(max-width:700px){
   .container{width:min(100% - 20px,1120px)}
+  .compact-session-header{padding-inline:10px}
+  .compact-session-header__inner{height:46px}
+  .exercise-scroll{padding-top:8px;scroll-padding-top:10px}
   .session-shell{padding:0 0 24px}
   .exercise-main{padding:16px 18px 22px;border-radius:22px}
   .exercise-toolbar{grid-template-columns:42px minmax(0,1fr) 78px;gap:10px;margin-bottom:22px}
@@ -210,6 +213,10 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .nav-button--next{font-size:14px;padding-inline:18px}
 }
 @media(max-width:430px){
+  .compact-session-header{padding-inline:8px;padding-bottom:3px}
+  .compact-session-header__inner{height:44px}
+  .compact-session-header .step-indicator{height:42px;width:74px;min-width:74px}
+  .exercise-scroll{padding-top:6px;scroll-padding-top:8px}
   .session-shell{padding:0 0 22px}
   .exercise-main{padding:14px 16px 20px;border-radius:20px}
   .exercise-toolbar{grid-template-columns:40px minmax(0,1fr) 76px;gap:9px;margin-bottom:20px}
@@ -251,6 +258,3 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-
-@media(max-width:700px){.compact-session-header{padding-inline:10px}.compact-session-header__inner{height:46px}.exercise-scroll{padding-top:8px;scroll-padding-top:10px}}
-@media(max-width:430px){.compact-session-header{padding-inline:8px;padding-bottom:3px}.compact-session-header__inner{height:44px}.compact-session-header .step-indicator{height:42px;width:74px;min-width:74px}.exercise-scroll{padding-top:6px;scroll-padding-top:8px}}
