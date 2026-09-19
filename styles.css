@@ -273,7 +273,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 }
 
 
-/* P2 polish */
+/* PWA, states and desktop polish */
 .activity-empty{margin:12px 0 0;padding:13px 14px;border-radius:14px;background:#f7f8f5;color:var(--muted);font-size:12px;line-height:1.45}
 .activity-card.is-empty .activity-days{opacity:.48}
 .today-card.is-complete{border-color:rgba(47,107,85,.18);background:linear-gradient(180deg,#fff 0,#f4f8f5 100%)}
@@ -321,7 +321,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 }
 
 
-/* P3 progress, history and personal goals */
+/* Progress, history and personal goals */
 .activity-card__actions{display:grid;justify-items:end;gap:5px}
 .text-link{color:var(--accent);font-size:12px;font-weight:800;text-decoration:none}
 .text-link:active{opacity:.65}
