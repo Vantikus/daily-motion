@@ -8,7 +8,7 @@
 @media(max-width:430px){.quick-grid{grid-template-columns:1fr}.hero-card{padding:22px;border-radius:24px}.hero-card h2{font-size:34px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:1/-1}}
 
 
-/* Session / workout — v23 iOS standalone safe-area fix */
+/* Session / workout — v24 iOS scroll-edge suppression */
 .session-page{--session-safe-top:0px;--session-safe-bottom:0px;height:100%;overflow:hidden;overscroll-behavior:none;background:#f7f8f5}
 .session-page.is-standalone{--session-safe-top:env(safe-area-inset-top,0px);--session-safe-bottom:env(safe-area-inset-bottom,0px)}
 .session-body{
@@ -26,7 +26,7 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .exercise-app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--bg)}
-.session-header{position:relative;z-index:50;width:100%;padding:calc(var(--session-safe-top) + 6px) 16px 8px;background:#f7f8f5;border-bottom:1px solid rgba(19,25,20,.07);box-shadow:0 1px 0 rgba(255,255,255,.8);backdrop-filter:none;-webkit-backdrop-filter:none}
+.session-header{position:sticky;top:0;z-index:50;width:100%;padding:calc(var(--session-safe-top) + 6px) 16px 8px;background:#f7f8f5;border-bottom:1px solid rgba(19,25,20,.07);box-shadow:0 1px 0 rgba(255,255,255,.8);backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
 .session-header__inner{width:min(900px,100%);min-height:52px;margin:0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) 82px;align-items:center;gap:12px}
 .exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scroll-behavior:smooth;position:relative;padding-top:12px;scroll-padding-top:12px;background:var(--bg)}
 .session-shell{display:grid;gap:0;padding:0 0 24px}
@@ -125,7 +125,7 @@
 .detail-card__content p{margin:var(--s3) 0 0}
 .detail-card__content ul{margin:var(--s3) 0 0;padding-left:20px;display:grid;gap:var(--s2)}
 
-.session-nav{position:relative;z-index:50;width:100%;padding:8px 16px calc(var(--session-safe-bottom) + 8px);background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.session-nav{position:sticky;bottom:0;z-index:50;width:100%;padding:8px 16px calc(var(--session-safe-bottom) + 8px);background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
 .session-nav__inner{width:min(900px,100%);min-height:56px;margin:0 auto;display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:12px}
 .nav-button{height:56px;border-radius:18px;font-weight:850;cursor:pointer;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
 .nav-button:disabled{opacity:.34;cursor:not-allowed}
