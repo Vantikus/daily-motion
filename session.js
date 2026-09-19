@@ -195,7 +195,7 @@
   function animateExercise(direction='forward'){
     const card=$('.exercise-main');
     if(card){
-      card.classList.remove('is-entering','enter-forward','enter-back');
+      card.classList.remove('enter-forward','enter-back');
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
@@ -281,10 +281,6 @@
     updateNextButton();
     renderStepSegments();
     document.querySelectorAll('.detail-card').forEach((el,index)=>setDetailState(el,index===0));
-    const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
-    const progressText=$('#progressText'),progressBar=$('#sessionProgressBar');
-    if(progressText)progressText.textContent=`${done} из ${exercises.length} упражнений`;
-    if(progressBar)progressBar.style.width=`${done/exercises.length*100}%`;
     updateTimerUI();
     const t=timerData(ex); if(t.running){startTicker();requestWakeLock();}
     animateExercise(direction);
