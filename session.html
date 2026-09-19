@@ -15,30 +15,37 @@
     }
   </script>
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=25" />
 
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
 
   <div class="exercise-app">
-    <header class="session-header" aria-label="Навигация комплекса">
-      <div class="session-header__inner">
-        <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
-        <div class="exercise-toolbar__center">
-          <span id="routineName">Утро</span>
-        </div>
-        <div class="step-indicator step-indicator--inline" id="inlineProgress" aria-label="Текущее упражнение">
-          <strong id="headerProgress">1 / 8</strong>
-          <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
-        </div>
-      </div>
-    </header>
+    <div class="ios-edge-guard" aria-hidden="true"></div>
 
     <div class="exercise-scroll" id="exerciseScroll">
+      <aside class="floating-step-indicator" id="floatingStepIndicator" aria-hidden="true">
+        <div class="step-indicator step-indicator--floating">
+          <strong id="floatingProgress">1 / 8</strong>
+          <div class="step-segments" id="floatingSegments" aria-hidden="true"></div>
+        </div>
+      </aside>
+
       <main class="container session-shell">
     <section class="exercise-layout">
       <article class="exercise-main glass-card">
+        <div class="exercise-toolbar" aria-label="Навигация комплекса">
+          <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
+          <div class="exercise-toolbar__center">
+            <span id="routineName">Утро</span>
+          </div>
+          <div class="step-indicator step-indicator--inline" id="inlineProgress" aria-label="Текущее упражнение">
+            <strong id="headerProgress">1 / 8</strong>
+            <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
+          </div>
+        </div>
+
         <header class="exercise-head">
           <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
           <p class="exercise-goal" id="exerciseGoal"></p>
@@ -163,6 +170,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="session.js?v=23"></script>
+  <script src="session.js?v=25"></script>
 </body>
 </html>
