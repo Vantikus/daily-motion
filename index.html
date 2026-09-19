@@ -24,11 +24,11 @@
         <span class="eyebrow" id="todayLabel">Сегодня</span>
         <h1>Daily Motion</h1>
       </div>
-      <button class="icon-button" id="settingsBtn" type="button" aria-label="Настройки" title="Настройки">⚙</button>
+      <button class="icon-button" id="settingsBtn" type="button" aria-label="Настройки" aria-controls="settingsOverlay" aria-expanded="false" title="Настройки">⚙</button>
     </header>
 
     <main class="container page-grid">
-      <section class="today-card" aria-labelledby="heroTitle">
+      <section class="today-card" id="todayCard" aria-labelledby="heroTitle">
         <div class="today-card__meta">
           <span class="status-pill" id="todayStatus">Сегодня</span>
           <span class="today-card__percent" id="dayProgressValue">0%</span>
@@ -48,20 +48,21 @@
         <div><span>Комплексы</span><strong id="routineValue">0/3</strong><small>сегодня</small></div>
       </section>
 
-      <section class="section-block">
+      <section class="section-block routines-section">
         <div class="section-heading">
           <div><span class="eyebrow">Сегодня</span><h3>Комплексы</h3></div>
         </div>
         <div class="routine-list" id="routineGrid"></div>
       </section>
 
-      <section class="section-block">
-        <div class="activity-card">
+      <section class="section-block activity-section">
+        <div class="activity-card" id="activityCard">
           <div class="activity-card__head">
             <div><span class="eyebrow">Активность</span><h3>Последние 7 дней</h3></div>
             <span class="activity-streak" id="activityStreak">—</span>
           </div>
           <div class="activity-days" id="activityDays" aria-label="Активность за семь дней"></div>
+          <p class="activity-empty" id="activityEmpty" hidden>Активность появится после первой завершённой тренировки.</p>
         </div>
       </section>
 
@@ -109,6 +110,7 @@
           </select>
         </label>
       </div>
+      <button class="settings-install" id="installAppBtn" type="button" hidden>Установить приложение</button>
       <button class="settings-test-sound" id="testSoundBtn" type="button">Проверить звук</button>
       <button class="settings-reset" id="resetTodayBtn" type="button">Сбросить сегодняшний прогресс</button>
     </section>

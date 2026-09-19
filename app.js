@@ -61,6 +61,7 @@
   $('#streakValue').textContent=String(currentStreak);
   $('#exerciseValue').textContent=`${totalDone}/${TOTAL_EXERCISES}`;
   $('#routineValue').textContent=`${completedRoutines()}/${Object.keys(ROUTINES).length}`;
+  $('#todayCard').classList.toggle('is-complete',allDone);
 
   const list=$('#routineGrid');
   Object.entries(ROUTINES).forEach(([key,routine])=>{
@@ -86,6 +87,7 @@
   $('#activityStreak').textContent=currentStreak?`${currentStreak} ${currentStreak===1?'день':'дней'} подряд`:'Серия начнётся после полного дня';
   const days=$('#activityDays');
   const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  let hasActivity=false;
   for(let i=6;i>=0;i--){
     const date=new Date();
     date.setDate(date.getDate()-i);
@@ -93,11 +95,15 @@
     const entry=state.days[key];
     const done=entry?Object.keys(ROUTINES).filter(routineKey=>entry.routines?.[routineKey]?.completed).length:0;
     const pct=Math.round(done/Object.keys(ROUTINES).length*100);
+    if(done>0)hasActivity=true;
     const item=document.createElement('div');
     item.className='activity-day';
     item.innerHTML=`<span class="activity-day__bar"><i style="height:${Math.max(5,pct)}%"></i></span><small>${names[date.getDay()]}</small>`;
     days.appendChild(item);
   }
+
+  $('#activityEmpty').hidden=hasActivity;
+  $('#activityCard').classList.toggle('is-empty',!hasActivity);
 
   const toast=message=>{
     const node=$('#toast');
@@ -110,7 +116,10 @@
   const settingsOverlay=$('#settingsOverlay');
   const settingsBtn=$('#settingsBtn');
   const settingsClose=$('#settingsClose');
+  const installAppBtn=$('#installAppBtn');
   const Audio=window.DailyMotionAudio;
+  const PWA=window.DailyMotionPWA;
+  let settingsReturnFocus=null;
   let settings=Store.getSettings();
 
   const syncSettings=()=>{
@@ -121,11 +130,20 @@
     $('#restSetting').value=String(settings.restSeconds);
   };
 
+  const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
+
+  const syncInstallButton=()=>{
+    installAppBtn.hidden=!PWA?.canInstall?.();
+  };
+
   const openSettings=()=>{
     syncSettings();
+    syncInstallButton();
+    settingsReturnFocus=document.activeElement;
     settingsOverlay.classList.add('is-visible');
     settingsOverlay.setAttribute('aria-hidden','false');
     document.body.classList.add('settings-open');
+    settingsBtn.setAttribute('aria-expanded','true');
     settingsClose.focus();
   };
 
@@ -133,14 +151,32 @@
     settingsOverlay.classList.remove('is-visible');
     settingsOverlay.setAttribute('aria-hidden','true');
     document.body.classList.remove('settings-open');
-    settingsBtn.focus();
+    settingsBtn.setAttribute('aria-expanded','false');
+    (settingsReturnFocus||settingsBtn).focus();
+    settingsReturnFocus=null;
   };
 
   settingsBtn.onclick=openSettings;
   settingsClose.onclick=closeSettings;
   settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
   document.addEventListener('keydown',event=>{
-    if(event.key==='Escape'&&settingsOverlay.classList.contains('is-visible'))closeSettings();
+    if(!settingsOverlay.classList.contains('is-visible'))return;
+    if(event.key==='Escape'){
+      closeSettings();
+      return;
+    }
+    if(event.key!=='Tab')return;
+    const focusable=focusableInSettings();
+    if(!focusable.length)return;
+    const first=focusable[0];
+    const last=focusable[focusable.length-1];
+    if(event.shiftKey&&document.activeElement===first){
+      event.preventDefault();
+      last.focus();
+    }else if(!event.shiftKey&&document.activeElement===last){
+      event.preventDefault();
+      first.focus();
+    }
   });
 
   $('#soundSetting').addEventListener('change',async event=>{
@@ -150,6 +186,14 @@
   $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
   $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});
   $('#restSetting').addEventListener('change',event=>{settings=Store.updateSettings({restSeconds:Number(event.target.value)});});
+
+  installAppBtn.onclick=async()=>{
+    const result=await PWA?.install?.();
+    syncInstallButton();
+    if(result?.outcome==='accepted')toast('Установка началась');
+  };
+
+  window.addEventListener('daily-motion-install-change',syncInstallButton);
 
   $('#testSoundBtn').onclick=async()=>{
     if(!Store.getSettings().sound){
@@ -161,6 +205,8 @@
   };
 
   syncSettings();
+  syncInstallButton();
+  document.documentElement.classList.add('app-ready');
   $('#resetTodayBtn').onclick=()=>{
     if(confirm('Сбросить весь сегодняшний прогресс и таймеры?')){
       Store.resetToday();
