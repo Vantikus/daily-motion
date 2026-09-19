@@ -24,7 +24,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=60" />
+  <link rel="stylesheet" href="styles.css?v=61" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -40,7 +40,7 @@
             </a>
             <strong class="exercise-toolbar__title" id="routineName">Утро</strong>
             <div class="step-indicator" aria-label="Текущее упражнение">
-              <strong id="headerProgress">1 / 8</strong>
+              <strong id="headerProgress">1 / 9</strong>
             </div>
             <button class="routine-reset-button" id="routineResetButton" type="button" aria-label="Сбросить прогресс тренировки" title="Сбросить прогресс тренировки">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -53,7 +53,7 @@
           <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
 
           <header class="exercise-head">
-            <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
+            <h1 id="exerciseTitle">Кошка-корова</h1>
             <p id="exerciseGoal"></p>
           </header>
 
@@ -86,6 +86,12 @@
                 <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
               </article>
               <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-breathing">
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h4l2-3 2 6 2-3h4"></path></svg></span>Дыхание и темп</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-breathing"><div class="detail-card__content"><div class="detail-card__inner"><p id="breathingText"></p></div></div></div>
+              </article>
+              <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg></span>Что чувствовать</span><i aria-hidden="true">+</i>
                 </button>
@@ -104,6 +110,12 @@
                 <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
               </article>
               <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-stop">
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini qm-icon--warn"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5M12 16h.01"></path></svg></span>Когда остановиться</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-stop"><div class="detail-card__content"><div class="detail-card__inner"><p id="stopText"></p></div></div></div>
+              </article>
+              <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16 5-5 4 3 5-6"></path><path d="M15 8h4v4"></path></svg></span>Как прогрессировать</span><i aria-hidden="true">+</i>
                 </button>
@@ -118,7 +130,7 @@
     <nav class="session-nav" aria-label="Навигация по упражнениям">
       <div class="session-nav__inner">
         <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение">←</button>
-        <span class="sr-only" id="navStepLabel">Упражнение 1 из 8</span>
+        <span class="sr-only" id="navStepLabel">Упражнение 1 из 9</span>
         <button class="nav-button nav-button--next" id="nextButton" type="button">Начать упражнение</button>
       </div>
     </nav>
@@ -127,13 +139,13 @@
   <div class="execution-overlay" id="executionOverlay" aria-hidden="true">
     <section class="execution-shell" role="dialog" aria-modal="true" aria-labelledby="executionTitle">
       <div class="execution-top">
-        <span class="execution-meta" id="executionMeta">Утро · 1 из 8</span>
+        <span class="execution-meta" id="executionMeta">Утро · 1 из 9</span>
         <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике">×</button>
       </div>
 
       <div class="execution-stage execution-countdown" id="executionCountdownStage" hidden>
         <span class="execution-eyebrow">Приготовьтесь</span>
-        <h2 id="executionCountdownTitle">Присед + подъём рук вверх</h2>
+        <h2 id="executionCountdownTitle">Кошка-корова</h2>
         <strong class="execution-countdown__value" id="countdownValue">3</strong>
         <span class="execution-countdown__hint">Начинаем через несколько секунд</span>
         <button class="execution-text-action" id="countdownCancel" type="button">Отмена</button>
@@ -142,7 +154,7 @@
       <div class="execution-stage execution-timer" id="timerCard" hidden>
         <div class="execution-heading">
           <span class="execution-eyebrow">Выполнение</span>
-          <h2 id="executionTitle">Присед + подъём рук вверх</h2>
+          <h2 id="executionTitle">Кошка-корова</h2>
           <p class="execution-key" id="executionKey"></p>
         </div>
 
@@ -186,15 +198,15 @@
       <div class="completion-check" aria-hidden="true">✓</div>
       <span class="eyebrow">Комплекс завершён</span>
       <h2 id="completionTitle">Утро готово</h2>
-      <p id="completionMeta">8 упражнений завершено</p>
+      <p id="completionMeta">9 упражнений завершено</p>
       <button class="primary-button completion-button" id="completionHome" type="button">На главную</button>
     </div>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=60"></script>
-  <script src="audio.js?v=60"></script>
-  <script src="pwa.js?v=60"></script>
-  <script src="session.js?v=60"></script>
+  <script src="state.js?v=61"></script>
+  <script src="audio.js?v=61"></script>
+  <script src="pwa.js?v=61"></script>
+  <script src="session.js?v=61"></script>
 </body>
 </html>
