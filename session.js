@@ -199,7 +199,7 @@
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
-    ['#headerProgress','#pinnedProgress'].forEach(selector=>{
+    ['#headerProgress'].forEach(selector=>{
       const badge=$(selector);
       if(!badge)return;
       badge.classList.remove('is-updating');
@@ -211,7 +211,7 @@
   function renderStepSegments(){
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const markup=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
-    ['#stepSegments','#pinnedSegments'].forEach(selector=>{
+    ['#stepSegments'].forEach(selector=>{
       const wrap=$(selector);
       if(wrap)wrap.innerHTML=markup;
     });
@@ -276,7 +276,6 @@
     $('#progressionText').textContent=ex.progression;
     $('#keyText').textContent=ex.key;
     $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
-    const floatingProgress=$('#pinnedProgress'); if(floatingProgress)floatingProgress.textContent=`${current+1} / ${exercises.length}`;
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     updateNextButton();
