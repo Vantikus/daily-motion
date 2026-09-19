@@ -21,6 +21,7 @@
   background:var(--bg);
 }
 *{box-sizing:border-box}
+html,body,body *{touch-action:manipulation}
 html{min-width:320px;background:var(--bg);scroll-behavior:smooth}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);overflow-x:hidden}
 button,a{font:inherit}
