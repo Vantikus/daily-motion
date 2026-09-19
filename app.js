@@ -1,7 +1,7 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',title:'Утренняя разминка',minutes:'10–12 мин',total:9,icon:'sunrise'},
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:9,icon:'sunrise'},
     day:{name:'День',title:'Дневная разминка',minutes:'8–12 мин',total:7,icon:'sun'},
     evening:{name:'Вечер',title:'Вечерняя разминка',minutes:'15–20 мин',total:11,icon:'moon'}
   };
