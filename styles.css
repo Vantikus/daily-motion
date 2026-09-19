@@ -803,19 +803,19 @@ html,body{background:var(--bg)}
 }
 
 
-/* v48 — standalone iOS PWA status-bar guard */
+/* v49 — compact standalone iOS PWA status-bar guard */
 @media (orientation:portrait){
   .ios-standalone-pwa .home-body .app-shell,
   .ios-standalone-pwa .progress-body .app-shell{
-    padding-top:calc(env(safe-area-inset-top,0px) + 52px);
+    padding-top:calc(env(safe-area-inset-top,0px) + 8px);
   }
 
   .ios-standalone-pwa .session-body{
-    grid-template-rows:calc(env(safe-area-inset-top,0px) + 52px) minmax(0,1fr);
+    grid-template-rows:calc(env(safe-area-inset-top,0px) + 8px) minmax(0,1fr);
   }
 
   .ios-standalone-pwa .session-body>.ios-safe-zone-bar{
-    height:calc(env(safe-area-inset-top,0px) + 52px)!important;
-    min-height:calc(env(safe-area-inset-top,0px) + 52px)!important;
+    height:calc(env(safe-area-inset-top,0px) + 8px)!important;
+    min-height:calc(env(safe-area-inset-top,0px) + 8px)!important;
   }
 }
