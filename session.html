@@ -24,7 +24,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=56" />
+  <link rel="stylesheet" href="styles.css?v=57" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -67,12 +67,12 @@
           </div>
 
           <div class="exercise-facts" aria-label="Параметры упражнения">
-            <div><span>Объём</span><strong id="exerciseVolume"></strong></div>
-            <div><span>Время</span><strong id="exerciseTime"></strong></div>
+            <div><span class="fact-label"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7v10M17 7v10M4 10v4M20 10v4M7 12h10"></path></svg>Объём</span><strong id="exerciseVolume"></strong></div>
+            <div><span class="fact-label fact-label--right"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>Время</span><strong id="exerciseTime"></strong></div>
           </div>
 
           <aside class="technique-key">
-            <span>Главный ключ</span>
+            <span class="technique-key__label"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle></svg>Главный ключ</span>
             <strong id="keyText"></strong>
           </aside>
 
@@ -81,31 +81,31 @@
             <div class="details-stack">
               <article class="detail-card is-open">
                 <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
-                  <span>Как делать правильно</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h2M10 7h9M5 12h2M10 12h9M5 17h2M10 17h9"></path></svg></span>Как делать правильно</span><i aria-hidden="true">+</i>
                 </button>
                 <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
-                  <span>Что чувствовать</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"></path></svg></span>Что чувствовать</span><i aria-hidden="true">+</i>
                 </button>
                 <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
-                  <span>Частые ошибки</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini qm-icon--warn"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 3.8 18h16.4L12 4Z"></path><path d="M12 9v4M12 16h.01"></path></svg></span>Частые ошибки</span><i aria-hidden="true">+</i>
                 </button>
                 <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
-                  <span>Облегчённый вариант</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 15c3.5-6 8-8 14-7-1 6-4.5 10-10 10-2 0-3.3-1-4-3Z"></path><path d="M8 16c2-2 4.5-4 8-6"></path></svg></span>Облегчённый вариант</span><i aria-hidden="true">+</i>
                 </button>
                 <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
-                  <span>Как прогрессировать</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16 5-5 4 3 5-6"></path><path d="M15 8h4v4"></path></svg></span>Как прогрессировать</span><i aria-hidden="true">+</i>
                 </button>
                 <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
               </article>
@@ -162,9 +162,9 @@
             <button id="plusTen" type="button">+10 сек</button>
           </div>
           <div class="execution-secondary">
-            <button id="timerReset" type="button">Сбросить</button>
-            <button id="executionTechnique" type="button">Вернуться к технике</button>
-            <button id="executionFinishEarly" type="button">Завершить раньше</button>
+            <button id="timerReset" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5V4.5h4"></path><path d="M5.2 7.2A8 8 0 1 1 4 13"></path></svg><span>Сбросить</span></button>
+            <button id="executionTechnique" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5c3-1 5.5-.5 8 1.5v11c-2.5-2-5-2.5-8-1.5v-11Z"></path><path d="M20 6.5c-3-1-5.5-.5-8 1.5v11c2.5-2 5-2.5 8-1.5v-11Z"></path></svg><span>К технике</span></button>
+            <button id="executionFinishEarly" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg><span>Завершить раньше</span></button>
           </div>
         </div>
       </div>
@@ -201,9 +201,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=56"></script>
-  <script src="audio.js?v=56"></script>
-  <script src="pwa.js?v=56"></script>
-  <script src="session.js?v=56"></script>
+  <script src="state.js?v=57"></script>
+  <script src="audio.js?v=57"></script>
+  <script src="pwa.js?v=57"></script>
+  <script src="session.js?v=57"></script>
 </body>
 </html>

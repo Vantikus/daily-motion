@@ -1506,3 +1506,195 @@ html,body{background:var(--bg)}
   }
 }
 
+/* v57 — Quiet Motion rounded icon system */
+.qm-svg{
+  width:20px;
+  height:20px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.qm-icon{
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  color:var(--accent);
+}
+.qm-icon--soft{
+  background:rgba(47,107,85,.075);
+}
+.qm-icon--accent{
+  background:var(--accent-soft);
+}
+.qm-icon--mini{
+  width:30px;
+  height:30px;
+  flex-basis:30px;
+  border-radius:10px;
+  background:rgba(47,107,85,.065);
+}
+.qm-icon--mini .qm-svg{
+  width:17px;
+  height:17px;
+}
+.qm-icon--warn{
+  color:#886854;
+  background:rgba(136,104,84,.08);
+}
+.qm-section-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.qm-section-title .qm-icon{
+  width:34px;
+  height:34px;
+  flex-basis:34px;
+  border-radius:11px;
+}
+.qm-section-title .qm-svg{
+  width:18px;
+  height:18px;
+}
+
+/* Home */
+.home-body .routine-card{
+  grid-template-columns:40px minmax(0,1fr) auto;
+  gap:7px 12px;
+}
+.home-body .routine-glyph{
+  grid-column:1;
+  grid-row:1;
+  align-self:center;
+  width:38px;
+  height:38px;
+  flex-basis:38px;
+  border-radius:13px;
+}
+.home-body .routine-glyph .qm-svg{
+  width:19px;
+  height:19px;
+}
+.home-body .routine-copy{
+  grid-column:2;
+  grid-row:1;
+}
+.home-body .routine-status{
+  grid-column:3;
+  grid-row:1;
+  align-self:center;
+}
+.home-body .mini-progress{
+  grid-column:2/-1;
+  grid-row:2;
+  margin-top:0;
+}
+.setting-row{
+  grid-template-columns:36px minmax(0,1fr) auto;
+  column-gap:12px;
+}
+.setting-row>.setting-icon{
+  display:grid;
+  gap:0;
+}
+.setting-row>.setting-copy{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+.setting-icon .qm-svg{
+  width:18px;
+  height:18px;
+}
+
+/* Workout */
+.fact-label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.fact-label--right{
+  justify-content:flex-end;
+}
+.fact-label .qm-svg,
+.technique-key__label .qm-svg{
+  width:15px;
+  height:15px;
+}
+.technique-key__label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.detail-label{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.detail-label .qm-icon{
+  margin-left:-3px;
+}
+.execution-secondary button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+.execution-secondary button .qm-svg{
+  width:15px;
+  height:15px;
+}
+
+/* Progress */
+.progress-metrics article{
+  align-content:start;
+}
+.metric-icon{
+  width:34px;
+  height:34px;
+  flex-basis:34px;
+  margin-bottom:7px;
+}
+.metric-icon .qm-svg{
+  width:18px;
+  height:18px;
+}
+.progress-title-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:4px;
+}
+.progress-title-row h3{
+  margin:0!important;
+}
+.data-actions button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+}
+.data-actions button .qm-svg{
+  width:17px;
+  height:17px;
+}
+
+@media(max-width:390px){
+  .setting-row{
+    grid-template-columns:34px minmax(0,1fr) auto;
+    column-gap:10px;
+  }
+  .setting-icon{
+    width:34px;
+    height:34px;
+    flex-basis:34px;
+  }
+}
+

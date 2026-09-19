@@ -1,9 +1,14 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',title:'Утренняя разминка',minutes:'12–15 мин',total:8},
-    day:{name:'День',title:'Дневная разминка',minutes:'8–12 мин',total:7},
-    evening:{name:'Вечер',title:'Вечерняя разминка',minutes:'15–20 мин',total:11}
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'12–15 мин',total:8,icon:'sunrise'},
+    day:{name:'День',title:'Дневная разминка',minutes:'8–12 мин',total:7,icon:'sun'},
+    evening:{name:'Вечер',title:'Вечерняя разминка',minutes:'15–20 мин',total:11,icon:'moon'}
+  };
+  const routineIcons={
+    sunrise:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.6 5.6l2.1 2.1M18.4 5.6l-2.1 2.1M3 15h18M5 19h14"></path><path d="M7 15a5 5 0 0 1 10 0"></path></svg>`,
+    sun:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"></path></svg>`,
+    moon:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"></path></svg>`
   };
   const today=Store.getDay();
   const state=Store.getState();
@@ -65,6 +70,7 @@
     button.onclick=()=>go(key);
     const status=stateItem.completed?'Готово':progress>0||stateItem.startedAt?'Продолжить':'Начать';
     button.innerHTML=`
+      <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
       <span class="routine-copy">
         <strong>${routine.name}</strong>
         <small>${routine.minutes} · ${routine.total} упражнений</small>
