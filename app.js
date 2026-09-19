@@ -1,88 +1,121 @@
-(() => {
-  const ROUTINES = {
-    morning: {name:'Утро', icon:'☀', minutes:'12–15 мин', total:8},
-    day: {name:'День', icon:'◐', minutes:'8–12 мин', total:7},
-    evening: {name:'Вечер', icon:'☾', minutes:'15–20 мин', total:11}
+(function HomeApp(){
+  const Store=window.DailyMotionState;
+  const ROUTINES={
+    morning:{name:'Утро',icon:'☀',minutes:'12–15 мин',total:8},
+    day:{name:'День',icon:'◐',minutes:'8–12 мин',total:7},
+    evening:{name:'Вечер',icon:'☾',minutes:'15–20 мин',total:11}
   };
-  const KEY = 'dailyMotionState.v1';
-  const todayKey = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-  const blankRoutine = () => ({step:0, completedUntil:0, completed:false});
-  const emptyDay = () => ({routines:{morning:blankRoutine(),day:blankRoutine(),evening:blankRoutine()}});
-  const load = () => { try{return JSON.parse(localStorage.getItem(KEY))||{days:{},timers:{}}}catch{return {days:{},timers:{}}} };
-  const save = s => localStorage.setItem(KEY, JSON.stringify(s));
-  const state = load();
-  if(!state.days) state.days={};
-  if(!state.timers) state.timers={};
-  if(!state.days[todayKey()]) state.days[todayKey()] = emptyDay();
-  const today = state.days[todayKey()];
-  ['morning','day','evening'].forEach(k=>{
-    if(!today.routines[k]) today.routines[k]=blankRoutine();
-    const r=today.routines[k];
-    if(typeof r.completedUntil!=='number') r.completedUntil = r.completed ? ROUTINES[k].total : Math.max(0, Number(r.step)||0);
-    if(typeof r.step!=='number') r.step = Math.min(r.completedUntil, ROUTINES[k].total-1);
-  });
-  save(state);
+  const TOTAL_EXERCISES=Object.values(ROUTINES).reduce((sum,item)=>sum+item.total,0);
+  const today=Store.getDay();
+  const state=Store.getState();
+  const $=selector=>document.querySelector(selector);
+  const go=key=>{location.href=`session.html?routine=${key}`;};
+  const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
-  const exerciseCount = (key) => {
-    const x=today.routines[key], total=ROUTINES[key].total;
-    return x.completed ? total : Math.min(x.completedUntil||0,total);
+  const exerciseCount=key=>{
+    const routine=today.routines[key];
+    const total=ROUTINES[key].total;
+    return routine.completed?total:Math.min(routine.completedUntil||0,total);
   };
-  const completedExercises = () => Object.keys(ROUTINES).reduce((sum,key)=>sum+exerciseCount(key),0);
-  const completedRoutines = () => Object.values(today.routines).filter(x=>x.completed).length;
-  const nextRoutine = () => ['morning','day','evening'].find(k=>!today.routines[k].completed) || 'morning';
-  const pct = () => Math.round((completedExercises()/26)*100);
-  const go = key => { location.href = `session.html?routine=${key}`; };
-  const fmtDate = () => new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
-  const streak = () => {
-    let count=0, d=new Date();
+  const completedExercises=()=>Object.keys(ROUTINES).reduce((sum,key)=>sum+exerciseCount(key),0);
+  const completedRoutines=()=>Object.keys(ROUTINES).filter(key=>today.routines[key]?.completed).length;
+  const nextRoutine=()=>Object.keys(ROUTINES).find(key=>!today.routines[key]?.completed)||'morning';
+
+  const streak=()=>{
+    let count=0;
+    const date=new Date();
     for(let i=0;i<365;i++){
-      const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`, entry=state.days[k];
-      if(entry && Object.values(entry.routines||{}).every(r=>r.completed)) count++;
-      else if(i>0) break;
-      d.setDate(d.getDate()-1);
+      const key=Store.todayKey(date);
+      const entry=state.days[key];
+      const complete=entry&&Object.keys(ROUTINES).every(routineKey=>entry.routines?.[routineKey]?.completed);
+      if(complete)count++;
+      else if(i>0)break;
+      date.setDate(date.getDate()-1);
     }
     return count;
   };
-  document.querySelector('#todayLabel').textContent = fmtDate();
-  const nr=nextRoutine(), n=ROUTINES[nr], progress=pct();
-  const nrState=today.routines[nr];
-  document.querySelector('#heroTitle').textContent = nrState.completedUntil>0 ? `Продолжить: ${n.name.toLowerCase()}` : `Начать: ${n.name.toLowerCase()}`;
-  document.querySelector('#heroText').textContent = `${n.minutes}. Текущий прогресс сохраняется автоматически.`;
-  document.querySelector('#continueBtn').textContent = nrState.completedUntil>0 ? 'Продолжить' : 'Начать';
-  document.querySelector('#continueBtn').onclick=()=>go(nr);
-  document.querySelector('#nextRoutinePill').textContent = completedRoutines()===3 ? 'Все комплексы выполнены' : 'Следующий комплекс';
-  document.querySelector('#dayProgressRing').style.setProperty('--progress',progress);
-  document.querySelector('#dayProgressValue').textContent = `${progress}%`;
-  document.querySelector('#exerciseValue').textContent = `${completedExercises()} / 26`;
-  document.querySelector('#routineValue').textContent = `${completedRoutines()} / 3`;
-  const currentStreak=streak();
-  document.querySelector('#streakValue').textContent = `${currentStreak} ${currentStreak===1?'день':'дней'}`;
-  document.querySelector('#daySummary').textContent = `${completedRoutines()} из 3`;
 
-  const grid=document.querySelector('#routineGrid');
-  Object.entries(ROUTINES).forEach(([key,r])=>{
-    const x=today.routines[key], ex=exerciseCount(key), p=Math.round(ex/r.total*100);
-    const b=document.createElement('button'); b.className='routine-card'; b.onclick=()=>go(key);
-    b.innerHTML=`<div class="routine-card__top"><span class="routine-icon">${r.icon}</span><span class="routine-state">${x.completed?'Завершено':ex>0?'В процессе':'Не начато'}</span></div><div><h4>${r.name}</h4><p>${r.minutes} · ${r.total} упражнений</p></div><div class="mini-progress"><i style="width:${p}%"></i></div>`;
-    grid.appendChild(b);
+  const totalDone=completedExercises();
+  const percent=Math.round(totalDone/TOTAL_EXERCISES*100);
+  const nextKey=nextRoutine();
+  const next=ROUTINES[nextKey];
+  const nextState=today.routines[nextKey];
+  const isResuming=!nextState.completed&&(nextState.startedAt||nextState.completedUntil>0||nextState.step>0);
+  const allDone=completedRoutines()===Object.keys(ROUTINES).length;
+
+  $('#todayLabel').textContent=formatDate();
+  $('#todayStatus').textContent=allDone?'Готово на сегодня':isResuming?'Продолжить':'Сегодня';
+  $('#heroTitle').textContent=allDone?'Движение на сегодня завершено':isResuming?`Продолжить: ${next.name.toLowerCase()}`:`${next.name} · ${next.minutes}`;
+  $('#heroText').textContent=allDone
+    ?'Все запланированные комплексы отмечены как завершённые.'
+    :isResuming
+      ?`Следующий шаг — упражнение ${Math.min((nextState.step||0)+1,next.total)} из ${next.total}. Прогресс сохранён.`
+      :`${next.total} упражнений. Начните с текущего комплекса — приложение сохранит место автоматически.`;
+  $('#continueBtn').textContent=allDone?'Открыть утро':isResuming?'Продолжить тренировку':'Начать тренировку';
+  $('#continueBtn').onclick=()=>go(allDone?'morning':nextKey);
+  $('#heroProgressText').textContent=`${totalDone} из ${TOTAL_EXERCISES} упражнений`;
+  $('#dayProgressValue').textContent=`${percent}%`;
+  $('#dayProgressBar').style.width=`${percent}%`;
+
+  const currentStreak=streak();
+  $('#streakValue').textContent=String(currentStreak);
+  $('#exerciseValue').textContent=`${totalDone}/${TOTAL_EXERCISES}`;
+  $('#routineValue').textContent=`${completedRoutines()}/${Object.keys(ROUTINES).length}`;
+
+  const list=$('#routineGrid');
+  Object.entries(ROUTINES).forEach(([key,routine])=>{
+    const progress=exerciseCount(key);
+    const pct=Math.round(progress/routine.total*100);
+    const stateItem=today.routines[key];
+    const button=document.createElement('button');
+    button.className='routine-card';
+    button.type='button';
+    button.onclick=()=>go(key);
+    const status=stateItem.completed?'Завершено':progress>0||stateItem.startedAt?'Продолжить':'Начать';
+    button.innerHTML=`
+      <span class="routine-icon" aria-hidden="true">${routine.icon}</span>
+      <span class="routine-copy">
+        <strong>${routine.name}</strong>
+        <small>${routine.minutes} · ${routine.total} упражнений</small>
+        <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>
+      </span>
+      <span class="routine-status">${status}<b aria-hidden="true">›</b></span>`;
+    list.appendChild(button);
   });
 
-  const bars=document.querySelector('#activityBars');
+  $('#activityStreak').textContent=currentStreak?`${currentStreak} ${currentStreak===1?'день':'дней'} подряд`:'Серия начнётся после полного дня';
+  const days=$('#activityDays');
   const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   for(let i=6;i>=0;i--){
-    const d=new Date(); d.setDate(d.getDate()-i); const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const entry=state.days[k];
-    let c=0; if(entry) c=Object.values(entry.routines||{}).filter(r=>r.completed).length;
-    const el=document.createElement('div'); el.className='day-bar';
-    el.innerHTML=`<div class="day-bar__track"><div class="day-bar__fill" style="height:${Math.max(4,c/3*100)}%"></div></div><small>${names[d.getDay()]}</small>`;
-    bars.appendChild(el);
+    const date=new Date();
+    date.setDate(date.getDate()-i);
+    const key=Store.todayKey(date);
+    const entry=state.days[key];
+    const done=entry?Object.keys(ROUTINES).filter(routineKey=>entry.routines?.[routineKey]?.completed).length:0;
+    const pct=Math.round(done/Object.keys(ROUTINES).length*100);
+    const item=document.createElement('div');
+    item.className='activity-day';
+    item.innerHTML=`<span class="activity-day__bar"><i style="height:${Math.max(5,pct)}%"></i></span><small>${names[date.getDay()]}</small>`;
+    days.appendChild(item);
   }
 
-  document.querySelectorAll('[data-action]').forEach(btn=>btn.onclick=()=>{
-    const a=btn.dataset.action; go(a==='continue'?nextRoutine():a);
-  });
-
-  const toast=msg=>{const t=document.querySelector('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600)};
-  document.querySelector('#resetTodayBtn').onclick=()=>{
-    if(confirm('Сбросить весь сегодняшний прогресс?')){state.days[todayKey()]=emptyDay();save(state);toast('Прогресс сброшен');setTimeout(()=>location.reload(),350)}
+  const toast=message=>{
+    const node=$('#toast');
+    node.textContent=message;
+    node.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer=setTimeout(()=>node.classList.remove('show'),1600);
   };
+
+  $('#resetTodayBtn').onclick=()=>{
+    if(confirm('Сбросить весь сегодняшний прогресс и таймеры?')){
+      Store.resetToday();
+      toast('Сегодняшний прогресс сброшен');
+      setTimeout(()=>location.reload(),300);
+    }
+  };
+
+  window.addEventListener('pageshow',event=>{
+    if(event.persisted)location.reload();
+  });
 })();

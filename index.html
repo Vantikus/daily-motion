@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f7f8f5" />
+  <meta name="theme-color" content="#f4f5f1" />
+  <meta name="color-scheme" content="light" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Daily Motion" />
@@ -13,70 +14,66 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=37" />
+  <link rel="stylesheet" href="styles.css?v=38" />
 </head>
-<body>
+<body class="home-body">
+  <div class="ios-safe-zone-bar" aria-hidden="true"></div>
   <div class="app-shell">
     <header class="topbar container">
       <div>
-        <div class="eyebrow" id="todayLabel">Сегодня</div>
+        <span class="eyebrow" id="todayLabel">Сегодня</span>
         <h1>Daily Motion</h1>
       </div>
-      <button class="icon-button" id="resetTodayBtn" aria-label="Сбросить сегодняшний прогресс" title="Сбросить сегодняшний прогресс">↻</button>
+      <button class="icon-button" id="resetTodayBtn" type="button" aria-label="Сбросить сегодняшний прогресс" title="Сбросить сегодняшний прогресс">↻</button>
     </header>
 
     <main class="container page-grid">
-      <section class="hero-card glass-card">
-        <div class="hero-copy">
-          <span class="status-pill" id="nextRoutinePill">Следующий комплекс</span>
-          <h2 id="heroTitle">Начните с утренней разминки</h2>
-          <p id="heroText">Короткая динамическая сессия для всего тела.</p>
-          <button class="primary-button" id="continueBtn">Начать</button>
+      <section class="today-card" aria-labelledby="heroTitle">
+        <div class="today-card__meta">
+          <span class="status-pill" id="todayStatus">Сегодня</span>
+          <span class="today-card__percent" id="dayProgressValue">0%</span>
         </div>
-        <div class="hero-progress-wrap">
-          <div class="progress-ring" id="dayProgressRing" style="--progress:0">
-            <div class="progress-ring__inner">
-              <strong id="dayProgressValue">0%</strong>
-              <span>день</span>
-            </div>
+        <h2 id="heroTitle">Утренняя разминка</h2>
+        <p id="heroText">Загрузка текущего состояния…</p>
+        <div class="today-progress" aria-label="Прогресс дня">
+          <div class="today-progress__label"><span id="heroProgressText">0 из 26 упражнений</span></div>
+          <div class="progress-track" aria-hidden="true"><i id="dayProgressBar"></i></div>
+        </div>
+        <button class="primary-button primary-button--large" id="continueBtn" type="button">Начать тренировку</button>
+      </section>
+
+      <section class="summary-strip" aria-label="Статистика дня">
+        <div><span>Серия</span><strong id="streakValue">0</strong><small>дней</small></div>
+        <div><span>Упражнения</span><strong id="exerciseValue">0/26</strong><small>сегодня</small></div>
+        <div><span>Комплексы</span><strong id="routineValue">0/3</strong><small>сегодня</small></div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <div><span class="eyebrow">Сегодня</span><h3>Комплексы</h3></div>
+        </div>
+        <div class="routine-list" id="routineGrid"></div>
+      </section>
+
+      <section class="section-block">
+        <div class="activity-card">
+          <div class="activity-card__head">
+            <div><span class="eyebrow">Активность</span><h3>Последние 7 дней</h3></div>
+            <span class="activity-streak" id="activityStreak">—</span>
           </div>
-        </div>
-      </section>
-
-      <section class="stats-grid" aria-label="Статистика дня">
-        <article class="stat-card"><span>Серия</span><strong id="streakValue">0 дней</strong><small>последовательность</small></article>
-        <article class="stat-card"><span>Упражнения</span><strong id="exerciseValue">0 / 26</strong><small>за сегодня</small></article>
-        <article class="stat-card"><span>Комплексы</span><strong id="routineValue">0 / 3</strong><small>завершено</small></article>
-      </section>
-
-      <section class="section-block">
-        <div class="section-heading"><div><span class="eyebrow">Сегодня</span><h3>Комплексы</h3></div><span class="muted" id="daySummary">0 из 3</span></div>
-        <div class="routine-grid" id="routineGrid"></div>
-      </section>
-
-      <section class="section-block">
-        <div class="section-heading"><div><span class="eyebrow">Активность</span><h3>Последние 7 дней</h3></div></div>
-        <div class="activity-card glass-card"><div class="activity-bars" id="activityBars"></div></div>
-      </section>
-
-      <section class="section-block">
-        <div class="section-heading"><div><span class="eyebrow">Быстро</span><h3>Действия</h3></div></div>
-        <div class="quick-grid">
-          <button class="quick-card" data-action="continue"><span>▶</span><div><strong>Продолжить</strong><small>с текущего шага</small></div></button>
-          <button class="quick-card" data-action="morning"><span>☀</span><div><strong>Утро</strong><small>12–15 минут</small></div></button>
-          <button class="quick-card" data-action="day"><span>◐</span><div><strong>День</strong><small>8–12 минут</small></div></button>
-          <button class="quick-card" data-action="evening"><span>☾</span><div><strong>Вечер</strong><small>15–20 минут</small></div></button>
+          <div class="activity-days" id="activityDays" aria-label="Активность за семь дней"></div>
         </div>
       </section>
 
       <section class="notice-card">
         <strong>Техника важнее темпа.</strong>
-        <p>Двигайтесь без боли и без резких скручиваний. Если появляется необычная боль, онемение или выраженный дискомфорт — остановитесь.</p>
+        <p>Двигайтесь без боли и без резких скручиваний. При необычной боли, онемении или выраженном дискомфорте остановитесь.</p>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=37"></script>
+  <script src="state.js?v=38"></script>
+  <script src="app.js?v=38"></script>
 </body>
 </html>

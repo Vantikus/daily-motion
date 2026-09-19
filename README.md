@@ -1,33 +1,36 @@
 # Daily Motion
 
-Личный статический сайт ежедневной разминки.
+Личное mobile-first приложение ежедневной разминки на чистых HTML / CSS / JavaScript.
 
 ## Source of truth
 
 - GitHub: `Vantikus/daily-motion`
 - рабочая ветка: `main`
-- перед любой правкой сначала читать актуальные файлы из `main`
-- после проверки изменения сразу commit/push в `main`
+- перед каждой серией изменений читать актуальный `main`
+- после проверки commit/push в `main`
 - Cloudflare автоматически деплоит `main`
 
 ## Стек
 
-Чистые HTML / CSS / JavaScript. Без React, npm, backend и БД. Прогресс, текущий шаг и таймеры хранятся в `localStorage`.
+Без React, npm, backend и БД. Состояние хранится локально в `localStorage`. PWA metadata — через `manifest.webmanifest`.
 
 ## Файлы
 
-- `index.html` + `app.js` — главная
-- `session.html` + `session.js` — экран комплекса
-- `styles.css` — общие стили
+- `index.html` + `app.js` — Today/Home
+- `session.html` + `session.js` — workout player
+- `state.js` — единое localStorage-состояние и миграция старой v1-модели
+- `styles.css` — единая mobile-first визуальная система
 - `manifest.webmanifest` + `icons/` — Home Screen / PWA
-- `_headers` — Cloudflare headers
+- `_headers` — Cloudflare cache headers
 
-## Текущее состояние
+## P0 baseline
 
-Утренний комплекс полностью рабочий: 8 упражнений, переходы, сохранение прогресса, таймер, Wake Lock, accordion-подсказки и нижняя навигация.
-
-Верхний блок `← / Утро / 1 из 8` находится внутри прокручиваемого контента. Отдельного видимого sticky-header нет.
-
-Для iPhone верхняя safe-area перекрывается непрозрачным `.ios-safe-zone-bar`; `.exercise-scroll` начинается ниже `env(safe-area-inset-top)`. Blur на этих элементах принудительно отключён.
-
-День и вечер пока отображают заглушку и не считаются готовыми комплексами.
+- Home ориентирован на один главный сценарий: начать или продолжить текущий комплекс.
+- Прогресс, step и completion восстанавливаются после reload/повторного открытия.
+- Таймеры теперь хранятся внутри конкретного дня и больше не перетекают на следующий день.
+- Старый `dailyMotionState.v1` автоматически мигрирует в `dailyMotionState.v2`.
+- Workout player сохраняет Wake Lock, pause/resume/reset, ±10 сек и навигацию по упражнениям.
+- Завершение комплекса — отдельное устойчивое состояние с явной кнопкой возврата, без автоматического редиректа.
+- Safe-area учитывается на Home и Workout; нижняя навигация учитывает `safe-area-inset-bottom`.
+- Верхний системный safe-area слой остаётся непрозрачным и без blur.
+- День и вечер пока остаются отдельными фрагментами и не перерабатываются в этом P0.
