@@ -6,7 +6,8 @@
     countdownSeconds:3,
     restSeconds:15,
     sound:true,
-    autoNext:false
+    autoNext:false,
+    weeklyGoalDays:5
   };
 
   const todayKey=(date=new Date())=>{
@@ -27,7 +28,10 @@
     countdownSeconds:[0,3,5].includes(Number(settings.countdownSeconds))?Number(settings.countdownSeconds):DEFAULT_SETTINGS.countdownSeconds,
     restSeconds:[0,15,30,45].includes(Number(settings.restSeconds))?Number(settings.restSeconds):DEFAULT_SETTINGS.restSeconds,
     sound:typeof settings.sound==='boolean'?settings.sound:DEFAULT_SETTINGS.sound,
-    autoNext:typeof settings.autoNext==='boolean'?settings.autoNext:DEFAULT_SETTINGS.autoNext
+    autoNext:typeof settings.autoNext==='boolean'?settings.autoNext:DEFAULT_SETTINGS.autoNext,
+    weeklyGoalDays:Number.isInteger(Number(settings.weeklyGoalDays))
+      ?Math.min(7,Math.max(1,Number(settings.weeklyGoalDays)))
+      :DEFAULT_SETTINGS.weeklyGoalDays
   });
 
   const normalizeTimer=(timer={})=>({
@@ -142,6 +146,17 @@
     save();
   };
 
+  const exportState=()=>JSON.stringify(state,null,2);
+
+  const importState=input=>{
+    const parsed=typeof input==='string'?JSON.parse(input):input;
+    if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('INVALID_STATE');
+    state=normalizeState(parsed);
+    ensureDay();
+    save();
+    return state;
+  };
+
   ensureDay();
   save();
 
@@ -155,6 +170,8 @@
     getTimer,
     getSettings,
     updateSettings,
+    exportState,
+    importState,
     save,
     resetToday
   };
