@@ -361,9 +361,11 @@
     const sticky=$('#stickyStepIndicator');
     if(!scroller||!inline||!sticky)return;
 
+    const app=$('.exercise-app');
     const setVisible=(visible)=>{
       sticky.classList.toggle('is-visible',visible);
       sticky.setAttribute('aria-hidden',String(!visible));
+      if(app)app.classList.toggle('has-sticky-step',visible);
     };
 
     if('IntersectionObserver' in window){
