@@ -397,3 +397,69 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
   .progress-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
   .progress-hero{padding-top:30px}
 }
+
+
+/* Quiet Motion — Home redesign */
+.home-body{background:var(--bg)}
+.home-body .container{width:min(760px,calc(100% - 40px))}
+.home-body .topbar{padding-top:18px;padding-bottom:16px}
+.home-body .topbar h1{font-size:28px;line-height:1.05;letter-spacing:-.04em}
+.home-body .icon-button{width:44px;height:44px;border-radius:14px;box-shadow:none;background:var(--surface)}
+.home-body .icon-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.home-body .page-grid{gap:24px;padding-bottom:32px}
+.home-body .today-card{padding:20px;border-radius:24px;box-shadow:0 8px 26px rgba(37,49,41,.045)}
+.home-body .today-card__meta{justify-content:flex-start}
+.home-body .today-card h2{margin:18px 0 7px;font-size:clamp(30px,8vw,36px);line-height:1.04;letter-spacing:-.045em}
+.home-body .today-card>p{font-size:14px;line-height:1.45}
+.home-body .today-progress{margin-top:18px;gap:8px}
+.home-body .today-progress__label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
+.home-body .today-progress__label strong{color:var(--accent);font-size:12px;font-variant-numeric:tabular-nums}
+.home-body .primary-button--large{min-height:52px;margin-top:18px;border-radius:16px}
+.home-body .section-block{gap:10px}
+.home-body .section-heading{padding:0}
+.home-body .section-heading h3{margin:0;font-size:20px;letter-spacing:-.025em}
+.home-body .routine-list{display:grid;gap:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);overflow:hidden}
+.home-body .routine-card{min-height:76px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:var(--surface);padding:14px 16px;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;box-shadow:none}
+.home-body .routine-card.is-last{border-bottom:0}
+.home-body .routine-card:hover{border-color:var(--line);background:#fafbf9;box-shadow:none}
+.home-body .routine-copy{gap:3px}
+.home-body .routine-copy strong{font-size:15px}
+.home-body .routine-copy small{font-size:12px}
+.home-body .routine-status{align-self:start;color:var(--accent);font-size:12px;font-weight:700}
+.home-body .routine-status b{font-size:18px;color:currentColor}
+.home-body .mini-progress{grid-column:1/-1;width:100%;height:4px;margin-top:2px}
+.home-body .activity-card{padding:16px;border-radius:18px;background:var(--surface)}
+.home-body .activity-card__head{align-items:center;margin-bottom:14px}
+.home-body .activity-card__head h3{margin:0;font-size:20px}
+.home-body .text-link{font-size:12px;font-weight:700}
+.home-body .activity-days{height:auto;display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:start}
+.home-body .activity-day{height:auto;display:grid;justify-items:center;gap:6px}
+.home-body .activity-day__dot{width:24px;height:24px;border-radius:50%;background:var(--surface-muted);border:1px solid transparent;transition:background-color var(--base) ease,border-color var(--base) ease}
+.home-body .activity-day.is-active .activity-day__dot{background:#edf3ef;border-color:rgba(47,107,85,.2)}
+.home-body .activity-day.is-complete .activity-day__dot{background:var(--accent)}
+.home-body .activity-day.is-today .activity-day__dot{box-shadow:0 0 0 3px rgba(47,107,85,.08)}
+.home-body .activity-day small{font-size:10px}
+.home-body .activity-empty{margin:12px 0 0;padding:0;background:transparent}
+.home-body .activity-card.is-empty .activity-days{opacity:.7}
+.home-body .home-goal{margin-top:14px;padding-top:13px}
+.home-body .home-goal__meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.home-body .home-goal__meta>strong,.home-body .home-goal__meta>span{font-size:12px;color:var(--text);font-weight:600}
+.home-body .home-goal__meta b{font-weight:700}
+.home-body .safety-note{margin:0;padding:0 2px;color:var(--muted);font-size:11px;line-height:1.5}
+.home-body .summary-strip,.home-body .notice-card,.home-body .routine-icon{display:none!important}
+
+@media(max-width:520px){
+  .home-body .container{width:calc(100% - 40px)}
+  .home-body .topbar{padding-top:14px;padding-bottom:14px}
+  .home-body .today-card{padding:20px}
+  .home-body .routine-card{padding:14px 16px}
+}
+
+@media(min-width:900px){
+  .home-body .container{width:min(960px,calc(100% - 48px))}
+  .home-body .page-grid{grid-template-columns:repeat(12,minmax(0,1fr));gap:20px;align-items:start}
+  .home-body .today-card{grid-column:span 7;padding:26px}
+  .home-body .routines-section{grid-column:span 5}
+  .home-body .activity-section{grid-column:span 7}
+  .home-body .safety-note{grid-column:span 5;align-self:start;padding:4px 2px}
+}

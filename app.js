@@ -1,11 +1,10 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',icon:'☀',minutes:'12–15 мин',total:8},
-    day:{name:'День',icon:'◐',minutes:'8–12 мин',total:7},
-    evening:{name:'Вечер',icon:'☾',minutes:'15–20 мин',total:11}
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'12–15 мин',total:8},
+    day:{name:'День',title:'Дневная разминка',minutes:'8–12 мин',total:7},
+    evening:{name:'Вечер',title:'Вечерняя разминка',minutes:'15–20 мин',total:11}
   };
-  const TOTAL_EXERCISES=Object.values(ROUTINES).reduce((sum,item)=>sum+item.total,0);
   const today=Store.getDay();
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
@@ -17,7 +16,6 @@
     const total=ROUTINES[key].total;
     return routine.completed?total:Math.min(routine.completedUntil||0,total);
   };
-  const completedExercises=()=>Object.keys(ROUTINES).reduce((sum,key)=>sum+exerciseCount(key),0);
   const completedRoutines=()=>Object.keys(ROUTINES).filter(key=>today.routines[key]?.completed).length;
   const nextRoutine=()=>Object.keys(ROUTINES).find(key=>!today.routines[key]?.completed)||'morning';
 
@@ -35,36 +33,29 @@
     return count;
   };
 
-  const totalDone=completedExercises();
-  const percent=Math.round(totalDone/TOTAL_EXERCISES*100);
-  const nextKey=nextRoutine();
+  const allDone=completedRoutines()===Object.keys(ROUTINES).length;
+  const nextKey=allDone?'morning':nextRoutine();
   const next=ROUTINES[nextKey];
   const nextState=today.routines[nextKey];
+  const nextDone=exerciseCount(nextKey);
+  const nextPercent=Math.round(nextDone/next.total*100);
   const isResuming=!nextState.completed&&(nextState.startedAt||nextState.completedUntil>0||nextState.step>0);
-  const allDone=completedRoutines()===Object.keys(ROUTINES).length;
 
   $('#todayLabel').textContent=formatDate();
-  $('#todayStatus').textContent=allDone?'Готово на сегодня':isResuming?'Продолжить':'Сегодня';
-  $('#heroTitle').textContent=allDone?'Движение на сегодня завершено':isResuming?`Продолжить: ${next.name.toLowerCase()}`:`${next.name} · ${next.minutes}`;
+  $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
+  $('#heroTitle').textContent=allDone?'Готово на сегодня':next.title;
   $('#heroText').textContent=allDone
-    ?'Все запланированные комплексы отмечены как завершённые.'
-    :isResuming
-      ?`Следующий шаг — упражнение ${Math.min((nextState.step||0)+1,next.total)} из ${next.total}. Прогресс сохранён.`
-      :`${next.total} упражнений. Начните с текущего комплекса — приложение сохранит место автоматически.`;
-  $('#continueBtn').textContent=allDone?'Открыть утро':isResuming?'Продолжить тренировку':'Начать тренировку';
-  $('#continueBtn').onclick=()=>go(allDone?'morning':nextKey);
-  $('#heroProgressText').textContent=`${totalDone} из ${TOTAL_EXERCISES} упражнений`;
-  $('#dayProgressValue').textContent=`${percent}%`;
-  $('#dayProgressBar').style.width=`${percent}%`;
-
-  const currentStreak=streak();
-  $('#streakValue').textContent=String(currentStreak);
-  $('#exerciseValue').textContent=`${totalDone}/${TOTAL_EXERCISES}`;
-  $('#routineValue').textContent=`${completedRoutines()}/${Object.keys(ROUTINES).length}`;
+    ?'Все запланированные комплексы завершены.'
+    :`${next.minutes} · ${next.total} упражнений`;
+  $('#continueBtn').textContent=allDone?'Открыть утро':isResuming?'Продолжить':'Начать';
+  $('#continueBtn').onclick=()=>go(nextKey);
+  $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
+  $('#dayProgressValue').textContent=`${nextPercent}%`;
+  $('#dayProgressBar').style.width=`${nextPercent}%`;
   $('#todayCard').classList.toggle('is-complete',allDone);
 
   const list=$('#routineGrid');
-  Object.entries(ROUTINES).forEach(([key,routine])=>{
+  Object.entries(ROUTINES).forEach(([key,routine],index)=>{
     const progress=exerciseCount(key);
     const pct=Math.round(progress/routine.total*100);
     const stateItem=today.routines[key];
@@ -72,33 +63,39 @@
     button.className='routine-card';
     button.type='button';
     button.onclick=()=>go(key);
-    const status=stateItem.completed?'Завершено':progress>0||stateItem.startedAt?'Продолжить':'Начать';
+    const status=stateItem.completed?'Готово':progress>0||stateItem.startedAt?'Продолжить':'Начать';
     button.innerHTML=`
-      <span class="routine-icon" aria-hidden="true">${routine.icon}</span>
       <span class="routine-copy">
         <strong>${routine.name}</strong>
         <small>${routine.minutes} · ${routine.total} упражнений</small>
-        <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>
       </span>
-      <span class="routine-status">${status}<b aria-hidden="true">›</b></span>`;
+      <span class="routine-status">${status}<b aria-hidden="true">›</b></span>
+      <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
+    if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
     list.appendChild(button);
   });
 
-  $('#activityStreak').textContent=currentStreak?`${currentStreak} ${currentStreak===1?'день':'дней'} подряд`:'Серия начнётся после полного дня';
+  const currentStreak=streak();
+  $('#activityStreak').textContent=currentStreak
+    ?`Серия ${currentStreak} ${currentStreak===1?'день':'дня'}`
+    :'Серия —';
+
   const days=$('#activityDays');
   const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   let hasActivity=false;
   for(let i=6;i>=0;i--){
     const date=new Date();
+    date.setHours(12,0,0,0);
     date.setDate(date.getDate()-i);
     const key=Store.todayKey(date);
     const entry=state.days[key];
-    const done=entry?Object.keys(ROUTINES).filter(routineKey=>entry.routines?.[routineKey]?.completed).length:0;
-    const pct=Math.round(done/Object.keys(ROUTINES).length*100);
-    if(done>0)hasActivity=true;
+    const complete=Boolean(entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed));
+    const active=Boolean(entry&&Object.values(entry.routines||{}).some(routine=>routine?.startedAt||(routine?.completedUntil||0)>0));
+    if(complete||active)hasActivity=true;
     const item=document.createElement('div');
-    item.className='activity-day';
-    item.innerHTML=`<span class="activity-day__bar"><i style="height:${Math.max(5,pct)}%"></i></span><small>${names[date.getDay()]}</small>`;
+    item.className=`activity-day${complete?' is-complete':active?' is-active':''}${i===0?' is-today':''}`;
+    item.setAttribute('aria-label',`${names[date.getDay()]}: ${complete?'тренировка завершена':active?'есть активность':'нет активности'}`);
+    item.innerHTML=`<span class="activity-day__dot" aria-hidden="true"></span><small>${names[date.getDay()]}</small>`;
     days.appendChild(item);
   }
 
@@ -146,10 +143,7 @@
   };
 
   const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
-
-  const syncInstallButton=()=>{
-    installAppBtn.hidden=!PWA?.canInstall?.();
-  };
+  const syncInstallButton=()=>{installAppBtn.hidden=!PWA?.canInstall?.();};
 
   const openSettings=()=>{
     syncSettings();
@@ -176,10 +170,7 @@
   settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
   document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
-    if(event.key==='Escape'){
-      closeSettings();
-      return;
-    }
+    if(event.key==='Escape'){closeSettings();return;}
     if(event.key!=='Tab')return;
     const focusable=focusableInSettings();
     if(!focusable.length)return;
@@ -207,7 +198,6 @@
     syncInstallButton();
     if(result?.outcome==='accepted')toast('Установка началась');
   };
-
   window.addEventListener('daily-motion-install-change',syncInstallButton);
 
   $('#testSoundBtn').onclick=async()=>{
@@ -222,6 +212,7 @@
   syncSettings();
   syncInstallButton();
   document.documentElement.classList.add('app-ready');
+
   $('#resetTodayBtn').onclick=()=>{
     if(confirm('Сбросить весь сегодняшний прогресс и таймеры?')){
       Store.resetToday();
