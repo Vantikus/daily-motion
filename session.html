@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=44" />
+  <link rel="stylesheet" href="styles.css?v=45" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -61,8 +61,12 @@
           </aside>
 
           <section class="timer-card" id="timerCard" aria-label="Таймер упражнения">
-            <div class="timer-state-row">
-              <strong id="timerState" aria-live="polite">Готов</strong>
+            <div class="timer-card__head">
+              <div class="timer-card__status">
+                <span class="timer-kicker">Таймер</span>
+                <strong id="timerState" aria-live="polite">Готов</strong>
+              </div>
+              <button class="timer-reset-link" id="timerReset" type="button">Сбросить</button>
             </div>
             <div class="timer-grid">
               <div class="timer-ring" id="timerRing" style="--timer-progress:0">
@@ -73,12 +77,11 @@
               </div>
               <div class="timer-actions">
                 <button class="timer-primary" id="timerToggle" type="button">Старт</button>
+                <div class="timer-adjustments">
+                  <button id="minusTen" type="button">−10 сек</button>
+                  <button id="plusTen" type="button">+10 сек</button>
+                </div>
               </div>
-            </div>
-            <div class="timer-adjustments">
-              <button id="minusTen" type="button">−10 сек</button>
-              <button class="timer-reset-link" id="timerReset" type="button">Сбросить</button>
-              <button id="plusTen" type="button">+10 сек</button>
             </div>
           </section>
 
@@ -159,9 +162,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=44"></script>
-  <script src="audio.js?v=44"></script>
-  <script src="pwa.js?v=44"></script>
-  <script src="session.js?v=44"></script>
+  <script src="state.js?v=45"></script>
+  <script src="audio.js?v=45"></script>
+  <script src="pwa.js?v=45"></script>
+  <script src="session.js?v=45"></script>
 </body>
 </html>

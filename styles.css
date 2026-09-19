@@ -177,8 +177,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .settings-sheet__head h2{margin:3px 0 0;font-size:26px;letter-spacing:-.04em}
 .sheet-close{appearance:none;width:44px;height:44px;border:1px solid var(--line);border-radius:14px;background:#f7f8f5;font-size:24px;line-height:1;cursor:pointer}
 .settings-list--home{border-top:1px solid rgba(23,25,23,.06);border-bottom:1px solid rgba(23,25,23,.06)}
-.settings-test-sound,.settings-reset{appearance:none;width:100%;min-height:48px;border-radius:14px;font-weight:800;cursor:pointer}
-.settings-test-sound{margin-top:14px;border:1px solid var(--line);background:#f7f8f5;color:var(--text)}
+.settings-reset{appearance:none;width:100%;min-height:48px;border-radius:14px;font-weight:800;cursor:pointer}
 .settings-reset{margin-top:8px;border:0;background:transparent;color:#8a4a47}
 .settings-list{display:grid;gap:0;padding-top:4px}
 .setting-row{min-height:62px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;border-bottom:1px solid rgba(23,25,23,.06)}
@@ -279,10 +278,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .today-card.is-complete{border-color:rgba(47,107,85,.18);background:linear-gradient(180deg,#fff 0,#f4f8f5 100%)}
 .today-card.is-complete .status-pill{background:var(--accent);color:#fff}
 
-.settings-install,.settings-test-sound,.settings-reset{transition:transform var(--fast) ease,background-color var(--base) ease}
+.settings-install,.settings-reset{transition:transform var(--fast) ease,background-color var(--base) ease}
 .settings-install{appearance:none;width:100%;min-height:48px;margin-top:14px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
 .settings-install[hidden]{display:none}
-.settings-install:active,.settings-test-sound:active,.settings-reset:active,.sheet-close:active,.detail-card__toggle:active,.timer-adjustments button:active{transform:scale(.985)}
+.settings-install:active,.settings-reset:active,.sheet-close:active,.detail-card__toggle:active,.timer-adjustments button:active{transform:scale(.985)}
 
 .pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:opacity var(--base) ease,transform var(--base) var(--ease),visibility var(--base) ease}
 .pwa-banner.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
@@ -568,4 +567,168 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
   .exercise-main{padding:0}
   .timer-grid{grid-template-columns:96px minmax(0,1fr)}
   .timer-ring{width:96px}
+}
+
+
+/* v45 — iPhone safe-area and compact timer fix */
+html,body{background:var(--bg)}
+.ios-safe-zone-bar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  width:100%;
+  height:calc(env(safe-area-inset-top,0px) + 2px);
+  min-height:calc(env(safe-area-inset-top,0px) + 2px);
+  background:var(--bg)!important;
+  opacity:1!important;
+  z-index:9999;
+  pointer-events:none;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  transform:none!important;
+  isolation:isolate;
+}
+.home-body::before,.session-body::before,.progress-body::before{
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:calc(env(safe-area-inset-top,0px) + 2px);
+  background:var(--bg);
+  z-index:9998;
+  pointer-events:none;
+}
+.home-body,.home-body .app-shell,
+.session-body,.exercise-app,.exercise-scroll,.session-shell,
+.progress-body,.progress-body .app-shell{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+}
+.exercise-scroll{
+  padding-top:calc(env(safe-area-inset-top,0px) + 12px);
+}
+
+.timer-card{
+  margin-bottom:24px;
+  padding:13px 15px 14px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--surface);
+  box-shadow:none;
+}
+.timer-card.is-running{
+  border-color:rgba(47,107,85,.28);
+  box-shadow:none;
+}
+.timer-card__head{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:7px;
+}
+.timer-card__status{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.timer-kicker{
+  color:var(--muted);
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.timer-card__status #timerState{
+  color:var(--accent);
+  font-size:12px;
+  line-height:1;
+  font-weight:800;
+}
+.timer-reset-link{
+  appearance:none;
+  min-height:32px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:var(--muted);
+  padding:0 3px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.timer-grid{
+  display:grid;
+  grid-template-columns:102px minmax(0,1fr);
+  gap:13px;
+  align-items:center;
+}
+.timer-ring{
+  width:102px;
+  margin:0;
+}
+.timer-ring:after{inset:7px}
+.timer-ring__inner strong{font-size:27px}
+.timer-ring__inner span{font-size:10px}
+.timer-ring.is-running{animation:none}
+.timer-ring.is-ending{
+  animation:none;
+  box-shadow:0 0 0 5px rgba(47,107,85,.07);
+}
+.timer-actions{
+  display:grid;
+  gap:8px;
+  min-width:0;
+}
+.timer-primary{
+  width:100%;
+  height:52px;
+  min-height:52px;
+  margin:0;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:800;
+}
+.timer-card.is-running .timer-primary{background:var(--accent)}
+.timer-adjustments{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:0;
+}
+.timer-adjustments button{
+  min-height:40px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
+  padding:0 8px;
+  font-size:13px;
+  font-weight:700;
+}
+.timer-adjustments button:active,.timer-reset-link:active{background:#f3f5f2}
+
+@media(max-width:520px){
+  .timer-card{padding:12px 14px 13px}
+  .timer-grid{grid-template-columns:98px minmax(0,1fr);gap:12px}
+  .timer-ring{width:98px}
+  .timer-ring__inner strong{font-size:26px}
+}
+@media(max-width:370px){
+  .timer-grid{grid-template-columns:90px minmax(0,1fr);gap:11px}
+  .timer-ring{width:90px}
+  .timer-ring__inner strong{font-size:24px}
+  .timer-primary{height:49px;min-height:49px}
+  .timer-adjustments button{min-height:38px;font-size:12px}
+}
+@media(min-width:1000px){
+  .timer-grid{grid-template-columns:106px minmax(0,1fr)}
+  .timer-ring{width:106px}
 }

@@ -200,15 +200,6 @@
   };
   window.addEventListener('daily-motion-install-change',syncInstallButton);
 
-  $('#testSoundBtn').onclick=async()=>{
-    if(!Store.getSettings().sound){
-      settings=Store.updateSettings({sound:true});
-      syncSettings();
-    }
-    const ok=await Audio?.test?.();
-    toast(ok?'Звук включён':'Не удалось запустить звук');
-  };
-
   syncSettings();
   syncInstallButton();
   document.documentElement.classList.add('app-ready');
