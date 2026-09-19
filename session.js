@@ -357,25 +357,35 @@
   function setupFloatingProgress(){
     const scroller=$('#exerciseScroll');
     const inline=$('#inlineProgress');
-    const floating=$('#floatingStepIndicator');
-    if(!scroller||!inline||!floating)return;
+    const shield=$('#scrollEdgeShield');
+    if(!scroller||!inline||!shield)return;
 
-    const setVisible=(visible)=>{
-      floating.classList.toggle('is-visible',visible);
-      floating.setAttribute('aria-hidden',String(!visible));
+    let inlineVisible=true;
+
+    const sync=()=>{
+      const scrolled=scroller.scrollTop>1;
+      shield.classList.toggle('is-covering',scrolled);
+      shield.classList.toggle('show-progress',scrolled&&!inlineVisible);
+      shield.setAttribute('aria-hidden',String(!(scrolled&&!inlineVisible)));
     };
+
+    scroller.addEventListener('scroll',sync,{passive:true});
 
     if('IntersectionObserver' in window){
       const observer=new IntersectionObserver(entries=>{
-        const entry=entries[0];
-        setVisible(!entry.isIntersecting && scroller.scrollTop>20);
+        inlineVisible=entries[0].isIntersecting;
+        sync();
       },{root:scroller,threshold:.15});
       observer.observe(inline);
     }else{
-      const onScroll=()=>setVisible(scroller.scrollTop>72);
-      scroller.addEventListener('scroll',onScroll,{passive:true});
-      onScroll();
+      const onScrollFallback=()=>{
+        inlineVisible=scroller.scrollTop<72;
+        sync();
+      };
+      scroller.addEventListener('scroll',onScrollFallback,{passive:true});
     }
+
+    sync();
   }
 
   window.addEventListener('load',()=>{

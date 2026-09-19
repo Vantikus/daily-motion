@@ -15,22 +15,22 @@
     }
   </script>
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=25" />
+  <link rel="stylesheet" href="styles.css?v=26" />
 
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
 
   <div class="exercise-app">
-    <div class="ios-edge-guard" aria-hidden="true"></div>
-
     <div class="exercise-scroll" id="exerciseScroll">
-      <aside class="floating-step-indicator" id="floatingStepIndicator" aria-hidden="true">
-        <div class="step-indicator step-indicator--floating">
-          <strong id="floatingProgress">1 / 8</strong>
-          <div class="step-segments" id="floatingSegments" aria-hidden="true"></div>
+      <div class="scroll-edge-shield" id="scrollEdgeShield" aria-hidden="true">
+        <div class="scroll-edge-shield__inner">
+          <div class="step-indicator step-indicator--floating">
+            <strong id="floatingProgress">1 / 8</strong>
+            <div class="step-segments" id="floatingSegments" aria-hidden="true"></div>
+          </div>
         </div>
-      </aside>
+      </div>
 
       <main class="container session-shell">
     <section class="exercise-layout">
@@ -170,6 +170,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="session.js?v=25"></script>
+  <script src="session.js?v=26"></script>
 </body>
 </html>
