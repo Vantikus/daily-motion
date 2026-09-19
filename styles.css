@@ -7,265 +7,142 @@
 @media(max-width:760px){.container{width:min(100% - 22px,1120px)}.topbar{padding-top:20px}.hero-card{grid-template-columns:1fr;min-height:auto}.hero-progress-wrap{display:flex;justify-content:flex-start}.progress-ring{width:120px}.stats-grid,.routine-grid{grid-template-columns:1fr}.stats-grid{gap:10px}.routine-card{grid-template-columns:1fr}.quick-grid{grid-template-columns:1fr 1fr}.activity-bars{gap:7px}.hero-card h2{font-size:39px}.page-grid{padding-bottom:32px}}
 @media(max-width:430px){.quick-grid{grid-template-columns:1fr}.hero-card{padding:22px;border-radius:24px}.hero-card h2{font-size:34px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:1/-1}}
 
-/* Session / workout — v4 spacing system */
+
+/* Session / workout — v19 clean */
 .session-body{
-  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:40px;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
   --r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:28px;
-  --session-surface:rgba(255,255,255,.82);
-  --session-border:rgba(19,25,20,.085);
-  --session-shadow:0 18px 54px rgba(38,53,44,.075);
-  padding-bottom:104px;
+  --motion-fast:140ms;--motion-base:210ms;--motion-slow:320ms;--motion-page:360ms;
+  --ease-standard:cubic-bezier(.2,.72,.2,1);--ease-soft:cubic-bezier(.16,.8,.22,1);
+  --session-surface:rgba(255,255,255,.88);--session-border:rgba(19,25,20,.085);--session-shadow:0 18px 54px rgba(38,53,44,.075);
+  margin:0;height:100vh;height:100svh;min-height:100svh;overflow:hidden;padding:0;
   background:linear-gradient(180deg,#fafbf8 0,#f6f7f3 46%,#f3f5f1 100%);
 }
-.page-loader{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:100;transition:opacity .28s ease,visibility .28s ease}
+.page-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);transition:opacity .28s ease,visibility .28s ease}
 .page-loader span{width:32px;height:32px;border:3px solid rgba(47,107,85,.14);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .page-loader.is-hidden{opacity:0;visibility:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.session-topbar{
-  display:grid;grid-template-columns:44px 1fr 60px;align-items:center;gap:var(--s3);
-  padding:var(--s4) 0 var(--s3);position:sticky;top:0;z-index:20;
-  background:rgba(247,248,245,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-}
-.back-link--icon{width:42px;height:42px;border-radius:50%;border:1px solid var(--session-border);background:rgba(255,255,255,.88);display:grid;place-items:center;font-size:20px;line-height:1;font-weight:650;box-shadow:0 5px 18px rgba(38,53,44,.045);transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease}
-.back-link--icon:hover{background:#fff;box-shadow:0 8px 22px rgba(38,53,44,.075)}
-.session-topbar__center{text-align:center;line-height:1.15}
-.session-topbar__center span{font-size:15px;font-weight:800;letter-spacing:-.015em}
-.session-step-badge{justify-self:end;display:grid;place-items:center;height:36px;min-width:56px;padding:0 10px;border-radius:999px;background:#fff;border:1px solid var(--session-border);font-size:12px;font-variant-numeric:tabular-nums;box-shadow:0 5px 18px rgba(38,53,44,.035);transition:transform .18s ease,background-color .18s ease}
-.session-step-badge.is-updating{animation:stepPop .28s ease}
-@keyframes stepPop{0%{transform:scale(.94)}55%{transform:scale(1.045)}100%{transform:scale(1)}}
-
-.session-shell{display:grid;gap:0;padding:var(--s2) 0 var(--s6)}
+.exercise-app{height:100%;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}
+.exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;position:relative}
+.session-shell{display:grid;gap:0;padding:12px 0 24px}
 .exercise-layout{display:block}
-.exercise-main{max-width:900px;margin-inline:auto;border-radius:var(--r-xl);padding:clamp(24px,3vw,34px);overflow:hidden;box-shadow:var(--session-shadow)}
+.exercise-main{max-width:900px;margin-inline:auto;border-radius:var(--r-xl);padding:clamp(24px,3vw,34px);overflow:visible;box-shadow:var(--session-shadow);scroll-margin-top:12px}
+
+.exercise-toolbar{display:grid;grid-template-columns:44px minmax(0,1fr) 82px;align-items:center;gap:12px;margin-bottom:24px}
+.exercise-toolbar__center{text-align:center;line-height:1.15}
+.exercise-toolbar__center span{font-size:15px;font-weight:800;letter-spacing:-.015em}
+.back-link--icon{width:44px;height:44px;border-radius:50%;border:1px solid var(--session-border);background:#fff;display:grid;place-items:center;font-size:20px;line-height:1;font-weight:650;box-shadow:0 5px 18px rgba(38,53,44,.045);transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease}
+.back-link--icon:hover{box-shadow:0 8px 22px rgba(38,53,44,.075)}
+
+.step-indicator{width:82px;min-width:82px;height:52px;padding:7px 9px 6px;border-radius:18px;display:grid;align-content:center;justify-items:center;gap:5px;color:var(--text);font-variant-numeric:tabular-nums}
+.step-indicator strong{font-size:14px;line-height:1;font-weight:850;letter-spacing:-.02em}
+.step-indicator strong.is-updating{animation:stepPop .28s ease}
+@keyframes stepPop{0%{transform:scale(.94)}55%{transform:scale(1.045)}100%{transform:scale(1)}}
+.step-indicator--inline{justify-self:end;background:#f7f8f5;border:1px solid rgba(19,25,20,.07)}
+.step-indicator .step-segments{width:56px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.step-indicator .step-segments i{display:block;height:3px;border-radius:999px;background:rgba(47,107,85,.12);transition:background-color var(--motion-base) ease,transform var(--motion-base) var(--ease-standard)}
+.step-indicator .step-segments i.is-done{background:rgba(47,107,85,.38)}
+.step-indicator .step-segments i.is-current{background:var(--accent);transform:scaleY(1.28)}
+
+.sticky-step-indicator{position:sticky;top:max(14px,env(safe-area-inset-top,0px));z-index:34;width:min(900px,calc(100% - 32px));height:0;margin:0 auto;display:flex;justify-content:flex-end;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity 180ms ease,transform 180ms var(--ease-soft),visibility 180ms linear}
+.sticky-step-indicator.is-visible{opacity:1;visibility:visible;transform:translateY(0)}
+.step-indicator--sticky{background:#f7f8f5;border:1px solid rgba(19,25,20,.075);box-shadow:0 6px 18px rgba(30,43,34,.07);backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
+
 .exercise-head{display:grid;gap:var(--s3)}
 .exercise-head h1{font-size:clamp(34px,5.5vw,58px);letter-spacing:-.052em;line-height:1.02;margin:0;max-width:780px;text-wrap:balance}
 .exercise-goal{font-size:15px;line-height:1.62;color:var(--muted);margin:0;max-width:720px;text-wrap:pretty}
 
-.visual-placeholder{width:100%;aspect-ratio:16/9;min-height:0;margin:var(--s5) 0 var(--s4);border:1px dashed rgba(47,107,85,.24);background:linear-gradient(135deg,rgba(223,236,229,.62),rgba(255,255,255,.94));border-radius:var(--r-lg);display:grid;place-items:center;overflow:hidden}
+.exercise-visual{position:relative}
+.visual-placeholder{width:100%;aspect-ratio:16/9;margin:var(--s5) 0 var(--s4);border:1px dashed rgba(47,107,85,.24);background:linear-gradient(135deg,rgba(223,236,229,.62),rgba(255,255,255,.94));border-radius:var(--r-lg);display:grid;place-items:center;overflow:hidden}
 .visual-placeholder__inner{display:flex;align-items:center;justify-content:center;gap:var(--s3);padding:var(--s5);text-align:left}
 .visual-placeholder__icon{width:50px;height:50px;flex:0 0 50px;border-radius:15px;background:#fff;border:1px solid var(--session-border);display:grid;place-items:center;color:var(--accent);font-size:23px;box-shadow:0 6px 18px rgba(38,53,44,.045)}
 .visual-placeholder__inner>div{display:grid;gap:3px}
 .visual-placeholder strong{font-size:15px;letter-spacing:-.01em}
 .visual-placeholder span{font-size:12px;line-height:1.4;color:var(--muted)}
+.exercise-visual.has-visuals{aspect-ratio:auto;border:0;background:transparent;display:block;overflow:visible}
+.visual-phases{display:grid;grid-template-columns:repeat(var(--phase-count,2),minmax(0,1fr));gap:var(--s3)}
+.visual-phase{margin:0;border-radius:var(--r-md);overflow:hidden;background:#eef2ee;border:1px solid var(--session-border)}
+.visual-phase img{width:100%;height:auto;display:block;object-fit:contain}
 
-.exercise-facts{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin:0 0 18px}
-.exercise-facts>div{min-width:0;padding:10px 12px;background:#f7f8f5;border:1px solid var(--session-border);border-radius:var(--r-sm);display:grid;gap:3px}
-.exercise-facts span{font-size:9px;text-transform:uppercase;letter-spacing:.075em;color:var(--muted);font-weight:800}
-.exercise-facts strong{font-size:13px;line-height:1.3;letter-spacing:-.01em}
+.exercise-facts{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin:0 0 var(--s5)}
+.exercise-facts>div{min-width:0;padding:9px 4px 10px;background:transparent;border:0;border-bottom:1px solid rgba(19,25,20,.09);display:grid;gap:3px}
+.exercise-facts span{font-size:9px;text-transform:uppercase;letter-spacing:.095em;color:var(--muted);font-weight:800}
+.exercise-facts strong{font-size:13.5px;line-height:1.3;letter-spacing:-.01em}
 
-.technique-key--prominent{margin:0 0 20px;border-radius:var(--r-md);padding:18px 20px;background:#17221d;color:#fff;display:grid;gap:6px}
+.technique-key--prominent{margin:0 0 var(--s5);border-radius:var(--r-md);padding:18px 20px;background:#17221d;color:#fff;display:grid;gap:6px}
 .technique-key--prominent span{font-size:10px;text-transform:uppercase;letter-spacing:.085em;opacity:.66;font-weight:800}
 .technique-key--prominent strong{font-size:15px;line-height:1.5;text-wrap:pretty}
 
-.timer-card--inline{border-radius:var(--r-lg);padding:18px;margin:0 0 20px;background:var(--session-surface);border:1px solid var(--session-border);box-shadow:0 12px 34px rgba(38,53,44,.045);position:static;transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease}
-.timer-card--inline.is-running{border-color:rgba(47,107,85,.16);box-shadow:0 14px 38px rgba(47,107,85,.075);background:rgba(255,255,255,.9)}
-.timer-card__topline{display:flex;align-items:center;margin-bottom:10px}
+.timer-card--inline{border-radius:var(--r-lg);padding:20px;margin:0 0 var(--s5);background:var(--session-surface);border:1px solid var(--session-border);box-shadow:0 12px 34px rgba(38,53,44,.045);transition:border-color var(--motion-base) ease,box-shadow var(--motion-slow) ease,background-color var(--motion-base) ease}
+.timer-card--inline.is-running{border-color:rgba(47,107,85,.16);box-shadow:0 14px 38px rgba(47,107,85,.075);background:rgba(255,255,255,.94)}
+.timer-card__topline{display:flex;align-items:center;margin-bottom:var(--s3)}
 .timer-card__topline .eyebrow{font-size:9.5px}
-.timer-inline-grid{display:grid;grid-template-columns:126px minmax(0,1fr);gap:18px;align-items:center}
+.timer-inline-grid{display:grid;grid-template-columns:132px minmax(0,1fr);gap:var(--s5);align-items:center}
 @property --timer-progress{syntax:"<number>";inherits:false;initial-value:0}
-.timer-ring{--timer-progress:0;width:116px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--timer-progress)*1%),rgba(47,107,85,.10) 0);position:relative;margin:0;transition:transform .2s ease,box-shadow .2s ease}
+.timer-ring{--timer-progress:0;width:122px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--timer-progress)*1%),rgba(47,107,85,.10) 0);position:relative;margin:0;transition:transform var(--motion-base) var(--ease-standard),box-shadow var(--motion-base) ease,filter var(--motion-base) ease}
 .timer-ring:after{content:"";position:absolute;inset:8px;border-radius:50%;background:#fbfcfa}
 .timer-ring__inner{position:relative;z-index:1;text-align:center;display:grid;gap:1px}
 .timer-ring__inner strong{font-size:27px;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
 .timer-ring__inner span{font-size:10px;color:var(--muted)}
-.timer-actions{min-width:0;display:grid;gap:8px}
-.timer-primary,.timer-adjustments button{border-radius:var(--r-sm);font-weight:800;cursor:pointer;transition:transform .12s ease,box-shadow .16s ease,background-color .16s ease,border-color .16s ease}
-.timer-primary{height:46px;border:0;background:var(--text);color:#fff}
+.timer-ring.is-running{animation:timerBreath 2.1s ease-in-out infinite}
+.timer-ring.is-ending{filter:saturate(1.18);box-shadow:0 0 0 8px rgba(47,107,85,.07);animation:timerEnding .72s ease-in-out infinite alternate}
+@keyframes timerBreath{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(47,107,85,.07)}50%{transform:scale(1.018);box-shadow:0 0 0 8px rgba(47,107,85,0)}}
+@keyframes timerEnding{from{transform:scale(1)}to{transform:scale(1.035)}}
+.timer-actions{min-width:0;display:grid;gap:var(--s2)}
+.timer-primary,.timer-adjustments button{border-radius:var(--r-sm);font-weight:800;cursor:pointer;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,border-color var(--motion-base) ease}
+.timer-primary{height:48px;border:0;background:var(--text);color:#fff}
 .timer-primary--full{width:100%;font-size:13px}
 .timer-primary:hover{box-shadow:0 8px 20px rgba(0,0,0,.12)}
-.timer-adjustments{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
-.timer-adjustments button{height:40px;border:1px solid var(--session-border);background:#fff;color:var(--text);font-size:12px}
+.timer-adjustments{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+.timer-adjustments button{height:42px;border:1px solid var(--session-border);background:#fff;color:var(--text);font-size:12px}
 .timer-adjustments button:hover{border-color:rgba(47,107,85,.18);background:#fbfcfa}
-.timer-reset-link{justify-self:center;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:750;padding:4px 8px;min-height:28px;border-radius:999px;cursor:pointer;transition:color .16s ease,background-color .16s ease,transform .12s ease}
+.timer-reset-link{justify-self:center;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:750;padding:4px 8px;min-height:28px;border-radius:999px;cursor:pointer;transition:color var(--motion-base) ease,background-color var(--motion-base) ease,transform var(--motion-fast) ease}
 .timer-reset-link:hover{color:var(--text);background:rgba(19,25,20,.045)}
 .timer-note{font-size:10px;line-height:1.5;color:var(--muted);margin:0 2px}
-.timer-ring.is-running{animation:timerBreath 1.8s ease-in-out infinite}
-@keyframes timerBreath{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(47,107,85,.07)}50%{transform:scale(1.018);box-shadow:0 0 0 8px rgba(47,107,85,0)}}
 
-.how-card{border:1px solid var(--session-border);background:var(--session-surface);border-radius:var(--r-lg);padding:var(--s5);margin:0 0 16px;box-shadow:0 10px 32px rgba(38,53,44,.035)}
+.how-card{border:1px solid var(--session-border);background:var(--session-surface);border-radius:var(--r-lg);padding:var(--s5);margin:0 0 var(--s4);box-shadow:0 10px 32px rgba(38,53,44,.035)}
 .how-card__head h2{font-size:22px;line-height:1.15;letter-spacing:-.035em;margin:3px 0 0}
 .info-kicker{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:var(--accent)}
 .how-card ol{margin:var(--s4) 0 0;padding-left:24px;display:grid;gap:var(--s3)}
 .how-card li{font-size:14px;line-height:1.62;color:#455148;padding-left:2px;max-width:70ch}
 
 .details-stack{display:grid;gap:var(--s2);margin:0}
-.detail-card{border:1px solid var(--session-border);background:var(--session-surface);border-radius:var(--r-md);overflow:hidden;transition:border-color .22s ease,box-shadow .28s ease,background-color .28s ease}
+.detail-card{border:1px solid var(--session-border);background:var(--session-surface);border-radius:var(--r-md);overflow:hidden;transition:border-color var(--motion-base) ease,box-shadow var(--motion-slow) ease,background-color var(--motion-slow) ease}
 .detail-card:hover{border-color:rgba(47,107,85,.14)}
-.detail-card.is-open{background:rgba(255,255,255,.92);box-shadow:0 8px 24px rgba(38,53,44,.035)}
-.detail-card__toggle{width:100%;appearance:none;border:0;background:transparent;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:var(--s4);padding:15px var(--s4);cursor:pointer;font-size:14px;font-weight:800;min-height:50px;text-align:left}
-.detail-card__toggle i{font-style:normal;font-size:19px;line-height:1;color:var(--muted);font-weight:400;transition:transform .32s cubic-bezier(.2,.75,.2,1),color .22s ease}
+.detail-card.is-open{background:rgba(255,255,255,.94);box-shadow:0 8px 24px rgba(38,53,44,.035)}
+.detail-card__toggle{width:100%;appearance:none;border:0;background:transparent;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:var(--s4);padding:15px var(--s4);cursor:pointer;font-size:14px;font-weight:800;min-height:50px;text-align:left;transition:background-color var(--motion-base) ease,color var(--motion-base) ease}
+.detail-card__toggle:hover{background:rgba(47,107,85,.025)}
+.detail-card__toggle i{font-style:normal;font-size:19px;line-height:1;color:var(--muted);font-weight:400;transition:transform var(--motion-slow) var(--ease-soft),color var(--motion-base) ease}
 .detail-card.is-open .detail-card__toggle i{transform:rotate(45deg);color:var(--accent)}
-.detail-card__panel{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .38s cubic-bezier(.2,.75,.2,1),opacity .24s ease}
+.detail-card__panel{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--motion-slow) var(--ease-soft),opacity var(--motion-base) ease}
 .detail-card.is-open .detail-card__panel{grid-template-rows:1fr;opacity:1}
 .detail-card__content{min-height:0;overflow:hidden}
-.detail-card__inner{padding:0 var(--s4) var(--s4);border-top:1px solid rgba(19,25,20,.055);transform:translateY(-5px);transition:transform .34s cubic-bezier(.2,.75,.2,1)}
+.detail-card__inner{padding:0 var(--s4) var(--s4);border-top:1px solid rgba(19,25,20,.055);transform:translateY(-5px);transition:transform var(--motion-slow) var(--ease-soft)}
 .detail-card.is-open .detail-card__inner{transform:translateY(0)}
 .detail-card__content p,.detail-card__content li{font-size:13px;line-height:1.62;color:#4d574f;max-width:70ch}
 .detail-card__content p{margin:var(--s3) 0 0}
 .detail-card__content ul{margin:var(--s3) 0 0;padding-left:20px;display:grid;gap:var(--s2)}
 
-.session-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(247,248,245,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(19,25,20,.08);padding-bottom:env(safe-area-inset-bottom)}
-.session-nav__inner{height:78px;display:grid;grid-template-columns:132px 1fr 162px;align-items:center;gap:var(--s3)}
-.session-nav__status{text-align:center}
-.session-nav__status span{font-size:12px;font-weight:800;color:var(--muted)}
-.nav-button{height:48px;border-radius:999px;padding:0 20px;font-weight:800;cursor:pointer;transition:transform .12s ease,box-shadow .16s ease,background-color .16s ease}
+.session-nav{position:relative;z-index:40;width:100%;padding:10px 16px max(12px,env(safe-area-inset-bottom,0px));background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:0 -6px 18px rgba(38,53,44,.035)}
+.session-nav__inner{width:min(900px,100%);min-height:56px;margin:0 auto;display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:12px}
+.nav-button{height:56px;border-radius:18px;font-weight:850;cursor:pointer;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
 .nav-button:disabled{opacity:.34;cursor:not-allowed}
-.nav-button--secondary{background:#fff;border:1px solid var(--session-border);color:var(--text)}
-.nav-button--primary{border:0;background:var(--text);color:#fff}
-.nav-button--primary:hover{box-shadow:0 8px 20px rgba(0,0,0,.11)}
+.nav-button--back{width:56px;min-width:56px;padding:0;background:#fff;border:1px solid var(--session-border);color:var(--text)}
+.nav-button--back .nav-button__label{display:none}
+.nav-button--back .nav-button__icon{font-size:21px;line-height:1}
+.nav-button--next{min-width:0;padding:0 22px;background:var(--text);color:#fff;border:0;font-size:14px;letter-spacing:-.01em}
+.nav-button--primary.is-finish{background:var(--accent)}
+.nav-button.is-morphing{animation:buttonMorph .32s var(--ease-soft)}
+@keyframes buttonMorph{0%{transform:scale(.96);opacity:.75}55%{transform:scale(1.025)}100%{transform:scale(1);opacity:1}}
 
-.toast{z-index:60}
 .stage-placeholder{min-height:520px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;max-width:720px;margin:auto}
 .stage-placeholder h1{font-size:clamp(34px,5vw,58px);line-height:1;letter-spacing:-.05em;margin:18px 0 14px}
 .stage-placeholder p{font-size:16px;line-height:1.65;color:var(--muted);margin:0 0 24px}
 .stage-placeholder__button{text-decoration:none;display:inline-flex}
 
-/* Exercise-change motion */
-.exercise-main.is-entering .exercise-head{animation:dmFadeUp .34s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .visual-placeholder{animation:dmFadeUp .38s .035s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .exercise-facts{animation:dmFadeUp .38s .065s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .technique-key--prominent{animation:dmFadeUp .38s .095s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .timer-card--inline{animation:dmFadeUp .38s .125s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .how-card{animation:dmFadeUp .38s .155s cubic-bezier(.2,.7,.2,1) both}
-.exercise-main.is-entering .details-stack{animation:dmFadeUp .38s .185s cubic-bezier(.2,.7,.2,1) both}
-@keyframes dmFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.detail-card[open] .detail-card__content{animation:dmReveal .22s cubic-bezier(.2,.7,.2,1) both}
-@keyframes dmReveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-
-button,.back-link--icon{-webkit-tap-highlight-color:transparent}
-button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,107,85,.22);outline-offset:2px}
-.timer-primary:active,.timer-adjustments button:active,.timer-reset-link:active,.nav-button:active,.back-link--icon:active{transform:scale(.97)}
-
-@media(max-width:700px){
-  .container{width:min(100% - 20px,1120px)}
-  .session-body{padding-bottom:98px}
-  .session-topbar{grid-template-columns:42px 1fr 56px;padding:var(--s3) 0 var(--s2)}
-  .exercise-main{border-radius:var(--r-lg);padding:18px}
-  .exercise-head{gap:10px}
-  .exercise-head h1{font-size:clamp(29px,8vw,34px);line-height:1.04}
-  .exercise-goal{font-size:14px;line-height:1.6}
-  .visual-placeholder{margin:20px 0 14px;border-radius:18px}
-  .visual-placeholder__inner{flex-direction:column;text-align:center;gap:10px;padding:18px}
-  .visual-placeholder__icon{width:46px;height:46px;flex-basis:46px}
-  .exercise-facts{margin-bottom:16px}
-  .exercise-facts>div{padding:9px 10px}
-  .technique-key--prominent{padding:16px 17px;margin-bottom:18px}
-  .timer-card--inline{padding:16px;margin-bottom:18px;border-radius:18px}
-  .timer-card__topline{margin-bottom:9px}
-  .timer-inline-grid{grid-template-columns:116px 1fr;gap:14px}
-  .timer-ring{width:110px}
-  .timer-ring__inner strong{font-size:25px}
-  .timer-primary{height:44px}
-  .timer-adjustments button{height:39px;font-size:12px}
-  .timer-reset-link{font-size:10.5px;min-height:26px}
-  .timer-note{display:none}
-  .how-card{padding:18px;margin-bottom:12px;border-radius:18px}
-  .how-card__head h2{font-size:21px}
-  .how-card ol{margin-top:15px;gap:11px}
-  .how-card li{font-size:13.5px;line-height:1.62}
-  .detail-card__toggle{padding:14px 15px}
-  .session-nav__inner{height:74px;grid-template-columns:1fr 1.35fr;gap:var(--s2)}
-  .session-nav__status{display:none}
-  .nav-button{height:46px;padding:0 16px}
-}
-
-@media(max-width:430px){
-  .session-shell{padding-top:6px}
-  .exercise-main{padding:17px 16px 18px;border-radius:20px}
-  .exercise-head h1{font-size:clamp(28px,8.1vw,32px)}
-  .exercise-goal{font-size:13.5px}
-  .visual-placeholder{margin:18px 0 13px;border-radius:16px}
-  .exercise-facts{gap:8px;margin-bottom:15px}
-  .exercise-facts>div{padding:8px 9px}
-  .exercise-facts span{font-size:8.5px}
-  .exercise-facts strong{font-size:12.5px}
-  .technique-key--prominent{padding:15px 16px;margin-bottom:17px}
-  .technique-key--prominent strong{font-size:14px;line-height:1.5}
-  .timer-card--inline{padding:15px;margin-bottom:17px;border-radius:17px}
-  .timer-inline-grid{grid-template-columns:108px 1fr;gap:13px}
-  .timer-ring{width:104px}
-  .timer-ring__inner strong{font-size:23px}
-  .timer-primary{height:43px;font-size:12px}
-  .timer-adjustments button{height:38px;font-size:11.5px}
-  .timer-reset-link{font-size:10px}
-  .how-card{padding:16px;margin-bottom:11px;border-radius:17px}
-  .how-card__head h2{font-size:20px}
-  .how-card ol{margin-top:14px;gap:10px}
-  .how-card li{font-size:13px;line-height:1.6}
-}
-
-@media(max-width:360px){
-  .exercise-facts{grid-template-columns:1fr}
-  .timer-inline-grid{grid-template-columns:1fr}
-  .timer-ring{margin:auto}
-}
-
-
-/* Session polish — v7 */
-.session-body{
-  --motion-fast:140ms;
-  --motion-base:210ms;
-  --motion-slow:320ms;
-  --motion-page:360ms;
-  --ease-standard:cubic-bezier(.2,.72,.2,1);
-  --ease-soft:cubic-bezier(.16,.8,.22,1);
-  padding-bottom:118px;
-}
-.session-topbar{grid-template-columns:44px 1fr 72px}
-.session-step-wrap{justify-self:end;display:grid;justify-items:end;gap:6px}
-.step-segments{width:56px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
-.step-segments i{display:block;height:3px;border-radius:999px;background:rgba(47,107,85,.12);transition:background-color var(--motion-base) ease,transform var(--motion-base) var(--ease-standard)}
-.step-segments i.is-done{background:rgba(47,107,85,.42)}
-.step-segments i.is-current{background:var(--accent);transform:scaleY(1.35)}
-.exercise-main{scroll-margin-top:76px}
-
-/* Visual block is ready for real phase images. On mobile phases stack vertically, never carousel. */
-.exercise-visual{position:relative}
-.exercise-visual.has-visuals{aspect-ratio:auto;border:0;background:transparent;display:block;overflow:visible}
-.visual-phases{display:grid;grid-template-columns:repeat(var(--phase-count,2),minmax(0,1fr));gap:var(--s3)}
-.visual-phase{margin:0;border-radius:var(--r-md);overflow:hidden;background:#eef2ee;border:1px solid var(--session-border)}
-.visual-phase img{width:100%;height:auto;display:block;object-fit:contain}
-
-/* Metadata should read as metadata, not as competing cards. */
-.exercise-facts{gap:var(--s3);margin-bottom:var(--s5)}
-.exercise-facts>div{padding:9px 4px 10px;background:transparent;border:0;border-bottom:1px solid rgba(19,25,20,.09);border-radius:0}
-.exercise-facts span{font-size:9px;letter-spacing:.095em}
-.exercise-facts strong{font-size:13.5px}
-
-/* Timer: clear hierarchy, calmer surface and better rhythm. */
-.timer-card--inline{padding:20px;margin-bottom:var(--s5);transition:border-color var(--motion-base) ease,box-shadow var(--motion-slow) ease,background-color var(--motion-base) ease,transform var(--motion-fast) ease}
-.timer-card__topline{margin-bottom:var(--s3)}
-.timer-inline-grid{grid-template-columns:132px minmax(0,1fr);gap:var(--s5)}
-.timer-ring{width:122px;transition:transform var(--motion-base) var(--ease-standard),box-shadow var(--motion-base) ease,filter var(--motion-base) ease}
-.timer-ring.is-running{animation:timerBreath 2.1s ease-in-out infinite}
-.timer-ring.is-ending{filter:saturate(1.18);box-shadow:0 0 0 8px rgba(47,107,85,.07);animation:timerEnding .72s ease-in-out infinite alternate}
-@keyframes timerEnding{from{transform:scale(1)}to{transform:scale(1.035)}}
-.timer-actions{gap:var(--s2)}
-.timer-primary{height:48px;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease}
-.timer-adjustments{gap:var(--s2)}
-.timer-adjustments button{height:42px}
-.timer-reset-link{margin-top:1px}
-
-/* Accordion: one item at a time, with smooth height/content reveal. */
-.detail-card__toggle{transition:background-color var(--motion-base) ease,color var(--motion-base) ease}
-.detail-card__toggle:hover{background:rgba(47,107,85,.025)}
-.detail-card__toggle i{transition:transform var(--motion-slow) var(--ease-soft),color var(--motion-base) ease}
-.detail-card__panel{transition:grid-template-rows var(--motion-slow) var(--ease-soft),opacity var(--motion-base) ease}
-.detail-card__inner{transition:transform var(--motion-slow) var(--ease-soft)}
-
-/* Floating navigation instead of a full-width bottom bar. */
-.session-nav{left:50%;right:auto;bottom:calc(10px + env(safe-area-inset-bottom));width:min(900px,calc(100% - 24px));transform:translateX(-50%);background:transparent;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
-.session-nav__inner{width:100%;height:72px;padding:10px;border-radius:26px;background:rgba(249,250,247,.9);border:1px solid rgba(19,25,20,.08);box-shadow:0 14px 38px rgba(30,43,34,.13);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);pointer-events:auto;grid-template-columns:132px 1fr 168px}
-.nav-button{transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
-.nav-button--primary.is-finish{background:var(--accent);box-shadow:0 8px 22px rgba(47,107,85,.18)}
-.nav-button.is-morphing{animation:buttonMorph var(--motion-slow) var(--ease-soft)}
-@keyframes buttonMorph{0%{transform:scale(.96);opacity:.75}55%{transform:scale(1.025)}100%{transform:scale(1);opacity:1}}
-
-/* Direction-aware exercise transitions. */
-.exercise-main.enter-forward .exercise-head,.exercise-main.enter-back .exercise-head{animation-duration:var(--motion-page);animation-timing-function:var(--ease-soft);animation-fill-mode:both}
-.exercise-main.enter-forward .exercise-head{animation-name:dmEnterForward}
-.exercise-main.enter-back .exercise-head{animation-name:dmEnterBack}
+.exercise-main.enter-forward .exercise-head{animation:dmEnterForward var(--motion-page) var(--ease-soft) both}
+.exercise-main.enter-back .exercise-head{animation:dmEnterBack var(--motion-page) var(--ease-soft) both}
 .exercise-main.enter-forward .exercise-visual{animation:dmEnterForward var(--motion-page) 35ms var(--ease-soft) both}
 .exercise-main.enter-back .exercise-visual{animation:dmEnterBack var(--motion-page) 35ms var(--ease-soft) both}
 .exercise-main.enter-forward .exercise-facts,.exercise-main.enter-back .exercise-facts{animation:dmFadeUp var(--motion-slow) 70ms var(--ease-soft) both}
@@ -273,10 +150,10 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 .exercise-main.enter-forward .timer-card--inline,.exercise-main.enter-back .timer-card--inline{animation:dmFadeUp var(--motion-slow) 120ms var(--ease-soft) both}
 .exercise-main.enter-forward .how-card,.exercise-main.enter-back .how-card{animation:dmFadeUp var(--motion-slow) 145ms var(--ease-soft) both}
 .exercise-main.enter-forward .details-stack,.exercise-main.enter-back .details-stack{animation:dmFadeUp var(--motion-slow) 170ms var(--ease-soft) both}
+@keyframes dmFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes dmEnterForward{from{opacity:0;transform:translate3d(14px,5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 @keyframes dmEnterBack{from{opacity:0;transform:translate3d(-14px,5px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 
-/* Completion moment. */
 .completion-overlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:rgba(243,246,242,.74);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);opacity:0;visibility:hidden;transition:opacity var(--motion-slow) ease,visibility var(--motion-slow) ease}
 .completion-overlay.is-visible{opacity:1;visibility:visible}
 .completion-card{min-width:min(320px,88vw);padding:30px 26px;border-radius:28px;background:#fff;border:1px solid var(--session-border);box-shadow:0 24px 70px rgba(30,43,34,.15);display:grid;justify-items:center;text-align:center;gap:7px;transform:translateY(10px) scale(.97);transition:transform var(--motion-slow) var(--ease-soft)}
@@ -285,327 +162,88 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 .completion-overlay.is-visible .completion-check{animation:successPop .48s var(--ease-soft) both}
 .completion-card strong{font-size:22px;letter-spacing:-.03em}
 .completion-card span{font-size:13px;color:var(--muted)}
-.session-body .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 @keyframes successPop{0%{transform:scale(.55) rotate(-12deg);opacity:0}70%{transform:scale(1.08) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 
-@media(max-width:700px){
-  .session-body{padding-bottom:110px}
-  .session-topbar{grid-template-columns:42px 1fr 64px}
-  .step-segments{width:54px}
-  .exercise-facts{gap:var(--s4);margin-bottom:var(--s5)}
-  .timer-card--inline{padding:17px;margin-bottom:var(--s5)}
-  .timer-inline-grid{grid-template-columns:118px 1fr;gap:var(--s4)}
-  .timer-ring{width:112px}
-  .session-nav{bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 20px)}
-  .session-nav__inner{height:70px;padding:9px;grid-template-columns:1fr 1.32fr;gap:var(--s2);border-radius:24px}
-  .visual-phases{grid-template-columns:1fr;gap:var(--s3)}
-}
-@media(max-width:430px){
-  .exercise-facts{gap:12px;margin-bottom:22px}
-  .timer-inline-grid{grid-template-columns:112px 1fr;gap:14px}
-  .timer-ring{width:106px}
-}
-
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
-
-
-/* v17 — stable app shell + internal scroll + real action shelf */
-
-/* The workout page owns the viewport. Only the exercise content scrolls; the action shelf
-   is a real layout row, not an overlay. This keeps Telegram/Safari browser chrome from
-   pulling the controls around while it animates. */
-.session-body{
-  height:100vh;
-  height:100svh;
-  min-height:100svh;
-  overflow:hidden;
-  padding:0 !important;
-  background:linear-gradient(180deg,#fafbf8 0,#f6f7f3 46%,#f3f5f1 100%);
-}
-.exercise-app{
-  height:100vh;
-  height:100svh;
-  min-height:100svh;
-  display:grid;
-  grid-template-rows:minmax(0,1fr) auto;
-  overflow:hidden;
-  background:transparent;
-}
-.exercise-scroll{
-  min-height:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  overscroll-behavior-y:contain;
-  -webkit-overflow-scrolling:touch;
-  scroll-behavior:smooth;
-  position:relative;
-}
-.session-shell{
-  padding:12px 0 24px;
-}
-.exercise-main{
-  overflow:visible;
-  scroll-margin-top:12px;
-}
-
-/* Inline navigation. It scrolls away with the exercise instead of becoming a full sticky header. */
-.exercise-toolbar{
-  display:grid;
-  grid-template-columns:44px minmax(0,1fr) 82px;
-  align-items:center;
-  gap:12px;
-  margin-bottom:24px;
-}
-.exercise-toolbar__center{
-  text-align:center;
-  line-height:1.15;
-}
-.exercise-toolbar__center span{
-  font-size:15px;
-  font-weight:800;
-  letter-spacing:-.015em;
-}
-.back-link--icon{
-  width:44px;
-  height:44px;
-  background:#fff;
-  border-color:rgba(19,25,20,.085);
-  box-shadow:0 5px 18px rgba(38,53,44,.045);
-}
-
-/* One unified progress component: number and segments are a single object. */
-.step-indicator{
-  width:82px;
-  min-width:82px;
-  height:52px;
-  padding:7px 9px 6px;
-  border-radius:18px;
-  display:grid;
-  align-content:center;
-  justify-items:center;
-  gap:5px;
-  color:var(--text);
-  font-variant-numeric:tabular-nums;
-}
-.step-indicator strong{
-  font-size:14px;
-  line-height:1;
-  font-weight:850;
-  letter-spacing:-.02em;
-}
-.step-indicator strong.is-updating{animation:stepPop .28s ease}
-.step-indicator--inline{
-  justify-self:end;
-  background:#f7f8f5;
-  border:1px solid rgba(19,25,20,.07);
-  box-shadow:none;
-}
-.step-indicator .step-segments{
-  width:56px;
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:2px;
-  padding:0;
-}
-.step-indicator .step-segments i{
-  height:3px;
-  border-radius:999px;
-  background:rgba(47,107,85,.12);
-  transition:background-color var(--motion-base) ease,transform var(--motion-base) var(--ease-standard);
-}
-.step-indicator .step-segments i.is-done{background:rgba(47,107,85,.38)}
-.step-indicator .step-segments i.is-current{background:var(--accent);transform:scaleY(1.28)}
-
-/* Only this compact chip persists after the inline progress has scrolled away. */
-.sticky-step-indicator{
-  position:sticky;
-  top:12px;
-  z-index:34;
-  width:min(900px,calc(100% - 32px));
-  height:0;
-  margin:0 auto;
-  display:flex;
-  justify-content:flex-end;
-  pointer-events:none;
-  opacity:0;
-  visibility:hidden;
-  transform:translateY(-6px);
-  transition:opacity 180ms ease,transform 180ms var(--ease-soft),visibility 180ms linear;
-}
-.sticky-step-indicator.is-visible{
-  opacity:1;
-  visibility:visible;
-  transform:translateY(0);
-}
-.step-indicator--sticky{
-  background:rgba(248,249,246,.96);
-  border:1px solid rgba(19,25,20,.08);
-  box-shadow:0 8px 24px rgba(30,43,34,.09);
-  -webkit-backdrop-filter:blur(12px);
-  backdrop-filter:blur(12px);
-}
-
-/* Bottom controls are a real shelf in the grid. No fixed positioning, no gradient mask,
-   no artificial content spacer. */
-.session-nav{
-  position:relative !important;
-  left:auto !important;
-  right:auto !important;
-  bottom:auto !important;
-  inset:auto !important;
-  z-index:40;
-  width:100% !important;
-  transform:none !important;
-  padding:10px 16px max(10px,env(safe-area-inset-bottom,0px)) !important;
-  background:#f7f8f5 !important;
-  border:0 !important;
-  border-top:1px solid rgba(19,25,20,.07) !important;
-  box-shadow:0 -8px 24px rgba(38,53,44,.04) !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-  pointer-events:auto !important;
-}
-.session-nav::before{display:none !important}
-.session-nav__inner{
-  position:relative;
-  width:min(900px,100%) !important;
-  min-height:56px;
-  height:auto !important;
-  margin:0 auto !important;
-  padding:0 !important;
-  display:grid;
-  grid-template-columns:56px minmax(0,1fr) !important;
-  align-items:center;
-  gap:12px !important;
-  background:transparent !important;
-  border:0 !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-}
-.nav-button{
-  height:56px !important;
-  border-radius:18px !important;
-  font-weight:850;
-}
-.nav-button--back{
-  width:56px !important;
-  min-width:56px !important;
-  padding:0 !important;
-  background:#fff !important;
-  border:1px solid rgba(19,25,20,.085) !important;
-  box-shadow:none !important;
-}
-.nav-button--back .nav-button__label{display:none !important}
-.nav-button--back .nav-button__icon{font-size:21px;line-height:1}
-.nav-button--next{
-  min-width:0;
-  padding:0 22px !important;
-  background:var(--text) !important;
-  color:#fff !important;
-  border:0 !important;
-  box-shadow:none !important;
-  font-size:14px;
-  letter-spacing:-.01em;
-}
-.nav-button--next:hover{box-shadow:none !important}
-.nav-button--primary.is-finish{background:var(--accent) !important}
-
-/* The last card gets normal breathing space only; the shelf already occupies real layout space. */
-.details-stack{margin-bottom:0}
-.session-body .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+.session-body .toast{z-index:60;bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+button,.back-link--icon{-webkit-tap-highlight-color:transparent}
+button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,107,85,.22);outline-offset:2px}
+.timer-primary:active,.timer-adjustments button:active,.timer-reset-link:active,.nav-button:active,.back-link--icon:active{transform:scale(.97)}
 
 @media(max-width:700px){
   .container{width:min(100% - 20px,1120px)}
-  .session-shell{padding-top:10px;padding-bottom:24px}
-  .exercise-main{padding-top:16px}
-  .exercise-toolbar{
-    grid-template-columns:42px minmax(0,1fr) 78px;
-    gap:10px;
-    margin-bottom:22px;
-  }
+  .session-shell{padding:10px 0 24px}
+  .exercise-main{padding:16px 18px 22px;border-radius:22px}
+  .exercise-toolbar{grid-template-columns:42px minmax(0,1fr) 78px;gap:10px;margin-bottom:22px}
   .exercise-toolbar__center span{font-size:14px}
   .back-link--icon{width:42px;height:42px}
   .step-indicator{width:78px;min-width:78px;height:50px;border-radius:17px;padding:7px 8px 6px}
   .step-indicator strong{font-size:13.5px}
   .step-indicator .step-segments{width:54px}
-  .sticky-step-indicator{top:10px;width:calc(100% - 20px)}
-  .session-nav{padding:10px 10px max(10px,env(safe-area-inset-bottom,0px)) !important}
-  .session-nav__inner{width:100% !important;grid-template-columns:54px minmax(0,1fr) !important;gap:10px !important}
-  .nav-button{height:54px !important;border-radius:17px !important}
-  .nav-button--back{width:54px !important;min-width:54px !important}
-  .nav-button--next{font-size:14px;padding-inline:18px !important}
+  .sticky-step-indicator{top:max(12px,env(safe-area-inset-top,0px));width:calc(100% - 20px)}
+  .exercise-head h1{font-size:clamp(29px,8vw,34px);line-height:1.04}
+  .exercise-goal{font-size:14px;line-height:1.6}
+  .visual-placeholder{margin:20px 0 14px;border-radius:18px}
+  .visual-placeholder__inner{flex-direction:column;text-align:center;gap:10px;padding:18px}
+  .visual-placeholder__icon{width:46px;height:46px;flex-basis:46px}
+  .visual-phases{grid-template-columns:1fr;gap:var(--s3)}
+  .exercise-facts{gap:var(--s4);margin-bottom:var(--s5)}
+  .technique-key--prominent{padding:16px 17px;margin-bottom:18px}
+  .timer-card--inline{padding:17px;margin-bottom:var(--s5);border-radius:18px}
+  .timer-inline-grid{grid-template-columns:118px 1fr;gap:var(--s4)}
+  .timer-ring{width:112px}
+  .timer-primary{height:44px}
+  .timer-adjustments button{height:39px;font-size:12px}
+  .timer-note{display:none}
+  .how-card{padding:18px;margin-bottom:12px;border-radius:18px}
+  .how-card__head h2{font-size:21px}
+  .how-card ol{margin-top:15px;gap:11px}
+  .how-card li{font-size:13.5px;line-height:1.62}
+  .detail-card__toggle{padding:14px 15px}
+  .session-nav{padding:10px 10px max(12px,env(safe-area-inset-bottom,0px))}
+  .session-nav__inner{grid-template-columns:54px minmax(0,1fr);gap:10px}
+  .nav-button{height:54px;border-radius:17px}
+  .nav-button--back{width:54px;min-width:54px}
+  .nav-button--next{font-size:14px;padding-inline:18px}
 }
-
 @media(max-width:430px){
-  .session-shell{padding-top:8px;padding-bottom:22px}
-  .exercise-main{padding-top:14px}
+  .session-shell{padding:8px 0 22px}
+  .exercise-main{padding:14px 16px 20px;border-radius:20px}
   .exercise-toolbar{grid-template-columns:40px minmax(0,1fr) 76px;gap:9px;margin-bottom:20px}
   .back-link--icon{width:40px;height:40px}
   .step-indicator{width:76px;min-width:76px;height:48px;border-radius:16px}
   .step-indicator strong{font-size:13px}
   .step-indicator .step-segments{width:52px}
-  .sticky-step-indicator{top:8px;width:calc(100% - 16px)}
-  .session-nav{padding:9px 8px max(9px,env(safe-area-inset-bottom,0px)) !important}
-  .session-nav__inner{grid-template-columns:52px minmax(0,1fr) !important;gap:9px !important}
-  .nav-button{height:52px !important;border-radius:16px !important}
-  .nav-button--back{width:52px !important;min-width:52px !important}
-  .nav-button--next{font-size:13.5px;padding-inline:16px !important}
+  .sticky-step-indicator{top:max(10px,env(safe-area-inset-top,0px));width:calc(100% - 16px)}
+  .exercise-head h1{font-size:clamp(28px,8.1vw,32px)}
+  .exercise-goal{font-size:13.5px}
+  .visual-placeholder{margin:18px 0 13px;border-radius:16px}
+  .exercise-facts{gap:12px;margin-bottom:22px}
+  .exercise-facts span{font-size:8.5px}
+  .exercise-facts strong{font-size:12.5px}
+  .technique-key--prominent{padding:15px 16px;margin-bottom:17px}
+  .technique-key--prominent strong{font-size:14px;line-height:1.5}
+  .timer-card--inline{padding:15px;margin-bottom:17px;border-radius:17px}
+  .timer-inline-grid{grid-template-columns:112px 1fr;gap:14px}
+  .timer-ring{width:106px}
+  .timer-ring__inner strong{font-size:23px}
+  .timer-primary{height:43px;font-size:12px}
+  .timer-adjustments button{height:38px;font-size:11.5px}
+  .timer-reset-link{font-size:10px}
+  .how-card{padding:16px;margin-bottom:11px;border-radius:17px}
+  .how-card__head h2{font-size:20px}
+  .how-card ol{margin-top:14px;gap:10px}
+  .how-card li{font-size:13px;line-height:1.6}
+  .session-nav{padding:9px 8px max(11px,env(safe-area-inset-bottom,0px))}
+  .session-nav__inner{grid-template-columns:52px minmax(0,1fr);gap:9px}
+  .nav-button{height:52px;border-radius:16px}
+  .nav-button--back{width:52px;min-width:52px}
+  .nav-button--next{font-size:13.5px;padding-inline:16px}
 }
-
+@media(max-width:360px){
+  .exercise-facts{grid-template-columns:1fr}
+  .timer-inline-grid{grid-template-columns:1fr}
+  .timer-ring{margin:auto}
+}
 @media(prefers-reduced-motion:reduce){
-  .sticky-step-indicator{transition:none!important}
-  .step-indicator strong.is-updating{animation:none!important}
-}
-
-
-/* v18 — Safari polish: no blur leakage on persistent step indicator */
-html,body{
-  height:100%;
-  min-height:100%;
-}
-.session-body{
-  height:100svh;
-  min-height:100svh;
-  overscroll-behavior:none;
-}
-.exercise-app{
-  height:100%;
-  min-height:0;
-}
-
-/* Safari was not creating the blur here — our own backdrop-filter was. */
-.sticky-step-indicator{
-  top:max(14px, env(safe-area-inset-top, 0px));
-}
-.step-indicator--sticky{
-  background:#f7f8f5 !important;
-  border:1px solid rgba(19,25,20,.075) !important;
-  box-shadow:0 6px 18px rgba(30,43,34,.07) !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-  isolation:isolate;
-  contain:paint;
-}
-
-/* Keep the bottom action shelf fully inside the stable viewport in Safari. */
-.session-nav{
-  padding-bottom:max(12px, env(safe-area-inset-bottom, 0px)) !important;
-  background:#f7f8f5 !important;
-  box-shadow:0 -6px 18px rgba(38,53,44,.035) !important;
-}
-.session-nav__inner{
-  min-height:56px;
-}
-
-@media(max-width:700px){
-  .sticky-step-indicator{top:max(12px, env(safe-area-inset-top, 0px))}
-  .session-nav{padding-bottom:max(12px, env(safe-area-inset-bottom, 0px)) !important}
-}
-@media(max-width:430px){
-  .sticky-step-indicator{top:max(10px, env(safe-area-inset-top, 0px))}
-  .session-nav{padding-bottom:max(11px, env(safe-area-inset-bottom, 0px)) !important}
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
