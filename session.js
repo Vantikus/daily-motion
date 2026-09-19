@@ -5,7 +5,6 @@
     const names={day:'День',evening:'Вечер'};
     document.querySelector('#routineName').textContent=names[ROUTINE_KEY]||'Комплекс';
     document.querySelector('#headerProgress').textContent='Этап 3+';
-    const stickyStage=document.querySelector('#stickyProgress'); if(stickyStage) stickyStage.textContent='Этап 3+';
     document.querySelector('.timer-card').style.display='none';
     document.querySelector('.session-nav').style.display='none';
     document.querySelector('.exercise-main').innerHTML=`<div class="stage-placeholder"><span class="status-pill">Следующий этап</span><h1>${names[ROUTINE_KEY]||'Этот комплекс'} пока не собран</h1><p>На текущем этапе полностью работает только утренний комплекс. День и вечер добавим после проверки утра.</p><a class="primary-button stage-placeholder__button" href="index.html">Вернуться на главную</a></div>`;
