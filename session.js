@@ -181,7 +181,6 @@
     $('#executionTitle').textContent=exercise.title;
     $('#executionCountdownTitle').textContent=exercise.title;
     $('#executionKey').textContent=exercise.key;
-    $('#executionDoneTitle').textContent=exercise.title;
   }
 
   function setExecutionStage(stage){
@@ -189,7 +188,6 @@
     const stages={
       countdown:$('#executionCountdownStage'),
       timer:$('#timerCard'),
-      done:$('#executionDoneStage'),
       rest:$('#executionRestStage')
     };
     Object.entries(stages).forEach(([name,node])=>{
@@ -208,11 +206,9 @@
     syncModalState();
     const focusTarget=stage==='timer'
       ?$('#timerToggle')
-      :stage==='done'
-        ?$('#executionNext')
-        :stage==='rest'
-          ?$('#restSkip')
-          :$('#countdownCancel');
+      :stage==='rest'
+        ?$('#restSkip')
+        :$('#countdownCancel');
     requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
   }
 
@@ -356,20 +352,20 @@
     releaseWakeLock();
 
     const isLast=current===exercises.length-1;
-    $('#executionDoneMeta').textContent=isLast
-      ?'Последнее упражнение готово.'
-      :'Можно переходить к следующему упражнению.';
-    $('#executionNext').textContent=isLast?'Завершить комплекс':'Следующее упражнение';
-    showExecution('done');
+    if(isLast){
+      hideExecution();
+      finishRoutine();
+      return;
+    }
+
     updateNextButton();
 
-    if(settings.autoNext&&!isLast){
-      if(stageTimer!==null)clearTimeout(stageTimer);
-      stageTimer=setTimeout(()=>{
-        stageTimer=null;
-        startRest(advanceExercise);
-      },700);
+    if(settings.autoNext){
+      startRest(advanceExercise);
+      return;
     }
+
+    hideExecution();
   }
 
   function updateTimerUI(){
@@ -760,30 +756,6 @@
     Store.save();
     updateTimerUI();
     onTimerFinished();
-  });
-
-  $('#executionNext').addEventListener('click',()=>{
-    if(stageTimer!==null){
-      clearTimeout(stageTimer);
-      stageTimer=null;
-    }
-    if(current>=exercises.length-1){
-      hideExecution();
-      finishRoutine();
-      return;
-    }
-    haptic('next');
-    startRest(advanceExercise);
-  });
-
-  $('#executionDoneClose').addEventListener('click',()=>{
-    if(stageTimer!==null){
-      clearTimeout(stageTimer);
-      stageTimer=null;
-    }
-    hideExecution();
-    updateNextButton();
-    haptic('tap');
   });
 
   $('#restSkip').addEventListener('click',()=>{
