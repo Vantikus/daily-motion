@@ -732,3 +732,72 @@ html,body{background:var(--bg)}
   .timer-grid{grid-template-columns:106px minmax(0,1fr)}
   .timer-ring{width:106px}
 }
+
+
+/* v46 — structural iOS safe-area; no overlay over content */
+.ios-safe-zone-bar{
+  display:none!important;
+  position:static!important;
+  height:0!important;
+  min-height:0!important;
+  background:var(--bg)!important;
+  opacity:1!important;
+  z-index:auto!important;
+  pointer-events:none;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+.home-body::before,.session-body::before,.progress-body::before{
+  content:none!important;
+  display:none!important;
+}
+
+.session-body{
+  display:grid;
+  grid-template-rows:env(safe-area-inset-top,0px) minmax(0,1fr);
+  height:100vh;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  background:var(--bg);
+  padding:0!important;
+}
+.session-body>.ios-safe-zone-bar{
+  display:block!important;
+  grid-row:1;
+  position:relative!important;
+  inset:auto!important;
+  width:100%;
+  height:env(safe-area-inset-top,0px)!important;
+  min-height:env(safe-area-inset-top,0px)!important;
+  background:var(--bg)!important;
+  z-index:0!important;
+}
+.session-body>.exercise-app{
+  grid-row:2;
+  height:auto!important;
+  min-height:0;
+}
+.exercise-scroll{
+  padding-top:12px!important;
+  scroll-padding-top:12px;
+}
+
+.timer-card__status{
+  display:flex;
+  align-items:center;
+  gap:0;
+}
+.timer-card__status #timerState{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
