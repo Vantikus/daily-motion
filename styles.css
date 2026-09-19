@@ -803,9 +803,12 @@ html,body{background:var(--bg)}
 }
 
 
-/* v49 — compact standalone iOS PWA status-bar guard */
+/* v50 — tuned standalone iOS PWA status-bar guard */
 @media (orientation:portrait){
-  .ios-standalone-pwa .home-body .app-shell,
+  .ios-standalone-pwa .home-body .app-shell{
+    padding-top:calc(env(safe-area-inset-top,0px) + 12px);
+  }
+
   .ios-standalone-pwa .progress-body .app-shell{
     padding-top:calc(env(safe-area-inset-top,0px) + 8px);
   }
