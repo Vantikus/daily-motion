@@ -59,10 +59,17 @@
         <div class="activity-card" id="activityCard">
           <div class="activity-card__head">
             <div><span class="eyebrow">Активность</span><h3>Последние 7 дней</h3></div>
-            <span class="activity-streak" id="activityStreak">—</span>
+            <div class="activity-card__actions">
+              <span class="activity-streak" id="activityStreak">—</span>
+              <a class="text-link" href="progress.html">История</a>
+            </div>
           </div>
           <div class="activity-days" id="activityDays" aria-label="Активность за семь дней"></div>
           <p class="activity-empty" id="activityEmpty" hidden>Активность появится после первой завершённой тренировки.</p>
+          <div class="home-goal">
+            <div><span>Цель недели</span><strong id="homeWeeklyGoalText">0 / 5 дней</strong></div>
+            <div class="progress-track" aria-hidden="true"><i id="homeWeeklyGoalBar"></i></div>
+          </div>
         </div>
       </section>
 

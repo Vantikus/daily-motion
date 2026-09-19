@@ -27,7 +27,7 @@
     for(let i=0;i<365;i++){
       const key=Store.todayKey(date);
       const entry=state.days[key];
-      const complete=entry&&Object.keys(ROUTINES).every(routineKey=>entry.routines?.[routineKey]?.completed);
+      const complete=entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed);
       if(complete)count++;
       else if(i>0)break;
       date.setDate(date.getDate()-1);
@@ -104,6 +104,21 @@
 
   $('#activityEmpty').hidden=hasActivity;
   $('#activityCard').classList.toggle('is-empty',!hasActivity);
+
+  const weekStart=new Date();
+  weekStart.setHours(12,0,0,0);
+  weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+  let weeklyDone=0;
+  for(let i=0;i<7;i++){
+    const date=new Date(weekStart);
+    date.setDate(weekStart.getDate()+i);
+    const entry=state.days[Store.todayKey(date)];
+    if(entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed))weeklyDone++;
+  }
+  const weeklyGoal=Store.getSettings().weeklyGoalDays;
+  const weeklyPercent=Math.min(100,Math.round(weeklyDone/weeklyGoal*100));
+  $('#homeWeeklyGoalText').textContent=`${weeklyDone} / ${weeklyGoal} дней`;
+  $('#homeWeeklyGoalBar').style.width=`${weeklyPercent}%`;
 
   const toast=message=>{
     const node=$('#toast');
