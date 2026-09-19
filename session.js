@@ -200,7 +200,7 @@
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
-    ['#headerProgress','#stickyProgress'].forEach(selector=>{
+    ['#headerProgress'].forEach(selector=>{
       const badge=$(selector);
       if(!badge)return;
       badge.classList.remove('is-updating');
@@ -212,7 +212,7 @@
   function renderStepSegments(){
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const markup=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
-    ['#stepSegments','#stickySegments'].forEach(selector=>{
+    ['#stepSegments'].forEach(selector=>{
       const wrap=$(selector);
       if(wrap)wrap.innerHTML=markup;
     });
@@ -277,7 +277,6 @@
     $('#progressionText').textContent=ex.progression;
     $('#keyText').textContent=ex.key;
     $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
-    const stickyProgress=$('#stickyProgress'); if(stickyProgress)stickyProgress.textContent=`${current+1} / ${exercises.length}`;
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     updateNextButton();
@@ -355,38 +354,11 @@
   });
   window.addEventListener('beforeunload',()=>{routine.step=current;save();releaseWakeLock();});
 
-  function setupStickyProgress(){
-    const scroller=$('#exerciseScroll');
-    const inline=$('#inlineProgress');
-    const sticky=$('#stickyStepIndicator');
-    if(!scroller||!inline||!sticky)return;
-
-    const app=$('.exercise-app');
-    const setVisible=(visible)=>{
-      sticky.classList.toggle('is-visible',visible);
-      sticky.setAttribute('aria-hidden',String(!visible));
-      if(app)app.classList.toggle('has-sticky-step',visible);
-    };
-
-    if('IntersectionObserver' in window){
-      const observer=new IntersectionObserver(entries=>{
-        const entry=entries[0];
-        setVisible(!entry.isIntersecting && scroller.scrollTop>24);
-      },{root:scroller,threshold:.15});
-      observer.observe(inline);
-    }else{
-      const onScroll=()=>setVisible(scroller.scrollTop>72);
-      scroller.addEventListener('scroll',onScroll,{passive:true});
-      onScroll();
-    }
-  }
-
   window.addEventListener('load',()=>{
     setTimeout(()=>{
       $('#pageLoader').classList.add('is-hidden');
       if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
     },180);
   });
-  setupStickyProgress();
   render('forward','auto');
 })();

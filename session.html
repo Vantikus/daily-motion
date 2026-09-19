@@ -7,35 +7,30 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=21" />
+  <link rel="stylesheet" href="styles.css?v=22" />
 
 </head>
 <body class="session-body">
   <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
 
   <div class="exercise-app">
-    <div class="exercise-scroll" id="exerciseScroll">
-      <aside class="sticky-step-indicator" id="stickyStepIndicator" aria-hidden="true">
-        <div class="step-indicator step-indicator--sticky">
-          <strong id="stickyProgress">1 / 8</strong>
-          <div class="step-segments" id="stickySegments" aria-hidden="true"></div>
+    <header class="session-header" aria-label="Навигация комплекса">
+      <div class="session-header__inner">
+        <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
+        <div class="exercise-toolbar__center">
+          <span id="routineName">Утро</span>
         </div>
-      </aside>
+        <div class="step-indicator step-indicator--inline" id="inlineProgress" aria-label="Текущее упражнение">
+          <strong id="headerProgress">1 / 8</strong>
+          <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
+        </div>
+      </div>
+    </header>
 
+    <div class="exercise-scroll" id="exerciseScroll">
       <main class="container session-shell">
     <section class="exercise-layout">
       <article class="exercise-main glass-card">
-        <div class="exercise-toolbar" aria-label="Навигация комплекса">
-          <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
-          <div class="exercise-toolbar__center">
-            <span id="routineName">Утро</span>
-          </div>
-          <div class="step-indicator step-indicator--inline" id="inlineProgress" aria-label="Текущее упражнение">
-            <strong id="headerProgress">1 / 8</strong>
-            <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
-          </div>
-        </div>
-
         <header class="exercise-head">
           <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
           <p class="exercise-goal" id="exerciseGoal"></p>
@@ -160,6 +155,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="session.js?v=21"></script>
+  <script src="session.js?v=22"></script>
 </body>
 </html>

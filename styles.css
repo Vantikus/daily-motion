@@ -8,7 +8,7 @@
 @media(max-width:430px){.quick-grid{grid-template-columns:1fr}.hero-card{padding:22px;border-radius:24px}.hero-card h2{font-size:34px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:1/-1}}
 
 
-/* Session / workout — v21 Safari viewport stabilization */
+/* Session / workout — v22 persistent header + dynamic viewport */
 .session-page{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg)}
 .session-body{
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
@@ -16,7 +16,7 @@
   --motion-fast:140ms;--motion-base:210ms;--motion-slow:320ms;--motion-page:360ms;
   --ease-standard:cubic-bezier(.2,.72,.2,1);--ease-soft:cubic-bezier(.16,.8,.22,1);
   --session-surface:rgba(255,255,255,.88);--session-border:rgba(19,25,20,.085);--session-shadow:0 18px 54px rgba(38,53,44,.075);
-  margin:0;height:100vh;height:100svh;min-height:100svh;overflow:hidden;padding:0;
+  margin:0;height:100vh;height:100dvh;min-height:0;overflow:hidden;padding:0;
   background:linear-gradient(180deg,#fafbf8 0,#f6f7f3 46%,#f3f5f1 100%);
 }
 .page-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);transition:opacity .28s ease,visibility .28s ease}
@@ -24,16 +24,15 @@
 .page-loader.is-hidden{opacity:0;visibility:hidden}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.exercise-app{height:100%;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden;position:relative}
-.exercise-app::before{content:"";position:absolute;left:0;right:0;top:0;height:60px;z-index:33;background:var(--bg);opacity:0;pointer-events:none;transition:opacity var(--motion-base) ease}
-.exercise-app.has-sticky-step::before{opacity:1}
-.exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scroll-behavior:smooth;position:relative;padding-top:10px;scroll-padding-top:72px;background:var(--bg)}
+.exercise-app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--bg)}
+.session-header{position:relative;z-index:50;width:100%;padding:8px 16px;background:#f7f8f5;border-bottom:1px solid rgba(19,25,20,.07);box-shadow:0 1px 0 rgba(255,255,255,.8)}
+.session-header__inner{width:min(900px,100%);min-height:52px;margin:0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) 82px;align-items:center;gap:12px}
+.exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scroll-behavior:smooth;position:relative;padding-top:12px;scroll-padding-top:12px;background:var(--bg)}
 .session-shell{display:grid;gap:0;padding:0 0 24px}
 .exercise-layout{display:block}
 .exercise-main{max-width:900px;margin-inline:auto;border-radius:var(--r-xl);padding:clamp(24px,3vw,34px);overflow:visible;box-shadow:var(--session-shadow);scroll-margin-top:12px}
 .session-body .exercise-main.glass-card{background:#fff;border-color:var(--session-border);backdrop-filter:none;-webkit-backdrop-filter:none}
 
-.exercise-toolbar{display:grid;grid-template-columns:44px minmax(0,1fr) 82px;align-items:center;gap:12px;margin-bottom:24px}
 .exercise-toolbar__center{text-align:center;line-height:1.15}
 .exercise-toolbar__center span{font-size:15px;font-weight:800;letter-spacing:-.015em}
 .back-link--icon{width:44px;height:44px;border-radius:50%;border:1px solid var(--session-border);background:#fff;display:grid;place-items:center;font-size:20px;line-height:1;font-weight:650;box-shadow:0 5px 18px rgba(38,53,44,.045);transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease}
@@ -49,9 +48,6 @@
 .step-indicator .step-segments i.is-done{background:rgba(47,107,85,.38)}
 .step-indicator .step-segments i.is-current{background:var(--accent);transform:scaleY(1.28)}
 
-.sticky-step-indicator{position:sticky;top:8px;z-index:34;width:min(900px,calc(100% - 32px));height:0;margin:0 auto;display:flex;justify-content:flex-end;pointer-events:none;opacity:0;visibility:hidden;transform:none;transition:opacity 180ms ease,visibility 180ms linear}
-.sticky-step-indicator.is-visible{opacity:1;visibility:visible;transform:none}
-.step-indicator--sticky{background:#ffffff;border:1px solid rgba(19,25,20,.08);box-shadow:0 3px 10px rgba(30,43,34,.05);backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate}
 
 .exercise-head{display:grid;gap:var(--s3)}
 .exercise-head h1{font-size:clamp(34px,5.5vw,58px);letter-spacing:-.052em;line-height:1.02;margin:0;max-width:780px;text-wrap:balance}
@@ -128,7 +124,7 @@
 .detail-card__content p{margin:var(--s3) 0 0}
 .detail-card__content ul{margin:var(--s3) 0 0;padding-left:20px;display:grid;gap:var(--s2)}
 
-.session-nav{position:relative;z-index:40;width:100%;padding:8px 16px 10px;background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none}
+.session-nav{position:relative;z-index:50;width:100%;padding:8px 16px max(8px,env(safe-area-inset-bottom,0px));background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none}
 .session-nav__inner{width:min(900px,100%);min-height:56px;margin:0 auto;display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:12px}
 .nav-button{height:56px;border-radius:18px;font-weight:850;cursor:pointer;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
 .nav-button:disabled{opacity:.34;cursor:not-allowed}
@@ -177,13 +173,13 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .container{width:min(100% - 20px,1120px)}
   .session-shell{padding:0 0 24px}
   .exercise-main{padding:16px 18px 22px;border-radius:22px}
-  .exercise-toolbar{grid-template-columns:42px minmax(0,1fr) 78px;gap:10px;margin-bottom:22px}
+  .session-header{padding:7px 10px}
+  .session-header__inner{min-height:50px;grid-template-columns:42px minmax(0,1fr) 78px;gap:10px}
   .exercise-toolbar__center span{font-size:14px}
   .back-link--icon{width:42px;height:42px}
   .step-indicator{width:78px;min-width:78px;height:50px;border-radius:17px;padding:7px 8px 6px}
   .step-indicator strong{font-size:13.5px}
   .step-indicator .step-segments{width:54px}
-  .sticky-step-indicator{top:8px;width:calc(100% - 20px)}
   .exercise-head h1{font-size:clamp(29px,8vw,34px);line-height:1.04}
   .exercise-goal{font-size:14px;line-height:1.6}
   .visual-placeholder{margin:20px 0 14px;border-radius:18px}
@@ -203,7 +199,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .how-card ol{margin-top:15px;gap:11px}
   .how-card li{font-size:13.5px;line-height:1.62}
   .detail-card__toggle{padding:14px 15px}
-  .session-nav{padding:8px 10px 10px}
+  .session-nav{padding:7px 10px max(8px,env(safe-area-inset-bottom,0px))}
   .session-nav__inner{grid-template-columns:54px minmax(0,1fr);gap:10px}
   .nav-button{height:54px;border-radius:17px}
   .nav-button--back{width:54px;min-width:54px}
@@ -212,12 +208,12 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 @media(max-width:430px){
   .session-shell{padding:0 0 22px}
   .exercise-main{padding:14px 16px 20px;border-radius:20px}
-  .exercise-toolbar{grid-template-columns:40px minmax(0,1fr) 76px;gap:9px;margin-bottom:20px}
+  .session-header{padding:6px 8px}
+  .session-header__inner{min-height:48px;grid-template-columns:40px minmax(0,1fr) 76px;gap:9px}
   .back-link--icon{width:40px;height:40px}
   .step-indicator{width:76px;min-width:76px;height:48px;border-radius:16px}
   .step-indicator strong{font-size:13px}
   .step-indicator .step-segments{width:52px}
-  .sticky-step-indicator{top:6px;width:calc(100% - 16px)}
   .exercise-head h1{font-size:clamp(28px,8.1vw,32px)}
   .exercise-goal{font-size:13.5px}
   .visual-placeholder{margin:18px 0 13px;border-radius:16px}
@@ -237,7 +233,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .how-card__head h2{font-size:20px}
   .how-card ol{margin-top:14px;gap:10px}
   .how-card li{font-size:13px;line-height:1.6}
-  .session-nav{padding:8px 8px 10px}
+  .session-nav{padding:6px 8px max(8px,env(safe-area-inset-bottom,0px))}
   .session-nav__inner{grid-template-columns:52px minmax(0,1fr);gap:9px}
   .nav-button{height:52px;border-radius:16px}
   .nav-button--back{width:52px;min-width:52px}
@@ -253,10 +249,9 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 }
 
 
-@media(max-width:700px){.exercise-scroll{padding-top:10px;scroll-padding-top:72px}.step-indicator--sticky{background:#fff}}
-@media(max-width:430px){.exercise-scroll{padding-top:8px;scroll-padding-top:68px}.sticky-step-indicator{top:6px}}
+@media(max-width:700px){.exercise-scroll{padding-top:10px;scroll-padding-top:10px}}
+@media(max-width:430px){.exercise-scroll{padding-top:8px;scroll-padding-top:8px}}
 @media(display-mode:standalone){
-  .exercise-scroll{padding-top:max(10px,env(safe-area-inset-top,0px))}
-  .sticky-step-indicator{top:max(8px,env(safe-area-inset-top,0px))}
-  .session-nav{padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+  .session-header{padding-top:max(8px,env(safe-area-inset-top,0px))}
+  .session-nav{padding-bottom:max(8px,env(safe-area-inset-bottom,0px))}
 }
