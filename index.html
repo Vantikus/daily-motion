@@ -10,11 +10,23 @@
   <meta name="apple-mobile-web-app-title" content="Daily Motion" />
   <meta name="application-name" content="Daily Motion" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <script>
+    (() => {
+      const ua=navigator.userAgent||"";
+      const isiOS=/iPhone|iPad|iPod/.test(ua);
+      const isWebKit=/WebKit/.test(ua);
+      const isAltBrowser=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+      const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;
+      if(isiOS&&isWebKit&&!isAltBrowser&&!standalone){
+        document.documentElement.classList.add("ios-safari-browser");
+      }
+    })();
+  </script>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=46" />
+  <link rel="stylesheet" href="styles.css?v=47" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -120,9 +132,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=46"></script>
-  <script src="audio.js?v=46"></script>
-  <script src="pwa.js?v=46"></script>
-  <script src="app.js?v=46"></script>
+  <script src="state.js?v=47"></script>
+  <script src="audio.js?v=47"></script>
+  <script src="pwa.js?v=47"></script>
+  <script src="app.js?v=47"></script>
 </body>
 </html>

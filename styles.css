@@ -801,3 +801,21 @@ html,body{background:var(--bg)}
   white-space:nowrap!important;
   border:0!important;
 }
+
+
+/* v47 — Safari browser chrome guard */
+@media (orientation:portrait){
+  .ios-safari-browser .home-body .app-shell,
+  .ios-safari-browser .progress-body .app-shell{
+    padding-top:calc(env(safe-area-inset-top,0px) + 52px);
+  }
+
+  .ios-safari-browser .session-body{
+    grid-template-rows:calc(env(safe-area-inset-top,0px) + 52px) minmax(0,1fr);
+  }
+
+  .ios-safari-browser .session-body>.ios-safe-zone-bar{
+    height:calc(env(safe-area-inset-top,0px) + 52px)!important;
+    min-height:calc(env(safe-area-inset-top,0px) + 52px)!important;
+  }
+}
