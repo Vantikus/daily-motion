@@ -199,7 +199,7 @@
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
     }
-    ['#headerProgress','#floatingProgress'].forEach(selector=>{
+    ['#headerProgress','#pinnedProgress'].forEach(selector=>{
       const badge=$(selector);
       if(!badge)return;
       badge.classList.remove('is-updating');
@@ -211,7 +211,7 @@
   function renderStepSegments(){
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const markup=exercises.map((_,i)=>`<i class="${i<done?'is-done ':''}${i===current?'is-current':''}"></i>`).join('');
-    ['#stepSegments','#floatingSegments'].forEach(selector=>{
+    ['#stepSegments','#pinnedSegments'].forEach(selector=>{
       const wrap=$(selector);
       if(wrap)wrap.innerHTML=markup;
     });
@@ -276,7 +276,7 @@
     $('#progressionText').textContent=ex.progression;
     $('#keyText').textContent=ex.key;
     $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
-    const floatingProgress=$('#floatingProgress'); if(floatingProgress)floatingProgress.textContent=`${current+1} / ${exercises.length}`;
+    const floatingProgress=$('#pinnedProgress'); if(floatingProgress)floatingProgress.textContent=`${current+1} / ${exercises.length}`;
     $('#navStepLabel').textContent=`Шаг ${current+1} из ${exercises.length}`;
     $('#prevButton').disabled=current===0;
     updateNextButton();
@@ -354,46 +354,11 @@
   });
   window.addEventListener('beforeunload',()=>{routine.step=current;save();releaseWakeLock();});
 
-  function setupFloatingProgress(){
-    const scroller=$('#exerciseScroll');
-    const inline=$('#inlineProgress');
-    const shield=$('#scrollEdgeShield');
-    if(!scroller||!inline||!shield)return;
-
-    let inlineVisible=true;
-
-    const sync=()=>{
-      const scrolled=scroller.scrollTop>1;
-      shield.classList.toggle('is-covering',scrolled);
-      shield.classList.toggle('show-progress',scrolled&&!inlineVisible);
-      shield.setAttribute('aria-hidden',String(!(scrolled&&!inlineVisible)));
-    };
-
-    scroller.addEventListener('scroll',sync,{passive:true});
-
-    if('IntersectionObserver' in window){
-      const observer=new IntersectionObserver(entries=>{
-        inlineVisible=entries[0].isIntersecting;
-        sync();
-      },{root:scroller,threshold:.15});
-      observer.observe(inline);
-    }else{
-      const onScrollFallback=()=>{
-        inlineVisible=scroller.scrollTop<72;
-        sync();
-      };
-      scroller.addEventListener('scroll',onScrollFallback,{passive:true});
-    }
-
-    sync();
-  }
-
   window.addEventListener('load',()=>{
     setTimeout(()=>{
       $('#pageLoader').classList.add('is-hidden');
       if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
     },180);
   });
-  setupFloatingProgress();
   render('forward','auto');
 })();
