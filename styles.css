@@ -271,3 +271,51 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* P2 polish */
+.activity-empty{margin:12px 0 0;padding:13px 14px;border-radius:14px;background:#f7f8f5;color:var(--muted);font-size:12px;line-height:1.45}
+.activity-card.is-empty .activity-days{opacity:.48}
+.today-card.is-complete{border-color:rgba(47,107,85,.18);background:linear-gradient(180deg,#fff 0,#f4f8f5 100%)}
+.today-card.is-complete .status-pill{background:var(--accent);color:#fff}
+
+.settings-install,.settings-test-sound,.settings-reset{transition:transform var(--fast) ease,background-color var(--base) ease}
+.settings-install{appearance:none;width:100%;min-height:48px;margin-top:14px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+.settings-install[hidden]{display:none}
+.settings-install:active,.settings-test-sound:active,.settings-reset:active,.sheet-close:active,.detail-card__toggle:active,.timer-adjustments button:active{transform:scale(.985)}
+
+.pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:opacity var(--base) ease,transform var(--base) var(--ease),visibility var(--base) ease}
+.pwa-banner.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.pwa-banner__text{font-size:12px;line-height:1.4;font-weight:700}
+.pwa-banner__action{appearance:none;flex:0 0 auto;min-height:38px;border:0;border-radius:11px;background:#fff;color:#171917;padding:0 12px;font-size:12px;font-weight:850;cursor:pointer}
+.session-body .pwa-banner{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+
+@media(prefers-reduced-motion:no-preference){
+  .app-ready .page-grid>*{animation:homeReveal 360ms var(--ease) both}
+  .app-ready .page-grid>*:nth-child(2){animation-delay:35ms}
+  .app-ready .page-grid>*:nth-child(3){animation-delay:70ms}
+  .app-ready .page-grid>*:nth-child(4){animation-delay:105ms}
+  .app-ready .page-grid>*:nth-child(5){animation-delay:140ms}
+}
+@keyframes homeReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+@media(min-width:900px){
+  .home-body .container{width:min(960px,calc(100% - 48px))}
+  .home-body .page-grid{grid-template-columns:repeat(12,minmax(0,1fr));gap:20px;align-items:start}
+  .home-body .today-card{grid-column:span 8}
+  .home-body .summary-strip{grid-column:span 4;grid-template-columns:1fr}
+  .home-body .summary-strip>div{padding:18px 16px}
+  .home-body .routines-section,.home-body .activity-section{grid-column:span 6}
+  .home-body .notice-card{grid-column:1/-1}
+}
+
+@media(min-width:1000px){
+  .session-shell{width:min(900px,calc(100% - 48px))}
+  .exercise-main{padding:30px 32px}
+  .exercise-head h1{max-width:760px}
+  .timer-card{padding:18px 20px 20px}
+  .timer-grid{grid-template-columns:150px minmax(0,1fr)}
+  .timer-ring{width:132px}
+  .details-stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .details-stack .detail-card:first-child{grid-column:1/-1}
+}

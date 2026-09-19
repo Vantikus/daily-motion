@@ -45,3 +45,15 @@
 - `audio.js` использует HTMLAudioElement через media-channel как основной путь, Web Audio как fallback и `navigator.audioSession.type = 'playback'` на iPhone;
 - в настройках есть кнопка проверки звука;
 - настройки убраны из workout screen, чтобы не перегружать выполнение.
+
+## P2 — polish и PWA
+
+- добавлен service worker с app-shell cache и офлайн-запуском Home/Workout;
+- обновления PWA показываются внутри приложения и применяются по явной кнопке;
+- install prompt показывается в настройках там, где браузер поддерживает установку;
+- добавлены offline/online состояния;
+- settings sheet и workout overlays получили focus trap / inert / keyboard navigation;
+- добавлены empty/completed UI states;
+- desktop Home использует более полноценную двухколоночную композицию;
+- desktop Workout получил расширенную сетку без изменения mobile-first архитектуры;
+- motion polish учитывает `prefers-reduced-motion`.
