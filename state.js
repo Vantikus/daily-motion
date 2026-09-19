@@ -2,6 +2,12 @@
   const KEY='dailyMotionState.v2';
   const LEGACY_KEY='dailyMotionState.v1';
   const ROUTINE_KEYS=['morning','day','evening'];
+  const DEFAULT_SETTINGS={
+    countdownSeconds:3,
+    restSeconds:15,
+    sound:true,
+    autoNext:false
+  };
 
   const todayKey=(date=new Date())=>{
     const d=new Date(date);
@@ -15,6 +21,13 @@
     startedAt:null,
     completedAt:null,
     timers:{}
+  });
+
+  const normalizeSettings=(settings={})=>({
+    countdownSeconds:[0,3,5].includes(Number(settings.countdownSeconds))?Number(settings.countdownSeconds):DEFAULT_SETTINGS.countdownSeconds,
+    restSeconds:[0,15,30,45].includes(Number(settings.restSeconds))?Number(settings.restSeconds):DEFAULT_SETTINGS.restSeconds,
+    sound:typeof settings.sound==='boolean'?settings.sound:DEFAULT_SETTINGS.sound,
+    autoNext:typeof settings.autoNext==='boolean'?settings.autoNext:DEFAULT_SETTINGS.autoNext
   });
 
   const normalizeTimer=(timer={})=>({
@@ -47,13 +60,13 @@
   };
 
   const normalizeState=(raw={})=>{
-    const next={version:2,days:{}};
+    const next={version:2,settings:normalizeSettings(raw.settings),days:{}};
     const days=raw.days&&typeof raw.days==='object'?raw.days:{};
     Object.entries(days).forEach(([date,day])=>{next.days[date]=normalizeDay(day);});
     return next;
   };
 
-  const readJson=(key)=>{
+  const readJson=key=>{
     try{
       const raw=localStorage.getItem(key);
       return raw?JSON.parse(raw):null;
@@ -62,7 +75,7 @@
 
   const migrateLegacy=()=>{
     const legacy=readJson(LEGACY_KEY);
-    if(!legacy)return {version:2,days:{}};
+    if(!legacy)return {version:2,settings:normalizeSettings(),days:{}};
     const next=normalizeState(legacy);
     const date=todayKey();
     if(!next.days[date])next.days[date]=normalizeDay();
@@ -117,6 +130,13 @@
     return timer;
   };
 
+  const getSettings=()=>state.settings;
+  const updateSettings=patch=>{
+    state.settings=normalizeSettings({...state.settings,...patch});
+    save();
+    return state.settings;
+  };
+
   const resetToday=()=>{
     state.days[todayKey()]=normalizeDay();
     save();
@@ -133,6 +153,8 @@
     getDay:ensureDay,
     getRoutine:ensureRoutine,
     getTimer,
+    getSettings,
+    updateSettings,
     save,
     resetToday
   };

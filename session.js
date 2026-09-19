@@ -102,9 +102,8 @@
   }
 
   const routine=Store.getRoutine(ROUTINE_KEY);
-  if(typeof routine.completedUntil!=='number')routine.completedUntil=routine.completed?exercises.length:0;
-  if(typeof routine.step!=='number')routine.step=Math.min(routine.completedUntil,exercises.length-1);
-  routine.step=Math.max(0,Math.min(routine.step,exercises.length-1));
+  let settings=Store.getSettings();
+  routine.step=Math.max(0,Math.min(Number(routine.step)||0,exercises.length-1));
   if(!routine.completed&&!routine.startedAt)routine.startedAt=new Date().toISOString();
   Store.save();
 
@@ -113,6 +112,10 @@
   let tickerFrame=null;
   let wakeLock=null;
   let lastFinishState=current===exercises.length-1;
+  let countdownTimer=null;
+  let restTimer=null;
+  let restFinish=null;
+  let audioContext=null;
 
   const toast=message=>{
     const node=$('#toast');
@@ -127,6 +130,33 @@
     const patterns={tap:10,soft:16,next:[14,28,14],success:[40,45,90]};
     try{navigator.vibrate(patterns[kind]||10);}catch{}
   };
+
+  function ensureAudio(){
+    if(!settings.sound)return null;
+    try{
+      if(!audioContext)audioContext=new (window.AudioContext||window.webkitAudioContext)();
+      if(audioContext.state==='suspended')audioContext.resume();
+      return audioContext;
+    }catch{return null;}
+  }
+
+  function beep(frequency=760,duration=.08,volume=.055){
+    if(!settings.sound)return;
+    const context=ensureAudio();
+    if(!context)return;
+    try{
+      const oscillator=context.createOscillator();
+      const gain=context.createGain();
+      oscillator.type='sine';
+      oscillator.frequency.value=frequency;
+      gain.gain.setValueAtTime(volume,context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.0001,context.currentTime+duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime+duration);
+    }catch{}
+  }
 
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
   const fmt=seconds=>{
@@ -152,10 +182,139 @@
     }
   }
 
+  function hideFlowOverlay(selector){
+    const node=$(selector);
+    if(!node)return;
+    node.classList.remove('is-visible');
+    node.setAttribute('aria-hidden','true');
+  }
+
+  function showFlowOverlay(selector){
+    const node=$(selector);
+    if(!node)return;
+    node.classList.add('is-visible');
+    node.setAttribute('aria-hidden','false');
+  }
+
+  function cancelCountdown(){
+    if(countdownTimer!==null){
+      clearInterval(countdownTimer);
+      countdownTimer=null;
+    }
+    hideFlowOverlay('#countdownOverlay');
+  }
+
+  function cancelRest(){
+    if(restTimer!==null){
+      clearInterval(restTimer);
+      restTimer=null;
+    }
+    restFinish=null;
+    hideFlowOverlay('#restOverlay');
+  }
+
+  function startTimerNow(){
+    const timer=timerData(exercises[current]);
+    if(timer.remaining<=0)timer.remaining=timer.duration;
+    timer.running=true;
+    timer.endAt=Date.now()+timer.remaining*1000;
+    Store.save();
+    startTicker();
+    requestWakeLock();
+    updateTimerUI();
+  }
+
+  function startCountdown(done){
+    const seconds=Number(settings.countdownSeconds)||0;
+    if(seconds<=0){
+      done();
+      return;
+    }
+    cancelCountdown();
+    ensureAudio();
+    let remaining=seconds;
+    $('#countdownValue').textContent=String(remaining);
+    showFlowOverlay('#countdownOverlay');
+    beep(560,.06,.04);
+    countdownTimer=setInterval(()=>{
+      remaining--;
+      if(remaining<=0){
+        clearInterval(countdownTimer);
+        countdownTimer=null;
+        $('#countdownValue').textContent='Старт';
+        beep(920,.11,.065);
+        haptic('next');
+        setTimeout(()=>{
+          hideFlowOverlay('#countdownOverlay');
+          done();
+        },180);
+        return;
+      }
+      $('#countdownValue').textContent=String(remaining);
+      beep(560,.06,.04);
+      haptic('tap');
+    },1000);
+  }
+
+  function advanceExercise(){
+    current++;
+    routine.step=current;
+    Store.save();
+    render('forward');
+  }
+
+  function startRest(afterRest){
+    const seconds=Number(settings.restSeconds)||0;
+    if(seconds<=0){
+      afterRest();
+      return;
+    }
+    cancelRest();
+    ensureAudio();
+    let remaining=seconds;
+    const endAt=Date.now()+seconds*1000;
+    restFinish=afterRest;
+    $('#restValue').textContent=String(remaining);
+    $('#restNext').textContent=`Дальше: ${exercises[Math.min(current+1,exercises.length-1)].title}`;
+    showFlowOverlay('#restOverlay');
+    requestWakeLock();
+
+    const tick=()=>{
+      remaining=Math.max(0,Math.ceil((endAt-Date.now())/1000));
+      $('#restValue').textContent=String(remaining);
+      if(remaining<=3&&remaining>0)beep(600,.05,.035);
+      if(remaining<=0){
+        clearInterval(restTimer);
+        restTimer=null;
+        const finish=restFinish;
+        restFinish=null;
+        hideFlowOverlay('#restOverlay');
+        beep(900,.1,.055);
+        haptic('next');
+        if(finish)finish();
+      }
+    };
+    restTimer=setInterval(tick,250);
+    tick();
+  }
+
+  function onTimerFinished(){
+    beep(900,.12,.07);
+    haptic('success');
+    if(settings.autoNext&&current<exercises.length-1){
+      routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
+      Store.save();
+      startRest(advanceExercise);
+    }else{
+      toast('Таймер завершён');
+    }
+  }
+
   function updateTimerUI(){
     const exercise=exercises[current];
     const timer=timerData(exercise);
     let preciseRemaining=timer.remaining;
+    let justFinished=false;
 
     if(timer.running&&timer.endAt){
       preciseRemaining=Math.max(0,(timer.endAt-Date.now())/1000);
@@ -170,8 +329,7 @@
       stopTicker();
       releaseWakeLock();
       Store.save();
-      if(navigator.vibrate)navigator.vibrate([180,100,180]);
-      toast('Таймер завершён');
+      justFinished=true;
     }
 
     const progress=timer.duration>0?Math.min(100,Math.max(0,(1-preciseRemaining/timer.duration)*100)):0;
@@ -179,14 +337,14 @@
     $('#timerValue').textContent=fmt(timer.remaining);
     $('#timerLabel').textContent=timer.remaining===0?'готово':'осталось';
 
-    const stateNode=$('#timerState');
     const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
-    stateNode.textContent=timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов';
-
+    $('#timerState').textContent=timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов';
     $('#timerToggle').textContent=timer.running?'Пауза':timer.remaining===0?'Сначала':hasProgress?'Продолжить':'Старт';
     $('#timerRing').classList.toggle('is-running',timer.running);
     $('#timerRing').classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
     $('#timerCard').classList.toggle('is-running',timer.running);
+
+    if(justFinished)onTimerFinished();
   }
 
   function startTicker(){
@@ -237,6 +395,32 @@
       haptic('tap');
     });
   });
+
+  function syncSettingsUI(){
+    settings=Store.getSettings();
+    $('#soundSetting').checked=settings.sound;
+    $('#autoNextSetting').checked=settings.autoNext;
+    $('#countdownSetting').value=String(settings.countdownSeconds);
+    $('#restSetting').value=String(settings.restSeconds);
+  }
+
+  function saveSetting(patch){
+    settings=Store.updateSettings(patch);
+    syncSettingsUI();
+    haptic('tap');
+  }
+
+  $('#soundSetting').addEventListener('change',event=>{
+    saveSetting({sound:event.target.checked});
+    if(event.target.checked){
+      ensureAudio();
+      beep(760,.07,.045);
+    }
+  });
+  $('#autoNextSetting').addEventListener('change',event=>saveSetting({autoNext:event.target.checked}));
+  $('#countdownSetting').addEventListener('change',event=>saveSetting({countdownSeconds:Number(event.target.value)}));
+  $('#restSetting').addEventListener('change',event=>saveSetting({restSeconds:Number(event.target.value)}));
+  syncSettingsUI();
 
   function renderStepSegments(){
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
@@ -306,22 +490,24 @@
 
   function finishRoutine(){
     pauseCurrentTimer();
+    cancelCountdown();
+    cancelRest();
     routine.completed=true;
     routine.completedUntil=exercises.length;
     routine.step=exercises.length-1;
     routine.completedAt=new Date().toISOString();
     Store.save();
     renderStepSegments();
+    beep(980,.15,.07);
     haptic('success');
 
     const overlay=$('#completionOverlay');
-    const meta=$('#completionMeta');
     if(routine.startedAt){
       const elapsed=Math.max(0,Date.now()-new Date(routine.startedAt).getTime());
       const minutes=Math.max(1,Math.round(elapsed/60000));
-      meta.textContent=`${exercises.length} упражнений · около ${minutes} мин`;
+      $('#completionMeta').textContent=`${exercises.length} упражнений · около ${minutes} мин`;
     }else{
-      meta.textContent=`${exercises.length} упражнений завершено`;
+      $('#completionMeta').textContent=`${exercises.length} упражнений завершено`;
     }
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
@@ -330,6 +516,8 @@
 
   $('#prevButton').addEventListener('click',()=>{
     if(current<=0)return;
+    cancelRest();
+    cancelCountdown();
     haptic('soft');
     pauseCurrentTimer();
     current--;
@@ -337,14 +525,14 @@
   });
 
   $('#nextButton').addEventListener('click',()=>{
+    cancelCountdown();
     pauseCurrentTimer();
     routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
+    Store.save();
+
     if(current<exercises.length-1){
       haptic('next');
-      current++;
-      routine.step=current;
-      Store.save();
-      render('forward');
+      startRest(advanceExercise);
       return;
     }
     finishRoutine();
@@ -352,26 +540,28 @@
 
   $('#timerToggle').addEventListener('click',()=>{
     haptic('soft');
-    const exercise=exercises[current];
-    const timer=timerData(exercise);
+    ensureAudio();
+    const timer=timerData(exercises[current]);
+
     if(timer.running){
       timer.remaining=Math.max(0,Math.ceil((timer.endAt-Date.now())/1000));
       timer.running=false;
       timer.endAt=null;
       stopTicker();
       releaseWakeLock();
-    }else{
-      if(timer.remaining<=0)timer.remaining=timer.duration;
-      timer.running=true;
-      timer.endAt=Date.now()+timer.remaining*1000;
-      startTicker();
-      requestWakeLock();
+      Store.save();
+      updateTimerUI();
+      return;
     }
-    Store.save();
-    updateTimerUI();
+
+    const isFresh=timer.remaining===timer.duration||timer.remaining<=0;
+    if(timer.remaining<=0)timer.remaining=timer.duration;
+    if(isFresh)startCountdown(startTimerNow);
+    else startTimerNow();
   });
 
   $('#timerReset').addEventListener('click',()=>{
+    cancelCountdown();
     haptic('tap');
     const exercise=exercises[current];
     const timer=timerData(exercise);
@@ -405,6 +595,16 @@
 
   $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10);});
   $('#plusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(10);});
+  $('#countdownCancel').addEventListener('click',()=>{cancelCountdown();haptic('tap');});
+  $('#restSkip').addEventListener('click',()=>{
+    const finish=restFinish;
+    if(restTimer!==null)clearInterval(restTimer);
+    restTimer=null;
+    restFinish=null;
+    hideFlowOverlay('#restOverlay');
+    haptic('next');
+    if(finish)finish();
+  });
   $('#completionHome').addEventListener('click',()=>{location.href='index.html';});
 
   document.addEventListener('visibilitychange',()=>{

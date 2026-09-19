@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=38" />
+  <link rel="stylesheet" href="styles.css?v=39" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -75,7 +75,6 @@
                 </div>
               </div>
             </div>
-            <p class="timer-note">Во время запущенного таймера экран не будет засыпать, если устройство поддерживает Wake Lock.</p>
           </section>
 
           <section class="details-stack" aria-label="Техника упражнения">
@@ -109,6 +108,42 @@
               </button>
               <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
             </article>
+            <article class="detail-card">
+              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-settings">
+                <span>Настройки тренировки</span><i aria-hidden="true">+</i>
+              </button>
+              <div class="detail-card__panel" id="detail-settings">
+                <div class="detail-card__content">
+                  <div class="detail-card__inner settings-list">
+                    <label class="setting-row">
+                      <span><strong>Звук</strong><small>Сигнал countdown и окончания таймера</small></span>
+                      <input class="switch-input" id="soundSetting" type="checkbox" />
+                    </label>
+                    <label class="setting-row">
+                      <span><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
+                      <input class="switch-input" id="autoNextSetting" type="checkbox" />
+                    </label>
+                    <label class="setting-row">
+                      <span><strong>Countdown</strong><small>Перед первым запуском таймера</small></span>
+                      <select id="countdownSetting" aria-label="Countdown перед таймером">
+                        <option value="0">Выкл</option>
+                        <option value="3">3 сек</option>
+                        <option value="5">5 сек</option>
+                      </select>
+                    </label>
+                    <label class="setting-row">
+                      <span><strong>Отдых</strong><small>Между упражнениями</small></span>
+                      <select id="restSetting" aria-label="Длительность отдыха">
+                        <option value="0">Выкл</option>
+                        <option value="15">15 сек</option>
+                        <option value="30">30 сек</option>
+                        <option value="45">45 сек</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </article>
           </section>
         </article>
       </main>
@@ -123,6 +158,24 @@
     </nav>
   </div>
 
+  <div class="flow-overlay" id="countdownOverlay" aria-hidden="true">
+    <div class="flow-card" role="dialog" aria-modal="true" aria-label="Countdown">
+      <span class="eyebrow">Приготовьтесь</span>
+      <strong class="flow-value" id="countdownValue">3</strong>
+      <button class="flow-cancel" id="countdownCancel" type="button">Отмена</button>
+    </div>
+  </div>
+
+  <div class="flow-overlay" id="restOverlay" aria-hidden="true">
+    <div class="flow-card" role="dialog" aria-modal="true" aria-labelledby="restTitle">
+      <span class="eyebrow">Пауза между упражнениями</span>
+      <h2 id="restTitle">Отдых</h2>
+      <strong class="flow-value flow-value--rest" id="restValue">15</strong>
+      <p id="restNext">Дальше: следующее упражнение</p>
+      <button class="primary-button flow-skip" id="restSkip" type="button">Пропустить</button>
+    </div>
+  </div>
+
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
       <div class="completion-check" aria-hidden="true">✓</div>
@@ -134,7 +187,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=38"></script>
-  <script src="session.js?v=38"></script>
+  <script src="state.js?v=39"></script>
+  <script src="session.js?v=39"></script>
 </body>
 </html>
