@@ -1168,3 +1168,53 @@ html,body{background:var(--bg)}
   }
 }
 
+/* v55 — restore a little breathing room and clean Settings separators */
+.home-body .page-grid{
+  gap:22px;
+}
+.home-body .routine-card{
+  min-height:72px;
+}
+.home-body .activity-card__head{
+  margin-bottom:13px;
+}
+.home-body .home-goal{
+  margin-top:13px;
+  padding-top:12px;
+}
+.home-body .safety-note{
+  margin-top:0;
+}
+
+.step-segments{
+  margin-bottom:21px;
+}
+.visual-placeholder{
+  margin:17px 0 15px;
+}
+.exercise-facts{
+  margin-bottom:18px;
+}
+.technique-key{
+  margin-bottom:18px;
+}
+.timer-card{
+  margin-bottom:20px;
+}
+.details-section{
+  gap:9px;
+}
+
+.settings-sheet__head h2{
+  margin:0;
+}
+.settings-list--home{
+  border-bottom:0;
+}
+.setting-row{
+  min-height:60px;
+}
+.settings-reset{
+  margin-top:6px;
+}
+
