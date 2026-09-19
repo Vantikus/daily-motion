@@ -18,7 +18,7 @@
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
-  <div class="page-loader" id="pageLoader" aria-hidden="true"><span></span></div>
+  <div class="page-loader" id="pageLoader" role="status" aria-live="polite"><span aria-hidden="true"></span><em class="sr-only">Загрузка тренировки</em></div>
 
   <div class="exercise-app">
     <div class="exercise-scroll" id="exerciseScroll">
@@ -125,7 +125,7 @@
   <div class="flow-overlay" id="countdownOverlay" aria-hidden="true">
     <div class="flow-card" role="dialog" aria-modal="true" aria-label="Countdown">
       <span class="eyebrow">Приготовьтесь</span>
-      <strong class="flow-value" id="countdownValue">3</strong>
+      <strong class="flow-value" id="countdownValue" role="timer" aria-live="assertive">3</strong>
       <button class="flow-cancel" id="countdownCancel" type="button">Отмена</button>
     </div>
   </div>
@@ -134,7 +134,7 @@
     <div class="flow-card" role="dialog" aria-modal="true" aria-labelledby="restTitle">
       <span class="eyebrow">Пауза между упражнениями</span>
       <h2 id="restTitle">Отдых</h2>
-      <strong class="flow-value flow-value--rest" id="restValue">15</strong>
+      <strong class="flow-value flow-value--rest" id="restValue" role="timer" aria-live="polite">15</strong>
       <p id="restNext">Дальше: следующее упражнение</p>
       <button class="primary-button flow-skip" id="restSkip" type="button">Пропустить</button>
     </div>

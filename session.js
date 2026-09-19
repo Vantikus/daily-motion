@@ -116,6 +116,8 @@
   let restTimer=null;
   let restFinish=null;
   const Audio=window.DailyMotionAudio;
+  const exerciseApp=$('.exercise-app');
+  let modalReturnFocus=null;
 
   const toast=message=>{
     const node=$('#toast');
@@ -161,18 +163,36 @@
     }
   }
 
+  function visibleModal(){
+    return document.querySelector('.flow-overlay.is-visible,.completion-overlay.is-visible');
+  }
+
+  function syncModalState(){
+    const hasModal=Boolean(visibleModal());
+    if(exerciseApp)exerciseApp.inert=hasModal;
+    document.body.classList.toggle('modal-open',hasModal);
+  }
+
   function hideFlowOverlay(selector){
     const node=$(selector);
     if(!node)return;
     node.classList.remove('is-visible');
     node.setAttribute('aria-hidden','true');
+    syncModalState();
+    if(!visibleModal()&&modalReturnFocus?.isConnected){
+      modalReturnFocus.focus({preventScroll:true});
+      modalReturnFocus=null;
+    }
   }
 
   function showFlowOverlay(selector){
     const node=$(selector);
     if(!node)return;
+    modalReturnFocus=document.activeElement;
     node.classList.add('is-visible');
     node.setAttribute('aria-hidden','false');
+    syncModalState();
+    requestAnimationFrame(()=>node.querySelector('button')?.focus({preventScroll:true}));
   }
 
   function cancelCountdown(){
@@ -463,9 +483,11 @@
     }else{
       $('#completionMeta').textContent=`${exercises.length} упражнений завершено`;
     }
+    modalReturnFocus=document.activeElement;
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
-    $('#completionHome').focus();
+    syncModalState();
+    $('#completionHome').focus({preventScroll:true});
   }
 
   $('#prevButton').addEventListener('click',()=>{
@@ -549,6 +571,33 @@
 
   document.addEventListener('pointerdown',()=>{unlockAudio();},{once:true,passive:true});
 
+  document.addEventListener('keydown',event=>{
+    const modal=visibleModal();
+    if(!modal)return;
+
+    if(event.key==='Escape'){
+      if($('#countdownOverlay').classList.contains('is-visible')){
+        cancelCountdown();
+      }else if($('#restOverlay').classList.contains('is-visible')){
+        $('#restSkip').click();
+      }
+      return;
+    }
+
+    if(event.key!=='Tab')return;
+    const focusable=[...modal.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled])')].filter(node=>node.offsetParent!==null);
+    if(!focusable.length)return;
+    const first=focusable[0];
+    const last=focusable[focusable.length-1];
+    if(event.shiftKey&&document.activeElement===first){
+      event.preventDefault();
+      last.focus();
+    }else if(!event.shiftKey&&document.activeElement===last){
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
   $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10);});
   $('#plusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(10);});
   $('#countdownCancel').addEventListener('click',()=>{cancelCountdown();haptic('tap');});
@@ -587,7 +636,8 @@
   window.addEventListener('load',()=>{
     setTimeout(()=>{
       $('#pageLoader').classList.add('is-hidden');
-      if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
+      if(routine.completed)toast('Комплекс уже завершён сегодня');
+      else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
     },120);
   });
 
