@@ -15,20 +15,29 @@
   const makeWav=parts=>{
     const sampleRate=22050;
     const samples=[];
+
     parts.forEach(part=>{
-      const duration=Math.max(.02,Number(part.duration)||.1);
+      const duration=Math.max(.025,Number(part.duration)||.1);
       const gap=Math.max(0,Number(part.gap)||0);
-      const frequency=Math.max(80,Number(part.frequency)||660);
-      const volume=Math.min(.9,Math.max(.02,Number(part.volume)||.35));
+      const frequency=Math.max(80,Number(part.frequency)||440);
+      const volume=Math.min(.35,Math.max(.01,Number(part.volume)||.12));
+      const attackSeconds=Math.max(.004,Number(part.attack)||.014);
+      const releaseSeconds=Math.max(.025,Math.min(duration*.8,Number(part.release)||.085));
       const toneSamples=Math.floor(sampleRate*duration);
       const gapSamples=Math.floor(sampleRate*gap);
+      const attackSamples=Math.max(1,Math.floor(sampleRate*attackSeconds));
+      const releaseSamples=Math.max(1,Math.floor(sampleRate*releaseSeconds));
 
       for(let i=0;i<toneSamples;i++){
-        const attack=Math.min(1,i/(sampleRate*.008));
-        const release=Math.min(1,(toneSamples-i)/(sampleRate*.025));
+        const attack=Math.min(1,i/attackSamples);
+        const release=Math.min(1,(toneSamples-i)/releaseSamples);
         const envelope=Math.max(0,Math.min(attack,release));
-        samples.push(Math.sin(2*Math.PI*frequency*i/sampleRate)*volume*envelope);
+        const phase=2*Math.PI*frequency*i/sampleRate;
+        const fundamental=Math.sin(phase);
+        const warmth=Math.sin(phase*.5)*.08;
+        samples.push((fundamental+warmth)*volume*envelope);
       }
+
       for(let i=0;i<gapSamples;i++)samples.push(0);
     });
 
@@ -62,34 +71,49 @@
     return 'data:audio/wav;base64,'+btoa(binary);
   };
 
+  // Quiet Motion: softer, lower and shorter than notification-style beeps.
   const sources={
-    prime:makeWav([{frequency:440,duration:.025,volume:.02}]),
-    tick:makeWav([{frequency:660,duration:.12,volume:.42}]),
+    prime:makeWav([{frequency:330,duration:.025,volume:.01,release:.02}]),
+    tick:makeWav([{frequency:392,duration:.075,volume:.105,attack:.01,release:.055}]),
     start:makeWav([
-      {frequency:760,duration:.12,volume:.42,gap:.055},
-      {frequency:1040,duration:.18,volume:.48}
+      {frequency:440,duration:.10,volume:.12,gap:.035,release:.07},
+      {frequency:554,duration:.16,volume:.14,release:.11}
     ]),
+    pause:makeWav([
+      {frequency:392,duration:.09,volume:.10,gap:.025,release:.06},
+      {frequency:330,duration:.12,volume:.085,release:.085}
+    ]),
+    resume:makeWav([
+      {frequency:392,duration:.08,volume:.09,gap:.025,release:.055},
+      {frequency:494,duration:.13,volume:.115,release:.09}
+    ]),
+    ready:makeWav([{frequency:523,duration:.15,volume:.125,release:.105}]),
     finish:makeWav([
-      {frequency:760,duration:.12,volume:.42,gap:.05},
-      {frequency:980,duration:.14,volume:.46,gap:.05},
-      {frequency:1240,duration:.22,volume:.52}
-    ])
+      {frequency:494,duration:.10,volume:.105,gap:.035,release:.07},
+      {frequency:659,duration:.19,volume:.135,release:.13}
+    ]),
+    complete:makeWav([
+      {frequency:440,duration:.10,volume:.095,gap:.035,release:.07},
+      {frequency:554,duration:.11,volume:.11,gap:.04,release:.075},
+      {frequency:659,duration:.22,volume:.14,release:.15}
+    ]),
+    confirm:makeWav([{frequency:523,duration:.11,volume:.095,release:.08}])
   };
 
-  const players={
-    tick:new Audio(sources.tick),
-    start:new Audio(sources.start),
-    finish:new Audio(sources.finish)
-  };
+  const players=Object.fromEntries(
+    Object.entries(sources)
+      .filter(([name])=>name!=='prime')
+      .map(([name,src])=>[name,new Audio(src)])
+  );
 
   Object.values(players).forEach(player=>{
     player.preload='auto';
-    player.volume=1;
+    player.volume=.82;
   });
 
   const primePlayer=new Audio(sources.prime);
   primePlayer.preload='auto';
-  primePlayer.volume=.04;
+  primePlayer.volume=.02;
 
   const getContext=()=>{
     try{
@@ -135,7 +159,7 @@
     return mediaReady||webReady;
   };
 
-  const webTone=(frequency,duration=.16,volume=.2,delay=0)=>{
+  const webTone=(frequency,duration=.13,volume=.075,delay=0)=>{
     const ctx=getContext();
     if(!ctx||ctx.state!=='running')return;
     try{
@@ -145,7 +169,7 @@
       oscillator.type='sine';
       oscillator.frequency.setValueAtTime(frequency,startAt);
       gain.gain.setValueAtTime(.0001,startAt);
-      gain.gain.exponentialRampToValueAtTime(volume,startAt+.012);
+      gain.gain.exponentialRampToValueAtTime(volume,startAt+.014);
       gain.gain.exponentialRampToValueAtTime(.0001,startAt+duration);
       oscillator.connect(gain);
       gain.connect(ctx.destination);
@@ -156,17 +180,36 @@
 
   const webFallback=kind=>{
     if(kind==='tick'){
-      webTone(660,.14,.2);
+      webTone(392,.08,.055);
       return;
     }
-    if(kind==='start'){
-      webTone(760,.14,.2);
-      webTone(1040,.2,.24,.11);
+    if(kind==='pause'){
+      webTone(392,.09,.055);
+      webTone(330,.12,.045,.08);
       return;
     }
-    webTone(760,.15,.2);
-    webTone(980,.18,.24,.12);
-    webTone(1240,.23,.28,.28);
+    if(kind==='resume'){
+      webTone(392,.08,.05);
+      webTone(494,.13,.06,.075);
+      return;
+    }
+    if(kind==='ready'||kind==='confirm'){
+      webTone(523,.14,.06);
+      return;
+    }
+    if(kind==='finish'){
+      webTone(494,.10,.055);
+      webTone(659,.19,.07,.09);
+      return;
+    }
+    if(kind==='complete'){
+      webTone(440,.10,.05);
+      webTone(554,.11,.06,.09);
+      webTone(659,.22,.075,.20);
+      return;
+    }
+    webTone(440,.10,.06);
+    webTone(554,.16,.07,.09);
   };
 
   const play=kind=>{
@@ -180,7 +223,6 @@
     try{
       player.pause();
       player.currentTime=0;
-      player.volume=1;
       const result=player.play();
       if(result&&typeof result.catch==='function'){
         result.catch(()=>webFallback(kind));
@@ -190,14 +232,13 @@
     }
   };
 
-  const tick=()=>play('tick');
-  const start=()=>play('start');
-  const finish=()=>play('finish');
+  const api={unlock};
+  Object.keys(players).forEach(kind=>{api[kind]=()=>play(kind);});
 
-  const test=async()=>{
+  api.test=async()=>{
     const ready=await unlock();
     if(!ready)return false;
-    start();
+    play('confirm');
     return true;
   };
 
@@ -206,5 +247,5 @@
   });
 
   setPlaybackSession();
-  window.DailyMotionAudio={unlock,tick,start,finish,test};
+  window.DailyMotionAudio=api;
 })();

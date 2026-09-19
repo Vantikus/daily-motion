@@ -193,7 +193,10 @@
 
   $('#soundSetting').addEventListener('change',async event=>{
     settings=Store.updateSettings({sound:event.target.checked});
-    if(settings.sound)await Audio?.unlock?.();
+    if(settings.sound){
+      const ready=await Audio?.unlock?.();
+      if(ready)Audio?.confirm?.();
+    }
   });
   $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
   $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});

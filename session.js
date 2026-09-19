@@ -270,6 +270,8 @@
     const seconds=Number(settings.countdownSeconds)||0;
     if(seconds<=0){
       showExecution('timer');
+      sound('start');
+      haptic('next');
       done();
       return;
     }
@@ -336,7 +338,7 @@
         restTimer=null;
         const finish=restFinish;
         restFinish=null;
-        sound('start');
+        sound('ready');
         haptic('next');
         hideExecution();
         if(finish)finish();
@@ -546,7 +548,7 @@
     routine.completedAt=new Date().toISOString();
     Store.save();
     renderStepSegments();
-    sound('finish');
+    sound('complete');
     haptic('success');
 
     const overlay=$('#completionOverlay');
@@ -639,6 +641,7 @@
 
     if(timer.running){
       pauseCurrentTimer();
+      sound('pause');
       updateTimerUI();
       return;
     }
@@ -650,6 +653,7 @@
       return;
     }
 
+    sound('resume');
     startTimerNow();
   });
 
