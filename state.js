@@ -146,6 +146,15 @@
     save();
   };
 
+  const resetRoutine=(routineKey,date=todayKey())=>{
+    const routine=ensureRoutine(routineKey,date);
+    const fresh=blankRoutine();
+    Object.keys(routine).forEach(key=>delete routine[key]);
+    Object.assign(routine,fresh);
+    save();
+    return routine;
+  };
+
   const exportState=()=>JSON.stringify(state,null,2);
 
   const importState=input=>{
@@ -173,6 +182,7 @@
     exportState,
     importState,
     save,
-    resetToday
+    resetToday,
+    resetRoutine
   };
 })();

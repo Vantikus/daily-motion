@@ -490,6 +490,26 @@
     $('#completionHome').focus({preventScroll:true});
   }
 
+  $('#routineResetButton').addEventListener('click',()=>{
+    const approved=confirm('Сбросить прогресс этой тренировки? Все пройденные упражнения и таймеры этого комплекса будут сброшены.');
+    if(!approved)return;
+
+    cancelCountdown();
+    cancelRest();
+    stopTicker();
+    releaseWakeLock();
+
+    Store.resetRoutine(ROUTINE_KEY);
+    routine.startedAt=new Date().toISOString();
+    current=0;
+    lastFinishState=false;
+    Store.save();
+
+    haptic('soft');
+    render('back','smooth');
+    toast('Прогресс тренировки сброшен');
+  });
+
   $('#prevButton').addEventListener('click',()=>{
     if(current<=0)return;
     cancelRest();

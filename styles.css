@@ -822,3 +822,63 @@ html,body{background:var(--bg)}
     min-height:calc(env(safe-area-inset-top,0px) + 8px)!important;
   }
 }
+
+
+/* v51 — reset current workout from the exercise toolbar */
+.exercise-toolbar{
+  position:relative;
+  grid-template-columns:44px minmax(0,1fr) auto 40px;
+}
+.exercise-toolbar__title{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  pointer-events:none;
+}
+.step-indicator{
+  grid-column:3;
+  width:auto;
+  min-width:48px;
+  justify-self:end;
+  border:0;
+  background:transparent;
+  padding:0 4px;
+}
+.routine-reset-button{
+  grid-column:4;
+  appearance:none;
+  width:40px;
+  height:40px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--surface);
+  color:var(--muted);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition:transform var(--fast) ease,background-color var(--base) ease,color var(--base) ease;
+}
+.routine-reset-button svg{
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.routine-reset-button:active{
+  transform:scale(.96);
+  background:#f4f6f3;
+  color:var(--text);
+}
+@media(max-width:520px){
+  .exercise-toolbar{
+    grid-template-columns:44px minmax(0,1fr) auto 40px;
+  }
+  .step-indicator{
+    width:auto;
+    min-width:46px;
+  }
+}
