@@ -463,3 +463,109 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
   .home-body .activity-section{grid-column:span 7}
   .home-body .safety-note{grid-column:span 5;align-self:start;padding:4px 2px}
 }
+
+
+/* Quiet Motion — Workout redesign */
+.session-shell{width:min(760px,calc(100% - 32px));padding-bottom:28px}
+.exercise-main{background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
+.exercise-toolbar{grid-template-columns:44px minmax(0,1fr) 54px;gap:10px;margin-bottom:10px}
+.exercise-toolbar__title{font-size:14px;font-weight:700}
+.back-link--icon{width:44px;height:44px;border-radius:14px;box-shadow:none}
+.back-link--icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.step-indicator{width:54px;height:44px;padding:0;border:0;border-radius:0;background:transparent;display:grid;place-items:center}
+.step-indicator>strong{font-size:14px;font-weight:700}
+.step-segments{width:100%;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:24px}
+.step-segments i{height:4px;background:#dce3dd}
+.step-segments i.is-done{background:rgba(47,107,85,.4)}
+.step-segments i.is-current{background:var(--accent);transform:none}
+.exercise-head{gap:8px}
+.exercise-head h1{font-size:clamp(30px,8.6vw,36px);line-height:1.04;letter-spacing:-.045em}
+.exercise-head p{font-size:14px;line-height:1.5}
+.visual-placeholder{aspect-ratio:16/9;margin:18px 0 16px;border:1px solid var(--line);background:var(--surface-muted);border-radius:20px}
+.visual-placeholder__inner{gap:12px}
+.visual-placeholder__icon{width:48px;height:48px;border-radius:16px;box-shadow:none}
+.visual-placeholder__icon svg{width:24px;height:24px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.visual-placeholder__inner strong{font-size:14px}
+.visual-placeholder__inner span{font-size:12px}
+.exercise-facts{grid-template-columns:1fr 1fr;gap:24px;margin:0 2px 20px}
+.exercise-facts>div{padding:0;border-radius:0;background:transparent;gap:4px}
+.exercise-facts>div:last-child{text-align:right}
+.exercise-facts span{font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.exercise-facts strong{font-size:15px;font-weight:700}
+.technique-key{position:relative;margin-bottom:20px;padding:14px 14px 14px 17px;border-radius:16px;background:var(--accent-soft);color:var(--text);gap:5px;overflow:hidden}
+.technique-key:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:999px;background:var(--accent)}
+.technique-key span{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:0;text-transform:none}
+.technique-key strong{font-size:13px;line-height:1.48;font-weight:650}
+.timer-card{margin-bottom:24px;padding:14px 16px 14px;border-radius:18px;background:var(--surface);box-shadow:none}
+.timer-card.is-running{border-color:rgba(47,107,85,.28);box-shadow:none}
+.timer-state-row{display:flex;justify-content:center;margin-bottom:8px}
+.timer-state-row strong{font-size:10px;line-height:1;color:var(--accent);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.timer-grid{grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center}
+.timer-ring{width:88px}
+.timer-ring:after{inset:6px}
+.timer-ring__inner strong{font-size:23px}
+.timer-ring__inner span{font-size:9px}
+.timer-ring.is-running{animation:none}
+.timer-ring.is-ending{animation:none;box-shadow:0 0 0 5px rgba(47,107,85,.07)}
+.timer-actions{gap:0}
+.timer-primary{height:48px;border-radius:14px;font-size:14px;font-weight:800}
+.timer-card.is-running .timer-primary{background:var(--accent)}
+.timer-adjustments{grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px}
+.timer-adjustments button,.timer-reset-link{min-height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;padding:0 6px}
+.timer-adjustments button:active,.timer-reset-link:active{background:#f3f5f2}
+.details-section{display:grid;gap:10px}
+.details-title{margin:0;font-size:20px;line-height:1.15;letter-spacing:-.025em}
+.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.details-stack .detail-card:first-child{grid-column:auto!important}
+.detail-card{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;overflow:hidden}
+.detail-card:last-child{border-bottom:0}
+.detail-card__toggle{min-height:52px;padding:0 16px;font-size:14px;font-weight:700}
+.detail-card__inner{border-top:1px solid rgba(23,25,23,.055);padding:14px 16px 16px}
+.detail-card__inner p,.detail-card__inner li{font-size:13px;line-height:1.55}
+.flow-overlay,.completion-overlay{background:rgba(244,245,241,.985)}
+.flow-card,.completion-card{width:min(360px,100%);padding:28px 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.flow-card{gap:12px}
+.flow-card h2{font-size:28px}
+.flow-value{font-size:74px;margin:10px 0}
+.flow-value--rest{font-size:62px}
+.flow-skip{max-width:320px}
+.completion-card{gap:10px;transform:translateY(8px)}
+.completion-overlay.is-visible .completion-card{transform:none}
+.completion-check{width:56px;height:56px}
+.completion-card h2{font-size:30px}
+.session-nav{padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--bg)}
+.session-nav__inner{width:min(760px,100%);grid-template-columns:54px minmax(0,1fr);gap:10px}
+.nav-button{height:52px;border-radius:16px;font-weight:800}
+.nav-button--back{width:54px;box-shadow:none}
+.nav-button--next{font-size:14px}
+
+@media(max-width:520px){
+  .session-shell{width:calc(100% - 32px)}
+  .exercise-main{padding:0;border-radius:0}
+  .exercise-toolbar{grid-template-columns:44px minmax(0,1fr) 54px;margin-bottom:10px}
+  .back-link--icon{width:44px;height:44px}
+  .step-indicator{width:54px}
+  .exercise-head h1{font-size:clamp(29px,8.6vw,35px)}
+  .timer-card{padding:13px 14px}
+  .timer-grid{grid-template-columns:86px minmax(0,1fr);gap:13px}
+  .timer-ring{width:86px}
+}
+
+@media(max-width:370px){
+  .timer-grid{grid-template-columns:82px minmax(0,1fr);gap:12px}
+  .timer-ring{width:82px;margin:0}
+  .timer-ring__inner strong{font-size:21px}
+  .session-nav{padding-inline:10px}
+}
+
+@media(min-width:900px){
+  .exercise-main{padding:0}
+  .exercise-scroll{padding-top:28px}
+}
+
+@media(min-width:1000px){
+  .session-shell{width:min(760px,calc(100% - 48px))}
+  .exercise-main{padding:0}
+  .timer-grid{grid-template-columns:96px minmax(0,1fr)}
+  .timer-ring{width:96px}
+}

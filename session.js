@@ -376,7 +376,7 @@
       return;
     }
     box.classList.remove('has-visuals');
-    box.innerHTML=`<div class="visual-placeholder__inner"><span class="visual-placeholder__icon">◎</span><div><strong>Визуал упражнения</strong><span>Здесь появятся понятные фазы движения.</span></div></div>`;
+    box.innerHTML=`<div class="visual-placeholder__inner"><span class="visual-placeholder__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h8M12 3v6M7 12h10M9 12l-2 7M15 12l2 7"></path></svg></span><div><strong>Визуал техники</strong><span>Две понятные фазы движения</span></div></div>`;
   }
 
   function setDetailState(card,open){

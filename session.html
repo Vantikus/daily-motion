@@ -25,13 +25,16 @@
       <main class="session-shell">
         <article class="exercise-main">
           <div class="exercise-toolbar" aria-label="Навигация комплекса">
-            <a class="back-link back-link--icon" href="index.html" aria-label="На главную">←</a>
+            <a class="back-link back-link--icon" href="index.html" aria-label="На главную">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5"></path></svg>
+            </a>
             <strong class="exercise-toolbar__title" id="routineName">Утро</strong>
             <div class="step-indicator" aria-label="Текущее упражнение">
               <strong id="headerProgress">1 / 8</strong>
-              <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
             </div>
           </div>
+
+          <div class="step-segments" id="stepSegments" aria-hidden="true"></div>
 
           <header class="exercise-head">
             <h1 id="exerciseTitle">Присед + подъём рук вверх</h1>
@@ -40,8 +43,10 @@
 
           <div class="exercise-visual visual-placeholder" id="exerciseVisual" aria-label="Визуал упражнения">
             <div class="visual-placeholder__inner">
-              <span class="visual-placeholder__icon">◎</span>
-              <div><strong>Визуал упражнения</strong><span>Здесь появятся понятные фазы движения.</span></div>
+              <span class="visual-placeholder__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M8 6h8M12 3v6M7 12h10M9 12l-2 7M15 12l2 7"></path></svg>
+              </span>
+              <div><strong>Визуал техники</strong><span>Две понятные фазы движения</span></div>
             </div>
           </div>
 
@@ -56,9 +61,8 @@
           </aside>
 
           <section class="timer-card" id="timerCard" aria-label="Таймер упражнения">
-            <div class="timer-card__head">
-              <div><span class="eyebrow">Таймер</span><strong id="timerState" aria-live="polite">Готов</strong></div>
-              <button class="timer-reset-link" id="timerReset" type="button">Сбросить</button>
+            <div class="timer-state-row">
+              <strong id="timerState" aria-live="polite">Готов</strong>
             </div>
             <div class="timer-grid">
               <div class="timer-ring" id="timerRing" style="--timer-progress:0">
@@ -69,45 +73,49 @@
               </div>
               <div class="timer-actions">
                 <button class="timer-primary" id="timerToggle" type="button">Старт</button>
-                <div class="timer-adjustments">
-                  <button id="minusTen" type="button">−10 сек</button>
-                  <button id="plusTen" type="button">+10 сек</button>
-                </div>
               </div>
+            </div>
+            <div class="timer-adjustments">
+              <button id="minusTen" type="button">−10 сек</button>
+              <button class="timer-reset-link" id="timerReset" type="button">Сбросить</button>
+              <button id="plusTen" type="button">+10 сек</button>
             </div>
           </section>
 
-          <section class="details-stack" aria-label="Техника упражнения">
-            <article class="detail-card is-open">
-              <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
-                <span>Как делать правильно</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
-            </article>
-            <article class="detail-card">
-              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
-                <span>Что чувствовать</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
-            </article>
-            <article class="detail-card">
-              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
-                <span>Частые ошибки</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
-            </article>
-            <article class="detail-card">
-              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
-                <span>Облегчённый вариант</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
-            </article>
-            <article class="detail-card">
-              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
-                <span>Как прогрессировать</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
-            </article>
+          <section class="details-section" aria-labelledby="techniqueTitle">
+            <h2 class="details-title" id="techniqueTitle">Техника</h2>
+            <div class="details-stack">
+              <article class="detail-card is-open">
+                <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
+                  <span>Как делать правильно</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
+              </article>
+              <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
+                  <span>Что чувствовать</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
+              </article>
+              <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
+                  <span>Частые ошибки</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
+              </article>
+              <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
+                  <span>Облегчённый вариант</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
+              </article>
+              <article class="detail-card">
+                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
+                  <span>Как прогрессировать</span><i aria-hidden="true">+</i>
+                </button>
+                <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
+              </article>
+            </div>
           </section>
         </article>
       </main>
@@ -132,7 +140,7 @@
 
   <div class="flow-overlay" id="restOverlay" aria-hidden="true">
     <div class="flow-card" role="dialog" aria-modal="true" aria-labelledby="restTitle">
-      <span class="eyebrow">Пауза между упражнениями</span>
+      <span class="eyebrow">Следующее упражнение</span>
       <h2 id="restTitle">Отдых</h2>
       <strong class="flow-value flow-value--rest" id="restValue" role="timer" aria-live="polite">15</strong>
       <p id="restNext">Дальше: следующее упражнение</p>
