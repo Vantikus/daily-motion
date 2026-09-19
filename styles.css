@@ -803,18 +803,18 @@ html,body{background:var(--bg)}
 }
 
 
-/* v47 — Safari browser chrome guard */
+/* v48 — standalone iOS PWA status-bar guard */
 @media (orientation:portrait){
-  .ios-safari-browser .home-body .app-shell,
-  .ios-safari-browser .progress-body .app-shell{
+  .ios-standalone-pwa .home-body .app-shell,
+  .ios-standalone-pwa .progress-body .app-shell{
     padding-top:calc(env(safe-area-inset-top,0px) + 52px);
   }
 
-  .ios-safari-browser .session-body{
+  .ios-standalone-pwa .session-body{
     grid-template-rows:calc(env(safe-area-inset-top,0px) + 52px) minmax(0,1fr);
   }
 
-  .ios-safari-browser .session-body>.ios-safe-zone-bar{
+  .ios-standalone-pwa .session-body>.ios-safe-zone-bar{
     height:calc(env(safe-area-inset-top,0px) + 52px)!important;
     min-height:calc(env(safe-area-inset-top,0px) + 52px)!important;
   }
