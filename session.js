@@ -115,6 +115,8 @@
   let countdownTimer=null;
   let restTimer=null;
   let restFinish=null;
+  let executionStage='idle';
+  let stageTimer=null;
   const Audio=window.DailyMotionAudio;
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
@@ -164,7 +166,7 @@
   }
 
   function visibleModal(){
-    return document.querySelector('.flow-overlay.is-visible,.completion-overlay.is-visible');
+    return document.querySelector('.execution-overlay.is-visible,.completion-overlay.is-visible');
   }
 
   function syncModalState(){
@@ -173,11 +175,57 @@
     document.body.classList.toggle('modal-open',hasModal);
   }
 
-  function hideFlowOverlay(selector){
-    const node=$(selector);
-    if(!node)return;
-    node.classList.remove('is-visible');
-    node.setAttribute('aria-hidden','true');
+  function setExecutionCopy(){
+    const exercise=exercises[current];
+    $('#executionMeta').textContent=`Утро · ${current+1} из ${exercises.length}`;
+    $('#executionTitle').textContent=exercise.title;
+    $('#executionCountdownTitle').textContent=exercise.title;
+    $('#executionKey').textContent=exercise.key;
+    $('#executionDoneTitle').textContent=exercise.title;
+  }
+
+  function setExecutionStage(stage){
+    executionStage=stage;
+    const stages={
+      countdown:$('#executionCountdownStage'),
+      timer:$('#timerCard'),
+      done:$('#executionDoneStage'),
+      rest:$('#executionRestStage')
+    };
+    Object.entries(stages).forEach(([name,node])=>{
+      if(node)node.hidden=name!==stage;
+    });
+    setExecutionCopy();
+  }
+
+  function showExecution(stage){
+    const overlay=$('#executionOverlay');
+    if(!overlay)return;
+    if(!overlay.classList.contains('is-visible'))modalReturnFocus=document.activeElement;
+    setExecutionStage(stage);
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden','false');
+    syncModalState();
+    const focusTarget=stage==='timer'
+      ?$('#timerToggle')
+      :stage==='done'
+        ?$('#executionNext')
+        :stage==='rest'
+          ?$('#restSkip')
+          :$('#countdownCancel');
+    requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
+  }
+
+  function hideExecution(){
+    const overlay=$('#executionOverlay');
+    if(!overlay)return;
+    if(stageTimer!==null){
+      clearTimeout(stageTimer);
+      stageTimer=null;
+    }
+    overlay.classList.remove('is-visible');
+    overlay.setAttribute('aria-hidden','true');
+    executionStage='idle';
     syncModalState();
     if(!visibleModal()&&modalReturnFocus?.isConnected){
       modalReturnFocus.focus({preventScroll:true});
@@ -185,22 +233,16 @@
     }
   }
 
-  function showFlowOverlay(selector){
-    const node=$(selector);
-    if(!node)return;
-    modalReturnFocus=document.activeElement;
-    node.classList.add('is-visible');
-    node.setAttribute('aria-hidden','false');
-    syncModalState();
-    requestAnimationFrame(()=>node.querySelector('button')?.focus({preventScroll:true}));
-  }
-
   function cancelCountdown(){
     if(countdownTimer!==null){
       clearInterval(countdownTimer);
       countdownTimer=null;
     }
-    hideFlowOverlay('#countdownOverlay');
+    if(stageTimer!==null){
+      clearTimeout(stageTimer);
+      stageTimer=null;
+    }
+    if(executionStage==='countdown')hideExecution();
   }
 
   function cancelRest(){
@@ -209,12 +251,13 @@
       restTimer=null;
     }
     restFinish=null;
-    hideFlowOverlay('#restOverlay');
+    if(executionStage==='rest')hideExecution();
   }
 
   function startTimerNow(){
     const timer=timerData(exercises[current]);
     if(timer.remaining<=0)timer.remaining=timer.duration;
+    showExecution('timer');
     timer.running=true;
     timer.endAt=Date.now()+timer.remaining*1000;
     Store.save();
@@ -226,15 +269,18 @@
   function startCountdown(done){
     const seconds=Number(settings.countdownSeconds)||0;
     if(seconds<=0){
+      showExecution('timer');
       done();
       return;
     }
+
     cancelCountdown();
     unlockAudio();
     let remaining=seconds;
     $('#countdownValue').textContent=String(remaining);
-    showFlowOverlay('#countdownOverlay');
+    showExecution('countdown');
     sound('tick');
+
     countdownTimer=setInterval(()=>{
       remaining--;
       if(remaining<=0){
@@ -243,8 +289,9 @@
         $('#countdownValue').textContent='Старт';
         sound('start');
         haptic('next');
-        setTimeout(()=>{
-          hideFlowOverlay('#countdownOverlay');
+        stageTimer=setTimeout(()=>{
+          stageTimer=null;
+          showExecution('timer');
           done();
         },180);
         return;
@@ -265,9 +312,11 @@
   function startRest(afterRest){
     const seconds=Number(settings.restSeconds)||0;
     if(seconds<=0){
+      hideExecution();
       afterRest();
       return;
     }
+
     cancelRest();
     unlockAudio();
     let remaining=seconds;
@@ -275,7 +324,7 @@
     restFinish=afterRest;
     $('#restValue').textContent=String(remaining);
     $('#restNext').textContent=`Дальше: ${exercises[Math.min(current+1,exercises.length-1)].title}`;
-    showFlowOverlay('#restOverlay');
+    showExecution('rest');
     requestWakeLock();
 
     const tick=()=>{
@@ -287,9 +336,9 @@
         restTimer=null;
         const finish=restFinish;
         restFinish=null;
-        hideFlowOverlay('#restOverlay');
         sound('start');
         haptic('next');
+        hideExecution();
         if(finish)finish();
       }
     };
@@ -300,12 +349,24 @@
   function onTimerFinished(){
     sound('finish');
     haptic('success');
-    if(settings.autoNext&&current<exercises.length-1){
-      routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
-      Store.save();
-      startRest(advanceExercise);
-    }else{
-      toast('Таймер завершён');
+    routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
+    Store.save();
+    releaseWakeLock();
+
+    const isLast=current===exercises.length-1;
+    $('#executionDoneMeta').textContent=isLast
+      ?'Последнее упражнение готово.'
+      :'Можно переходить к следующему упражнению.';
+    $('#executionNext').textContent=isLast?'Завершить комплекс':'Следующее упражнение';
+    showExecution('done');
+    updateNextButton();
+
+    if(settings.autoNext&&!isLast){
+      if(stageTimer!==null)clearTimeout(stageTimer);
+      stageTimer=setTimeout(()=>{
+        stageTimer=null;
+        startRest(advanceExercise);
+      },700);
     }
   }
 
@@ -338,10 +399,11 @@
 
     const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
     $('#timerState').textContent=timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов';
-    $('#timerToggle').textContent=timer.running?'Пауза':timer.remaining===0?'Сначала':hasProgress?'Продолжить':'Старт';
+    $('#timerToggle').textContent=timer.running?'Пауза':hasProgress?'Продолжить':'Старт';
     $('#timerRing').classList.toggle('is-running',timer.running);
     $('#timerRing').classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
     $('#timerCard').classList.toggle('is-running',timer.running);
+    updateNextButton();
 
     if(justFinished)onTimerFinished();
   }
@@ -414,15 +476,27 @@
 
   function updateNextButton(){
     const button=$('#nextButton');
-    const isFinish=current===exercises.length-1;
-    button.textContent=isFinish?'Завершить':'Следующее';
-    button.classList.toggle('is-finish',isFinish);
-    if(isFinish!==lastFinishState){
-      button.classList.remove('is-morphing');
-      void button.offsetWidth;
-      button.classList.add('is-morphing');
-      lastFinishState=isFinish;
+    const timer=timerData(exercises[current]);
+    const isDone=routine.completed||Number(routine.completedUntil||0)>current||timer.remaining===0;
+    const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
+
+    if(routine.completed){
+      button.textContent='Комплекс завершён';
+      button.disabled=true;
+      button.classList.remove('is-finish');
+      return;
     }
+
+    button.disabled=false;
+    if(isDone){
+      const isFinish=current===exercises.length-1;
+      button.textContent=isFinish?'Завершить комплекс':'Следующее упражнение';
+      button.classList.toggle('is-finish',isFinish);
+      return;
+    }
+
+    button.classList.remove('is-finish');
+    button.textContent=timer.running?'Открыть таймер':hasProgress?'Продолжить':'Начать упражнение';
   }
 
   function render(direction='forward',scrollMode='smooth'){
@@ -514,24 +588,48 @@
     if(current<=0)return;
     cancelRest();
     cancelCountdown();
+    if(executionStage!=='idle')hideExecution();
     haptic('soft');
     pauseCurrentTimer();
     current--;
     render('back');
   });
 
-  $('#nextButton').addEventListener('click',()=>{
-    cancelCountdown();
-    pauseCurrentTimer();
-    routine.completedUntil=Math.max(routine.completedUntil||0,current+1);
-    Store.save();
+  $('#nextButton').addEventListener('click',async()=>{
+    const timer=timerData(exercises[current]);
+    const isDone=Number(routine.completedUntil||0)>current||timer.remaining===0;
 
-    if(current<exercises.length-1){
-      haptic('next');
-      startRest(advanceExercise);
+    if(isDone){
+      if(current>=exercises.length-1){
+        finishRoutine();
+      }else{
+        haptic('next');
+        startRest(advanceExercise);
+      }
       return;
     }
-    finishRoutine();
+
+    haptic('soft');
+    await unlockAudio();
+
+    if(timer.running){
+      showExecution('timer');
+      updateTimerUI();
+      return;
+    }
+
+    const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
+    if(hasProgress){
+      showExecution('timer');
+      updateTimerUI();
+      return;
+    }
+
+    if(timer.remaining<=0){
+      timer.remaining=timer.duration;
+      Store.save();
+    }
+    startCountdown(startTimerNow);
   });
 
   $('#timerToggle').addEventListener('click',async()=>{
@@ -540,24 +638,22 @@
     const timer=timerData(exercises[current]);
 
     if(timer.running){
-      timer.remaining=Math.max(0,Math.ceil((timer.endAt-Date.now())/1000));
-      timer.running=false;
-      timer.endAt=null;
-      stopTicker();
-      releaseWakeLock();
-      Store.save();
+      pauseCurrentTimer();
       updateTimerUI();
       return;
     }
 
-    const isFresh=timer.remaining===timer.duration||timer.remaining<=0;
-    if(timer.remaining<=0)timer.remaining=timer.duration;
-    if(isFresh)startCountdown(startTimerNow);
-    else startTimerNow();
+    if(timer.remaining<=0){
+      timer.remaining=timer.duration;
+      Store.save();
+      startCountdown(startTimerNow);
+      return;
+    }
+
+    startTimerNow();
   });
 
   $('#timerReset').addEventListener('click',()=>{
-    cancelCountdown();
     haptic('tap');
     const exercise=exercises[current];
     const timer=timerData(exercise);
@@ -596,10 +692,8 @@
     if(!modal)return;
 
     if(event.key==='Escape'){
-      if($('#countdownOverlay').classList.contains('is-visible')){
-        cancelCountdown();
-      }else if($('#restOverlay').classList.contains('is-visible')){
-        $('#restSkip').click();
+      if($('#executionOverlay').classList.contains('is-visible')){
+        $('#executionClose').click();
       }
       return;
     }
@@ -620,13 +714,81 @@
 
   $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10);});
   $('#plusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(10);});
-  $('#countdownCancel').addEventListener('click',()=>{cancelCountdown();haptic('tap');});
+  $('#countdownCancel').addEventListener('click',()=>{
+    cancelCountdown();
+    haptic('tap');
+  });
+
+  $('#executionClose').addEventListener('click',()=>{
+    if(executionStage==='countdown'){
+      cancelCountdown();
+      haptic('tap');
+      return;
+    }
+    if(executionStage==='rest'){
+      cancelRest();
+      releaseWakeLock();
+      haptic('tap');
+      return;
+    }
+    const timer=timerData(exercises[current]);
+    if(timer.running)pauseCurrentTimer();
+    hideExecution();
+    updateTimerUI();
+    haptic('tap');
+  });
+
+  $('#executionTechnique').addEventListener('click',()=>{
+    const timer=timerData(exercises[current]);
+    if(timer.running)pauseCurrentTimer();
+    hideExecution();
+    updateTimerUI();
+    haptic('tap');
+  });
+
+  $('#executionFinishEarly').addEventListener('click',()=>{
+    const timer=timerData(exercises[current]);
+    stopTicker();
+    releaseWakeLock();
+    timer.running=false;
+    timer.endAt=null;
+    timer.remaining=0;
+    Store.save();
+    updateTimerUI();
+    onTimerFinished();
+  });
+
+  $('#executionNext').addEventListener('click',()=>{
+    if(stageTimer!==null){
+      clearTimeout(stageTimer);
+      stageTimer=null;
+    }
+    if(current>=exercises.length-1){
+      hideExecution();
+      finishRoutine();
+      return;
+    }
+    haptic('next');
+    startRest(advanceExercise);
+  });
+
+  $('#executionDoneClose').addEventListener('click',()=>{
+    if(stageTimer!==null){
+      clearTimeout(stageTimer);
+      stageTimer=null;
+    }
+    hideExecution();
+    updateNextButton();
+    haptic('tap');
+  });
+
   $('#restSkip').addEventListener('click',()=>{
     const finish=restFinish;
     if(restTimer!==null)clearInterval(restTimer);
     restTimer=null;
     restFinish=null;
-    hideFlowOverlay('#restOverlay');
+    releaseWakeLock();
+    hideExecution();
     haptic('next');
     if(finish)finish();
   });

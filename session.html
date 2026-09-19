@@ -24,7 +24,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=55" />
+  <link rel="stylesheet" href="styles.css?v=56" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -76,31 +76,6 @@
             <strong id="keyText"></strong>
           </aside>
 
-          <section class="timer-card" id="timerCard" aria-label="Таймер упражнения">
-            <div class="timer-card__head">
-              <div class="timer-card__status">
-                <span class="timer-kicker">Таймер</span>
-                <strong class="sr-only" id="timerState" aria-live="polite">Готов</strong>
-              </div>
-              <button class="timer-reset-link" id="timerReset" type="button">Сбросить</button>
-            </div>
-            <div class="timer-grid">
-              <div class="timer-ring" id="timerRing" style="--timer-progress:0">
-                <div class="timer-ring__inner">
-                  <strong id="timerValue">01:00</strong>
-                  <span id="timerLabel">осталось</span>
-                </div>
-              </div>
-              <div class="timer-actions">
-                <button class="timer-primary" id="timerToggle" type="button">Старт</button>
-                <div class="timer-adjustments">
-                  <button id="minusTen" type="button">−10 сек</button>
-                  <button id="plusTen" type="button">+10 сек</button>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <section class="details-section" aria-labelledby="techniqueTitle">
             <h2 class="details-title" id="techniqueTitle">Техника</h2>
             <div class="details-stack">
@@ -144,28 +119,76 @@
       <div class="session-nav__inner">
         <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение">←</button>
         <span class="sr-only" id="navStepLabel">Упражнение 1 из 8</span>
-        <button class="nav-button nav-button--next" id="nextButton" type="button">Следующее</button>
+        <button class="nav-button nav-button--next" id="nextButton" type="button">Начать упражнение</button>
       </div>
     </nav>
   </div>
 
-  <div class="flow-overlay" id="countdownOverlay" aria-hidden="true">
-    <div class="flow-card" role="dialog" aria-modal="true" aria-label="Countdown">
-      <span class="eyebrow">Приготовьтесь</span>
-      <strong class="flow-value" id="countdownValue" role="timer" aria-live="assertive">3</strong>
-      <button class="flow-cancel" id="countdownCancel" type="button">Отмена</button>
-    </div>
+  <div class="execution-overlay" id="executionOverlay" aria-hidden="true">
+    <section class="execution-shell" role="dialog" aria-modal="true" aria-labelledby="executionTitle">
+      <div class="execution-top">
+        <span class="execution-meta" id="executionMeta">Утро · 1 из 8</span>
+        <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике">×</button>
+      </div>
+
+      <div class="execution-stage execution-countdown" id="executionCountdownStage" hidden>
+        <span class="execution-eyebrow">Приготовьтесь</span>
+        <h2 id="executionCountdownTitle">Присед + подъём рук вверх</h2>
+        <strong class="execution-countdown__value" id="countdownValue">3</strong>
+        <span class="execution-countdown__hint">Начинаем через несколько секунд</span>
+        <button class="execution-text-action" id="countdownCancel" type="button">Отмена</button>
+      </div>
+
+      <div class="execution-stage execution-timer" id="timerCard" hidden>
+        <div class="execution-heading">
+          <span class="execution-eyebrow">Выполнение</span>
+          <h2 id="executionTitle">Присед + подъём рук вверх</h2>
+          <p class="execution-key" id="executionKey"></p>
+        </div>
+
+        <div class="timer-ring execution-timer__ring" id="timerRing" style="--timer-progress:0">
+          <div class="timer-ring__inner">
+            <strong id="timerValue">01:00</strong>
+            <span id="timerLabel">осталось</span>
+          </div>
+        </div>
+
+        <strong class="sr-only" id="timerState" aria-live="polite">Готов</strong>
+
+        <div class="execution-actions">
+          <button class="execution-primary" id="timerToggle" type="button">Пауза</button>
+          <div class="execution-adjustments">
+            <button id="minusTen" type="button">−10 сек</button>
+            <button id="plusTen" type="button">+10 сек</button>
+          </div>
+          <div class="execution-secondary">
+            <button id="timerReset" type="button">Сбросить</button>
+            <button id="executionTechnique" type="button">Вернуться к технике</button>
+            <button id="executionFinishEarly" type="button">Завершить раньше</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="execution-stage execution-done" id="executionDoneStage" hidden>
+        <div class="execution-check" aria-hidden="true">✓</div>
+        <span class="execution-eyebrow">Упражнение выполнено</span>
+        <h2 id="executionDoneTitle">Готово</h2>
+        <p id="executionDoneMeta">Можно переходить дальше.</p>
+        <button class="execution-primary" id="executionNext" type="button">Следующее упражнение</button>
+        <button class="execution-text-action" id="executionDoneClose" type="button">Вернуться к технике</button>
+      </div>
+
+      <div class="execution-stage execution-rest" id="executionRestStage" hidden>
+        <span class="execution-eyebrow">Следующее упражнение</span>
+        <h2>Отдых</h2>
+        <strong class="execution-rest__value" id="restValue">15</strong>
+        <p id="restNext">Дальше: следующее упражнение</p>
+        <button class="execution-primary" id="restSkip" type="button">Пропустить отдых</button>
+      </div>
+    </section>
   </div>
 
-  <div class="flow-overlay" id="restOverlay" aria-hidden="true">
-    <div class="flow-card" role="dialog" aria-modal="true" aria-labelledby="restTitle">
-      <span class="eyebrow">Следующее упражнение</span>
-      <h2 id="restTitle">Отдых</h2>
-      <strong class="flow-value flow-value--rest" id="restValue" role="timer" aria-live="polite">15</strong>
-      <p id="restNext">Дальше: следующее упражнение</p>
-      <button class="primary-button flow-skip" id="restSkip" type="button">Пропустить</button>
-    </div>
-  </div>
+
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
@@ -178,9 +201,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=55"></script>
-  <script src="audio.js?v=55"></script>
-  <script src="pwa.js?v=55"></script>
-  <script src="session.js?v=55"></script>
+  <script src="state.js?v=56"></script>
+  <script src="audio.js?v=56"></script>
+  <script src="pwa.js?v=56"></script>
+  <script src="session.js?v=56"></script>
 </body>
 </html>
