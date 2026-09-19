@@ -107,6 +107,60 @@
     toast.timer=setTimeout(()=>node.classList.remove('show'),1600);
   };
 
+  const settingsOverlay=$('#settingsOverlay');
+  const settingsBtn=$('#settingsBtn');
+  const settingsClose=$('#settingsClose');
+  const Audio=window.DailyMotionAudio;
+  let settings=Store.getSettings();
+
+  const syncSettings=()=>{
+    settings=Store.getSettings();
+    $('#soundSetting').checked=settings.sound;
+    $('#autoNextSetting').checked=settings.autoNext;
+    $('#countdownSetting').value=String(settings.countdownSeconds);
+    $('#restSetting').value=String(settings.restSeconds);
+  };
+
+  const openSettings=()=>{
+    syncSettings();
+    settingsOverlay.classList.add('is-visible');
+    settingsOverlay.setAttribute('aria-hidden','false');
+    document.body.classList.add('settings-open');
+    settingsClose.focus();
+  };
+
+  const closeSettings=()=>{
+    settingsOverlay.classList.remove('is-visible');
+    settingsOverlay.setAttribute('aria-hidden','true');
+    document.body.classList.remove('settings-open');
+    settingsBtn.focus();
+  };
+
+  settingsBtn.onclick=openSettings;
+  settingsClose.onclick=closeSettings;
+  settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&settingsOverlay.classList.contains('is-visible'))closeSettings();
+  });
+
+  $('#soundSetting').addEventListener('change',async event=>{
+    settings=Store.updateSettings({sound:event.target.checked});
+    if(settings.sound)await Audio?.unlock?.();
+  });
+  $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
+  $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});
+  $('#restSetting').addEventListener('change',event=>{settings=Store.updateSettings({restSeconds:Number(event.target.value)});});
+
+  $('#testSoundBtn').onclick=async()=>{
+    if(!Store.getSettings().sound){
+      settings=Store.updateSettings({sound:true});
+      syncSettings();
+    }
+    const ok=await Audio?.test?.();
+    toast(ok?'Звук включён':'Не удалось запустить звук');
+  };
+
+  syncSettings();
   $('#resetTodayBtn').onclick=()=>{
     if(confirm('Сбросить весь сегодняшний прогресс и таймеры?')){
       Store.resetToday();

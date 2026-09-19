@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=39" />
+  <link rel="stylesheet" href="styles.css?v=40" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -24,7 +24,7 @@
         <span class="eyebrow" id="todayLabel">Сегодня</span>
         <h1>Daily Motion</h1>
       </div>
-      <button class="icon-button" id="resetTodayBtn" type="button" aria-label="Сбросить сегодняшний прогресс" title="Сбросить сегодняшний прогресс">↻</button>
+      <button class="icon-button" id="settingsBtn" type="button" aria-label="Настройки" title="Настройки">⚙</button>
     </header>
 
     <main class="container page-grid">
@@ -72,8 +72,50 @@
     </main>
   </div>
 
+  <div class="settings-overlay" id="settingsOverlay" aria-hidden="true">
+    <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-sheet__handle" aria-hidden="true"></div>
+      <div class="settings-sheet__head">
+        <div>
+          <span class="eyebrow">Daily Motion</span>
+          <h2 id="settingsTitle">Настройки</h2>
+        </div>
+        <button class="sheet-close" id="settingsClose" type="button" aria-label="Закрыть настройки">×</button>
+      </div>
+      <div class="settings-list settings-list--home">
+        <label class="setting-row">
+          <span><strong>Звук</strong><small>Countdown, окончание таймера и отдыха</small></span>
+          <input class="switch-input" id="soundSetting" type="checkbox" />
+        </label>
+        <label class="setting-row">
+          <span><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
+          <input class="switch-input" id="autoNextSetting" type="checkbox" />
+        </label>
+        <label class="setting-row">
+          <span><strong>Countdown</strong><small>Перед первым запуском упражнения</small></span>
+          <select id="countdownSetting" aria-label="Countdown перед таймером">
+            <option value="0">Выкл</option>
+            <option value="3">3 сек</option>
+            <option value="5">5 сек</option>
+          </select>
+        </label>
+        <label class="setting-row">
+          <span><strong>Отдых</strong><small>Между упражнениями</small></span>
+          <select id="restSetting" aria-label="Длительность отдыха">
+            <option value="0">Выкл</option>
+            <option value="15">15 сек</option>
+            <option value="30">30 сек</option>
+            <option value="45">45 сек</option>
+          </select>
+        </label>
+      </div>
+      <button class="settings-test-sound" id="testSoundBtn" type="button">Проверить звук</button>
+      <button class="settings-reset" id="resetTodayBtn" type="button">Сбросить сегодняшний прогресс</button>
+    </section>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=39"></script>
-  <script src="app.js?v=39"></script>
+  <script src="state.js?v=40"></script>
+  <script src="audio.js?v=40"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>

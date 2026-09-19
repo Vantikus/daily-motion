@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-32-v1.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/daily-motion-180-v1.png" />
   <title>Утро — Daily Motion</title>
-  <link rel="stylesheet" href="styles.css?v=39" />
+  <link rel="stylesheet" href="styles.css?v=40" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -108,42 +108,6 @@
               </button>
               <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
             </article>
-            <article class="detail-card">
-              <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-settings">
-                <span>Настройки тренировки</span><i aria-hidden="true">+</i>
-              </button>
-              <div class="detail-card__panel" id="detail-settings">
-                <div class="detail-card__content">
-                  <div class="detail-card__inner settings-list">
-                    <label class="setting-row">
-                      <span><strong>Звук</strong><small>Сигнал countdown и окончания таймера</small></span>
-                      <input class="switch-input" id="soundSetting" type="checkbox" />
-                    </label>
-                    <label class="setting-row">
-                      <span><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
-                      <input class="switch-input" id="autoNextSetting" type="checkbox" />
-                    </label>
-                    <label class="setting-row">
-                      <span><strong>Countdown</strong><small>Перед первым запуском таймера</small></span>
-                      <select id="countdownSetting" aria-label="Countdown перед таймером">
-                        <option value="0">Выкл</option>
-                        <option value="3">3 сек</option>
-                        <option value="5">5 сек</option>
-                      </select>
-                    </label>
-                    <label class="setting-row">
-                      <span><strong>Отдых</strong><small>Между упражнениями</small></span>
-                      <select id="restSetting" aria-label="Длительность отдыха">
-                        <option value="0">Выкл</option>
-                        <option value="15">15 сек</option>
-                        <option value="30">30 сек</option>
-                        <option value="45">45 сек</option>
-                      </select>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </article>
           </section>
         </article>
       </main>
@@ -187,7 +151,8 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=39"></script>
-  <script src="session.js?v=39"></script>
+  <script src="state.js?v=40"></script>
+  <script src="audio.js?v=40"></script>
+  <script src="session.js?v=40"></script>
 </body>
 </html>
