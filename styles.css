@@ -8,8 +8,9 @@
 @media(max-width:430px){.quick-grid{grid-template-columns:1fr}.hero-card{padding:22px;border-radius:24px}.hero-card h2{font-size:34px}.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:1/-1}}
 
 
-/* Session / workout — v22 persistent header + dynamic viewport */
-.session-page{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg)}
+/* Session / workout — v23 iOS standalone safe-area fix */
+.session-page{--session-safe-top:0px;--session-safe-bottom:0px;height:100%;overflow:hidden;overscroll-behavior:none;background:#f7f8f5}
+.session-page.is-standalone{--session-safe-top:env(safe-area-inset-top,0px);--session-safe-bottom:env(safe-area-inset-bottom,0px)}
 .session-body{
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
   --r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:28px;
@@ -25,7 +26,7 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .exercise-app{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;position:relative;background:var(--bg)}
-.session-header{position:relative;z-index:50;width:100%;padding:8px 16px;background:#f7f8f5;border-bottom:1px solid rgba(19,25,20,.07);box-shadow:0 1px 0 rgba(255,255,255,.8)}
+.session-header{position:relative;z-index:50;width:100%;padding:calc(var(--session-safe-top) + 6px) 16px 8px;background:#f7f8f5;border-bottom:1px solid rgba(19,25,20,.07);box-shadow:0 1px 0 rgba(255,255,255,.8);backdrop-filter:none;-webkit-backdrop-filter:none}
 .session-header__inner{width:min(900px,100%);min-height:52px;margin:0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) 82px;align-items:center;gap:12px}
 .exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scroll-behavior:smooth;position:relative;padding-top:12px;scroll-padding-top:12px;background:var(--bg)}
 .session-shell{display:grid;gap:0;padding:0 0 24px}
@@ -124,7 +125,7 @@
 .detail-card__content p{margin:var(--s3) 0 0}
 .detail-card__content ul{margin:var(--s3) 0 0;padding-left:20px;display:grid;gap:var(--s2)}
 
-.session-nav{position:relative;z-index:50;width:100%;padding:8px 16px max(8px,env(safe-area-inset-bottom,0px));background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none}
+.session-nav{position:relative;z-index:50;width:100%;padding:8px 16px calc(var(--session-safe-bottom) + 8px);background:#f7f8f5;border-top:1px solid rgba(19,25,20,.07);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 .session-nav__inner{width:min(900px,100%);min-height:56px;margin:0 auto;display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:12px}
 .nav-button{height:56px;border-radius:18px;font-weight:850;cursor:pointer;transition:transform var(--motion-fast) ease,box-shadow var(--motion-base) ease,background-color var(--motion-base) ease,color var(--motion-base) ease}
 .nav-button:disabled{opacity:.34;cursor:not-allowed}
@@ -173,7 +174,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .container{width:min(100% - 20px,1120px)}
   .session-shell{padding:0 0 24px}
   .exercise-main{padding:16px 18px 22px;border-radius:22px}
-  .session-header{padding:7px 10px}
+  .session-header{padding:calc(var(--session-safe-top) + 5px) 10px 7px}
   .session-header__inner{min-height:50px;grid-template-columns:42px minmax(0,1fr) 78px;gap:10px}
   .exercise-toolbar__center span{font-size:14px}
   .back-link--icon{width:42px;height:42px}
@@ -199,7 +200,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .how-card ol{margin-top:15px;gap:11px}
   .how-card li{font-size:13.5px;line-height:1.62}
   .detail-card__toggle{padding:14px 15px}
-  .session-nav{padding:7px 10px max(8px,env(safe-area-inset-bottom,0px))}
+  .session-nav{padding:7px 10px calc(var(--session-safe-bottom) + 8px)}
   .session-nav__inner{grid-template-columns:54px minmax(0,1fr);gap:10px}
   .nav-button{height:54px;border-radius:17px}
   .nav-button--back{width:54px;min-width:54px}
@@ -208,7 +209,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 @media(max-width:430px){
   .session-shell{padding:0 0 22px}
   .exercise-main{padding:14px 16px 20px;border-radius:20px}
-  .session-header{padding:6px 8px}
+  .session-header{padding:calc(var(--session-safe-top) + 4px) 8px 6px}
   .session-header__inner{min-height:48px;grid-template-columns:40px minmax(0,1fr) 76px;gap:9px}
   .back-link--icon{width:40px;height:40px}
   .step-indicator{width:76px;min-width:76px;height:48px;border-radius:16px}
@@ -233,7 +234,7 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
   .how-card__head h2{font-size:20px}
   .how-card ol{margin-top:14px;gap:10px}
   .how-card li{font-size:13px;line-height:1.6}
-  .session-nav{padding:6px 8px max(8px,env(safe-area-inset-bottom,0px))}
+  .session-nav{padding:6px 8px calc(var(--session-safe-bottom) + 8px)}
   .session-nav__inner{grid-template-columns:52px minmax(0,1fr);gap:9px}
   .nav-button{height:52px;border-radius:16px}
   .nav-button--back{width:52px;min-width:52px}
@@ -251,7 +252,3 @@ button:focus-visible,.back-link--icon:focus-visible{outline:3px solid rgba(47,10
 
 @media(max-width:700px){.exercise-scroll{padding-top:10px;scroll-padding-top:10px}}
 @media(max-width:430px){.exercise-scroll{padding-top:8px;scroll-padding-top:8px}}
-@media(display-mode:standalone){
-  .session-header{padding-top:max(8px,env(safe-area-inset-top,0px))}
-  .session-nav{padding-bottom:max(8px,env(safe-area-inset-bottom,0px))}
-}
