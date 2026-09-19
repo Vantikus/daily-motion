@@ -1,0 +1,12 @@
+{
+  "id": "/",
+  "name": "Daily Motion",
+  "short_name": "Daily Motion",
+  "description": "Ежедневная разминка всего тела",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#f7f8f5",
+  "orientation": "portrait-primary"
+}
