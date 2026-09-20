@@ -160,25 +160,106 @@
   const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
   const syncInstallButton=()=>{installAppBtn.hidden=!PWA?.canInstall?.();};
 
+  let settingsCloseTimer=null;
+
+  const finishSettingsClose=()=>{
+    settingsOverlay.setAttribute('aria-hidden','true');
+    document.body.classList.remove('settings-open');
+    const returnFocus=settingsReturnFocus||settingsBtn;
+    settingsReturnFocus=null;
+    returnFocus?.focus?.({preventScroll:true});
+  };
+
   const openSettings=()=>{
+    clearTimeout(settingsCloseTimer);
+    settingsCloseTimer=null;
     syncSettings();
     syncInstallButton();
     settingsReturnFocus=document.activeElement;
-    settingsOverlay.classList.add('is-visible');
     settingsOverlay.setAttribute('aria-hidden','false');
     document.body.classList.add('settings-open');
     settingsBtn.setAttribute('aria-expanded','true');
-    settingsClose.focus();
+    requestAnimationFrame(()=>{
+      settingsOverlay.classList.add('is-visible');
+      settingsClose.focus({preventScroll:true});
+    });
   };
 
   const closeSettings=()=>{
+    if(!settingsOverlay.classList.contains('is-visible'))return;
     settingsOverlay.classList.remove('is-visible');
-    settingsOverlay.setAttribute('aria-hidden','true');
-    document.body.classList.remove('settings-open');
     settingsBtn.setAttribute('aria-expanded','false');
-    (settingsReturnFocus||settingsBtn).focus();
-    settingsReturnFocus=null;
+    clearTimeout(settingsCloseTimer);
+    settingsCloseTimer=setTimeout(finishSettingsClose,360);
   };
+
+  const attachSettingsSwipe=()=>{
+    const sheet=settingsOverlay.querySelector('.settings-sheet');
+    const handle=settingsOverlay.querySelector('.settings-sheet__handle');
+    if(!sheet||!handle)return;
+
+    let active=false;
+    let startY=0;
+    let lastY=0;
+    let lastTime=0;
+    let velocity=0;
+
+    const clearDrag=()=>{
+      active=false;
+      sheet.classList.remove('is-dragging');
+      sheet.style.transform='';
+      settingsOverlay.style.opacity='';
+    };
+
+    handle.addEventListener('pointerdown',event=>{
+      if(!settingsOverlay.classList.contains('is-visible'))return;
+      if(event.pointerType==='mouse'&&event.button!==0)return;
+      active=true;
+      startY=event.clientY;
+      lastY=startY;
+      lastTime=performance.now();
+      velocity=0;
+      sheet.classList.add('is-dragging');
+      handle.setPointerCapture?.(event.pointerId);
+    });
+
+    handle.addEventListener('pointermove',event=>{
+      if(!active)return;
+      const dy=Math.max(0,event.clientY-startY);
+      const now=performance.now();
+      velocity=(event.clientY-lastY)/Math.max(1,now-lastTime);
+      lastY=event.clientY;
+      lastTime=now;
+      sheet.style.transform=`translateY(${dy}px)`;
+      settingsOverlay.style.opacity=String(Math.max(.48,1-dy/360));
+    });
+
+    const finish=event=>{
+      if(!active)return;
+      const dy=Math.max(0,event.clientY-startY);
+      const dismiss=dy>76||(dy>28&&velocity>.55);
+      sheet.classList.remove('is-dragging');
+      settingsOverlay.style.opacity='';
+      active=false;
+
+      if(dismiss){
+        requestAnimationFrame(()=>{
+          sheet.style.transform='';
+          closeSettings();
+        });
+      }else{
+        sheet.style.transform='';
+      }
+    };
+
+    handle.addEventListener('pointerup',finish);
+    handle.addEventListener('pointercancel',()=>{
+      if(!active)return;
+      clearDrag();
+    });
+  };
+
+  attachSettingsSwipe();
 
   settingsBtn.onclick=openSettings;
   settingsClose.onclick=closeSettings;
