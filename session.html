@@ -39,7 +39,7 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-512-v1.png" />
-  <link rel="stylesheet" href="styles.css?v=71" />
+  <link rel="stylesheet" href="styles.css?v=72" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -57,10 +57,11 @@
             <div class="step-indicator" aria-label="Текущее упражнение">
               <strong id="headerProgress">1 / 9</strong>
             </div>
-            <button class="routine-reset-button" id="routineResetButton" type="button" aria-label="Сбросить прогресс тренировки" title="Сбросить прогресс тренировки">
+            <button class="routine-more-button" id="routineMoreButton" type="button" aria-label="Действия с тренировкой" aria-controls="routineResetOverlay" aria-expanded="false" title="Действия с тренировкой">
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4.5 8.5V4.5h4"></path>
-                <path d="M5.2 7.2A8 8 0 1 1 4 13"></path>
+                <circle cx="6" cy="12" r="1.25"></circle>
+                <circle cx="12" cy="12" r="1.25"></circle>
+                <circle cx="18" cy="12" r="1.25"></circle>
               </svg>
             </button>
           </div>
@@ -177,7 +178,6 @@
           </div>
           <div class="execution-secondary">
             <button id="timerReset" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5V4.5h4"></path><path d="M5.2 7.2A8 8 0 1 1 4 13"></path></svg><span>Сбросить</span></button>
-            <button id="executionTechnique" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5c3-1 5.5-.5 8 1.5v11c-2.5-2-5-2.5-8-1.5v-11Z"></path><path d="M20 6.5c-3-1-5.5-.5-8 1.5v11c2.5-2 5-2.5 8-1.5v-11Z"></path></svg><span>К технике</span></button>
             <button id="executionFinishEarly" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg><span>Завершить раньше</span></button>
           </div>
         </div>
@@ -194,6 +194,18 @@
   </div>
 
 
+  <div class="routine-reset-overlay" id="routineResetOverlay" aria-hidden="true">
+    <section class="routine-reset-sheet" role="dialog" aria-modal="true" aria-labelledby="routineResetTitle" aria-describedby="routineResetDescription">
+      <div class="routine-reset-sheet__handle" aria-hidden="true"></div>
+      <span class="eyebrow">Тренировка</span>
+      <h2 id="routineResetTitle">Сбросить прогресс?</h2>
+      <p id="routineResetDescription">Пройденные упражнения и таймеры утреннего комплекса будут сброшены.</p>
+      <div class="routine-reset-actions">
+        <button class="routine-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
+        <button class="routine-reset-confirm" id="routineResetConfirm" type="button">Сбросить</button>
+      </div>
+    </section>
+  </div>
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
@@ -206,9 +218,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=71"></script>
-  <script src="audio.js?v=71"></script>
-  <script src="pwa.js?v=71"></script>
-  <script src="session.js?v=71"></script>
+  <script src="state.js?v=72"></script>
+  <script src="audio.js?v=72"></script>
+  <script src="pwa.js?v=72"></script>
+  <script src="session.js?v=72"></script>
 </body>
 </html>

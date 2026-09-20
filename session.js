@@ -3,7 +3,7 @@
   const exercises=[
     {
       id:'cat-cow', title:'Кошка-корова', volume:'10 плавных циклов', time:'40 сек', seconds:40,
-      goal:'Быстро разбудить позвоночник и подготовить спину к более активной части разминки.',
+      goal:'Разбудить позвоночник и мягко подготовить спину к движению.',
       how:[
         'Встаньте на четвереньки: ладони под плечами, колени под тазом, шея продолжает линию спины.',
         'На выдохе мягко подкрутите таз, округлите спину и слегка оттолкните пол ладонями.',
@@ -25,7 +25,7 @@
     },
     {
       id:'thoracic-rotation', title:'Поворот грудного отдела', volume:'5 повторов / сторона', time:'45 сек', seconds:45,
-      goal:'Подготовить грудной отдел, плечи и лопатки к движениям руками и работе корпуса.',
+      goal:'Подготовить грудной отдел, плечи и лопатки к работе.',
       how:[
         'Останьтесь на четвереньках и положите одну ладонь на затылок.',
         'Слегка подтяните живот и оставьте таз неподвижным.',
@@ -47,7 +47,7 @@
     },
     {
       id:'leg-swings', title:'Махи ногой вперёд-назад', volume:'12–15 махов / нога', time:'50 сек', seconds:50,
-      goal:'Динамически разогреть тазобедренные суставы и подготовить ноги к приседам и выпадам.',
+      goal:'Разогреть тазобедренные суставы и подготовить ноги.',
       how:[
         'Встаньте боком к устойчивой опоре и легко держитесь одной рукой.',
         'Перенесите вес на опорную ногу, корпус держите вертикально.',
@@ -69,7 +69,7 @@
     },
     {
       id:'squat-reach', title:'Присед + подъём рук', volume:'15–18 повторов', time:'60 сек', seconds:60,
-      goal:'Включить крупные мышцы ног и корпуса и заметно поднять температуру тела и дыхание.',
+      goal:'Включить ноги и корпус, поднять температуру тела.',
       how:[
         'Поставьте стопы примерно на ширине плеч в естественном для вас положении.',
         'Отведите таз назад и вниз, одновременно сгибая колени.',
@@ -91,7 +91,7 @@
     },
     {
       id:'reverse-lunge-reach', title:'Обратный выпад + подъём рук', volume:'8 повторов / сторона', time:'70 сек', seconds:70,
-      goal:'Сильнее включить ягодицы и бёдра, добавить баланс и продолжить плавное повышение нагрузки.',
+      goal:'Включить ягодицы и бёдра, добавить баланс.',
       how:[
         'Встаньте ровно, стопы примерно на ширине таза.',
         'Сделайте одной ногой достаточно длинный шаг назад и опуститесь вниз.',
@@ -114,7 +114,7 @@
     },
     {
       id:'lateral-lunge', title:'Боковой выпад', volume:'8 повторов / сторона', time:'60 сек', seconds:60,
-      goal:'Добавить движение в боковой плоскости и активнее включить ягодицы, приводящие мышцы и бёдра.',
+      goal:'Добавить боковое движение и включить бёдра.',
       how:[
         'Встаньте широко, стопы направьте вперёд или слегка наружу.',
         'Перенесите таз к одной ноге, сгибая её в колене и отводя таз назад.',
@@ -136,7 +136,7 @@
     },
     {
       id:'hip-hinge-reach', title:'Hip Hinge + вытяжение рук', volume:'15 повторов', time:'55 сек', seconds:55,
-      goal:'Активно включить заднюю поверхность тела и закрепить наклон тазом назад после выпадов.',
+      goal:'Включить заднюю поверхность тела и закрепить наклон тазом.',
       how:[
         'Встаньте устойчиво, стопы примерно на ширине таза, колени слегка мягкие.',
         'Отведите таз назад и наклоните корпус вперёд как единый блок.',
@@ -158,7 +158,7 @@
     },
     {
       id:'incline-push-scap', title:'Отжимание от опоры + лопатки', volume:'12–15 повторов', time:'60 сек', seconds:60,
-      goal:'Добавить работу груди, рук, плечевого пояса и корпуса, сохраняя умеренную общую нагрузку.',
+      goal:'Подключить грудь, руки, плечи и корпус.',
       how:[
         'Поставьте ладони на устойчивую стену, стол или высокую опору чуть шире плеч.',
         'Отойдите назад и выстройте тело одной линией от головы до пят.',
@@ -181,7 +181,7 @@
     },
     {
       id:'bear-hover-taps', title:'Bear Hover + касания плеч', volume:'16–24 касания', time:'45 сек', seconds:45,
-      goal:'Финишировать разминку работой всего корпуса: плечи, живот, таз и координация без прыжков.',
+      goal:'Завершить разминку работой корпуса и координацией.',
       how:[
         'Встаньте на четвереньки: ладони под плечами, колени под тазом.',
         'Подверните носки и поднимите колени примерно на 2–4 см от пола.',
@@ -314,13 +314,53 @@
   }
 
   function visibleModal(){
-    return document.querySelector('.execution-overlay.is-visible,.completion-overlay.is-visible');
+    return document.querySelector('.execution-overlay.is-visible,.routine-reset-overlay.is-visible,.completion-overlay.is-visible');
   }
 
   function syncModalState(){
     const hasModal=Boolean(visibleModal());
     if(exerciseApp)exerciseApp.inert=hasModal;
     document.body.classList.toggle('modal-open',hasModal);
+  }
+
+  function showRoutineResetDialog(){
+    const overlay=$('#routineResetOverlay');
+    if(!overlay)return;
+    modalReturnFocus=document.activeElement;
+    overlay.classList.add('is-visible');
+    overlay.setAttribute('aria-hidden','false');
+    $('#routineMoreButton')?.setAttribute('aria-expanded','true');
+    syncModalState();
+    requestAnimationFrame(()=>$('#routineResetCancel')?.focus({preventScroll:true}));
+  }
+
+  function hideRoutineResetDialog(){
+    const overlay=$('#routineResetOverlay');
+    if(!overlay)return;
+    overlay.classList.remove('is-visible');
+    overlay.setAttribute('aria-hidden','true');
+    $('#routineMoreButton')?.setAttribute('aria-expanded','false');
+    syncModalState();
+    if(!visibleModal()&&modalReturnFocus?.isConnected){
+      modalReturnFocus.focus({preventScroll:true});
+      modalReturnFocus=null;
+    }
+  }
+
+  function resetRoutineProgress(){
+    cancelCountdown();
+    cancelRest();
+    stopTicker();
+    releaseWakeLock();
+
+    Store.resetRoutine(ROUTINE_KEY);
+    current=0;
+    lastFinishState=false;
+    Store.save();
+
+    haptic('soft');
+    render('back','smooth');
+    toast('Прогресс тренировки сброшен');
   }
 
   function setExecutionCopy(){
@@ -754,23 +794,22 @@
     $('#completionHome').focus({preventScroll:true});
   }
 
-  $('#routineResetButton').addEventListener('click',()=>{
-    const approved=confirm('Сбросить прогресс этой тренировки? Все пройденные упражнения и таймеры этого комплекса будут сброшены.');
-    if(!approved)return;
-
-    cancelCountdown();
-    cancelRest();
-    stopTicker();
-    releaseWakeLock();
-
-    Store.resetRoutine(ROUTINE_KEY);
-    current=0;
-    lastFinishState=false;
-    Store.save();
-
-    haptic('soft');
-    render('back','smooth');
-    toast('Прогресс тренировки сброшен');
+  $('#routineMoreButton').addEventListener('click',()=>{
+    haptic('tap');
+    showRoutineResetDialog();
+  });
+  $('#routineResetCancel').addEventListener('click',()=>{
+    haptic('tap');
+    hideRoutineResetDialog();
+  });
+  $('#routineResetConfirm').addEventListener('click',()=>{
+    hideRoutineResetDialog();
+    resetRoutineProgress();
+  });
+  $('#routineResetOverlay').addEventListener('click',event=>{
+    if(event.target!==event.currentTarget)return;
+    haptic('tap');
+    hideRoutineResetDialog();
   });
 
   $('#prevButton').addEventListener('click',()=>{
@@ -893,6 +932,10 @@
     if(!modal)return;
 
     if(event.key==='Escape'){
+      if($('#routineResetOverlay').classList.contains('is-visible')){
+        hideRoutineResetDialog();
+        return;
+      }
       if($('#executionOverlay').classList.contains('is-visible')){
         $('#executionClose').click();
       }
@@ -932,14 +975,6 @@
       haptic('tap');
       return;
     }
-    const timer=timerData(exercises[current]);
-    if(timer.running)pauseCurrentTimer();
-    hideExecution();
-    updateTimerUI();
-    haptic('tap');
-  });
-
-  $('#executionTechnique').addEventListener('click',()=>{
     const timer=timerData(exercises[current]);
     if(timer.running)pauseCurrentTimer();
     hideExecution();
