@@ -39,7 +39,7 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-512-v1.png" />
-  <link rel="stylesheet" href="styles.css?v=72" />
+  <link rel="stylesheet" href="styles.css?v=73" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -57,7 +57,7 @@
             <div class="step-indicator" aria-label="Текущее упражнение">
               <strong id="headerProgress">1 / 9</strong>
             </div>
-            <button class="routine-more-button" id="routineMoreButton" type="button" aria-label="Действия с тренировкой" aria-controls="routineResetOverlay" aria-expanded="false" title="Действия с тренировкой">
+            <button class="routine-more-button" id="routineMoreButton" type="button" aria-label="Настройки тренировки" aria-controls="routineSettingsOverlay" aria-expanded="false" title="Настройки тренировки">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="6" cy="12" r="1.25"></circle>
                 <circle cx="12" cy="12" r="1.25"></circle>
@@ -194,15 +194,47 @@
   </div>
 
 
-  <div class="routine-reset-overlay" id="routineResetOverlay" aria-hidden="true">
-    <section class="routine-reset-sheet" role="dialog" aria-modal="true" aria-labelledby="routineResetTitle" aria-describedby="routineResetDescription">
-      <div class="routine-reset-sheet__handle" aria-hidden="true"></div>
-      <span class="eyebrow">Тренировка</span>
-      <h2 id="routineResetTitle">Сбросить прогресс?</h2>
-      <p id="routineResetDescription">Пройденные упражнения и таймеры утреннего комплекса будут сброшены.</p>
-      <div class="routine-reset-actions">
-        <button class="routine-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
-        <button class="routine-reset-confirm" id="routineResetConfirm" type="button">Сбросить</button>
+  <div class="routine-settings-overlay" id="routineSettingsOverlay" aria-hidden="true">
+    <section class="routine-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="routineSettingsTitle">
+      <div class="routine-settings-sheet__handle" aria-hidden="true"></div>
+
+      <div class="routine-settings-view" id="routineSettingsView">
+        <div class="routine-settings-head">
+          <div>
+            <span class="eyebrow">Тренировка</span>
+            <h2 id="routineSettingsTitle">Настройки тренировки</h2>
+          </div>
+          <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки">×</button>
+        </div>
+
+        <div class="routine-settings-list">
+          <label class="routine-setting-row">
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l5 4V6L9 10H5Z"></path><path d="M17 9.5a4 4 0 0 1 0 5M19 7a7 7 0 0 1 0 10"></path></svg></span>
+            <span class="routine-setting-copy"><strong>Звук</strong><small>Отсчёт, последние секунды и завершение</small></span>
+            <input class="switch-input" id="workoutSoundSetting" type="checkbox" />
+          </label>
+
+          <label class="routine-setting-row">
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"></path><path d="m14 8 4 4-4 4"></path></svg></span>
+            <span class="routine-setting-copy"><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
+            <input class="switch-input" id="workoutAutoNextSetting" type="checkbox" />
+          </label>
+        </div>
+
+        <button class="routine-reset-entry" id="routineResetOpen" type="button">
+          <span><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5V4.5h4"></path><path d="M5.2 7.2A8 8 0 1 1 4 13"></path></svg>Сбросить прогресс</span>
+          <i aria-hidden="true">›</i>
+        </button>
+      </div>
+
+      <div class="routine-reset-view" id="routineResetView" hidden>
+        <span class="eyebrow">Тренировка</span>
+        <h2 id="routineResetTitle">Сбросить прогресс?</h2>
+        <p id="routineResetDescription">Пройденные упражнения и таймеры утреннего комплекса будут сброшены.</p>
+        <div class="routine-reset-actions">
+          <button class="routine-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
+          <button class="routine-reset-confirm" id="routineResetConfirm" type="button">Сбросить</button>
+        </div>
       </div>
     </section>
   </div>
@@ -218,9 +250,9 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=72"></script>
-  <script src="audio.js?v=72"></script>
-  <script src="pwa.js?v=72"></script>
-  <script src="session.js?v=72"></script>
+  <script src="state.js?v=73"></script>
+  <script src="audio.js?v=73"></script>
+  <script src="pwa.js?v=73"></script>
+  <script src="session.js?v=73"></script>
 </body>
 </html>

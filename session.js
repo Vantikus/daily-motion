@@ -314,7 +314,7 @@
   }
 
   function visibleModal(){
-    return document.querySelector('.execution-overlay.is-visible,.routine-reset-overlay.is-visible,.completion-overlay.is-visible');
+    return document.querySelector('.execution-overlay.is-visible,.routine-settings-overlay.is-visible,.completion-overlay.is-visible');
   }
 
   function syncModalState(){
@@ -323,23 +323,49 @@
     document.body.classList.toggle('modal-open',hasModal);
   }
 
-  function showRoutineResetDialog(){
-    const overlay=$('#routineResetOverlay');
+  function syncWorkoutSettingsControls(){
+    settings=Store.getSettings();
+    $('#workoutSoundSetting').checked=Boolean(settings.sound);
+    $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
+  }
+
+  function showRoutineSettingsView(){
+    $('#routineSettingsView').hidden=false;
+    $('#routineResetView').hidden=true;
+  }
+
+  function showRoutineResetConfirm(){
+    $('#routineSettingsView').hidden=true;
+    $('#routineResetView').hidden=false;
+    requestAnimationFrame(()=>$('#routineResetCancel')?.focus({preventScroll:true}));
+  }
+
+  function hideRoutineResetConfirm(){
+    $('#routineSettingsView').hidden=false;
+    $('#routineResetView').hidden=true;
+    requestAnimationFrame(()=>$('#routineResetOpen')?.focus({preventScroll:true}));
+  }
+
+  function showRoutineSettingsDialog(){
+    const overlay=$('#routineSettingsOverlay');
     if(!overlay)return;
+    syncWorkoutSettingsControls();
+    showRoutineSettingsView();
     modalReturnFocus=document.activeElement;
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     $('#routineMoreButton')?.setAttribute('aria-expanded','true');
     syncModalState();
-    requestAnimationFrame(()=>$('#routineResetCancel')?.focus({preventScroll:true}));
+    requestAnimationFrame(()=>$('#routineSettingsClose')?.focus({preventScroll:true}));
   }
 
-  function hideRoutineResetDialog(){
-    const overlay=$('#routineResetOverlay');
+  function hideRoutineSettingsDialog(){
+    const overlay=$('#routineSettingsOverlay');
     if(!overlay)return;
     overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
     $('#routineMoreButton')?.setAttribute('aria-expanded','false');
+    showRoutineSettingsView();
     syncModalState();
     if(!visibleModal()&&modalReturnFocus?.isConnected){
       modalReturnFocus.focus({preventScroll:true});
@@ -796,20 +822,38 @@
 
   $('#routineMoreButton').addEventListener('click',()=>{
     haptic('tap');
-    showRoutineResetDialog();
+    showRoutineSettingsDialog();
+  });
+  $('#routineSettingsClose').addEventListener('click',()=>{
+    haptic('tap');
+    hideRoutineSettingsDialog();
+  });
+  $('#routineSettingsOverlay').addEventListener('click',event=>{
+    if(event.target!==event.currentTarget)return;
+    haptic('tap');
+    hideRoutineSettingsDialog();
+  });
+  $('#workoutSoundSetting').addEventListener('change',async event=>{
+    settings=Store.updateSettings({sound:event.target.checked});
+    if(settings.sound){
+      const ready=await Audio?.unlock?.();
+      if(ready)Audio?.confirm?.();
+    }
+  });
+  $('#workoutAutoNextSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({autoNext:event.target.checked});
+  });
+  $('#routineResetOpen').addEventListener('click',()=>{
+    haptic('tap');
+    showRoutineResetConfirm();
   });
   $('#routineResetCancel').addEventListener('click',()=>{
     haptic('tap');
-    hideRoutineResetDialog();
+    hideRoutineResetConfirm();
   });
   $('#routineResetConfirm').addEventListener('click',()=>{
-    hideRoutineResetDialog();
+    hideRoutineSettingsDialog();
     resetRoutineProgress();
-  });
-  $('#routineResetOverlay').addEventListener('click',event=>{
-    if(event.target!==event.currentTarget)return;
-    haptic('tap');
-    hideRoutineResetDialog();
   });
 
   $('#prevButton').addEventListener('click',()=>{
@@ -932,8 +976,12 @@
     if(!modal)return;
 
     if(event.key==='Escape'){
-      if($('#routineResetOverlay').classList.contains('is-visible')){
-        hideRoutineResetDialog();
+      if($('#routineSettingsOverlay').classList.contains('is-visible')){
+        if(!$('#routineResetView').hidden){
+          hideRoutineResetConfirm();
+        }else{
+          hideRoutineSettingsDialog();
+        }
         return;
       }
       if($('#executionOverlay').classList.contains('is-visible')){
