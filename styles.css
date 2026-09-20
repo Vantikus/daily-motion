@@ -2078,3 +2078,252 @@ a[href],
   100%{opacity:1;transform:scale(1)}
 }
 
+/* v66 — surface press, iOS selection guard and slower micro-motion */
+button,
+button *,
+a[href],
+a[href] *,
+.routine-card,
+.routine-card *{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+/*
+  Large surfaces no longer scale inward.
+  The footprint stays fixed so no white seams appear around the control.
+*/
+.primary-button,
+.nav-button--next,
+.execution-primary{
+  transition:
+    transform 420ms cubic-bezier(.16,1,.3,1),
+    box-shadow 440ms cubic-bezier(.16,1,.3,1),
+    background-color 340ms ease,
+    filter 340ms ease;
+}
+.primary-button:active,
+.nav-button--next:active,
+.execution-primary:active,
+.primary-button.is-pressing,
+.nav-button--next.is-pressing,
+.execution-primary.is-pressing{
+  transform:translateY(1px)!important;
+  transition-duration:175ms,185ms,175ms,175ms;
+  transition-timing-function:cubic-bezier(.22,.72,.28,1),cubic-bezier(.22,.72,.28,1),ease,ease;
+  box-shadow:
+    inset 0 3px 9px rgba(0,0,0,.16),
+    0 1px 3px rgba(23,25,23,.045);
+  filter:brightness(.965) saturate(.96);
+}
+
+/* Home routine rows keep their full width and press only into the surface. */
+.routine-card,
+.home-body .routine-card{
+  transition:
+    transform 440ms cubic-bezier(.16,1,.3,1),
+    background-color 400ms cubic-bezier(.16,1,.3,1),
+    border-color 360ms ease,
+    box-shadow 440ms cubic-bezier(.16,1,.3,1);
+}
+.routine-card:active,
+.home-body .routine-card:active,
+.routine-card.is-pressing,
+.home-body .routine-card.is-pressing{
+  transform:translateY(1px)!important;
+  transition-duration:180ms,190ms,180ms,190ms;
+  background:rgba(241,247,243,.96)!important;
+  border-color:rgba(47,107,85,.16)!important;
+  box-shadow:inset 0 3px 9px rgba(47,107,85,.055)!important;
+}
+.routine-status b{
+  transition:transform 400ms cubic-bezier(.16,1,.3,1),color 300ms ease;
+}
+.routine-card.is-pressing .routine-status b{
+  transform:translateX(3px);
+}
+
+/* Small buttons keep the outer border fixed; only surface + glyph reacts. */
+.icon-button,
+.back-link--icon,
+.execution-close,
+.sheet-close,
+.routine-reset-button{
+  transform:none;
+  transition:
+    background-color 380ms cubic-bezier(.16,1,.3,1),
+    border-color 360ms ease,
+    color 340ms ease,
+    box-shadow 420ms cubic-bezier(.16,1,.3,1);
+}
+.icon-button:active,
+.back-link--icon:active,
+.execution-close:active,
+.sheet-close:active,
+.routine-reset-button:active,
+.icon-button.is-pressing,
+.back-link--icon.is-pressing,
+.execution-close.is-pressing,
+.sheet-close.is-pressing,
+.routine-reset-button.is-pressing{
+  transform:none!important;
+  background:rgba(47,107,85,.115)!important;
+  border-color:rgba(47,107,85,.28)!important;
+  color:var(--accent)!important;
+  box-shadow:
+    inset 0 3px 7px rgba(47,107,85,.105),
+    0 1px 3px rgba(23,25,23,.025)!important;
+  transition-duration:175ms,175ms,160ms,180ms;
+}
+.icon-button svg,
+.back-link--icon svg,
+.execution-close svg,
+.sheet-close svg,
+.routine-reset-button svg{
+  transform-origin:center;
+  transition:transform 420ms cubic-bezier(.16,1,.3,1);
+}
+.icon-button.is-pressing svg,
+.execution-close.is-pressing svg,
+.sheet-close.is-pressing svg{
+  transform:translateY(1px) scale(.90);
+}
+.back-link--icon.is-pressing svg{
+  transform:translate(-2px,1px) scale(.92);
+}
+.routine-reset-button.is-pressing svg{
+  transform:translateY(1px) rotate(-18deg) scale(.92);
+}
+
+/* Secondary controls press by changing depth, not footprint. */
+.nav-button--back,
+.execution-adjustments button,
+.settings-install,
+.settings-reset,
+.data-actions button{
+  transition:
+    transform 400ms cubic-bezier(.16,1,.3,1),
+    background-color 360ms ease,
+    border-color 340ms ease,
+    box-shadow 420ms cubic-bezier(.16,1,.3,1),
+    color 320ms ease;
+}
+.nav-button--back:active,
+.execution-adjustments button:active,
+.settings-install:active,
+.settings-reset:active,
+.data-actions button:active,
+.nav-button--back.is-pressing,
+.execution-adjustments button.is-pressing,
+.settings-install.is-pressing,
+.settings-reset.is-pressing,
+.data-actions button.is-pressing{
+  transform:translateY(1px)!important;
+  background:rgba(47,107,85,.085);
+  border-color:rgba(47,107,85,.22);
+  color:var(--accent);
+  box-shadow:inset 0 3px 7px rgba(47,107,85,.075);
+  transition-duration:170ms,175ms,170ms,185ms,170ms;
+}
+
+/* Accordion: no jump; the active row gently fills and the icon tile wakes up. */
+.detail-card__toggle{
+  transform:none!important;
+  transition:background-color 380ms cubic-bezier(.16,1,.3,1);
+}
+.detail-card__toggle:active,
+.detail-card__toggle.is-pressing{
+  transform:none!important;
+  background:rgba(47,107,85,.055);
+}
+.detail-card__toggle .qm-icon{
+  transition:
+    transform 420ms cubic-bezier(.16,1,.3,1),
+    background-color 360ms ease;
+}
+.detail-card.is-open .detail-card__toggle .qm-icon{
+  transform:scale(1.045);
+  background:rgba(47,107,85,.10);
+}
+.detail-card__toggle i{
+  transition:
+    transform 440ms cubic-bezier(.16,1,.3,1),
+    color 320ms ease;
+}
+
+.execution-secondary button,
+.execution-text-action,
+.pwa-banner__action{
+  transform:none!important;
+  transition:
+    background-color 340ms ease,
+    color 320ms ease,
+    opacity 320ms ease;
+}
+.execution-secondary button:active,
+.execution-text-action:active,
+.pwa-banner__action:active,
+.execution-secondary button.is-pressing,
+.execution-text-action.is-pressing,
+.pwa-banner__action.is-pressing{
+  transform:none!important;
+  background:rgba(47,107,85,.065);
+  color:var(--accent);
+}
+
+/* Small ambient motion: enough life without making the UI busy. */
+@media(prefers-reduced-motion:no-preference){
+  .app-ready .activity-day__dot{
+    animation:qmDotReveal 520ms cubic-bezier(.16,1,.3,1) both;
+  }
+  .app-ready .activity-day:nth-child(1) .activity-day__dot{animation-delay:80ms}
+  .app-ready .activity-day:nth-child(2) .activity-day__dot{animation-delay:120ms}
+  .app-ready .activity-day:nth-child(3) .activity-day__dot{animation-delay:160ms}
+  .app-ready .activity-day:nth-child(4) .activity-day__dot{animation-delay:200ms}
+  .app-ready .activity-day:nth-child(5) .activity-day__dot{animation-delay:240ms}
+  .app-ready .activity-day:nth-child(6) .activity-day__dot{animation-delay:280ms}
+  .app-ready .activity-day:nth-child(7) .activity-day__dot{animation-delay:320ms}
+
+  .app-ready .progress-track i{
+    transform-origin:left center;
+    animation:qmProgressGrow 720ms 120ms cubic-bezier(.16,1,.3,1) both;
+  }
+
+  .detail-card.is-open .detail-card__inner{
+    animation:qmDetailReveal 360ms cubic-bezier(.2,.72,.24,1) both;
+  }
+
+  .app-ready .routine-glyph .qm-svg{
+    animation:qmGlyphSettle 480ms cubic-bezier(.16,1,.3,1) both;
+  }
+  .app-ready .routine-card:nth-child(2) .routine-glyph .qm-svg{animation-delay:55ms}
+  .app-ready .routine-card:nth-child(3) .routine-glyph .qm-svg{animation-delay:110ms}
+
+  .toast.show{
+    animation:qmToastSettle 360ms cubic-bezier(.16,1,.3,1) both;
+  }
+}
+
+@keyframes qmDotReveal{
+  0%{opacity:0;transform:scale(.72)}
+  72%{opacity:1;transform:scale(1.06)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes qmProgressGrow{
+  from{transform:scaleX(0);opacity:.65}
+  to{transform:scaleX(1);opacity:1}
+}
+@keyframes qmDetailReveal{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmGlyphSettle{
+  from{opacity:0;transform:translateY(3px) scale(.88)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmToastSettle{
+  0%{opacity:0;transform:translate(-50%,18px) scale(.98)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+

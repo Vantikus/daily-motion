@@ -80,7 +80,7 @@
       if(!active)return;
       const target=active;
       const elapsed=performance.now()-pressedAt;
-      const delay=Math.max(0,105-elapsed);
+      const delay=Math.max(0,135-elapsed);
       releaseTimer=setTimeout(()=>{
         target.classList.remove('is-pressing');
         if(active===target)active=null;
