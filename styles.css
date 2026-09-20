@@ -2344,3 +2344,430 @@ a[href] *,
   color:var(--muted);
 }
 
+/* v68 — unified Quiet Motion spacing, hierarchy and motion */
+:root{
+  --qm-page-gap:24px;
+  --qm-section-gap:18px;
+  --qm-control-h:52px;
+}
+
+/* Home: consistent vertical rhythm and readable secondary copy */
+.home-body .topbar{
+  padding-top:16px;
+  padding-bottom:16px;
+}
+.home-body .page-grid{
+  gap:var(--qm-page-gap);
+  padding-bottom:34px;
+}
+.home-body .today-card{
+  padding:22px;
+}
+.home-body .today-card h2{
+  margin:17px 0 8px;
+}
+.home-body .today-card>p{
+  font-size:14px;
+  line-height:1.5;
+}
+.home-body .today-progress{
+  margin-top:20px;
+}
+.home-body .section-block{
+  gap:12px;
+}
+.home-body .routine-card{
+  min-height:74px;
+}
+.home-body .routine-copy strong{
+  font-size:15px;
+  line-height:1.25;
+}
+.home-body .routine-copy small,
+.home-body .routine-status,
+.home-body .text-link,
+.home-body .home-goal__meta>strong,
+.home-body .home-goal__meta>span{
+  font-size:12px;
+  line-height:1.4;
+}
+.home-body .activity-card{
+  padding:18px;
+}
+.home-body .activity-card__head{
+  margin-bottom:15px;
+}
+.home-body .activity-day small{
+  font-size:11px;
+}
+.home-body .safety-note{
+  font-size:12px;
+  line-height:1.55;
+  padding:0 2px 4px;
+}
+
+/* Workout: one spacing system from toolbar to technique */
+.session-shell{
+  width:min(760px,calc(100% - 32px));
+  padding-bottom:34px;
+}
+.exercise-scroll{
+  padding-top:14px!important;
+}
+.exercise-toolbar{
+  margin-bottom:12px;
+}
+.step-segments{
+  width:100%;
+  grid-template-columns:repeat(var(--step-count,9),minmax(0,1fr))!important;
+  gap:4px;
+  margin-bottom:22px;
+}
+.step-segments i{
+  height:4px;
+}
+.exercise-head{
+  gap:8px;
+}
+.exercise-head p{
+  font-size:14px;
+  line-height:1.55;
+}
+.exercise-facts{
+  gap:12px;
+  margin:19px 2px 18px;
+}
+.exercise-facts>div{
+  padding:12px 13px;
+  border-radius:14px;
+  background:rgba(255,255,255,.58);
+}
+.exercise-facts span{
+  font-size:11px;
+  line-height:1.25;
+  letter-spacing:.045em;
+}
+.exercise-facts strong{
+  font-size:15px;
+  line-height:1.35;
+}
+.technique-key{
+  margin-bottom:22px;
+  padding:14px 16px 14px 18px;
+}
+.technique-key span{
+  font-size:12px;
+}
+.technique-key strong{
+  font-size:14px;
+  line-height:1.55;
+}
+.details-section{
+  gap:11px;
+}
+.details-title{
+  font-size:20px;
+}
+.detail-card__toggle{
+  min-height:56px;
+  padding:0 16px;
+  font-size:14px;
+}
+.detail-card__inner{
+  padding:14px 16px 17px;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  font-size:14px;
+  line-height:1.58;
+}
+.detail-card__inner ol,
+.detail-card__inner ul{
+  gap:8px;
+}
+.session-nav{
+  padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 10px);
+}
+.nav-button{
+  height:54px;
+}
+.nav-button--back{
+  width:54px;
+}
+
+/* Fullscreen execution: clearer secondary actions and tighter hierarchy */
+.execution-overlay{
+  padding:
+    calc(env(safe-area-inset-top,0px) + 16px)
+    16px
+    calc(env(safe-area-inset-bottom,0px) + 16px);
+}
+.execution-top{
+  min-height:44px;
+}
+.execution-meta{
+  font-size:12px;
+}
+.execution-stage{
+  padding:16px 4px 12px;
+}
+.execution-stage h2{
+  margin-top:9px;
+  font-size:clamp(28px,7vw,35px);
+}
+.execution-key{
+  margin-top:11px;
+  padding:8px 13px;
+  font-size:12px;
+  line-height:1.45;
+}
+.execution-overlay .execution-timer__ring{
+  margin:24px 0 22px;
+}
+.execution-actions{
+  gap:11px;
+}
+.execution-primary{
+  min-height:56px;
+}
+.execution-adjustments button{
+  min-height:48px;
+  font-size:13px;
+}
+.execution-secondary{
+  gap:4px 8px;
+}
+.execution-secondary button{
+  min-height:42px;
+  padding:0 9px;
+  font-size:12px;
+}
+
+/* Settings: text and rows no longer feel cramped */
+.settings-overlay{
+  background:rgba(23,25,23,.21);
+}
+.settings-sheet{
+  max-height:min(86dvh,760px);
+  border-radius:26px 26px 0 0;
+  padding:10px 20px calc(20px + env(safe-area-inset-bottom,0px));
+}
+.settings-sheet__handle{
+  margin-bottom:14px;
+}
+.settings-sheet__head{
+  margin-bottom:10px;
+}
+.settings-sheet__head h2{
+  font-size:27px;
+}
+.setting-row{
+  min-height:68px;
+  column-gap:13px;
+}
+.setting-row strong{
+  font-size:14px;
+}
+.setting-row small{
+  font-size:12px;
+  line-height:1.45;
+}
+.setting-row select{
+  min-width:92px;
+  height:42px;
+  font-size:13px;
+}
+.settings-reset{
+  min-height:66px;
+  margin-top:8px;
+  font-size:14px;
+}
+.settings-reset::after{
+  font-size:12px;
+}
+
+/* Progress: remove duplicate hero, flatten hierarchy, increase readability */
+.progress-body .container{
+  width:min(760px,calc(100% - 40px));
+}
+.progress-topbar{
+  gap:14px;
+  padding-top:16px;
+  padding-bottom:18px;
+}
+.progress-topbar__copy h1{
+  font-size:28px;
+}
+.progress-page{
+  gap:14px;
+  padding-top:2px;
+  padding-bottom:calc(38px + env(safe-area-inset-bottom,0px));
+}
+.progress-intro{
+  margin:0 2px 2px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+.progress-metrics{
+  gap:10px;
+}
+.progress-metrics article{
+  padding:15px;
+  border-radius:16px;
+  gap:4px;
+  box-shadow:none;
+}
+.progress-metrics span{
+  font-size:12px;
+  line-height:1.3;
+}
+.progress-metrics strong{
+  font-size:30px;
+}
+.progress-metrics small{
+  font-size:11px;
+}
+.progress-card{
+  padding:18px;
+  border-radius:18px;
+  box-shadow:none;
+}
+.progress-card__head{
+  align-items:center;
+  margin-bottom:14px;
+}
+.progress-card__head h3{
+  font-size:19px;
+}
+.progress-card__head select{
+  height:42px;
+  font-size:13px;
+}
+.weekly-goal-card>p,
+.data-card>p,
+.history-empty{
+  font-size:13px;
+  line-height:1.5;
+}
+.history-legend{
+  font-size:11px;
+}
+.history-row{
+  min-height:68px;
+  padding:13px 0;
+}
+.history-row__date strong{
+  font-size:14px;
+}
+.history-row__date span{
+  font-size:12px;
+}
+.history-row__meta span{
+  font-size:11px;
+}
+.data-actions button{
+  min-height:48px;
+  font-size:13px;
+}
+
+/* Motion: animate state changes, not every block on every page */
+@media(prefers-reduced-motion:no-preference){
+  .app-ready .page-grid>*,
+  .app-ready .routine-card,
+  .app-ready .progress-metrics article,
+  .app-ready .progress-card,
+  .app-ready .activity-day__dot,
+  .app-ready .routine-glyph .qm-svg,
+  .app-ready .progress-track i{
+    animation:none!important;
+  }
+
+  .app-ready .today-card{
+    animation:qmPageSettle 300ms cubic-bezier(.2,.7,.24,1) both!important;
+  }
+  .app-ready .progress-page{
+    animation:qmPageSettle 300ms cubic-bezier(.2,.7,.24,1) both;
+  }
+
+  .exercise-main.enter-forward .exercise-head,
+  .exercise-main.enter-forward .exercise-facts,
+  .exercise-main.enter-forward .technique-key,
+  .exercise-main.enter-forward .details-section,
+  .exercise-main.enter-back .exercise-head,
+  .exercise-main.enter-back .exercise-facts,
+  .exercise-main.enter-back .technique-key,
+  .exercise-main.enter-back .details-section{
+    animation:qmContentSwap 250ms cubic-bezier(.2,.7,.24,1) both!important;
+    animation-delay:0ms!important;
+  }
+
+  .detail-card.is-open .detail-card__inner{
+    animation:qmDetailSoft 280ms cubic-bezier(.2,.72,.24,1) both;
+  }
+
+  .completion-overlay.is-visible .completion-check{
+    animation:qmCheckSoft 420ms cubic-bezier(.16,.9,.22,1) both!important;
+  }
+}
+@keyframes qmPageSettle{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmContentSwap{
+  from{opacity:.55;transform:translateY(4px)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmDetailSoft{
+  from{opacity:0;transform:translateY(-3px)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmCheckSoft{
+  0%{opacity:0;transform:scale(.82)}
+  75%{opacity:1;transform:scale(1.025)}
+  100%{opacity:1;transform:scale(1)}
+}
+
+@media(max-width:520px){
+  .home-body .container,
+  .progress-body .container{
+    width:calc(100% - 40px);
+  }
+  .home-body .today-card{
+    padding:20px;
+  }
+  .session-shell{
+    width:calc(100% - 32px);
+  }
+  .settings-sheet{
+    padding-left:18px;
+    padding-right:18px;
+  }
+  .progress-card{
+    padding:17px;
+  }
+}
+
+@media(max-width:390px){
+  .home-body .container,
+  .progress-body .container{
+    width:calc(100% - 32px);
+  }
+  .session-shell{
+    width:calc(100% - 24px);
+  }
+  .execution-overlay{
+    padding-left:12px;
+    padding-right:12px;
+  }
+  .setting-row{
+    column-gap:10px;
+  }
+  .setting-row small{
+    font-size:11.5px;
+  }
+  .data-actions{
+    grid-template-columns:1fr;
+  }
+}
+

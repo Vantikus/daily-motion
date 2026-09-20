@@ -55,7 +55,7 @@
   $('#heroText').textContent=allDone
     ?'Сегодняшний доступный комплекс выполнен.'
     :`${next.minutes} · ${next.total} упражнений`;
-  $('#continueBtn').textContent=allDone?'Открыть утро':isResuming?'Продолжить':'Начать';
+  $('#continueBtn').textContent=allDone?'Открыть комплекс':isResuming?'Продолжить':'Начать';
   $('#continueBtn').onclick=()=>go(nextKey);
   $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
   $('#dayProgressValue').textContent=`${nextPercent}%`;
