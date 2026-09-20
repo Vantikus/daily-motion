@@ -3561,3 +3561,51 @@ a[href] *,
   }
 }
 
+/* v78 — MotionDesign/GSAP sheet choreography */
+.settings-overlay,
+.routine-settings-overlay{
+  background:rgba(23,25,23,0);
+  transition:none!important;
+}
+
+.settings-sheet,
+.routine-settings-sheet{
+  transition:none!important;
+  animation:none!important;
+  will-change:auto!important;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  transform:translate3d(0,calc(100% + 44px),0);
+}
+
+.settings-overlay.is-moving .settings-sheet,
+.routine-settings-overlay.is-moving .routine-settings-sheet,
+.settings-overlay.is-dragging .settings-sheet,
+.routine-settings-overlay.is-dragging .routine-settings-sheet{
+  will-change:transform!important;
+}
+
+.settings-overlay.is-visible .settings-sheet,
+.routine-settings-overlay.is-visible .routine-settings-sheet{
+  animation:none!important;
+}
+
+.sheet-close,
+.routine-settings-close,
+.sheet-close:active,
+.routine-settings-close:active,
+.sheet-close.is-pressing,
+.routine-settings-close.is-pressing{
+  transform:none!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .settings-overlay,
+  .routine-settings-overlay,
+  .settings-sheet,
+  .routine-settings-sheet{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+

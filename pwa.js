@@ -106,43 +106,34 @@
 
 
   const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened}={})=>{
-    if(!overlay||!sheet||!handle)return null;
+    const gsap=window.gsap;
+    if(!overlay||!sheet||!handle||!gsap)return null;
 
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
-    const CLOSED_PAD=48;
-
+    const CLOSED_PAD=44;
     let phase='closed';
     let pointerId=null;
     let startY=0;
     let currentY=0;
-    let currentVelocity=0;
     let sheetHeight=0;
     let samples=[];
-    let frameId=null;
-    let lastFrameAt=0;
-    let springStartedAt=0;
 
-    const transformFor=y=>`translate3d(0,${y.toFixed(2)}px,0)`;
     const closedY=()=>Math.ceil((sheetHeight||sheet.getBoundingClientRect().height)+CLOSED_PAD);
+    const backdropFor=y=>{
+      const progress=clamp(Math.max(0,y)/Math.max(1,closedY()),0,1);
+      return .18*(1-Math.pow(progress,.82));
+    };
 
-    const backdropAlphaFor=y=>{
-      const target=closedY();
-      const progress=clamp(Math.max(0,y)/Math.max(1,target),0,1);
-      return .18*(1-progress);
+    const kill=()=>{
+      gsap.killTweensOf(sheet);
+      gsap.killTweensOf(overlay);
     };
 
     const paint=y=>{
       currentY=y;
-      sheet.style.transform=transformFor(y);
-      overlay.style.backgroundColor=`rgba(23,25,23,${backdropAlphaFor(y).toFixed(3)})`;
-    };
-
-    const stopSpring=()=>{
-      if(frameId!==null){
-        cancelAnimationFrame(frameId);
-        frameId=null;
-      }
+      gsap.set(sheet,{y,force3D:true});
+      gsap.set(overlay,{backgroundColor:`rgba(23,25,23,${backdropFor(y)})`});
     };
 
     const clearGesture=()=>{
@@ -153,140 +144,111 @@
     };
 
     const finishClosed=()=>{
-      stopSpring();
+      kill();
       clearGesture();
-      overlay.classList.remove('is-visible','is-settling','is-dismissing');
+      overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing');
       overlay.setAttribute('aria-hidden','true');
-      sheet.style.transform='';
-      overlay.style.backgroundColor='';
+      gsap.set(sheet,{clearProps:'transform'});
+      gsap.set(overlay,{clearProps:'backgroundColor'});
       currentY=0;
-      currentVelocity=0;
       phase='closed';
       onClosed?.();
     };
 
     const finishOpen=()=>{
-      stopSpring();
+      kill();
       clearGesture();
-      overlay.classList.remove('is-settling','is-dismissing');
-      sheet.style.transform='translate3d(0,0,0)';
-      overlay.style.backgroundColor='rgba(23,25,23,.18)';
+      overlay.classList.remove('is-moving','is-settling','is-dismissing');
+      gsap.set(sheet,{y:0,force3D:true});
+      gsap.set(overlay,{backgroundColor:'rgba(23,25,23,.18)'});
       currentY=0;
-      currentVelocity=0;
       phase='open';
       onOpened?.();
     };
 
-    const runSpring=({
-      target,
-      velocity=currentVelocity,
-      stiffness,
-      damping,
-      closing=false,
-      maxDuration=1100
-    })=>{
-      stopSpring();
-
-      if(reduceMotion.matches){
-        paint(target);
-        closing?finishClosed():finishOpen();
-        return;
-      }
-
-      currentVelocity=velocity;
-      lastFrameAt=performance.now();
-      springStartedAt=lastFrameAt;
-
-      const step=now=>{
-        const dt=clamp((now-lastFrameAt)/1000,.001,.032);
-        lastFrameAt=now;
-
-        const displacement=currentY-target;
-        const acceleration=-stiffness*displacement-damping*currentVelocity;
-
-        currentVelocity+=acceleration*dt;
-        currentY+=currentVelocity*dt;
-
-        if(closing&&currentY>target)currentY=target;
-        paint(currentY);
-
-        const settled=Math.abs(currentY-target)<.7&&Math.abs(currentVelocity)<9;
-        const timedOut=now-springStartedAt>maxDuration;
-
-        if(settled||timedOut){
-          paint(target);
-          closing?finishClosed():finishOpen();
-          return;
-        }
-
-        frameId=requestAnimationFrame(step);
-      };
-
-      frameId=requestAnimationFrame(step);
-    };
-
     const open=()=>{
       if(phase==='open'||phase==='opening')return;
-
-      stopSpring();
+      kill();
       clearGesture();
       phase='opening';
-      overlay.classList.remove('is-settling','is-dismissing');
       overlay.setAttribute('aria-hidden','false');
-      overlay.classList.add('is-visible');
+      overlay.classList.remove('is-settling','is-dismissing');
+      overlay.classList.add('is-visible','is-moving');
 
       sheetHeight=sheet.getBoundingClientRect().height;
       currentY=closedY();
-      currentVelocity=0;
-      paint(currentY);
+      gsap.set(sheet,{y:currentY,force3D:true});
+      gsap.set(overlay,{backgroundColor:'rgba(23,25,23,0)'});
 
-      requestAnimationFrame(()=>{
-        runSpring({
-          target:0,
-          velocity:0,
-          stiffness:185,
-          damping:27,
-          maxDuration:900
-        });
-      });
+      if(reduceMotion.matches){
+        finishOpen();
+        return;
+      }
+
+      gsap.timeline({onComplete:finishOpen})
+        .to(overlay,{backgroundColor:'rgba(23,25,23,.18)',duration:.26,ease:'power2.out'},0)
+        .to(sheet,{y:0,duration:.44,ease:'power4.out',force3D:true},0);
     };
 
-    const close=(velocityPxPerSecond=0)=>{
+    const close=(velocityPxPerSecond=0,fromGesture=false)=>{
       if(phase==='closed'||phase==='closing')return;
-
       onBeforeClose?.();
-      stopSpring();
+      kill();
+
       sheetHeight=sheetHeight||sheet.getBoundingClientRect().height;
+      currentY=Number(gsap.getProperty(sheet,'y'))||currentY||0;
+      const target=closedY();
+      const remaining=Math.max(0,target-currentY);
 
       phase='closing';
       clearGesture();
-      overlay.classList.add('is-settling','is-dismissing');
+      overlay.classList.add('is-moving','is-settling','is-dismissing');
 
-      runSpring({
-        target:closedY(),
-        velocity:Math.max(0,velocityPxPerSecond),
-        stiffness:90,
-        damping:19,
-        closing:true,
-        maxDuration:1150
-      });
+      if(reduceMotion.matches){
+        paint(target);
+        finishClosed();
+        return;
+      }
+
+      const speed=Math.max(900,Math.min(2200,Math.abs(velocityPxPerSecond)||1100));
+      const duration=fromGesture
+        ?clamp(remaining/speed,.20,.31)
+        :.34;
+      const ease=fromGesture?'power3.out':'power2.inOut';
+
+      gsap.timeline({onComplete:finishClosed})
+        .to(sheet,{y:target,duration,ease,force3D:true},0)
+        .to(overlay,{backgroundColor:'rgba(23,25,23,0)',duration:Math.min(.27,duration),ease:'power2.inOut'},Math.min(.04,duration*.12));
     };
 
-    const snapOpen=(velocityPxPerSecond=0)=>{
+    const snapOpen=velocityPxPerSecond=>{
       if(phase!=='dragging')return;
-
-      stopSpring();
+      kill();
       phase='settling';
       clearGesture();
-      overlay.classList.add('is-settling');
+      overlay.classList.add('is-moving','is-settling');
 
-      runSpring({
-        target:0,
-        velocity:clamp(velocityPxPerSecond*.28,-260,420),
-        stiffness:205,
-        damping:29,
-        maxDuration:850
-      });
+      currentY=Number(gsap.getProperty(sheet,'y'))||currentY||0;
+      const ratio=clamp(Math.abs(currentY)/Math.max(1,sheetHeight),0,1);
+      const duration=clamp(.27+ratio*.11,.27,.38);
+
+      if(reduceMotion.matches){
+        finishOpen();
+        return;
+      }
+
+      gsap.timeline({onComplete:finishOpen})
+        .to(sheet,{
+          y:0,
+          duration,
+          ease:'back.out(1.08)',
+          force3D:true
+        },0)
+        .to(overlay,{
+          backgroundColor:'rgba(23,25,23,.18)',
+          duration:Math.min(.24,duration),
+          ease:'power2.out'
+        },0);
     };
 
     const releaseCapture=()=>{
@@ -298,16 +260,15 @@
       if(phase!=='open'||!overlay.classList.contains('is-visible'))return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
 
-      stopSpring();
+      kill();
       phase='dragging';
       pointerId=event.pointerId;
       startY=event.clientY;
       sheetHeight=sheet.getBoundingClientRect().height;
       currentY=0;
-      currentVelocity=0;
       samples=[{y:event.clientY,t:performance.now()}];
 
-      overlay.classList.remove('is-settling','is-dismissing');
+      overlay.classList.remove('is-moving','is-settling','is-dismissing');
       overlay.classList.add('is-dragging');
       sheet.classList.add('is-dragging');
       handle.setPointerCapture?.(pointerId);
@@ -318,12 +279,14 @@
       event.preventDefault();
 
       const raw=event.clientY-startY;
-      const y=raw>=0?raw:-Math.min(10,Math.sqrt(Math.abs(raw))*1.25);
-      paint(y);
+      const y=raw>=0?raw:-Math.min(9,Math.sqrt(Math.abs(raw))*1.15);
+      currentY=y;
+      gsap.set(sheet,{y,force3D:true});
+      gsap.set(overlay,{backgroundColor:`rgba(23,25,23,${backdropFor(y)})`});
 
       const now=performance.now();
       samples.push({y:event.clientY,t:now});
-      while(samples.length>2&&now-samples[0].t>100)samples.shift();
+      while(samples.length>2&&now-samples[0].t>90)samples.shift();
     },{passive:false});
 
     const finishGesture=event=>{
@@ -334,20 +297,19 @@
       const first=samples[0];
       const last=samples[samples.length-1];
       const dt=Math.max(1,last.t-first.t);
-      const velocityMs=(last.y-first.y)/dt;
-      const velocityPxPerSecond=velocityMs*1000;
-
-      const y=Math.max(0,currentY);
-      const distanceThreshold=clamp(sheetHeight*.32,132,210);
-      const flickDismiss=y>=72&&velocityPxPerSecond>=950;
-      const projected=y+Math.max(0,velocityPxPerSecond)*.11;
-      const projectedDismiss=y>=64&&projected>=distanceThreshold*1.14;
-      const dismiss=y>=distanceThreshold||flickDismiss||projectedDismiss;
+      const velocityPxPerSecond=((last.y-first.y)/dt)*1000;
+      const y=Math.max(0,Number(gsap.getProperty(sheet,'y'))||currentY||0);
+      const distanceThreshold=clamp(sheetHeight*.28,118,190);
+      const projected=y+Math.max(0,velocityPxPerSecond)*.105;
+      const dismiss=
+        y>=distanceThreshold||
+        (y>=58&&velocityPxPerSecond>=880)||
+        (y>=52&&projected>=distanceThreshold*1.1);
 
       releaseCapture();
 
       if(dismiss){
-        close(clamp(velocityPxPerSecond,0,1900));
+        close(clamp(velocityPxPerSecond,0,2200),true);
       }else{
         snapOpen(velocityPxPerSecond);
       }
@@ -362,7 +324,7 @@
 
     return {
       open,
-      close:()=>close(0),
+      close:()=>close(0,false),
       isOpen:()=>phase!=='closed',
       state:()=>phase
     };
