@@ -2820,3 +2820,53 @@ a[href] *,
   }
 }
 
+/* v70 — semantic technique icon palette */
+.technique-icon{
+  transition:
+    transform 320ms cubic-bezier(.16,1,.3,1),
+    background-color 280ms ease,
+    color 280ms ease;
+}
+.technique-icon--how{
+  color:#2f6b55;
+  background:rgba(47,107,85,.085);
+}
+.technique-icon--breath{
+  color:#3f7880;
+  background:rgba(63,120,128,.085);
+}
+.technique-icon--feel{
+  color:#65769a;
+  background:rgba(101,118,154,.085);
+}
+.technique-icon--mistakes{
+  color:#946a54;
+  background:rgba(148,106,84,.09);
+}
+.technique-icon--easy{
+  color:#748461;
+  background:rgba(116,132,97,.09);
+}
+.technique-icon--progress{
+  color:#756c91;
+  background:rgba(117,108,145,.09);
+}
+.detail-card.is-open .technique-icon--how{
+  background:rgba(47,107,85,.13);
+}
+.detail-card.is-open .technique-icon--breath{
+  background:rgba(63,120,128,.13);
+}
+.detail-card.is-open .technique-icon--feel{
+  background:rgba(101,118,154,.13);
+}
+.detail-card.is-open .technique-icon--mistakes{
+  background:rgba(148,106,84,.135);
+}
+.detail-card.is-open .technique-icon--easy{
+  background:rgba(116,132,97,.135);
+}
+.detail-card.is-open .technique-icon--progress{
+  background:rgba(117,108,145,.135);
+}
+
