@@ -2771,3 +2771,52 @@ a[href] *,
   }
 }
 
+/* v69 — compact exercise facts */
+.exercise-facts{
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:18px;
+  align-items:end;
+  margin:16px 2px 17px;
+}
+.exercise-facts>div{
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.exercise-facts>div:last-child{
+  text-align:right;
+}
+.exercise-facts span{
+  font-size:10px;
+  line-height:1.2;
+  letter-spacing:.055em;
+  color:var(--muted);
+}
+.exercise-facts strong{
+  display:block;
+  margin-top:5px;
+  font-size:14px;
+  line-height:1.25;
+  letter-spacing:-.012em;
+  font-weight:700;
+  white-space:nowrap;
+}
+.fact-label{
+  gap:5px;
+}
+.fact-label .qm-svg{
+  width:14px;
+  height:14px;
+}
+@media(max-width:390px){
+  .exercise-facts{
+    gap:12px;
+    margin-top:15px;
+  }
+  .exercise-facts strong{
+    font-size:13px;
+  }
+}
+
