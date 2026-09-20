@@ -1,14 +1,8 @@
 (function DailyMotionStateModule(){
-  const KEY='dailyMotionState.v2';
-  const LEGACY_KEY='dailyMotionState.v1';
+  const KEY='dailyMotionState.v3';
+  const LEGACY_KEYS=['dailyMotionState.v2','dailyMotionState.v1'];
   const ROUTINE_KEYS=['morning','day','evening'];
-  const DEFAULT_SETTINGS={
-    countdownSeconds:3,
-    restSeconds:15,
-    sound:true,
-    autoNext:false,
-    weeklyGoalDays:5
-  };
+  const DEFAULT_SETTINGS={countdownSeconds:3,restSeconds:15,sound:true,autoNext:false,weeklyGoalDays:5};
 
   const todayKey=(date=new Date())=>{
     const d=new Date(date);
@@ -16,12 +10,7 @@
   };
 
   const blankRoutine=()=>({
-    step:0,
-    completedUntil:0,
-    completed:false,
-    startedAt:null,
-    completedAt:null,
-    timers:{}
+    step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,timers:{}
   });
 
   const normalizeSettings=(settings={})=>({
@@ -38,7 +27,8 @@
     duration:Number.isFinite(Number(timer.duration))?Math.max(10,Number(timer.duration)):null,
     remaining:Number.isFinite(Number(timer.remaining))?Math.max(0,Number(timer.remaining)):null,
     running:Boolean(timer.running),
-    endAt:Number.isFinite(Number(timer.endAt))?Number(timer.endAt):null
+    endAt:Number.isFinite(Number(timer.endAt))?Number(timer.endAt):null,
+    runStartedAt:Number.isFinite(Number(timer.runStartedAt))?Number(timer.runStartedAt):null
   });
 
   const normalizeRoutine=(routine={})=>{
@@ -48,6 +38,7 @@
     next.completed=Boolean(routine.completed);
     next.startedAt=routine.startedAt||null;
     next.completedAt=routine.completedAt||null;
+    next.activeSeconds=Math.max(0,Number(routine.activeSeconds)||0);
     const timers=routine.timers&&typeof routine.timers==='object'?routine.timers:{};
     Object.entries(timers).forEach(([id,timer])=>{next.timers[id]=normalizeTimer(timer);});
     return next;
@@ -64,9 +55,26 @@
   };
 
   const normalizeState=(raw={})=>{
-    const next={version:2,settings:normalizeSettings(raw.settings),days:{}};
+    const next={
+      version:3,
+      settings:normalizeSettings(raw.settings),
+      programVersions:raw.programVersions&&typeof raw.programVersions==='object'?{...raw.programVersions}:{},
+      days:{}
+    };
     const days=raw.days&&typeof raw.days==='object'?raw.days:{};
-    Object.entries(days).forEach(([date,day])=>{next.days[date]=normalizeDay(day);});
+    const current=todayKey();
+    Object.entries(days).forEach(([date,day])=>{
+      next.days[date]=normalizeDay(day);
+      if(date!==current){
+        Object.values(next.days[date].routines||{}).forEach(routine=>{
+          Object.values(routine.timers||{}).forEach(timer=>{
+            timer.running=false;
+            timer.endAt=null;
+            timer.runStartedAt=null;
+          });
+        });
+      }
+    });
     return next;
   };
 
@@ -78,12 +86,17 @@
   };
 
   const migrateLegacy=()=>{
-    const legacy=readJson(LEGACY_KEY);
-    if(!legacy)return {version:2,settings:normalizeSettings(),days:{}};
+    let legacy=null;
+    let legacyKey=null;
+    for(const key of LEGACY_KEYS){
+      legacy=readJson(key);
+      if(legacy){legacyKey=key;break;}
+    }
+    if(!legacy)return normalizeState();
     const next=normalizeState(legacy);
-    const date=todayKey();
-    if(!next.days[date])next.days[date]=normalizeDay();
-    if(legacy.timers&&typeof legacy.timers==='object'){
+    if(legacyKey==='dailyMotionState.v1'&&legacy.timers&&typeof legacy.timers==='object'){
+      const date=todayKey();
+      if(!next.days[date])next.days[date]=normalizeDay();
       Object.entries(legacy.timers).forEach(([routineKey,timers])=>{
         if(!next.days[date].routines[routineKey])next.days[date].routines[routineKey]=blankRoutine();
         if(timers&&typeof timers==='object'){
@@ -102,27 +115,18 @@
     if(!state.days[date])state.days[date]=normalizeDay();
     return state.days[date];
   };
-
   const ensureRoutine=(routineKey,date=todayKey())=>{
     const day=ensureDay(date);
     if(!day.routines[routineKey])day.routines[routineKey]=blankRoutine();
     return day.routines[routineKey];
   };
-
-  const save=()=>{
-    try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}
-  };
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
 
   const getTimer=(routineKey,exerciseId,defaultDuration,date=todayKey())=>{
     const routine=ensureRoutine(routineKey,date);
     if(!routine.timers)routine.timers={};
     if(!routine.timers[exerciseId]){
-      routine.timers[exerciseId]={
-        duration:defaultDuration,
-        remaining:defaultDuration,
-        running:false,
-        endAt:null
-      };
+      routine.timers[exerciseId]={duration:defaultDuration,remaining:defaultDuration,running:false,endAt:null,runStartedAt:null};
     }
     const timer=routine.timers[exerciseId];
     if(!Number.isFinite(timer.duration)||timer.duration<10)timer.duration=defaultDuration;
@@ -130,6 +134,7 @@
     timer.remaining=Math.max(0,timer.remaining);
     if(timer.running&&timer.endAt){
       timer.remaining=Math.max(0,Math.ceil((timer.endAt-Date.now())/1000));
+      if(!Number.isFinite(timer.runStartedAt))timer.runStartedAt=Date.now();
     }
     return timer;
   };
@@ -140,12 +145,14 @@
     save();
     return state.settings;
   };
-
-  const resetToday=()=>{
-    state.days[todayKey()]=normalizeDay();
+  const getProgramVersion=routineKey=>state.programVersions?.[routineKey]||null;
+  const setProgramVersion=(routineKey,version)=>{
+    if(!state.programVersions||typeof state.programVersions!=='object')state.programVersions={};
+    state.programVersions[routineKey]=String(version);
     save();
+    return state.programVersions[routineKey];
   };
-
+  const resetToday=()=>{state.days[todayKey()]=normalizeDay();save();};
   const resetRoutine=(routineKey,date=todayKey())=>{
     const routine=ensureRoutine(routineKey,date);
     const fresh=blankRoutine();
@@ -154,9 +161,7 @@
     save();
     return routine;
   };
-
   const exportState=()=>JSON.stringify(state,null,2);
-
   const importState=input=>{
     const parsed=typeof input==='string'?JSON.parse(input):input;
     if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('INVALID_STATE');
@@ -166,19 +171,38 @@
     return state;
   };
 
-  ensureDay();
-  save();
+  let externalChange=false;
+  window.addEventListener('storage',event=>{
+    if(event.key!==KEY||!event.newValue)return;
+    try{
+      state=normalizeState(JSON.parse(event.newValue));
+      externalChange=true;
+      if(document.visibilityState==='visible')setTimeout(()=>location.reload(),0);
+    }catch{}
+  });
+
+  const bootDayKey=todayKey();
+  const checkDayBoundary=()=>{
+    if(externalChange||todayKey()!==bootDayKey)location.reload();
+  };
+  window.addEventListener('focus',checkDayBoundary);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')checkDayBoundary();
+  });
+  setInterval(()=>{
+    if(document.visibilityState==='visible')checkDayBoundary();
+  },60000);
 
   window.DailyMotionState={
-    KEY,
-    ROUTINE_KEYS,
-    todayKey,
+    KEY,ROUTINE_KEYS,todayKey,
     getState:()=>state,
     getDay:ensureDay,
     getRoutine:ensureRoutine,
     getTimer,
     getSettings,
     updateSettings,
+    getProgramVersion,
+    setProgramVersion,
     exportState,
     importState,
     save,

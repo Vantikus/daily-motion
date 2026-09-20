@@ -109,7 +109,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .step-indicator>strong{font-size:13px;line-height:1;font-weight:850}
 .step-indicator>strong.is-updating{animation:stepPop 260ms var(--ease)}
 @keyframes stepPop{0%{transform:scale(.94)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
-.step-segments{width:54px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.step-segments{width:54px;display:grid;grid-template-columns:repeat(var(--step-count,9),1fr);gap:2px}
 .step-segments i{display:block;height:3px;border-radius:999px;background:rgba(47,107,85,.12);transition:background-color var(--base) ease,transform var(--base) var(--ease)}
 .step-segments i.is-done{background:rgba(47,107,85,.4)}
 .step-segments i.is-current{background:var(--accent);transform:scaleY(1.3)}
@@ -2325,5 +2325,22 @@ a[href] *,
 @keyframes qmToastSettle{
   0%{opacity:0;transform:translate(-50%,18px) scale(.98)}
   100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+
+/* v67 — logic-state polish only */
+.home-body .routine-card.is-unavailable{
+  cursor:default;
+  opacity:.72;
+}
+.home-body .routine-card.is-unavailable:hover,
+.home-body .routine-card.is-unavailable:active,
+.home-body .routine-card.is-unavailable.is-pressing{
+  transform:none!important;
+  background:var(--surface)!important;
+  border-color:var(--line)!important;
+  box-shadow:none!important;
+}
+.home-body .routine-card.is-unavailable .routine-status{
+  color:var(--muted);
 }
 

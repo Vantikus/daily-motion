@@ -2,7 +2,7 @@
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
   const exercises=[
     {
-      id:'cat-cow', title:'Кошка-корова', volume:'6 плавных циклов', time:'≈ 35–40 сек', seconds:40,
+      id:'cat-cow', title:'Кошка-корова', volume:'≈ 10 плавных циклов', time:'40 сек', seconds:40,
       goal:'Быстро разбудить позвоночник и подготовить спину к более активной части разминки.',
       how:[
         'Встаньте на четвереньки: ладони под плечами, колени под тазом, шея продолжает линию спины.',
@@ -24,7 +24,7 @@
       key:'Не растягивайтесь до предела — плавно разбудите всю спину и двигайтесь дальше.'
     },
     {
-      id:'thoracic-rotation', title:'Поворот грудного отдела', volume:'5 повторов на сторону', time:'≈ 40–45 сек', seconds:45,
+      id:'thoracic-rotation', title:'Поворот грудного отдела', volume:'≈ 5 повторов / сторона', time:'45 сек', seconds:45,
       goal:'Подготовить грудной отдел, плечи и лопатки к движениям руками и работе корпуса.',
       how:[
         'Останьтесь на четвереньках и положите одну ладонь на затылок.',
@@ -46,7 +46,7 @@
       key:'Таз почти неподвижен — поворачиваются рёбра и грудная клетка.'
     },
     {
-      id:'leg-swings', title:'Махи ногой вперёд-назад', volume:'10 махов на ногу', time:'≈ 45–50 сек', seconds:50,
+      id:'leg-swings', title:'Махи ногой вперёд-назад', volume:'≈ 12–15 махов / нога', time:'50 сек', seconds:50,
       goal:'Динамически разогреть тазобедренные суставы и подготовить ноги к приседам и выпадам.',
       how:[
         'Встаньте боком к устойчивой опоре и легко держитесь одной рукой.',
@@ -68,7 +68,7 @@
       key:'Мах живой, но не резкий: нога движется свободно, корпус остаётся стабильным.'
     },
     {
-      id:'squat-reach', title:'Присед + подъём рук', volume:'12–15 повторов', time:'≈ 55–60 сек', seconds:60,
+      id:'squat-reach', title:'Присед + подъём рук', volume:'≈ 15–18 повторов', time:'60 сек', seconds:60,
       goal:'Включить крупные мышцы ног и корпуса и заметно поднять температуру тела и дыхание.',
       how:[
         'Поставьте стопы примерно на ширине плеч в естественном для вас положении.',
@@ -90,7 +90,7 @@
       key:'Работайте ритмично: вся стопа на полу, колени по линии стоп, корпус под контролем.'
     },
     {
-      id:'reverse-lunge-reach', title:'Обратный выпад + подъём рук', volume:'7 повторов на сторону', time:'≈ 65–70 сек', seconds:70,
+      id:'reverse-lunge-reach', title:'Обратный выпад + подъём рук', volume:'≈ 8 повторов / сторона', time:'70 сек', seconds:70,
       goal:'Сильнее включить ягодицы и бёдра, добавить баланс и продолжить плавное повышение нагрузки.',
       how:[
         'Встаньте ровно, стопы примерно на ширине таза.',
@@ -113,7 +113,7 @@
       key:'Длинный шаг назад, передняя стопа полностью на полу, колено смотрит туда же, куда носок.'
     },
     {
-      id:'lateral-lunge', title:'Боковой выпад', volume:'7–8 повторов на сторону', time:'≈ 55–60 сек', seconds:60,
+      id:'lateral-lunge', title:'Боковой выпад', volume:'≈ 8 повторов / сторона', time:'60 сек', seconds:60,
       goal:'Добавить движение в боковой плоскости и активнее включить ягодицы, приводящие мышцы и бёдра.',
       how:[
         'Встаньте широко, стопы направьте вперёд или слегка наружу.',
@@ -135,7 +135,7 @@
       key:'Таз уходит назад к согнутой ноге, а обе стопы остаются уверенно на полу.'
     },
     {
-      id:'hip-hinge-reach', title:'Hip Hinge + вытяжение рук', volume:'12–15 повторов', time:'≈ 50–55 сек', seconds:55,
+      id:'hip-hinge-reach', title:'Hip Hinge + вытяжение рук', volume:'≈ 15 повторов', time:'55 сек', seconds:55,
       goal:'Активно включить заднюю поверхность тела и закрепить наклон тазом назад после выпадов.',
       how:[
         'Встаньте устойчиво, стопы примерно на ширине таза, колени слегка мягкие.',
@@ -157,7 +157,7 @@
       key:'Таз назад, спина длинная, затем сильное и спокойное возвращение ягодицами.'
     },
     {
-      id:'incline-push-scap', title:'Отжимание от опоры + лопатки', volume:'10–12 повторов', time:'≈ 55–60 сек', seconds:60,
+      id:'incline-push-scap', title:'Отжимание от опоры + лопатки', volume:'≈ 12–15 повторов', time:'60 сек', seconds:60,
       goal:'Добавить работу груди, рук, плечевого пояса и корпуса, сохраняя умеренную общую нагрузку.',
       how:[
         'Поставьте ладони на устойчивую стену, стол или высокую опору чуть шире плеч.',
@@ -180,7 +180,7 @@
       key:'Тело одной линией; после отжимания добавьте маленькое движение лопатками, а не пожимание плеч.'
     },
     {
-      id:'bear-hover-taps', title:'Bear Hover + касания плеч', volume:'20–30 сек работы', time:'≈ 40–45 сек', seconds:45,
+      id:'bear-hover-taps', title:'Bear Hover + касания плеч', volume:'≈ 16–24 касания', time:'45 сек', seconds:45,
       goal:'Финишировать разминку работой всего корпуса: плечи, живот, таз и координация без прыжков.',
       how:[
         'Встаньте на четвереньки: ладони под плечами, колени под тазом.',
@@ -199,7 +199,7 @@
         'Движение выполняется на задержке дыхания — замедлитесь и восстановите спокойный ритм вдохов и выдохов.'
       ],
       easy:'Просто удерживайте Bear Hover 10–20 секунд без касаний плеч. Ещё легче — выполняйте касания плеч из высокой опоры на стол.',
-      progression:'Уменьшайте раскачивание таза и постепенно увеличивайте рабочий интервал до 30–35 секунд.',
+      progression:'Сохраняйте таз всё стабильнее и постепенно выполняйте больше качественных касаний за тот же 45-секундный интервал.',
       key:'Колени низко, живот включён, таз почти неподвижен — качество важнее скорости касаний.'
     }
   ];
@@ -223,19 +223,13 @@
   }
 
   const PROGRAM_VERSION='morning-v3-active-2026-09-19';
-  const PROGRAM_VERSION_KEY='dailyMotion.morningProgramVersion';
-  if(ROUTINE_KEY==='morning'&&localStorage.getItem(PROGRAM_VERSION_KEY)!==PROGRAM_VERSION){
-    Store.resetRoutine(ROUTINE_KEY);
-    localStorage.setItem(PROGRAM_VERSION_KEY,PROGRAM_VERSION);
-  }
+  if(Store.getProgramVersion(ROUTINE_KEY)!==PROGRAM_VERSION)Store.setProgramVersion(ROUTINE_KEY,PROGRAM_VERSION);
 
   const routine=Store.getRoutine(ROUTINE_KEY);
   let settings=Store.getSettings();
   routine.step=Math.max(0,Math.min(Number(routine.step)||0,exercises.length-1));
-  if(!routine.completed&&!routine.startedAt)routine.startedAt=new Date().toISOString();
-  Store.save();
 
-  const resumedFromStep=!routine.completed&&(routine.step>0||routine.completedUntil>0)?routine.step:null;
+  const resumedFromStep=!routine.completed&&(routine.step>0||routine.completedUntil>0||routine.activeSeconds>0)?routine.step:null;
   let current=routine.step;
   let tickerFrame=null;
   let wakeLock=null;
@@ -284,6 +278,18 @@
   };
 
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
+  const accountTimerRun=(timer,stop=true)=>{
+    if(!timer?.running)return;
+    const now=Date.now();
+    const started=Number(timer.runStartedAt);
+    if(Number.isFinite(started)){
+      const end=Number(timer.endAt);
+      const until=Number.isFinite(end)?Math.min(now,end):now;
+      const elapsed=Math.max(0,(until-started)/1000);
+      if(elapsed>0)routine.activeSeconds=(Number(routine.activeSeconds)||0)+elapsed;
+    }
+    timer.runStartedAt=stop?null:now;
+  };
   const fmt=seconds=>{
     const value=Math.max(0,Math.round(seconds));
     return `${String(Math.floor(value/60)).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`;
@@ -396,8 +402,11 @@
     const timer=timerData(exercises[current]);
     if(timer.remaining<=0)timer.remaining=timer.duration;
     showExecution('timer');
+    const now=Date.now();
+    if(!routine.startedAt)routine.startedAt=new Date(now).toISOString();
     timer.running=true;
-    timer.endAt=Date.now()+timer.remaining*1000;
+    timer.runStartedAt=now;
+    timer.endAt=now+timer.remaining*1000;
     Store.save();
     startTicker();
     requestWakeLock();
@@ -558,6 +567,7 @@
     if(timer.running&&preciseRemaining<=0){
       preciseRemaining=0;
       timer.remaining=0;
+      accountTimerRun(timer,true);
       timer.running=false;
       timer.endAt=null;
       stopTicker();
@@ -597,6 +607,7 @@
     const timer=timerData(exercises[current]);
     if(!timer.running)return;
     timer.remaining=Math.max(0,Math.ceil((timer.endAt-Date.now())/1000));
+    accountTimerRun(timer,true);
     timer.running=false;
     timer.endAt=null;
     stopTicker();
@@ -607,12 +618,14 @@
   function renderVisual(exercise){
     const box=$('#exerciseVisual');
     if(Array.isArray(exercise.visuals)&&exercise.visuals.length){
+      box.hidden=false;
       box.classList.add('has-visuals');
       box.innerHTML=`<div class="visual-phases" style="--phase-count:${Math.min(exercise.visuals.length,3)}">${exercise.visuals.map((src,index)=>`<figure class="visual-phase"><img src="${src}" alt="${exercise.title}, фаза ${index+1}" loading="eager" decoding="async"></figure>`).join('')}</div>`;
       return;
     }
-    box.classList.remove('has-visuals');
-    box.innerHTML=`<div class="visual-placeholder__inner"><span class="visual-placeholder__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6h8M12 3v6M7 12h10M9 12l-2 7M15 12l2 7"></path></svg></span><div><strong>Визуал техники</strong><span>Две понятные фазы движения</span></div></div>`;
+    box.hidden=true;
+    box.classList.remove('has-visuals','visual-placeholder');
+    box.innerHTML='';
   }
 
   function setDetailState(card,open){
@@ -634,7 +647,9 @@
 
   function renderStepSegments(){
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
-    $('#stepSegments').innerHTML=exercises.map((_,index)=>`<i class="${index<done?'is-done ':''}${index===current?'is-current':''}"></i>`).join('');
+    const segments=$('#stepSegments');
+    segments.style.setProperty('--step-count',String(exercises.length));
+    segments.innerHTML=exercises.map((_,index)=>`<i class="${index<done?'is-done ':''}${index===current?'is-current':''}"></i>`).join('');
   }
 
   function animateExercise(direction='forward'){
@@ -725,10 +740,10 @@
     haptic('success');
 
     const overlay=$('#completionOverlay');
-    if(routine.startedAt){
-      const elapsed=Math.max(0,Date.now()-new Date(routine.startedAt).getTime());
-      const minutes=Math.max(1,Math.round(elapsed/60000));
-      $('#completionMeta').textContent=`${exercises.length} упражнений · около ${minutes} мин`;
+    const activeSeconds=Math.max(0,Number(routine.activeSeconds)||0);
+    if(activeSeconds>0){
+      const minutes=Math.max(1,Math.round(activeSeconds/60));
+      $('#completionMeta').textContent=`${exercises.length} упражнений · ${minutes} мин в движении`;
     }else{
       $('#completionMeta').textContent=`${exercises.length} упражнений завершено`;
     }
@@ -749,7 +764,6 @@
     releaseWakeLock();
 
     Store.resetRoutine(ROUTINE_KEY);
-    routine.startedAt=new Date().toISOString();
     current=0;
     lastFinishState=false;
     Store.save();
@@ -795,8 +809,8 @@
 
     const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
     if(hasProgress){
-      showExecution('timer');
-      updateTimerUI();
+      sound('resume');
+      startTimerNow();
       return;
     }
 
@@ -834,10 +848,12 @@
     haptic('tap');
     const exercise=exercises[current];
     const timer=timerData(exercise);
+    if(timer.running)accountTimerRun(timer,true);
     timer.duration=exercise.seconds;
     timer.remaining=exercise.seconds;
     timer.running=false;
     timer.endAt=null;
+    timer.runStartedAt=null;
     stopTicker();
     releaseWakeLock();
     Store.save();
@@ -847,16 +863,24 @@
   function adjustTimer(delta){
     const exercise=exercises[current];
     const timer=timerData(exercise);
-    if(timer.running){
-      timer.remaining=Math.max(10,timer.remaining+delta);
-      timer.duration=Math.max(timer.remaining,Math.max(10,timer.duration+delta));
-      timer.endAt=Date.now()+timer.remaining*1000;
-    }else if(timer.remaining===timer.duration||timer.remaining<=0){
+    const wasFresh=!timer.running&&timer.remaining===timer.duration;
+    if(wasFresh){
       timer.duration=Math.max(10,timer.duration+delta);
       timer.remaining=timer.duration;
     }else{
-      timer.remaining=Math.max(10,timer.remaining+delta);
-      timer.duration=Math.max(timer.duration,timer.remaining);
+      timer.remaining=Math.max(0,timer.remaining+delta);
+      if(timer.remaining>timer.duration)timer.duration=timer.remaining;
+      if(timer.running)timer.endAt=Date.now()+timer.remaining*1000;
+    }
+    if(timer.remaining<=0){
+      if(timer.running)accountTimerRun(timer,true);
+      timer.running=false;
+      timer.endAt=null;
+      timer.runStartedAt=null;
+      Store.save();
+      updateTimerUI();
+      onTimerFinished();
+      return;
     }
     Store.save();
     updateTimerUI();
@@ -927,8 +951,10 @@
     const timer=timerData(exercises[current]);
     stopTicker();
     releaseWakeLock();
+    if(timer.running)accountTimerRun(timer,true);
     timer.running=false;
     timer.endAt=null;
+    timer.runStartedAt=null;
     timer.remaining=0;
     Store.save();
     updateTimerUI();
@@ -956,11 +982,18 @@
         requestWakeLock();
       }
     }else{
+      const timer=timerData(exercises[current]);
+      if(timer.running){
+        accountTimerRun(timer,false);
+        Store.save();
+      }
       releaseWakeLock();
     }
   });
 
   const persist=()=>{
+    const timer=timerData(exercises[current]);
+    if(timer.running)accountTimerRun(timer,false);
     routine.step=current;
     Store.save();
     releaseWakeLock();

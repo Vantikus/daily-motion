@@ -1,10 +1,12 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:9,icon:'sunrise'},
-    day:{name:'День',title:'Дневная разминка',minutes:'8–12 мин',total:7,icon:'sun'},
-    evening:{name:'Вечер',title:'Вечерняя разминка',minutes:'15–20 мин',total:11,icon:'moon'}
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:9,icon:'sunrise',available:true},
+    day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
+    evening:{name:'Вечер',title:'Вечерняя разминка',icon:'moon',available:false}
   };
+  const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
+  const availableRoutinesForDay=day=>availableRoutineKeys.map(key=>day?.routines?.[key]).filter(Boolean);
   const routineIcons={
     sunrise:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.6 5.6l2.1 2.1M18.4 5.6l-2.1 2.1M3 15h18M5 19h14"></path><path d="M7 15a5 5 0 0 1 10 0"></path></svg>`,
     sun:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"></path></svg>`,
@@ -17,12 +19,13 @@
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
   const exerciseCount=key=>{
+    const config=ROUTINES[key];
+    if(!config?.available)return 0;
     const routine=today.routines[key];
-    const total=ROUTINES[key].total;
-    return routine.completed?total:Math.min(routine.completedUntil||0,total);
+    return routine.completed?config.total:Math.min(routine.completedUntil||0,config.total);
   };
-  const completedRoutines=()=>Object.keys(ROUTINES).filter(key=>today.routines[key]?.completed).length;
-  const nextRoutine=()=>Object.keys(ROUTINES).find(key=>!today.routines[key]?.completed)||'morning';
+  const completedRoutines=()=>availableRoutineKeys.filter(key=>today.routines[key]?.completed).length;
+  const nextRoutine=()=>availableRoutineKeys.find(key=>!today.routines[key]?.completed)||availableRoutineKeys[0]||'morning';
 
   const streak=()=>{
     let count=0;
@@ -30,7 +33,7 @@
     for(let i=0;i<365;i++){
       const key=Store.todayKey(date);
       const entry=state.days[key];
-      const complete=entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed);
+      const complete=entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed);
       if(complete)count++;
       else if(i>0)break;
       date.setDate(date.getDate()-1);
@@ -38,7 +41,7 @@
     return count;
   };
 
-  const allDone=completedRoutines()===Object.keys(ROUTINES).length;
+  const allDone=availableRoutineKeys.length>0&&completedRoutines()===availableRoutineKeys.length;
   const nextKey=allDone?'morning':nextRoutine();
   const next=ROUTINES[nextKey];
   const nextState=today.routines[nextKey];
@@ -48,9 +51,9 @@
 
   $('#todayLabel').textContent=formatDate();
   $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
-  $('#heroTitle').textContent=allDone?'Готово на сегодня':next.title;
+  $('#heroTitle').textContent=allDone?'Утренняя разминка завершена':next.title;
   $('#heroText').textContent=allDone
-    ?'Все запланированные комплексы завершены.'
+    ?'Сегодняшний доступный комплекс выполнен.'
     :`${next.minutes} · ${next.total} упражнений`;
   $('#continueBtn').textContent=allDone?'Открыть утро':isResuming?'Продолжить':'Начать';
   $('#continueBtn').onclick=()=>go(nextKey);
@@ -61,22 +64,28 @@
 
   const list=$('#routineGrid');
   Object.entries(ROUTINES).forEach(([key,routine],index)=>{
-    const progress=exerciseCount(key);
-    const pct=Math.round(progress/routine.total*100);
     const stateItem=today.routines[key];
     const button=document.createElement('button');
     button.className='routine-card';
     button.type='button';
-    button.onclick=()=>go(key);
-    const status=stateItem.completed?'Готово':progress>0||stateItem.startedAt?'Продолжить':'Начать';
-    button.innerHTML=`
-      <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
-      <span class="routine-copy">
-        <strong>${routine.name}</strong>
-        <small>${routine.minutes} · ${routine.total} упражнений</small>
-      </span>
-      <span class="routine-status">${status}<b aria-hidden="true">›</b></span>
-      <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
+    if(!routine.available){
+      button.disabled=true;
+      button.classList.add('is-unavailable');
+      button.innerHTML=`
+        <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
+        <span class="routine-copy"><strong>${routine.name}</strong><small>Комплекс в разработке</small></span>
+        <span class="routine-status">Скоро</span>`;
+    }else{
+      const progress=exerciseCount(key);
+      const pct=Math.round(progress/routine.total*100);
+      const status=stateItem.completed?'Готово':progress>0||stateItem.activeSeconds>0?'Продолжить':'Начать';
+      button.onclick=()=>go(key);
+      button.innerHTML=`
+        <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
+        <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
+        <span class="routine-status">${status}<b aria-hidden="true">›</b></span>
+        <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
+    }
     if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
     list.appendChild(button);
   });
@@ -95,8 +104,8 @@
     date.setDate(date.getDate()-i);
     const key=Store.todayKey(date);
     const entry=state.days[key];
-    const complete=Boolean(entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed));
-    const active=Boolean(entry&&Object.values(entry.routines||{}).some(routine=>routine?.startedAt||(routine?.completedUntil||0)>0));
+    const complete=Boolean(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed));
+    const active=Boolean(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed||(routine?.completedUntil||0)>0||(routine?.activeSeconds||0)>0));
     if(complete||active)hasActivity=true;
     const item=document.createElement('div');
     item.className=`activity-day${complete?' is-complete':active?' is-active':''}${i===0?' is-today':''}`;
@@ -116,7 +125,7 @@
     const date=new Date(weekStart);
     date.setDate(weekStart.getDate()+i);
     const entry=state.days[Store.todayKey(date)];
-    if(entry&&Object.values(entry.routines||{}).some(routine=>routine?.completed))weeklyDone++;
+    if(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed))weeklyDone++;
   }
   const weeklyGoal=Store.getSettings().weeklyGoalDays;
   const weeklyPercent=Math.min(100,Math.round(weeklyDone/weeklyGoal*100));

@@ -2,24 +2,25 @@
   const Store=window.DailyMotionState;
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
-  const ROUTINES={
-    morning:{name:'Утро',total:8},
-    day:{name:'День',total:7},
-    evening:{name:'Вечер',total:11}
-  };
+  const ROUTINES={morning:{name:'Утро',total:9}};
+  const supportedEntries=day=>Object.entries(day?.routines||{}).filter(([key])=>Boolean(ROUTINES[key]));
 
   const dateFromKey=key=>new Date(`${key}T12:00:00`);
   const formatDate=date=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',weekday:'short'}).format(date);
-  const hasWorkout=day=>Boolean(day&&Object.values(day.routines||{}).some(routine=>routine?.completed));
-  const hasActivity=day=>Boolean(day&&Object.values(day.routines||{}).some(routine=>routine?.completed||routine?.startedAt||(routine?.completedUntil||0)>0));
-  const completedRoutines=day=>Object.entries(day?.routines||{}).filter(([,routine])=>routine?.completed);
-  const elapsedMinutes=routine=>{
-    if(!routine?.completed||!routine.startedAt||!routine.completedAt)return 0;
-    const start=new Date(routine.startedAt).getTime();
-    const end=new Date(routine.completedAt).getTime();
-    if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return 0;
-    return Math.min(180,Math.max(1,Math.round((end-start)/60000)));
+  const timerElapsedSeconds=timer=>{
+    const duration=Number(timer?.duration);
+    const remaining=Number(timer?.remaining);
+    if(!Number.isFinite(duration)||duration<=0||!Number.isFinite(remaining))return 0;
+    return Math.max(0,Math.min(duration,duration-remaining));
   };
+  const activeSeconds=routine=>{
+    const recorded=Math.max(0,Number(routine?.activeSeconds)||0);
+    if(recorded>0)return recorded;
+    return Object.values(routine?.timers||{}).reduce((sum,timer)=>sum+timerElapsedSeconds(timer),0);
+  };
+  const hasWorkout=day=>supportedEntries(day).some(([,routine])=>routine?.completed);
+  const hasActivity=day=>supportedEntries(day).some(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||activeSeconds(routine)>0);
+  const completedRoutines=day=>supportedEntries(day).filter(([,routine])=>routine?.completed);
 
   const toast=message=>{
     const node=$('#toast');
@@ -67,9 +68,12 @@
     (sum,day)=>sum+completedRoutines(day).length,0
   );
 
-  const totalMinutes=()=>Object.values(state.days).reduce(
-    (sum,day)=>sum+Object.values(day.routines||{}).reduce((daySum,routine)=>daySum+elapsedMinutes(routine),0),0
-  );
+  const totalMinutes=()=>{
+    const seconds=Object.values(state.days).reduce(
+      (sum,day)=>sum+supportedEntries(day).reduce((daySum,[,routine])=>daySum+activeSeconds(routine),0),0
+    );
+    return Math.round(seconds/60);
+  };
 
   const weekStart=()=>{
     const date=new Date();
@@ -152,10 +156,11 @@
   historyKeys.forEach(key=>{
     const day=state.days[key];
     const completed=completedRoutines(day);
-    const activeRoutines=Object.entries(day.routines||{}).filter(([,routine])=>routine?.startedAt||(routine?.completedUntil||0)>0||routine?.completed);
-    const minutes=activeRoutines.reduce((sum,[,routine])=>sum+elapsedMinutes(routine),0);
-    const completedExercises=Object.entries(day.routines||{}).reduce((sum,[routineKey,routine])=>{
-      const total=ROUTINES[routineKey]?.total||0;
+    const activeRoutines=supportedEntries(day).filter(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||activeSeconds(routine)>0);
+    const seconds=activeRoutines.reduce((sum,[,routine])=>sum+activeSeconds(routine),0);
+    const minutes=seconds>0?Math.max(1,Math.round(seconds/60)):0;
+    const completedExercises=supportedEntries(day).reduce((sum,[routineKey,routine])=>{
+      const total=ROUTINES[routineKey].total;
       return sum+(routine?.completed?total:Math.min(Number(routine?.completedUntil)||0,total));
     },0);
 
