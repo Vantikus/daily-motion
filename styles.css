@@ -3505,3 +3505,59 @@ a[href] *,
   }
 }
 
+/* v77 — continuous spring physics for iOS-style sheets */
+.settings-overlay,
+.routine-settings-overlay{
+  background:rgba(23,25,23,0);
+  transition:none!important;
+}
+
+.settings-sheet,
+.routine-settings-sheet{
+  transform:translate3d(0,calc(100% + 48px),0);
+  transition:none!important;
+  animation:none!important;
+  will-change:transform;
+  contain:none;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+
+.settings-overlay.is-visible .settings-sheet,
+.routine-settings-overlay.is-visible .routine-settings-sheet{
+  animation:none!important;
+}
+
+/* The grabber remains interactive but never adds a second motion system. */
+.settings-sheet__handle,
+.routine-settings-sheet__handle{
+  touch-action:none;
+}
+
+.settings-sheet__handle::before,
+.routine-settings-sheet__handle::before{
+  transition:
+    width 180ms cubic-bezier(.2,.8,.2,1),
+    background-color 180ms ease;
+}
+
+/* Close buttons use a surface highlight only; no scale/pop before dismiss. */
+.sheet-close,
+.routine-settings-close,
+.sheet-close:active,
+.routine-settings-close:active,
+.sheet-close.is-pressing,
+.routine-settings-close.is-pressing{
+  transform:none!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .settings-overlay,
+  .routine-settings-overlay,
+  .settings-sheet,
+  .routine-settings-sheet{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+
