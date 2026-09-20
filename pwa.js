@@ -50,6 +50,7 @@
     const selector='button:not([disabled]),a[href],.routine-card';
     let active=null;
     let releaseTimer=null;
+    let pressedAt=0;
 
     const clear=()=>{
       if(releaseTimer!==null){
@@ -65,6 +66,7 @@
     const press=target=>{
       clear();
       active=target;
+      pressedAt=performance.now();
       target.classList.add('is-pressing');
     };
 
@@ -77,11 +79,13 @@
     document.addEventListener('pointerup',()=>{
       if(!active)return;
       const target=active;
+      const elapsed=performance.now()-pressedAt;
+      const delay=Math.max(0,105-elapsed);
       releaseTimer=setTimeout(()=>{
         target.classList.remove('is-pressing');
         if(active===target)active=null;
         releaseTimer=null;
-      },70);
+      },delay);
     },{passive:true,capture:true});
 
     document.addEventListener('pointercancel',clear,{passive:true,capture:true});
