@@ -110,25 +110,39 @@
 
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+    const OPEN_DURATION=420;
+    const CLOSE_DURATION=320;
+    const SNAP_DURATION=360;
+    const EASING='cubic-bezier(.32,.72,0,1)';
+    const CLOSED_PAD=44;
+
     let phase='closed';
     let pointerId=null;
     let startY=0;
     let currentY=0;
+    let sheetHeight=0;
     let samples=[];
-    let transitionTimer=null;
-    let transitionCleanup=null;
+    let sheetAnimation=null;
+    let backdropAnimation=null;
+    let frameId=null;
 
-    const clearTransitionWait=()=>{
-      if(transitionTimer!==null){
-        clearTimeout(transitionTimer);
-        transitionTimer=null;
-      }
-      transitionCleanup?.();
-      transitionCleanup=null;
+    const cancelAnimation=animation=>{
+      if(!animation)return;
+      try{animation.cancel();}catch{}
     };
 
-    const readY=()=>{
-      const transform=getComputedStyle(sheet).transform;
+    const cancelMotion=()=>{
+      cancelAnimation(sheetAnimation);
+      cancelAnimation(backdropAnimation);
+      sheetAnimation=null;
+      backdropAnimation=null;
+      if(frameId!==null){
+        cancelAnimationFrame(frameId);
+        frameId=null;
+      }
+    };
+
+    const parseTranslateY=transform=>{
       if(!transform||transform==='none')return 0;
       if(transform.startsWith('matrix3d(')){
         const values=transform.slice(9,-1).split(',').map(Number);
@@ -141,90 +155,129 @@
       return 0;
     };
 
-    const setY=value=>{
-      currentY=value;
-      sheet.style.setProperty('--sheet-y',`${value.toFixed(2)}px`);
+    const readY=()=>parseTranslateY(getComputedStyle(sheet).transform);
+
+    const readBackdrop=()=>{
+      const value=getComputedStyle(overlay).backgroundColor;
+      const match=value.match(/rgba?\(([^)]+)\)/);
+      if(!match)return .18;
+      const parts=match[1].split(',').map(part=>part.trim());
+      const alpha=parts.length>3?Number(parts[3]):1;
+      return Number.isFinite(alpha)?alpha:.18;
     };
 
-    const setBackdrop=alpha=>{
-      overlay.style.setProperty('--sheet-backdrop-alpha',String(clamp(alpha,0,.18)));
+    const transformFor=y=>`translate3d(0,${y.toFixed(2)}px,0)`;
+    const backdropFor=alpha=>`rgba(23,25,23,${clamp(alpha,0,.18).toFixed(3)})`;
+    const closedY=()=>Math.ceil((sheetHeight||sheet.getBoundingClientRect().height)+CLOSED_PAD);
+
+    const setVisualState=(y,alpha)=>{
+      currentY=y;
+      sheet.style.transform=transformFor(y);
+      overlay.style.backgroundColor=backdropFor(alpha);
     };
 
-    const setDuration=ms=>{
-      sheet.style.setProperty('--sheet-duration',`${Math.round(ms)}ms`);
-    };
-
-    const clearInlineMotion=()=>{
-      sheet.style.removeProperty('--sheet-y');
-      sheet.style.removeProperty('--sheet-duration');
-      overlay.style.removeProperty('--sheet-backdrop-alpha');
-      currentY=0;
-    };
-
-    const waitForTransform=(duration,done)=>{
-      clearTransitionWait();
-      let finished=false;
-      const finish=event=>{
-        if(finished)return;
-        if(event&&(event.target!==sheet||event.propertyName!=='transform'))return;
-        finished=true;
-        clearTransitionWait();
-        done();
-      };
-      const onEnd=event=>finish(event);
-      sheet.addEventListener('transitionend',onEnd);
-      transitionCleanup=()=>sheet.removeEventListener('transitionend',onEnd);
-      transitionTimer=setTimeout(()=>finish(),Math.max(0,duration)+120);
-    };
-
-    const closedY=()=>Math.ceil(sheet.getBoundingClientRect().height+40);
-
-    const finishOpen=()=>{
-      if(phase!=='opening')return;
-      phase='open';
-      sheet.style.removeProperty('--sheet-duration');
-      onOpened?.();
-    };
-
-    const finishClose=()=>{
-      clearTransitionWait();
+    const finishClosed=()=>{
+      cancelMotion();
       overlay.classList.remove('is-visible','is-dragging','is-settling','is-dismissing');
       sheet.classList.remove('is-dragging');
       overlay.setAttribute('aria-hidden','true');
-      clearInlineMotion();
+      sheet.style.transform='';
+      overlay.style.backgroundColor='';
       pointerId=null;
       samples=[];
+      currentY=0;
       phase='closed';
       onClosed?.();
     };
 
+    const finishOpen=()=>{
+      cancelMotion();
+      overlay.classList.remove('is-dragging','is-settling','is-dismissing');
+      sheet.classList.remove('is-dragging');
+      sheet.style.transform='translate3d(0,0,0)';
+      overlay.style.backgroundColor=backdropFor(.18);
+      currentY=0;
+      phase='open';
+      onOpened?.();
+    };
+
+    const animateTo=(targetY,targetAlpha,duration,{closing=false}={})=>{
+      cancelMotion();
+
+      const fromY=readY();
+      const fromAlpha=readBackdrop();
+      sheet.style.transform=transformFor(fromY);
+      overlay.style.backgroundColor=backdropFor(fromAlpha);
+
+      if(reduceMotion.matches||duration<=0){
+        setVisualState(targetY,targetAlpha);
+        if(closing)finishClosed();
+        else finishOpen();
+        return;
+      }
+
+      sheetAnimation=sheet.animate(
+        [
+          {transform:transformFor(fromY)},
+          {transform:transformFor(targetY)}
+        ],
+        {duration,easing:EASING,fill:'forwards'}
+      );
+
+      backdropAnimation=overlay.animate(
+        [
+          {backgroundColor:backdropFor(fromAlpha)},
+          {backgroundColor:backdropFor(targetAlpha)}
+        ],
+        {duration:Math.min(duration,280),easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}
+      );
+
+      let settled=false;
+      const finish=()=>{
+        if(settled)return;
+        settled=true;
+        sheet.style.transform=transformFor(targetY);
+        overlay.style.backgroundColor=backdropFor(targetAlpha);
+        cancelMotion();
+        if(closing)finishClosed();
+        else finishOpen();
+      };
+
+      sheetAnimation.addEventListener('finish',finish,{once:true});
+      sheetAnimation.addEventListener('cancel',()=>{settled=true;},{once:true});
+      setTimeout(()=>{
+        if(!settled)finish();
+      },duration+90);
+    };
+
     const open=()=>{
       if(phase==='open'||phase==='opening')return;
-      clearTransitionWait();
+      cancelMotion();
       phase='opening';
       pointerId=null;
       samples=[];
-      overlay.classList.remove('is-dragging','is-settling','is-dismissing','is-visible');
+
+      overlay.classList.remove('is-dragging','is-settling','is-dismissing');
       sheet.classList.remove('is-dragging');
-      clearInlineMotion();
       overlay.setAttribute('aria-hidden','false');
-      setDuration(reduceMotion.matches?0:430);
-      void sheet.offsetHeight;
       overlay.classList.add('is-visible');
-      if(reduceMotion.matches){
-        finishOpen();
-        return;
-      }
-      waitForTransform(430,finishOpen);
+
+      sheetHeight=sheet.getBoundingClientRect().height;
+      const start=closedY();
+      setVisualState(start,0);
+      void sheet.offsetWidth;
+      animateTo(0,.18,OPEN_DURATION);
     };
 
     const close=(velocity=0)=>{
       if(phase==='closed'||phase==='closing')return;
-      clearTransitionWait();
       onBeforeClose?.();
 
-      const renderedY=phase==='dragging'?currentY:Math.max(0,readY());
-      setY(renderedY);
+      sheetHeight=sheetHeight||sheet.getBoundingClientRect().height;
+      const fromY=phase==='dragging'?currentY:Math.max(0,readY());
+      const fromAlpha=readBackdrop();
+      setVisualState(fromY,fromAlpha);
+
       phase='closing';
       pointerId=null;
       samples=[];
@@ -233,26 +286,18 @@
       sheet.classList.remove('is-dragging');
 
       const target=closedY();
-      const distance=Math.max(0,target-renderedY);
-      const projectedSpeed=Math.max(.65,Math.min(2.2,Math.abs(velocity)));
-      const duration=reduceMotion.matches?0:clamp(distance/(projectedSpeed*2.1),220,340);
-      setDuration(duration);
-      void sheet.offsetHeight;
-
-      requestAnimationFrame(()=>{
-        setY(target);
-        setBackdrop(0);
-        if(reduceMotion.matches){
-          finishClose();
-          return;
-        }
-        waitForTransform(duration,finishClose);
-      });
+      const remaining=Math.max(0,target-fromY);
+      const speed=Math.max(.8,Math.min(2.4,Math.abs(velocity)));
+      const duration=reduceMotion.matches?0:clamp(remaining/(speed*2.25),220,CLOSE_DURATION);
+      animateTo(target,0,duration,{closing:true});
     };
 
     const snapOpen=()=>{
       if(phase!=='dragging')return;
-      clearTransitionWait();
+
+      const fromY=currentY;
+      const fromAlpha=readBackdrop();
+      setVisualState(fromY,fromAlpha);
       phase='settling';
       pointerId=null;
       samples=[];
@@ -260,27 +305,8 @@
       overlay.classList.add('is-settling');
       sheet.classList.remove('is-dragging');
 
-      const distance=Math.abs(currentY);
-      const duration=reduceMotion.matches?0:clamp(250+distance*.45,250,390);
-      setDuration(duration);
-      void sheet.offsetHeight;
-
-      requestAnimationFrame(()=>{
-        setY(0);
-        overlay.style.removeProperty('--sheet-backdrop-alpha');
-        if(reduceMotion.matches){
-          overlay.classList.remove('is-settling');
-          clearInlineMotion();
-          phase='open';
-          return;
-        }
-        waitForTransform(duration,()=>{
-          if(phase!=='settling')return;
-          overlay.classList.remove('is-settling');
-          clearInlineMotion();
-          phase='open';
-        });
-      });
+      const duration=reduceMotion.matches?0:clamp(250+Math.abs(fromY)*.32,250,SNAP_DURATION);
+      animateTo(0,.18,duration);
     };
 
     const releaseCapture=()=>{
@@ -288,17 +314,30 @@
       try{handle.releasePointerCapture?.(pointerId);}catch{}
     };
 
+    const scheduleDrag=(y,alpha)=>{
+      currentY=y;
+      if(frameId!==null)return;
+      frameId=requestAnimationFrame(()=>{
+        frameId=null;
+        sheet.style.transform=transformFor(currentY);
+        overlay.style.backgroundColor=backdropFor(alpha());
+      });
+    };
+
     handle.addEventListener('pointerdown',event=>{
       if(phase!=='open'||!overlay.classList.contains('is-visible'))return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
 
-      clearTransitionWait();
+      cancelMotion();
       phase='dragging';
       pointerId=event.pointerId;
       startY=event.clientY;
+      sheetHeight=sheet.getBoundingClientRect().height;
       currentY=Math.max(0,readY());
       samples=[{y:event.clientY,t:performance.now()}];
-      setY(currentY);
+
+      sheet.style.transform=transformFor(currentY);
+      overlay.style.backgroundColor=backdropFor(readBackdrop());
       overlay.classList.add('is-dragging');
       sheet.classList.add('is-dragging');
       handle.setPointerCapture?.(pointerId);
@@ -309,20 +348,25 @@
       event.preventDefault();
 
       const raw=event.clientY-startY;
-      const y=raw>=0?raw:-Math.min(8,Math.abs(raw)*.08);
-      setY(y);
+      const y=raw>=0?raw:-Math.min(10,Math.sqrt(Math.abs(raw))*1.35);
+      const progress=clamp(Math.max(0,y)/(Math.max(1,sheetHeight)*.72),0,1);
 
       const now=performance.now();
       samples.push({y:event.clientY,t:now});
       while(samples.length>2&&now-samples[0].t>90)samples.shift();
 
-      const sheetHeight=Math.max(1,sheet.getBoundingClientRect().height);
-      const progress=clamp(Math.max(0,y)/(sheetHeight*.72),0,1);
-      setBackdrop(.18*(1-progress));
+      scheduleDrag(y,()=>.18*(1-progress));
     },{passive:false});
 
     const finishGesture=event=>{
       if(phase!=='dragging'||event.pointerId!==pointerId)return;
+
+      if(frameId!==null){
+        cancelAnimationFrame(frameId);
+        frameId=null;
+      }
+      sheet.style.transform=transformFor(currentY);
+
       const now=performance.now();
       samples.push({y:event.clientY,t:now});
       const first=samples[0];
@@ -330,10 +374,9 @@
       const dt=Math.max(1,last.t-first.t);
       const velocity=(last.y-first.y)/dt;
       const y=Math.max(0,currentY);
-      const sheetHeight=Math.max(1,sheet.getBoundingClientRect().height);
-      const threshold=clamp(sheetHeight*.24,92,168);
+      const threshold=clamp(sheetHeight*.24,96,172);
       const projected=y+Math.max(0,velocity)*180;
-      const dismiss=y>threshold||(y>24&&velocity>.62)||projected>threshold*1.12;
+      const dismiss=y>threshold||(y>24&&velocity>.60)||projected>threshold*1.08;
 
       releaseCapture();
       if(dismiss)close(velocity);

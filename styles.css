@@ -3406,3 +3406,102 @@ a[href] *,
   }
 }
 
+/* v76 — single-owner Apple-like motion; JS owns sheet physics */
+.settings-overlay,
+.routine-settings-overlay{
+  background:rgba(23,25,23,0);
+  transition:none!important;
+}
+
+.settings-overlay.is-visible,
+.routine-settings-overlay.is-visible{
+  background:rgba(23,25,23,.18);
+}
+
+.settings-sheet,
+.routine-settings-sheet{
+  transform:translate3d(0,calc(100% + 44px),0);
+  transition:none!important;
+  animation:none!important;
+  will-change:transform;
+  contain:paint;
+}
+
+.settings-overlay.is-visible .settings-sheet,
+.routine-settings-overlay.is-visible .routine-settings-sheet{
+  transform:translate3d(0,0,0);
+  animation:none!important;
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .settings-overlay.is-visible .settings-sheet,
+  .routine-settings-overlay.is-visible .routine-settings-sheet{
+    animation:none!important;
+  }
+}
+
+/* Close controls should highlight like iOS, not shrink and rebound. */
+.sheet-close,
+.routine-settings-close{
+  transform:none!important;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease!important;
+}
+
+.sheet-close:active,
+.sheet-close.is-pressing,
+.routine-settings-close:active,
+.routine-settings-close.is-pressing{
+  transform:none!important;
+  background:rgba(47,107,85,.09)!important;
+  border-color:rgba(47,107,85,.18)!important;
+}
+
+/* Safari-safe accordion: explicit height animation is driven from session.js. */
+.detail-card__panel{
+  display:block;
+  height:0;
+  opacity:0;
+  overflow:hidden;
+  grid-template-rows:none!important;
+  transition:none!important;
+  will-change:height,opacity;
+}
+
+.detail-card.is-open .detail-card__panel{
+  height:auto;
+  opacity:1;
+}
+
+.detail-card__inner{
+  opacity:0;
+  transform:translate3d(0,-2px,0);
+  transition:none!important;
+}
+
+.detail-card.is-open .detail-card__inner{
+  opacity:1;
+  transform:translate3d(0,0,0);
+}
+
+.detail-card__toggle,
+.detail-card__toggle.is-pressing{
+  transform:none!important;
+}
+
+.detail-card__toggle.is-pressing{
+  background:rgba(47,107,85,.045);
+}
+
+@media(prefers-reduced-motion:reduce){
+  .settings-sheet,
+  .routine-settings-sheet,
+  .detail-card__panel,
+  .detail-card__inner{
+    animation:none!important;
+    transition:none!important;
+  }
+}
+

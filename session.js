@@ -726,17 +726,123 @@
     box.innerHTML='';
   }
 
+  const detailAnimations=new WeakMap();
+
   function setDetailState(card,open){
-    card.classList.toggle('is-open',open);
+    detailAnimations.get(card)?.forEach?.(animation=>animation.cancel());
+    detailAnimations.delete(card);
+
     const toggle=card.querySelector('.detail-card__toggle');
+    const panel=card.querySelector('.detail-card__panel');
+    const inner=card.querySelector('.detail-card__inner');
+
+    card.classList.toggle('is-open',open);
     if(toggle)toggle.setAttribute('aria-expanded',String(open));
+    if(panel){
+      panel.style.height=open?'auto':'0px';
+      panel.style.opacity=open?'1':'0';
+    }
+    if(inner){
+      inner.style.opacity=open?'1':'0';
+      inner.style.transform=open?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
+    }
+  }
+
+  function animateDetailState(card,open){
+    const toggle=card.querySelector('.detail-card__toggle');
+    const panel=card.querySelector('.detail-card__panel');
+    const inner=card.querySelector('.detail-card__inner');
+    if(!panel||!inner){
+      setDetailState(card,open);
+      return;
+    }
+
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const previous=detailAnimations.get(card)||[];
+    const currentHeight=panel.getBoundingClientRect().height;
+    previous.forEach(animation=>animation.cancel());
+
+    panel.style.height=`${currentHeight}px`;
+    panel.style.opacity=currentHeight>0?'1':'0';
+    inner.style.opacity=currentHeight>0?'1':'0';
+    inner.style.transform=currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
+
+    if(open){
+      card.classList.add('is-open');
+      toggle?.setAttribute('aria-expanded','true');
+    }else{
+      toggle?.setAttribute('aria-expanded','false');
+    }
+
+    const targetHeight=open?inner.scrollHeight:0;
+    if(reduceMotion){
+      setDetailState(card,open);
+      return;
+    }
+
+    const panelAnimation=panel.animate(
+      [
+        {height:`${currentHeight}px`,opacity:currentHeight>0?1:.25},
+        {height:`${targetHeight}px`,opacity:open?1:.2}
+      ],
+      {
+        duration:open?410:300,
+        easing:'cubic-bezier(.32,.72,0,1)',
+        fill:'forwards'
+      }
+    );
+
+    const innerAnimation=inner.animate(
+      open
+        ?[
+          {opacity:currentHeight>0?1:0,transform:currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-3px,0)'},
+          {opacity:1,transform:'translate3d(0,0,0)'}
+        ]
+        :[
+          {opacity:1,transform:'translate3d(0,0,0)'},
+          {opacity:0,transform:'translate3d(0,-2px,0)'}
+        ],
+      {
+        duration:open?290:190,
+        easing:'cubic-bezier(.32,.72,0,1)',
+        fill:'forwards'
+      }
+    );
+
+    const animations=[panelAnimation,innerAnimation];
+    detailAnimations.set(card,animations);
+
+    let finished=false;
+    const finish=()=>{
+      if(finished)return;
+      finished=true;
+      animations.forEach(animation=>animation.cancel());
+      detailAnimations.delete(card);
+
+      if(open){
+        card.classList.add('is-open');
+        panel.style.height='auto';
+        panel.style.opacity='1';
+        inner.style.opacity='1';
+        inner.style.transform='translate3d(0,0,0)';
+      }else{
+        card.classList.remove('is-open');
+        panel.style.height='0px';
+        panel.style.opacity='0';
+        inner.style.opacity='0';
+        inner.style.transform='translate3d(0,-2px,0)';
+      }
+    };
+
+    panelAnimation.addEventListener('finish',finish,{once:true});
+    setTimeout(finish,(open?410:300)+80);
   }
 
   document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
     toggle.addEventListener('click',()=>{
       const card=toggle.closest('.detail-card');
       const willOpen=!card.classList.contains('is-open');
-      setDetailState(card,willOpen);
+      animateDetailState(card,willOpen);
       haptic('tap');
     });
   });
