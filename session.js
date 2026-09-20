@@ -346,8 +346,6 @@
     requestAnimationFrame(()=>$('#routineResetOpen')?.focus({preventScroll:true}));
   }
 
-  let routineSettingsCloseTimer=null;
-
   function finishRoutineSettingsClose(){
     const overlay=$('#routineSettingsOverlay');
     if(!overlay)return;
@@ -360,95 +358,52 @@
     }
   }
 
+  const routineSettingsOverlay=$('#routineSettingsOverlay');
+  const routineSettingsSheet=routineSettingsOverlay?.querySelector('.routine-settings-sheet');
+  const routineSettingsHandle=routineSettingsOverlay?.querySelector('.routine-settings-sheet__handle');
+  const routineSettingsMotion=window.DailyMotionMotion?.createBottomSheet?.({
+    overlay:routineSettingsOverlay,
+    sheet:routineSettingsSheet,
+    handle:routineSettingsHandle,
+    onBeforeClose:()=>$('#routineMoreButton')?.setAttribute('aria-expanded','false'),
+    onClosed:finishRoutineSettingsClose,
+    onOpened:()=>$('#routineSettingsClose')?.focus({preventScroll:true})
+  });
+
   function showRoutineSettingsDialog(){
-    const overlay=$('#routineSettingsOverlay');
+    const overlay=routineSettingsOverlay;
     if(!overlay)return;
-    clearTimeout(routineSettingsCloseTimer);
-    routineSettingsCloseTimer=null;
     syncWorkoutSettingsControls();
     showRoutineSettingsView();
     modalReturnFocus=document.activeElement;
-    overlay.setAttribute('aria-hidden','false');
     $('#routineMoreButton')?.setAttribute('aria-expanded','true');
+
+    if(routineSettingsMotion){
+      routineSettingsMotion.open();
+      syncModalState();
+      return;
+    }
+
+    overlay.setAttribute('aria-hidden','false');
+    overlay.classList.add('is-visible');
     syncModalState();
-    requestAnimationFrame(()=>{
-      overlay.classList.add('is-visible');
-      $('#routineSettingsClose')?.focus({preventScroll:true});
-    });
+    $('#routineSettingsClose')?.focus({preventScroll:true});
   }
 
   function hideRoutineSettingsDialog(){
-    const overlay=$('#routineSettingsOverlay');
+    const overlay=routineSettingsOverlay;
     if(!overlay||!overlay.classList.contains('is-visible'))return;
-    overlay.classList.remove('is-visible');
     $('#routineMoreButton')?.setAttribute('aria-expanded','false');
-    clearTimeout(routineSettingsCloseTimer);
-    routineSettingsCloseTimer=setTimeout(finishRoutineSettingsClose,360);
+
+    if(routineSettingsMotion){
+      routineSettingsMotion.close();
+      return;
+    }
+
+    overlay.classList.remove('is-visible');
+    finishRoutineSettingsClose();
   }
 
-  function attachRoutineSettingsSwipe(){
-    const overlay=$('#routineSettingsOverlay');
-    const sheet=overlay?.querySelector('.routine-settings-sheet');
-    const handle=overlay?.querySelector('.routine-settings-sheet__handle');
-    if(!overlay||!sheet||!handle)return;
-
-    let active=false;
-    let startY=0;
-    let lastY=0;
-    let lastTime=0;
-    let velocity=0;
-
-    handle.addEventListener('pointerdown',event=>{
-      if(!overlay.classList.contains('is-visible'))return;
-      if(event.pointerType==='mouse'&&event.button!==0)return;
-      active=true;
-      startY=event.clientY;
-      lastY=startY;
-      lastTime=performance.now();
-      velocity=0;
-      sheet.classList.add('is-dragging');
-      handle.setPointerCapture?.(event.pointerId);
-    });
-
-    handle.addEventListener('pointermove',event=>{
-      if(!active)return;
-      const dy=Math.max(0,event.clientY-startY);
-      const now=performance.now();
-      velocity=(event.clientY-lastY)/Math.max(1,now-lastTime);
-      lastY=event.clientY;
-      lastTime=now;
-      sheet.style.transform=`translateY(${dy}px)`;
-      overlay.style.opacity=String(Math.max(.48,1-dy/360));
-    });
-
-    handle.addEventListener('pointerup',event=>{
-      if(!active)return;
-      const dy=Math.max(0,event.clientY-startY);
-      const dismiss=dy>76||(dy>28&&velocity>.55);
-      active=false;
-      sheet.classList.remove('is-dragging');
-      overlay.style.opacity='';
-
-      if(dismiss){
-        requestAnimationFrame(()=>{
-          sheet.style.transform='';
-          hideRoutineSettingsDialog();
-        });
-      }else{
-        sheet.style.transform='';
-      }
-    });
-
-    handle.addEventListener('pointercancel',()=>{
-      if(!active)return;
-      active=false;
-      sheet.classList.remove('is-dragging');
-      sheet.style.transform='';
-      overlay.style.opacity='';
-    });
-  }
-
-  attachRoutineSettingsSwipe();
 
   function resetRoutineProgress(){
     cancelCountdown();
@@ -781,8 +736,7 @@
     toggle.addEventListener('click',()=>{
       const card=toggle.closest('.detail-card');
       const willOpen=!card.classList.contains('is-open');
-      document.querySelectorAll('.detail-card').forEach(item=>setDetailState(item,false));
-      if(willOpen)setDetailState(card,true);
+      setDetailState(card,willOpen);
       haptic('tap');
     });
   });

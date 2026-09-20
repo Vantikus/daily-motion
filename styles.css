@@ -3255,25 +3255,52 @@ a[href] *,
   }
 }
 
-/* v74 — smoother sheets, swipe dismissal and accordion motion */
+/* v75 — iOS-style motion system for sheets and exercise details */
 .settings-overlay,
 .routine-settings-overlay{
+  --sheet-backdrop-alpha:0;
+  opacity:1;
+  visibility:hidden;
+  pointer-events:none;
+  background:rgba(23,25,23,var(--sheet-backdrop-alpha));
   transition:
-    opacity 300ms cubic-bezier(.22,.61,.36,1),
-    visibility 0s linear 300ms;
+    background-color 280ms cubic-bezier(.32,.72,0,1),
+    visibility 0s linear 430ms;
 }
+
 .settings-overlay.is-visible,
 .routine-settings-overlay.is-visible{
+  --sheet-backdrop-alpha:.18;
+  visibility:visible;
+  pointer-events:auto;
   transition:
-    opacity 240ms cubic-bezier(.22,.61,.36,1),
+    background-color 260ms cubic-bezier(.32,.72,0,1),
     visibility 0s linear 0s;
+}
+
+.settings-overlay.is-dragging,
+.routine-settings-overlay.is-dragging{
+  transition:none;
 }
 
 .settings-sheet,
 .routine-settings-sheet{
-  transition:transform 360ms cubic-bezier(.32,.72,0,1);
+  --sheet-y:0px;
+  --sheet-duration:430ms;
+  transform:translate3d(0,calc(100% + 40px),0);
+  transition:transform var(--sheet-duration) cubic-bezier(.32,.72,0,1);
   will-change:transform;
+  backface-visibility:hidden;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
+
+.settings-overlay.is-visible .settings-sheet,
+.routine-settings-overlay.is-visible .routine-settings-sheet{
+  transform:translate3d(0,var(--sheet-y),0);
+}
+
 .settings-sheet.is-dragging,
 .routine-settings-sheet.is-dragging{
   transition:none!important;
@@ -3282,69 +3309,86 @@ a[href] *,
 .settings-sheet__handle,
 .routine-settings-sheet__handle{
   position:relative;
-  width:64px;
-  height:28px;
-  margin:-4px auto 4px;
+  width:72px;
+  height:32px;
+  margin:-6px auto 2px;
   background:transparent!important;
-  border-radius:14px;
+  border-radius:16px;
   touch-action:none;
   cursor:grab;
+  -webkit-user-select:none;
+  user-select:none;
 }
+
 .settings-sheet__handle::before,
 .routine-settings-sheet__handle::before{
   content:"";
   position:absolute;
   left:50%;
-  top:10px;
+  top:12px;
   width:38px;
-  height:4px;
+  height:5px;
   border-radius:999px;
-  background:#d9ded9;
-  transform:translateX(-50%);
+  background:#d3d9d3;
+  transform:translate3d(-50%,0,0);
+  transition:
+    width 180ms ease,
+    background-color 180ms ease;
 }
+
 .settings-sheet.is-dragging .settings-sheet__handle,
 .routine-settings-sheet.is-dragging .routine-settings-sheet__handle{
   cursor:grabbing;
 }
 
-@media(max-width:759px){
-  .settings-sheet,
-  .routine-settings-sheet{
-    transform:translateY(calc(100% + 28px));
-  }
-  .settings-overlay.is-visible .settings-sheet,
-  .routine-settings-overlay.is-visible .routine-settings-sheet{
-    transform:translateY(0);
-  }
+.settings-sheet.is-dragging .settings-sheet__handle::before,
+.routine-settings-sheet.is-dragging .routine-settings-sheet__handle::before{
+  width:42px;
+  background:#c8cec8;
+}
+
+.details-section,
+.details-stack,
+.detail-card{
+  overflow-anchor:none;
+}
+
+.detail-card{
+  transform:translateZ(0);
 }
 
 .detail-card__panel{
   grid-template-rows:0fr;
-  opacity:.28;
+  opacity:0;
   transition:
-    grid-template-rows 380ms cubic-bezier(.16,1,.3,1),
-    opacity 220ms ease;
+    grid-template-rows 420ms cubic-bezier(.32,.72,0,1),
+    opacity 190ms ease;
 }
+
 .detail-card.is-open .detail-card__panel{
   grid-template-rows:1fr;
   opacity:1;
 }
+
 .detail-card__inner{
   opacity:0;
-  transform:translateY(-4px);
+  transform:translate3d(0,-3px,0);
   transition:
-    transform 340ms cubic-bezier(.16,1,.3,1),
-    opacity 220ms ease 35ms;
+    transform 320ms cubic-bezier(.32,.72,0,1),
+    opacity 210ms ease;
 }
+
 .detail-card.is-open .detail-card__inner{
   opacity:1;
-  transform:none;
+  transform:translate3d(0,0,0);
   animation:none!important;
 }
+
 .detail-card__toggle i{
+  transform-origin:50% 50%;
   transition:
-    transform 360ms cubic-bezier(.16,1,.3,1),
-    color 260ms ease;
+    transform 340ms cubic-bezier(.32,.72,0,1),
+    color 220ms ease;
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -3352,6 +3396,8 @@ a[href] *,
   .routine-settings-overlay,
   .settings-sheet,
   .routine-settings-sheet,
+  .settings-sheet__handle::before,
+  .routine-settings-sheet__handle::before,
   .detail-card__panel,
   .detail-card__inner,
   .detail-card__toggle i{

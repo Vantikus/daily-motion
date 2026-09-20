@@ -104,6 +104,257 @@
 
   installPressFeedback();
 
+
+  const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened}={})=>{
+    if(!overlay||!sheet||!handle)return null;
+
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+    let phase='closed';
+    let pointerId=null;
+    let startY=0;
+    let currentY=0;
+    let samples=[];
+    let transitionTimer=null;
+    let transitionCleanup=null;
+
+    const clearTransitionWait=()=>{
+      if(transitionTimer!==null){
+        clearTimeout(transitionTimer);
+        transitionTimer=null;
+      }
+      transitionCleanup?.();
+      transitionCleanup=null;
+    };
+
+    const readY=()=>{
+      const transform=getComputedStyle(sheet).transform;
+      if(!transform||transform==='none')return 0;
+      if(transform.startsWith('matrix3d(')){
+        const values=transform.slice(9,-1).split(',').map(Number);
+        return Number.isFinite(values[13])?values[13]:0;
+      }
+      if(transform.startsWith('matrix(')){
+        const values=transform.slice(7,-1).split(',').map(Number);
+        return Number.isFinite(values[5])?values[5]:0;
+      }
+      return 0;
+    };
+
+    const setY=value=>{
+      currentY=value;
+      sheet.style.setProperty('--sheet-y',`${value.toFixed(2)}px`);
+    };
+
+    const setBackdrop=alpha=>{
+      overlay.style.setProperty('--sheet-backdrop-alpha',String(clamp(alpha,0,.18)));
+    };
+
+    const setDuration=ms=>{
+      sheet.style.setProperty('--sheet-duration',`${Math.round(ms)}ms`);
+    };
+
+    const clearInlineMotion=()=>{
+      sheet.style.removeProperty('--sheet-y');
+      sheet.style.removeProperty('--sheet-duration');
+      overlay.style.removeProperty('--sheet-backdrop-alpha');
+      currentY=0;
+    };
+
+    const waitForTransform=(duration,done)=>{
+      clearTransitionWait();
+      let finished=false;
+      const finish=event=>{
+        if(finished)return;
+        if(event&&(event.target!==sheet||event.propertyName!=='transform'))return;
+        finished=true;
+        clearTransitionWait();
+        done();
+      };
+      const onEnd=event=>finish(event);
+      sheet.addEventListener('transitionend',onEnd);
+      transitionCleanup=()=>sheet.removeEventListener('transitionend',onEnd);
+      transitionTimer=setTimeout(()=>finish(),Math.max(0,duration)+120);
+    };
+
+    const closedY=()=>Math.ceil(sheet.getBoundingClientRect().height+40);
+
+    const finishOpen=()=>{
+      if(phase!=='opening')return;
+      phase='open';
+      sheet.style.removeProperty('--sheet-duration');
+      onOpened?.();
+    };
+
+    const finishClose=()=>{
+      clearTransitionWait();
+      overlay.classList.remove('is-visible','is-dragging','is-settling','is-dismissing');
+      sheet.classList.remove('is-dragging');
+      overlay.setAttribute('aria-hidden','true');
+      clearInlineMotion();
+      pointerId=null;
+      samples=[];
+      phase='closed';
+      onClosed?.();
+    };
+
+    const open=()=>{
+      if(phase==='open'||phase==='opening')return;
+      clearTransitionWait();
+      phase='opening';
+      pointerId=null;
+      samples=[];
+      overlay.classList.remove('is-dragging','is-settling','is-dismissing','is-visible');
+      sheet.classList.remove('is-dragging');
+      clearInlineMotion();
+      overlay.setAttribute('aria-hidden','false');
+      setDuration(reduceMotion.matches?0:430);
+      void sheet.offsetHeight;
+      overlay.classList.add('is-visible');
+      if(reduceMotion.matches){
+        finishOpen();
+        return;
+      }
+      waitForTransform(430,finishOpen);
+    };
+
+    const close=(velocity=0)=>{
+      if(phase==='closed'||phase==='closing')return;
+      clearTransitionWait();
+      onBeforeClose?.();
+
+      const renderedY=phase==='dragging'?currentY:Math.max(0,readY());
+      setY(renderedY);
+      phase='closing';
+      pointerId=null;
+      samples=[];
+      overlay.classList.remove('is-dragging');
+      overlay.classList.add('is-settling','is-dismissing');
+      sheet.classList.remove('is-dragging');
+
+      const target=closedY();
+      const distance=Math.max(0,target-renderedY);
+      const projectedSpeed=Math.max(.65,Math.min(2.2,Math.abs(velocity)));
+      const duration=reduceMotion.matches?0:clamp(distance/(projectedSpeed*2.1),220,340);
+      setDuration(duration);
+      void sheet.offsetHeight;
+
+      requestAnimationFrame(()=>{
+        setY(target);
+        setBackdrop(0);
+        if(reduceMotion.matches){
+          finishClose();
+          return;
+        }
+        waitForTransform(duration,finishClose);
+      });
+    };
+
+    const snapOpen=()=>{
+      if(phase!=='dragging')return;
+      clearTransitionWait();
+      phase='settling';
+      pointerId=null;
+      samples=[];
+      overlay.classList.remove('is-dragging');
+      overlay.classList.add('is-settling');
+      sheet.classList.remove('is-dragging');
+
+      const distance=Math.abs(currentY);
+      const duration=reduceMotion.matches?0:clamp(250+distance*.45,250,390);
+      setDuration(duration);
+      void sheet.offsetHeight;
+
+      requestAnimationFrame(()=>{
+        setY(0);
+        overlay.style.removeProperty('--sheet-backdrop-alpha');
+        if(reduceMotion.matches){
+          overlay.classList.remove('is-settling');
+          clearInlineMotion();
+          phase='open';
+          return;
+        }
+        waitForTransform(duration,()=>{
+          if(phase!=='settling')return;
+          overlay.classList.remove('is-settling');
+          clearInlineMotion();
+          phase='open';
+        });
+      });
+    };
+
+    const releaseCapture=()=>{
+      if(pointerId===null)return;
+      try{handle.releasePointerCapture?.(pointerId);}catch{}
+    };
+
+    handle.addEventListener('pointerdown',event=>{
+      if(phase!=='open'||!overlay.classList.contains('is-visible'))return;
+      if(event.pointerType==='mouse'&&event.button!==0)return;
+
+      clearTransitionWait();
+      phase='dragging';
+      pointerId=event.pointerId;
+      startY=event.clientY;
+      currentY=Math.max(0,readY());
+      samples=[{y:event.clientY,t:performance.now()}];
+      setY(currentY);
+      overlay.classList.add('is-dragging');
+      sheet.classList.add('is-dragging');
+      handle.setPointerCapture?.(pointerId);
+    });
+
+    handle.addEventListener('pointermove',event=>{
+      if(phase!=='dragging'||event.pointerId!==pointerId)return;
+      event.preventDefault();
+
+      const raw=event.clientY-startY;
+      const y=raw>=0?raw:-Math.min(8,Math.abs(raw)*.08);
+      setY(y);
+
+      const now=performance.now();
+      samples.push({y:event.clientY,t:now});
+      while(samples.length>2&&now-samples[0].t>90)samples.shift();
+
+      const sheetHeight=Math.max(1,sheet.getBoundingClientRect().height);
+      const progress=clamp(Math.max(0,y)/(sheetHeight*.72),0,1);
+      setBackdrop(.18*(1-progress));
+    },{passive:false});
+
+    const finishGesture=event=>{
+      if(phase!=='dragging'||event.pointerId!==pointerId)return;
+      const now=performance.now();
+      samples.push({y:event.clientY,t:now});
+      const first=samples[0];
+      const last=samples[samples.length-1];
+      const dt=Math.max(1,last.t-first.t);
+      const velocity=(last.y-first.y)/dt;
+      const y=Math.max(0,currentY);
+      const sheetHeight=Math.max(1,sheet.getBoundingClientRect().height);
+      const threshold=clamp(sheetHeight*.24,92,168);
+      const projected=y+Math.max(0,velocity)*180;
+      const dismiss=y>threshold||(y>24&&velocity>.62)||projected>threshold*1.12;
+
+      releaseCapture();
+      if(dismiss)close(velocity);
+      else snapOpen();
+    };
+
+    handle.addEventListener('pointerup',finishGesture);
+    handle.addEventListener('pointercancel',event=>{
+      if(phase!=='dragging'||event.pointerId!==pointerId)return;
+      releaseCapture();
+      snapOpen();
+    });
+
+    return {
+      open,
+      close:()=>close(0),
+      isOpen:()=>phase!=='closed',
+      state:()=>phase
+    };
+  };
+
   const ensureBanner=()=>{
     if(banner)return banner;
     banner=document.createElement('div');
@@ -206,6 +457,8 @@
       return {outcome:'unavailable'};
     }
   };
+
+  window.DailyMotionMotion={createBottomSheet};
 
   window.DailyMotionPWA={
     canInstall:()=>Boolean(deferredPrompt)&&!isStandalone(),
