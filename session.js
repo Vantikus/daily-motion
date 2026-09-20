@@ -1,208 +1,6 @@
 (() => {
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
-  const exercises=[
-    {
-      id:'cat-cow', title:'Кошка-корова', volume:'10 плавных циклов', time:'40 сек', seconds:40,
-      goal:'Разбудить позвоночник и мягко подготовить спину к движению.',
-      how:[
-        'Встаньте на четвереньки: ладони под плечами, колени под тазом, шея продолжает линию спины.',
-        'На выдохе мягко подкрутите таз, округлите спину и слегка оттолкните пол ладонями.',
-        'На вдохе переведите таз в обратное положение и раскройте грудную клетку.',
-        'Проводите движение через всю спину, а не только через поясницу.',
-        'Не задерживайтесь в крайних положениях — это короткое динамическое включение.'
-      ],
-      breathing:'Выдох — округление, вдох — разгибание. Один полный цикл примерно за 3–4 секунды.',
-      feel:'Плавное движение по всей спине, особенно между лопатками. Допустима лёгкая скованность, которая уменьшается по мере повторов.',
-      mistakes:[
-        'Движение идёт только из поясницы — начните его тазом и постепенно подключайте грудной отдел.',
-        'Голова резко запрокидывается — держите шею продолжением позвоночника.',
-        'Вы зависаете в крайней точке — двигайтесь непрерывно, без долгой статической растяжки.',
-        'Плечи тянутся к ушам — мягко отталкивайте пол и сохраняйте шею длинной.'
-      ],
-      easy:'Сделайте меньшую амплитуду и двигайтесь медленнее.',
-      progression:'Сохраняйте тот же объём, но делайте переход между положениями более плавным и сегментарным.',
-      key:'Не растягивайтесь до предела — плавно разбудите всю спину и двигайтесь дальше.'
-    },
-    {
-      id:'thoracic-rotation', title:'Поворот грудного отдела', volume:'5 повторов / сторона', time:'45 сек', seconds:45,
-      goal:'Подготовить грудной отдел, плечи и лопатки к работе.',
-      how:[
-        'Останьтесь на четвереньках и положите одну ладонь на затылок.',
-        'Слегка подтяните живот и оставьте таз неподвижным.',
-        'Поверните локоть и грудную клетку вверх до комфортной амплитуды.',
-        'Вернитесь вниз без рывка и повторите.',
-        'После всех повторов смените сторону.'
-      ],
-      breathing:'Вдох внизу, выдох во время поворота вверх. Двигайтесь ритмично, но без рывка.',
-      feel:'Движение в верхней и средней части спины и работу мышц вокруг лопаток.',
-      mistakes:[
-        'Таз разворачивается вместе с плечами — уменьшите амплитуду и удерживайте таз направленным в пол.',
-        'Поворот уходит в поясницу — слегка напрягите живот и двигайте прежде всего грудной клеткой.',
-        'Локоть тянут вверх силой — остановитесь раньше и сохраните свободное движение.',
-        'Опорное плечо проваливается — оттолкните пол ладонью и сохраните устойчивость.'
-      ],
-      easy:'Выполняйте небольшой поворот стоя, опираясь обеими руками на стол или стену.',
-      progression:'Добавьте короткую паузу около 1 секунды в верхнем положении.',
-      key:'Таз почти неподвижен — поворачиваются рёбра и грудная клетка.'
-    },
-    {
-      id:'leg-swings', title:'Махи ногой вперёд-назад', volume:'12–15 махов / нога', time:'50 сек', seconds:50,
-      goal:'Разогреть тазобедренные суставы и подготовить ноги.',
-      how:[
-        'Встаньте боком к устойчивой опоре и легко держитесь одной рукой.',
-        'Перенесите вес на опорную ногу, корпус держите вертикально.',
-        'Свободной ногой сделайте контролируемый мах вперёд, затем назад.',
-        'Первые 2–3 маха сделайте небольшими, затем постепенно увеличьте амплитуду.',
-        'Не останавливаясь надолго, смените ногу.'
-      ],
-      breathing:'Дышите свободно. Темп живой, но контролируемый: примерно один полный мах за 1–1,5 секунды.',
-      feel:'Постепенное увеличение свободы в тазобедренном суставе и лёгкое динамическое натяжение передней и задней поверхности бедра.',
-      mistakes:[
-        'Нога бросается рывком — уменьшите амплитуду и контролируйте разворот движения.',
-        'Корпус раскачивается вместе с ногой — сильнее используйте опору и держите рёбра над тазом.',
-        'Опорное колено жёстко заблокировано — оставьте его слегка мягким.',
-        'Амплитуда сразу максимальная — увеличивайте её постепенно после первых повторов.'
-      ],
-      easy:'Делайте небольшие маятниковые движения и сильнее держитесь за опору.',
-      progression:'Увеличивайте контролируемую амплитуду или уменьшайте поддержку рукой.',
-      key:'Мах живой, но не резкий: нога движется свободно, корпус остаётся стабильным.'
-    },
-    {
-      id:'squat-reach', title:'Присед + подъём рук', volume:'15–18 повторов', time:'60 сек', seconds:60,
-      goal:'Включить ноги и корпус, поднять температуру тела.',
-      how:[
-        'Поставьте стопы примерно на ширине плеч в естественном для вас положении.',
-        'Отведите таз назад и вниз, одновременно сгибая колени.',
-        'Сохраняйте всю стопу на полу, а колени направляйте по линии носков.',
-        'Поднимитесь в устойчивом темпе и одновременно вытяните руки вверх.',
-        'Сразу начинайте следующий повтор, не задерживаясь надолго вверху.'
-      ],
-      breathing:'Вдох при опускании, выдох при подъёме. Темп бодрый: около 2 секунд вниз и 1 секунды вверх.',
-      feel:'Работу ягодиц и бёдер, тепло в ногах и небольшое учащение дыхания без ощущения максимальной нагрузки.',
-      mistakes:[
-        'Колени заваливаются внутрь — уменьшите глубину и направляйте их по линии стоп.',
-        'Пятки отрываются — приседайте чуть мельче и сохраняйте всю стопу на полу.',
-        'Поясница округляется внизу — остановитесь выше и сохраните контролируемое положение корпуса.',
-        'Руки поднимаются за счёт сильного прогиба поясницы — держите рёбра над тазом.'
-      ],
-      easy:'Приседайте неглубоко к стулу или высокой опоре и поднимайте руки только до комфортной высоты.',
-      progression:'Сделайте 15–18 повторов за то же время, не ускоряя технику до рывков.',
-      key:'Работайте ритмично: вся стопа на полу, колени по линии стоп, корпус под контролем.'
-    },
-    {
-      id:'reverse-lunge-reach', title:'Обратный выпад + подъём рук', volume:'8 повторов / сторона', time:'70 сек', seconds:70,
-      goal:'Включить ягодицы и бёдра, добавить баланс.',
-      how:[
-        'Встаньте ровно, стопы примерно на ширине таза.',
-        'Сделайте одной ногой достаточно длинный шаг назад и опуститесь вниз.',
-        'Переднее колено направляйте по линии стопы, а переднюю стопу оставляйте полностью на полу.',
-        'Во время опускания плавно поднимите руки вверх без прогиба поясницы.',
-        'Оттолкнитесь передней ногой, вернитесь в стойку и сразу выполните другой стороной.'
-      ],
-      breathing:'Вдох при шаге назад, выдох при возвращении в стойку. Один повтор примерно 3 секунды.',
-      feel:'Работу ягодицы и бедра передней ноги, умеренное учащение дыхания и необходимость стабилизировать корпус.',
-      mistakes:[
-        'Шаг назад слишком короткий — сделайте его длиннее, чтобы опускаться вниз, а не складываться вперёд.',
-        'Переднее колено заваливается внутрь — уменьшите глубину и удерживайте его по линии стопы.',
-        'Корпус сильно наклоняется или разворачивается — сократите амплитуду и смотрите прямо.',
-        'Руки поднимаются ценой прогиба поясницы — оставьте рёбра над тазом и поднимайте руки ниже.',
-        'Возврат идёт рывком задней ногой — отталкивайтесь преимущественно передней стопой.'
-      ],
-      easy:'Держитесь рукой за стену или стул и делайте неглубокий выпад без подъёма рук.',
-      progression:'Добавьте 1–2 повтора на сторону или чуть увеличьте глубину, если колено и баланс остаются стабильными.',
-      key:'Длинный шаг назад, передняя стопа полностью на полу, колено смотрит туда же, куда носок.'
-    },
-    {
-      id:'lateral-lunge', title:'Боковой выпад', volume:'8 повторов / сторона', time:'60 сек', seconds:60,
-      goal:'Добавить боковое движение и включить бёдра.',
-      how:[
-        'Встаньте широко, стопы направьте вперёд или слегка наружу.',
-        'Перенесите таз к одной ноге, сгибая её в колене и отводя таз назад.',
-        'Вторая нога остаётся почти прямой, а её стопа полностью на полу.',
-        'Оттолкнитесь согнутой ногой и вернитесь в центр.',
-        'Чередуйте стороны в ровном темпе.'
-      ],
-      breathing:'Вдох при уходе в сторону, выдох при возврате в центр. Не задерживайте дыхание.',
-      feel:'Работу ягодицы и бедра согнутой ноги и умеренное натяжение внутренней поверхности противоположного бедра.',
-      mistakes:[
-        'Колено заваливается внутрь — уменьшите глубину и направляйте колено по линии стопы.',
-        'Таз не уходит назад, а колено уезжает вперёд — представьте, что садитесь назад на высокий стул.',
-        'Прямая нога разворачивается носком вверх — сохраняйте стопу полностью на полу.',
-        'Корпус резко падает вперёд — держите грудную клетку открытой и двигайтесь тазом.'
-      ],
-      easy:'Сделайте стойку уже и переносите вес в сторону без глубокого выпада.',
-      progression:'Слегка увеличьте глубину и выполняйте переход между сторонами без длинной паузы в центре.',
-      key:'Таз уходит назад к согнутой ноге, а обе стопы остаются уверенно на полу.'
-    },
-    {
-      id:'hip-hinge-reach', title:'Hip Hinge + вытяжение рук', volume:'15 повторов', time:'55 сек', seconds:55,
-      goal:'Включить заднюю поверхность тела и закрепить наклон тазом.',
-      how:[
-        'Встаньте устойчиво, стопы примерно на ширине таза, колени слегка мягкие.',
-        'Отведите таз назад и наклоните корпус вперёд как единый блок.',
-        'Одновременно вытяните руки вперёд, сохраняя шею продолжением спины.',
-        'Почувствовав натяжение задней поверхности бёдер, напрягите ягодицы и вернитесь вверх.',
-        'Работайте непрерывно, но не превращайте движение в рывок.'
-      ],
-      breathing:'Вдох при наклоне, выдох при подъёме. Около 2 секунд вниз и 1–2 секунды вверх.',
-      feel:'Натяжение задней поверхности бёдер внизу и выраженную работу ягодиц при возвращении.',
-      mistakes:[
-        'Получается присед — отводите таз дальше назад и оставляйте голени почти вертикальными.',
-        'Спина округляется — уменьшите глубину и сохраняйте длинную линию от таза до затылка.',
-        'Вес полностью уходит на носки — удерживайте давление через всю стопу.',
-        'Вверху появляется переразгибание поясницы — просто вернитесь в вертикальную стойку.'
-      ],
-      easy:'Выполняйте движение к стене: мягко касайтесь её тазом и не тяните руки далеко вперёд.',
-      progression:'Увеличьте до 15–18 контролируемых повторов за то же время.',
-      key:'Таз назад, спина длинная, затем сильное и спокойное возвращение ягодицами.'
-    },
-    {
-      id:'incline-push-scap', title:'Отжимание от опоры + лопатки', volume:'12–15 повторов', time:'60 сек', seconds:60,
-      goal:'Подключить грудь, руки, плечи и корпус.',
-      how:[
-        'Поставьте ладони на устойчивую стену, стол или высокую опору чуть шире плеч.',
-        'Отойдите назад и выстройте тело одной линией от головы до пят.',
-        'Согните локти примерно под углом 30–45° к корпусу и приблизьте грудь к опоре.',
-        'Выжмите себя назад, сохраняя корпус единым.',
-        'В конце слегка дотолкните опору от себя, позволив лопаткам разойтись без пожимания плеч.'
-      ],
-      breathing:'Вдох при приближении к опоре, выдох при отжимании. Темп ритмичный: около 2 секунд вниз и 1 секунды вверх.',
-      feel:'Работу груди, трицепсов, мышц вокруг лопаток и умеренное напряжение живота.',
-      mistakes:[
-        'Таз провисает или уходит назад — выберите более высокую опору и держите тело одной линией.',
-        'Локти раскрываются строго в стороны — направляйте их немного назад.',
-        'Голова тянется вперёд — держите затылок продолжением корпуса.',
-        'Плечи поднимаются к ушам в финале — доталкивайте опору лопатками, сохраняя шею длинной.',
-        'Опора может сдвинуться — используйте только устойчивую стену или неподвижную мебель.'
-      ],
-      easy:'Выполняйте упражнение от стены.',
-      progression:'Используйте чуть более низкую устойчивую опору или добавьте 2 повтора.',
-      key:'Тело одной линией; после отжимания добавьте маленькое движение лопатками, а не пожимание плеч.'
-    },
-    {
-      id:'bear-hover-taps', title:'Bear Hover + касания плеч', volume:'16–24 касания', time:'45 сек', seconds:45,
-      goal:'Завершить разминку работой корпуса и координацией.',
-      how:[
-        'Встаньте на четвереньки: ладони под плечами, колени под тазом.',
-        'Подверните носки и поднимите колени примерно на 2–4 см от пола.',
-        'Слегка напрягите живот и удерживайте спину почти неподвижной.',
-        'Поочерёдно отрывайте одну ладонь и касайтесь противоположного плеча.',
-        'Ставьте ладонь обратно мягко и не позволяйте тазу раскачиваться из стороны в сторону.'
-      ],
-      breathing:'Дышите коротко и спокойно, не задерживайте дыхание. Работайте в контролируемом ритме, а не на максимальную скорость.',
-      feel:'Заметную работу живота, плеч и бёдер и более выраженное учащение дыхания к концу комплекса.',
-      mistakes:[
-        'Таз сильно раскачивается — расставьте стопы чуть шире и делайте касания медленнее.',
-        'Колени поднимаются слишком высоко — держите их всего в нескольких сантиметрах от пола.',
-        'Поясница провисает — слегка подтяните живот и сократите время подхода.',
-        'Вес резко падает на опорную руку — переносите его плавно перед каждым касанием.',
-        'Движение выполняется на задержке дыхания — замедлитесь и восстановите спокойный ритм вдохов и выдохов.'
-      ],
-      easy:'Просто удерживайте Bear Hover 10–20 секунд без касаний плеч. Ещё легче — выполняйте касания плеч из высокой опоры на стол.',
-      progression:'Сохраняйте таз всё стабильнее и постепенно выполняйте больше качественных касаний за тот же 45-секундный интервал.',
-      key:'Колени низко, живот включён, таз почти неподвижен — качество важнее скорости касаний.'
-    }
-  ];
+  const exercises=window.DailyMotionProgram.morning;
   (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
   const $=selector=>document.querySelector(selector);
@@ -228,6 +26,10 @@
   const routine=Store.getRoutine(ROUTINE_KEY);
   let settings=Store.getSettings();
   routine.step=Math.max(0,Math.min(Number(routine.step)||0,exercises.length-1));
+
+  if(new URLSearchParams(location.search).get('resume')==='1'&&!routine.completed){
+    routine.step=Math.min(exercises.length-1,Math.max(routine.step,routine.completedUntil||0));
+  }
 
   const resumedFromStep=!routine.completed&&(routine.step>0||routine.completedUntil>0||routine.activeSeconds>0)?routine.step:null;
   let current=routine.step;
@@ -269,11 +71,10 @@
     if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.animate(
       [
-        {transform:'scale(.94)',opacity:.72},
-        {transform:'scale(1.055)',opacity:1,offset:.58},
-        {transform:'scale(1)',opacity:1}
+        {transform:'translateY(3px)',opacity:.55},
+        {transform:'translateY(0)',opacity:1}
       ],
-      {duration:210,easing:'cubic-bezier(.2,.75,.2,1)'}
+      {duration:160,easing:'cubic-bezier(.2,.7,.24,1)'}
     );
   };
 
@@ -503,6 +304,7 @@
     const now=Date.now();
     if(!routine.startedAt)routine.startedAt=new Date(now).toISOString();
     timer.running=true;
+    timer.paused=false;
     timer.runStartedAt=now;
     timer.endAt=now+timer.remaining*1000;
     Store.save();
@@ -677,9 +479,10 @@
     const progress=timer.duration>0?Math.min(100,Math.max(0,(1-preciseRemaining/timer.duration)*100)):0;
     $('#timerRing').style.setProperty('--timer-progress',progress.toFixed(3));
     $('#timerValue').textContent=fmt(timer.remaining);
-    $('#timerLabel').textContent=timer.remaining===0?'готово':'осталось';
-
-    const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
+    const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
+    const isPaused=!timer.running&&timer.remaining>0&&hasProgress;
+    $('#timerLabel').textContent=timer.remaining===0?'готово':isPaused?'пауза':'осталось';
+    $('#timerCard').classList.toggle('is-paused',isPaused);
     $('#timerState').textContent=timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов';
     $('#timerToggle').textContent=timer.running?'Пауза':hasProgress?'Продолжить':'Старт';
     $('#timerRing').classList.toggle('is-running',timer.running);
@@ -705,6 +508,7 @@
     const timer=timerData(exercises[current]);
     if(!timer.running)return;
     timer.remaining=Math.max(0,Math.ceil((timer.endAt-Date.now())/1000));
+    timer.paused=timer.remaining>0;
     accountTimerRun(timer,true);
     timer.running=false;
     timer.endAt=null;
@@ -737,6 +541,7 @@
     const inner=card.querySelector('.detail-card__inner');
 
     card.classList.toggle('is-open',open);
+    if(panel){panel.inert=!open;panel.setAttribute('aria-hidden',String(!open));}
     if(toggle)toggle.setAttribute('aria-expanded',String(open));
     if(panel){
       panel.style.height=open?'auto':'0px';
@@ -767,12 +572,10 @@
     inner.style.opacity=currentHeight>0?'1':'0';
     inner.style.transform=currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
 
-    if(open){
-      card.classList.add('is-open');
-      toggle?.setAttribute('aria-expanded','true');
-    }else{
-      toggle?.setAttribute('aria-expanded','false');
-    }
+    card.classList.toggle('is-open',open);
+    toggle?.setAttribute('aria-expanded',String(open));
+    panel.inert=!open;
+    panel.setAttribute('aria-hidden',String(!open));
 
     const targetHeight=open?inner.scrollHeight:0;
     if(reduceMotion){
@@ -786,7 +589,7 @@
         {height:`${targetHeight}px`,opacity:open?1:.2}
       ],
       {
-        duration:open?410:300,
+        duration:open?300:220,
         easing:'cubic-bezier(.32,.72,0,1)',
         fill:'forwards'
       }
@@ -803,7 +606,7 @@
           {opacity:0,transform:'translate3d(0,-2px,0)'}
         ],
       {
-        duration:open?290:190,
+        duration:open?220:160,
         easing:'cubic-bezier(.32,.72,0,1)',
         fill:'forwards'
       }
@@ -814,7 +617,7 @@
 
     let finished=false;
     const finish=()=>{
-      if(finished)return;
+      if(finished||detailAnimations.get(card)!==animations)return;
       finished=true;
       animations.forEach(animation=>animation.cancel());
       detailAnimations.delete(card);
@@ -835,7 +638,7 @@
     };
 
     panelAnimation.addEventListener('finish',finish,{once:true});
-    setTimeout(finish,(open?410:300)+80);
+    setTimeout(finish,(open?300:220)+80);
   }
 
   document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
@@ -852,7 +655,13 @@
     const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
     const segments=$('#stepSegments');
     segments.style.setProperty('--step-count',String(exercises.length));
-    segments.innerHTML=exercises.map((_,index)=>`<i class="${index<done?'is-done ':''}${index===current?'is-current':''}"></i>`).join('');
+    if(segments.children.length!==exercises.length){
+      segments.innerHTML=exercises.map(()=>'<i></i>').join('');
+    }
+    [...segments.children].forEach((segment,index)=>{
+      segment.classList.toggle('is-done',index<done);
+      segment.classList.toggle('is-current',index===current&&!routine.completed);
+    });
   }
 
   function animateExercise(direction='forward'){
@@ -870,7 +679,7 @@
     const button=$('#nextButton');
     const timer=timerData(exercises[current]);
     const isDone=routine.completed||Number(routine.completedUntil||0)>current||timer.remaining===0;
-    const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
+    const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
 
     if(routine.completed){
       button.textContent='Комплекс завершён';
@@ -925,7 +734,7 @@
       requestWakeLock();
     }
 
-    animateExercise(direction);
+    if(direction)animateExercise(direction);
     requestAnimationFrame(()=>$('#exerciseScroll').scrollTo({top:0,behavior:scrollMode}));
   }
 
@@ -936,25 +745,26 @@
     routine.completed=true;
     routine.completedUntil=exercises.length;
     routine.step=exercises.length-1;
-    routine.completedAt=new Date().toISOString();
+    routine.completedAt=routine.completedAt||new Date().toISOString();
     Store.save();
     renderStepSegments();
     sound('complete');
     haptic('success');
 
     const overlay=$('#completionOverlay');
-    const activeSeconds=Math.max(0,Number(routine.activeSeconds)||0);
-    if(activeSeconds>0){
-      const minutes=Math.max(1,Math.round(activeSeconds/60));
-      $('#completionMeta').textContent=`${exercises.length} упражнений · ${minutes} мин в движении`;
-    }else{
-      $('#completionMeta').textContent=`${exercises.length} упражнений завершено`;
-    }
+    $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
+    $('#completionDuration').textContent=Store.formatActiveTime(routine.activeSeconds);
+    $('#completionCount').textContent=`${Math.min(routine.completedUntil,exercises.length)} / ${exercises.length}`;
+    const week=Store.getWeeklyProgress();
+    $('#completionWeeklyText').textContent=`${week.done} / ${week.goal} дней`;
+    $('#completionWeeklyBar').style.width=`${week.percent}%`;
+    $('#completionWeeklyHint').textContent=week.done>=week.goal?'Цель недели выполнена.':'Сегодняшний день уже в зачёте.';
+    syncEffortButtons();
     modalReturnFocus=document.activeElement;
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
-    $('#completionHome').focus({preventScroll:true});
+    $('#completionTitle').focus({preventScroll:true});
   }
 
   $('#routineMoreButton').addEventListener('click',()=>{
@@ -1027,7 +837,7 @@
       return;
     }
 
-    const hasProgress=timer.remaining<timer.duration&&timer.remaining>0;
+    const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
     if(hasProgress){
       sound('resume');
       startTimerNow();
@@ -1071,6 +881,7 @@
     if(timer.running)accountTimerRun(timer,true);
     timer.duration=exercise.seconds;
     timer.remaining=exercise.seconds;
+    timer.paused=false;
     timer.running=false;
     timer.endAt=null;
     timer.runStartedAt=null;
@@ -1132,10 +943,10 @@
     if(!focusable.length)return;
     const first=focusable[0];
     const last=focusable[focusable.length-1];
-    if(event.shiftKey&&document.activeElement===first){
+    if(event.shiftKey&&(document.activeElement===first||!focusable.includes(document.activeElement))){
       event.preventDefault();
       last.focus();
-    }else if(!event.shiftKey&&document.activeElement===last){
+    }else if(!event.shiftKey&&(document.activeElement===last||!focusable.includes(document.activeElement))){
       event.preventDefault();
       first.focus();
     }
@@ -1191,6 +1002,20 @@
     haptic('next');
     if(finish)finish();
   });
+  function syncEffortButtons(){
+    document.querySelectorAll('[data-effort]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.effort===routine.effort));
+    });
+    $('#effortStatus').textContent=routine.effort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
+  }
+  document.querySelectorAll('[data-effort]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      routine.effort=routine.effort===button.dataset.effort?null:button.dataset.effort;
+      Store.save();
+      syncEffortButtons();
+    });
+  });
+
   $('#completionHome').addEventListener('click',()=>{location.href='index.html';});
 
   document.addEventListener('visibilitychange',()=>{
@@ -1229,6 +1054,7 @@
     },120);
   });
 
-  render('forward','auto');
+  render(null,'auto');
 })(exercises,ROUTINE_KEY);
 })();
+

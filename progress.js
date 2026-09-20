@@ -2,7 +2,7 @@
   const Store=window.DailyMotionState;
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
-  const ROUTINES={morning:{name:'Утро',total:9}};
+  const ROUTINES={morning:{name:'Утро',total:window.DailyMotionProgram.morning.length}};
   const supportedEntries=day=>Object.entries(day?.routines||{}).filter(([key])=>Boolean(ROUTINES[key]));
 
   const dateFromKey=key=>new Date(`${key}T12:00:00`);
@@ -75,29 +75,8 @@
     return Math.round(seconds/60);
   };
 
-  const weekStart=()=>{
-    const date=new Date();
-    const mondayOffset=(date.getDay()+6)%7;
-    date.setHours(12,0,0,0);
-    date.setDate(date.getDate()-mondayOffset);
-    return date;
-  };
-
-  const weeklyCount=()=>{
-    const start=weekStart();
-    let count=0;
-    for(let i=0;i<7;i++){
-      const date=new Date(start);
-      date.setDate(start.getDate()+i);
-      if(hasWorkout(state.days[Store.todayKey(date)]))count++;
-    }
-    return count;
-  };
-
   const renderGoal=()=>{
-    const goal=Store.getSettings().weeklyGoalDays;
-    const done=weeklyCount();
-    const percent=Math.min(100,Math.round(done/goal*100));
+    const {goal,done,percent}=Store.getWeeklyProgress();
     $('#weeklyGoalText').textContent=`${done} / ${goal} дней`;
     $('#weeklyGoalPercent').textContent=`${percent}%`;
     $('#weeklyGoalBar').style.width=`${percent}%`;
@@ -158,7 +137,8 @@
     const completed=completedRoutines(day);
     const activeRoutines=supportedEntries(day).filter(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||activeSeconds(routine)>0);
     const seconds=activeRoutines.reduce((sum,[,routine])=>sum+activeSeconds(routine),0);
-    const minutes=seconds>0?Math.max(1,Math.round(seconds/60)):0;
+    const duration=Store.formatActiveTime(seconds);
+    const effort=completed.map(([,routine])=>Store.EFFORT_LABELS[routine.effort]).filter(Boolean).join(' · ');
     const completedExercises=supportedEntries(day).reduce((sum,[routineKey,routine])=>{
       const total=ROUTINES[routineKey].total;
       return sum+(routine?.completed?total:Math.min(Number(routine?.completedUntil)||0,total));
@@ -172,11 +152,11 @@
     row.innerHTML=`
       <div class="history-row__date">
         <strong>${formatDate(dateFromKey(key))}</strong>
-        <span>${labels}</span>
+        <span>${labels}${effort?` · ${effort}`:''}</span>
       </div>
       <div class="history-row__meta">
         <strong>${completedExercises}</strong>
-        <span>упр.${minutes?` · ${minutes} мин`:''}</span>
+        <span>упр.${seconds>0?` · ${duration}`:''}</span>
       </div>`;
     history.appendChild(row);
   });
@@ -216,3 +196,4 @@
 
   document.documentElement.classList.add('app-ready');
 })();
+

@@ -3609,3 +3609,105 @@ a[href] *,
   }
 }
 
+
+/* v79 — useful completion and motion with one purpose per transition. */
+:root{
+  --qm-press-in:120ms;
+  --qm-press-out:220ms;
+  --qm-content:220ms;
+  --qm-stage:280ms;
+}
+.home-body .today-card>.hero-note{margin-top:8px;font-size:12px;line-height:1.45}
+.home-body .routine-catalog{display:block;align-self:start}
+.routine-catalog summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:48px;padding:0 4px;list-style:none;cursor:pointer;
+  color:var(--muted);font-size:14px;font-weight:650;border-radius:10px;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  transition:background-color var(--qm-press-out) ease;
+}
+.routine-catalog summary::-webkit-details-marker{display:none}
+.routine-catalog summary.is-pressing{background:rgba(47,107,85,.05)}
+.routine-catalog summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.catalog-chevron{font-size:20px;transition:transform 220ms var(--ease)}
+.routine-catalog[open] .catalog-chevron{transform:rotate(180deg)}
+.routine-catalog[open] .routine-list{margin-top:8px}
+.home-body .routine-catalog:not([open])>.routine-list{display:none}
+.home-body .today-card.is-complete .status-pill{background:var(--accent-soft)}
+.completion-overlay{
+  overflow-y:auto;overscroll-behavior:contain;
+  padding:calc(env(safe-area-inset-top,0px) + 24px) 20px calc(env(safe-area-inset-bottom,0px) + 24px);
+  background:var(--bg);transition:opacity 280ms ease,visibility 280ms ease;
+}
+.completion-card{width:min(420px,100%);padding:12px 0;gap:10px;transform:translateY(6px);transition:transform 320ms var(--ease)}
+.completion-card h2{font-size:32px;line-height:1.1}
+.completion-card>p{max-width:32ch;line-height:1.5}
+.completion-check{width:48px;height:48px;margin-bottom:6px;font-size:24px}
+.completion-stats{display:grid;grid-template-columns:1fr 1fr;width:100%;margin:16px 0 8px;padding:18px 0;border-block:1px solid var(--line);gap:12px}
+.completion-stats>div+div{border-left:1px solid var(--line)}
+.completion-stats dt{font-size:12px;color:var(--muted)}
+.completion-stats dd{margin:6px 0 0;font-size:22px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.completion-week{width:100%;text-align:left;margin-bottom:12px}
+.completion-week>div:first-child{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;font-size:13px}
+.completion-week .progress-track{height:5px}
+.completion-week p{margin-top:9px;font-size:12px}
+.completion-effort{border:0;padding:0;margin:0;width:100%;min-width:0}
+.completion-effort legend{width:100%;text-align:center;font-size:15px;font-weight:650;margin-bottom:12px}
+.effort-options{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:6px}
+.effort-options button{
+  min-height:48px;padding:8px 5px;border:1px solid var(--line);border-radius:12px;
+  background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;
+  transition:background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease;
+}
+.effort-options button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.effort-options button.is-pressing{background:#d5e6da;box-shadow:inset 0 2px 5px rgba(47,107,85,.10)}
+.completion-effort p{margin-top:10px;font-size:11px;min-height:17px;line-height:1.5}
+.completion-button{margin-top:8px;min-height:52px}
+.execution-timer.is-paused #timerLabel{color:var(--accent);font-weight:650}
+.execution-timer.is-paused .timer-ring{box-shadow:0 0 0 5px rgba(47,107,85,.055);animation:none!important}
+#timerLabel{transition:color 160ms ease}
+.step-segments i{transition:background-color 300ms ease;transform:none}
+.step-segments i.is-done{background:var(--accent)}
+.primary-button,.nav-button--next,.execution-primary,.home-body .routine-card{
+  transition-duration:var(--qm-press-out)!important;
+}
+.primary-button.is-pressing,.nav-button--next.is-pressing,.execution-primary.is-pressing,.home-body .routine-card.is-pressing{
+  transition-duration:var(--qm-press-in)!important;
+}
+.nav-button--back,.nav-button--back:active,.nav-button--back.is-pressing{transform:none!important}
+.nav-button--back .nav-back-icon{display:inline-block;transition:transform 180ms var(--ease)}
+.nav-button--back.is-pressing .nav-back-icon{transform:translateX(-2px)}
+.settings-sheet,.routine-settings-sheet{scrollbar-gutter:stable}
+.settings-sheet__handle,.routine-settings-sheet__handle{width:96px;min-height:40px}
+@media(min-width:700px){
+  .settings-sheet,.routine-settings-sheet{border-radius:26px}
+}
+@media(min-width:900px){
+  .home-body .today-card{grid-column:1 / 8;grid-row:1 / span 2}
+  .home-body .activity-section{grid-column:8 / -1;grid-row:1}
+  .home-body .routine-catalog{grid-column:8 / -1;grid-row:2}
+  .home-body .safety-note{grid-column:1 / -1}
+}
+@media(max-height:640px){
+  .completion-overlay{align-items:start}
+  .completion-card{padding:0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .app-ready .today-card,.app-ready .progress-page{animation:none!important}
+  .exercise-main.enter-forward{--qm-direction:8px}
+  .exercise-main.enter-back{--qm-direction:-8px}
+  .exercise-main.enter-forward :is(.exercise-head,.exercise-facts,.technique-key,.details-section),
+  .exercise-main.enter-back :is(.exercise-head,.exercise-facts,.technique-key,.details-section){
+    animation:qmDirectionalSwap var(--qm-content) var(--ease) both!important;
+  }
+  .execution-stage:not([hidden]){animation:qmStageQuiet var(--qm-stage) var(--ease) both!important}
+  .completion-overlay.is-visible .completion-check{animation:qmStageQuiet 360ms var(--ease) both!important}
+  .step-indicator.is-updating{animation:none!important}
+}
+@keyframes qmDirectionalSwap{from{opacity:.6;transform:translateX(var(--qm-direction))}to{opacity:1;transform:none}}
+@keyframes qmStageQuiet{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .primary-button,.nav-button--next,.execution-primary,.home-body .routine-card,
+  .effort-options button,.catalog-chevron,.routine-catalog summary,.completion-card,.completion-overlay,
+  .step-segments i,.nav-back-icon{transition:none!important;animation:none!important}
+}

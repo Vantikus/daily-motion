@@ -10,7 +10,7 @@
   };
 
   const blankRoutine=()=>({
-    step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,timers:{}
+    step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,effort:null,timers:{}
   });
 
   const normalizeSettings=(settings={})=>({
@@ -27,17 +27,19 @@
     duration:Number.isFinite(Number(timer.duration))?Math.max(10,Number(timer.duration)):null,
     remaining:Number.isFinite(Number(timer.remaining))?Math.max(0,Number(timer.remaining)):null,
     running:Boolean(timer.running),
+    paused:Boolean(timer.paused)&&!timer.running,
     endAt:Number.isFinite(Number(timer.endAt))?Number(timer.endAt):null,
     runStartedAt:Number.isFinite(Number(timer.runStartedAt))?Number(timer.runStartedAt):null
   });
 
   const normalizeRoutine=(routine={})=>{
     const next=blankRoutine();
-    next.step=Math.max(0,Number(routine.step)||0);
-    next.completedUntil=Math.max(0,Number(routine.completedUntil)||0);
+    next.step=Math.max(0,Math.floor(Number(routine.step)||0));
+    next.completedUntil=Math.max(0,Math.floor(Number(routine.completedUntil)||0));
     next.completed=Boolean(routine.completed);
     next.startedAt=routine.startedAt||null;
     next.completedAt=routine.completedAt||null;
+    next.effort=['easy','right','hard'].includes(routine.effort)?routine.effort:null;
     next.activeSeconds=Math.max(0,Number(routine.activeSeconds)||0);
     const timers=routine.timers&&typeof routine.timers==='object'?routine.timers:{};
     Object.entries(timers).forEach(([id,timer])=>{next.timers[id]=normalizeTimer(timer);});
@@ -126,7 +128,7 @@
     const routine=ensureRoutine(routineKey,date);
     if(!routine.timers)routine.timers={};
     if(!routine.timers[exerciseId]){
-      routine.timers[exerciseId]={duration:defaultDuration,remaining:defaultDuration,running:false,endAt:null,runStartedAt:null};
+      routine.timers[exerciseId]={duration:defaultDuration,remaining:defaultDuration,running:false,paused:false,endAt:null,runStartedAt:null};
     }
     const timer=routine.timers[exerciseId];
     if(!Number.isFinite(timer.duration)||timer.duration<10)timer.duration=defaultDuration;
@@ -137,6 +139,26 @@
       if(!Number.isFinite(timer.runStartedAt))timer.runStartedAt=Date.now();
     }
     return timer;
+  };
+
+  const EFFORT_LABELS={easy:'Легко',right:'В самый раз',hard:'Тяжело'};
+  const formatActiveTime=seconds=>{
+    const value=Math.max(0,Math.floor(Number(seconds)||0));
+    const minutes=Math.floor(value/60);
+    return minutes?`${minutes} мин ${String(value%60).padStart(2,'0')} сек`:`${value} сек`;
+  };
+  const getWeeklyProgress=(date=new Date())=>{
+    const start=new Date(date);
+    start.setHours(12,0,0,0);
+    start.setDate(start.getDate()-((start.getDay()+6)%7));
+    let done=0;
+    for(let i=0;i<7;i++){
+      const day=new Date(start);
+      day.setDate(start.getDate()+i);
+      if(state.days[todayKey(day)]?.routines?.morning?.completed)done++;
+    }
+    const goal=state.settings.weeklyGoalDays;
+    return {done,goal,percent:Math.min(100,Math.round(done/goal*100))};
   };
 
   const getSettings=()=>state.settings;
@@ -194,7 +216,7 @@
   },60000);
 
   window.DailyMotionState={
-    KEY,ROUTINE_KEYS,todayKey,
+    KEY,ROUTINE_KEYS,todayKey,EFFORT_LABELS,formatActiveTime,getWeeklyProgress,
     getState:()=>state,
     getDay:ensureDay,
     getRoutine:ensureRoutine,

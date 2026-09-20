@@ -1,16 +1,18 @@
-const CACHE_NAME='daily-motion-v78';
+const CACHE_NAME='daily-motion-v79';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/styles.css?v=78',
-  '/state.js?v=78',
-  '/audio.js?v=78',\n  '/gsap.min.js?v=78',
-  '/pwa.js?v=78',
-  '/app.js?v=78',
-  '/session.js?v=78',
-  '/progress.js?v=78',
+  '/styles.css?v=79',
+  '/program.js?v=79',
+  '/state.js?v=79',
+  '/audio.js?v=79',
+  '/gsap.min.js?v=79',
+  '/pwa.js?v=79',
+  '/app.js?v=79',
+  '/session.js?v=79',
+  '/progress.js?v=79',
   '/manifest.webmanifest',
   '/icons/daily-motion-32-v1.png',
   '/icons/daily-motion-180-v1.png',
@@ -71,3 +73,4 @@ self.addEventListener('fetch',event=>{
 
   event.respondWith(cacheStatic(request).catch(()=>caches.match(request)));
 });
+

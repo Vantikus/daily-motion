@@ -41,3 +41,7 @@
 
 /icons/*
   Cache-Control: public, max-age=31536000, immutable
+
+
+/program.js
+  Cache-Control: no-cache

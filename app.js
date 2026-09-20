@@ -1,7 +1,7 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:9,icon:'sunrise',available:true},
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
     evening:{name:'Вечер',title:'Вечерняя разминка',icon:'moon',available:false}
   };
@@ -15,7 +15,7 @@
   const today=Store.getDay();
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
-  const go=key=>{location.href=`session.html?routine=${key}`;};
+  const go=key=>{location.href=`session.html?routine=${key}&resume=1`;};
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
   const exerciseCount=key=>{
@@ -52,16 +52,22 @@
   $('#todayLabel').textContent=formatDate();
   $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
   $('#heroTitle').textContent=allDone?'Утренняя разминка завершена':next.title;
+  const resumeIndex=Math.min(next.total-1,Math.max(nextState.step||0,nextState.completedUntil||0));
+  const resumeExercise=window.DailyMotionProgram[nextKey]?.[resumeIndex];
   $('#heroText').textContent=allDone
-    ?'Сегодняшний доступный комплекс выполнен.'
+    ?`${next.total} упражнений · ${Store.formatActiveTime(nextState.activeSeconds)} в движении`
+    :isResuming?`Упражнение ${resumeIndex+1} из ${next.total} · ${resumeExercise.title}`
     :`${next.minutes} · ${next.total} упражнений`;
-  $('#continueBtn').textContent=allDone?'Открыть комплекс':isResuming?'Продолжить':'Начать';
-  $('#continueBtn').onclick=()=>go(nextKey);
+  $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
+  $('#heroNote').hidden=!allDone&&!isResuming;
+  $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
+  $('#continueBtn').onclick=()=>allDone?location.href='progress.html':go(nextKey);
   $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
   $('#dayProgressValue').textContent=`${nextPercent}%`;
   $('#dayProgressBar').style.width=`${nextPercent}%`;
   $('#todayCard').classList.toggle('is-complete',allDone);
 
+  $('#routineCatalog').open=availableRoutineKeys.length>1;
   const list=$('#routineGrid');
   Object.entries(ROUTINES).forEach(([key,routine],index)=>{
     const stateItem=today.routines[key];
@@ -117,18 +123,7 @@
   $('#activityEmpty').hidden=hasActivity;
   $('#activityCard').classList.toggle('is-empty',!hasActivity);
 
-  const weekStart=new Date();
-  weekStart.setHours(12,0,0,0);
-  weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
-  let weeklyDone=0;
-  for(let i=0;i<7;i++){
-    const date=new Date(weekStart);
-    date.setDate(weekStart.getDate()+i);
-    const entry=state.days[Store.todayKey(date)];
-    if(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed))weeklyDone++;
-  }
-  const weeklyGoal=Store.getSettings().weeklyGoalDays;
-  const weeklyPercent=Math.min(100,Math.round(weeklyDone/weeklyGoal*100));
+  const {done:weeklyDone,goal:weeklyGoal,percent:weeklyPercent}=Store.getWeeklyProgress();
   $('#homeWeeklyGoalText').textContent=`${weeklyDone} / ${weeklyGoal} дней`;
   $('#homeWeeklyGoalBar').style.width=`${weeklyPercent}%`;
 
@@ -163,6 +158,7 @@
   const finishSettingsClose=()=>{
     settingsOverlay.setAttribute('aria-hidden','true');
     document.body.classList.remove('settings-open');
+    $('.app-shell').inert=false;
     const returnFocus=settingsReturnFocus||settingsBtn;
     settingsReturnFocus=null;
     returnFocus?.focus?.({preventScroll:true});
@@ -174,6 +170,7 @@
     overlay:settingsOverlay,
     sheet:settingsSheet,
     handle:settingsHandle,
+    lockPage:true,
     onBeforeClose:()=>settingsBtn.setAttribute('aria-expanded','false'),
     onClosed:finishSettingsClose,
     onOpened:()=>settingsClose.focus({preventScroll:true})
@@ -188,11 +185,14 @@
 
     if(settingsMotion){
       settingsMotion.open();
+      $('.app-shell').inert=true;
+      settingsClose.focus({preventScroll:true});
       return;
     }
 
     settingsOverlay.setAttribute('aria-hidden','false');
     settingsOverlay.classList.add('is-visible');
+    $('.app-shell').inert=true;
     settingsClose.focus({preventScroll:true});
   };
 
@@ -264,3 +264,4 @@
     if(event.persisted)location.reload();
   });
 })();
+

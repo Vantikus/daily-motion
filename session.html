@@ -39,7 +39,7 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-512-v1.png" />
-  <link rel="stylesheet" href="styles.css?v=78" />
+  <link rel="stylesheet" href="styles.css?v=79" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -132,7 +132,7 @@
 
     <nav class="session-nav" aria-label="Навигация по упражнениям">
       <div class="session-nav__inner">
-        <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение">←</button>
+        <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение"><span class="nav-back-icon" aria-hidden="true">←</span></button>
         <span class="sr-only" id="navStepLabel">Упражнение 1 из 9</span>
         <button class="nav-button nav-button--next" id="nextButton" type="button">Начать упражнение</button>
       </div>
@@ -243,16 +243,37 @@
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
       <div class="completion-check" aria-hidden="true">✓</div>
       <span class="eyebrow">Комплекс завершён</span>
-      <h2 id="completionTitle">Утро готово</h2>
+      <h2 id="completionTitle" tabindex="-1">Утро готово</h2>
       <p id="completionMeta">9 упражнений завершено</p>
+      <dl class="completion-stats">
+        <div><dt>В движении</dt><dd id="completionDuration">0 сек</dd></div>
+        <div><dt>Упражнений</dt><dd id="completionCount">9 / 9</dd></div>
+      </dl>
+      <div class="completion-week">
+        <div><span>Цель недели</span><strong id="completionWeeklyText">0 / 5 дней</strong></div>
+        <div class="progress-track" aria-hidden="true"><i id="completionWeeklyBar"></i></div>
+        <p id="completionWeeklyHint"></p>
+      </div>
+      <fieldset class="completion-effort">
+        <legend>Как по нагрузке?</legend>
+        <div class="effort-options">
+          <button type="button" data-effort="easy" aria-pressed="false">Легко</button>
+          <button type="button" data-effort="right" aria-pressed="false">В самый раз</button>
+          <button type="button" data-effort="hard" aria-pressed="false">Тяжело</button>
+        </div>
+        <p id="effortStatus" role="status">Необязательно · только для вас</p>
+      </fieldset>
       <button class="primary-button completion-button" id="completionHome" type="button">На главную</button>
     </div>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="state.js?v=78"></script>
-  <script src="audio.js?v=78"></script>
-  <script src="gsap.min.js?v=78"></script>\n  <script src="pwa.js?v=78"></script>
-  <script src="session.js?v=78"></script>
+  <script src="program.js?v=79"></script>
+  <script src="state.js?v=79"></script>
+  <script src="audio.js?v=79"></script>
+  <script src="gsap.min.js?v=79"></script>
+  <script src="pwa.js?v=79"></script>
+  <script src="session.js?v=79"></script>
 </body>
 </html>
+
