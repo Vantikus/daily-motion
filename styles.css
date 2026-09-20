@@ -2870,3 +2870,40 @@ a[href] *,
   background:rgba(117,108,145,.135);
 }
 
+/* v71 — audit accessibility and metadata follow-up */
+.home-body .activity-day small{
+  color:#566158;
+  font-size:12px;
+  font-weight:700;
+}
+
+.home-body .text-link{
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+}
+
+.back-link--icon,
+.routine-reset-button,
+.sheet-close,
+.execution-close{
+  width:44px;
+  height:44px;
+}
+
+.timer-reset-link,
+.timer-adjustments button,
+.pwa-banner__action,
+.execution-secondary button,
+.execution-text-action,
+.settings-install,
+.data-actions button{
+  min-height:44px;
+}
+
+.setting-row select,
+.progress-card__head select{
+  height:44px;
+  min-height:44px;
+}
+
