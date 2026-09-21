@@ -21,7 +21,7 @@
   }
 
   const PROGRAM_VERSION='morning-v3-active-2026-09-19';
-  if(Store.getProgramVersion(ROUTINE_KEY)!==PROGRAM_VERSION)Store.setProgramVersion(ROUTINE_KEY,PROGRAM_VERSION);
+  const programVersionState=Store.ensureProgramVersion(ROUTINE_KEY,PROGRAM_VERSION);
 
   const routine=Store.getRoutine(ROUTINE_KEY);
   let settings=Store.getSettings();
@@ -1046,7 +1046,8 @@
   window.addEventListener('load',()=>{
     setTimeout(()=>{
       $('#pageLoader').classList.add('is-hidden');
-      if(routine.completed)toast('Комплекс уже завершён сегодня');
+      if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
+      else if(routine.completed)toast('Комплекс уже завершён сегодня');
       else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
     },120);
   });
