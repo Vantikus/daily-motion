@@ -67,7 +67,6 @@
   $('#dayProgressBar').style.width=`${nextPercent}%`;
   $('#todayCard').classList.toggle('is-complete',allDone);
 
-  $('#routineCatalog').open=availableRoutineKeys.length>1;
   const list=$('#routineGrid');
   Object.entries(ROUTINES).forEach(([key,routine],index)=>{
     const stateItem=today.routines[key];
