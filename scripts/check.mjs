@@ -1,0 +1,129 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const root=join(dirname(fileURLToPath(import.meta.url)),'..');
+const read=path=>readFileSync(join(root,path),'utf8');
+const fail=message=>{throw new Error(message);};
+
+const syntaxFiles=[
+  'app.js','audio.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js',
+  'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js'
+];
+
+for(const file of syntaxFiles){
+  const result=spawnSync(process.execPath,['--check',join(root,file)],{encoding:'utf8'});
+  if(result.status!==0)fail(`Syntax check failed for ${file}:\n${result.stderr||result.stdout}`);
+}
+
+const htmlFiles=['index.html','session.html','progress.html'];
+const html=Object.fromEntries(htmlFiles.map(file=>[file,read(file)]));
+const sw=read('sw.js');
+const styles=read('styles.css');
+const readme=read('README.md');
+const pwa=read('pwa.js');
+
+const releaseVersions=new Set();
+for(const [file,content] of Object.entries(html)){
+  const versions=[...content.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
+  if(!versions.length)fail(`${file}: no versioned assets found`);
+  if(new Set(versions).size!==1)fail(`${file}: mixed asset versions: ${[...new Set(versions)].join(', ')}`);
+  releaseVersions.add(versions[0]);
+}
+const cacheMatch=sw.match(/const CACHE_NAME='daily-motion-v(\d+)'/);
+if(!cacheMatch)fail('sw.js: CACHE_NAME version not found');
+releaseVersions.add(cacheMatch[1]);
+const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
+if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
+releaseVersions.add(swVersions[0]);
+if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersions].join(', ')}`);
+
+const shellMatch=sw.match(/const APP_SHELL=\[(.*?)\];/s);
+if(!shellMatch)fail('sw.js: APP_SHELL not found');
+for(const match of shellMatch[1].matchAll(/'([^']+)'/g)){
+  const url=match[1];
+  if(url==='/')continue;
+  const relative=url.split('?')[0].replace(/^\//,'');
+  if(!existsSync(join(root,relative)))fail(`APP_SHELL points to missing file: ${url}`);
+}
+
+const forbidden=[
+  /weekly-goal/i,
+  /weeklyGoal/,
+  /home-goal/i,
+  /goalSelect/,
+  /getWeeklyProgress/,
+  /Личная цель/i,
+  /Цель недели/i,
+  /Недельная цель/i,
+  /personal goals/i
+];
+const goalSources={
+  'index.html':html['index.html'],
+  'app.js':read('app.js'),
+  'progress.html':html['progress.html'],
+  'progress.js':read('progress.js'),
+  'session.html':html['session.html'],
+  'session.js':read('session.js'),
+  'state.js':read('state.js'),
+  'styles.css':styles,
+  'README.md':readme
+};
+for(const [file,content] of Object.entries(goalSources)){
+  for(const pattern of forbidden){
+    if(pattern.test(content))fail(`${file}: removed personal-goal code still matches ${pattern}`);
+  }
+}
+
+const pageScripts=[
+  ['index.html','app.js'],
+  ['session.html','session.js'],
+  ['progress.html','progress.js']
+];
+for(const [htmlFile,jsFile] of pageScripts){
+  const markup=html[htmlFile];
+  const js=read(jsFile);
+  const ids=new Set([
+    ...[...js.matchAll(/\$\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1]),
+    ...[...js.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(match=>match[1]),
+    ...[...js.matchAll(/querySelector\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1])
+  ]);
+  for(const id of ids){
+    if(!markup.includes(`id="${id}"`)&&!markup.includes(`id='${id}'`)){
+      fail(`${jsFile}: DOM id #${id} is missing from ${htmlFile}`);
+    }
+  }
+}
+
+for(const [file,content] of Object.entries(html)){
+  for(const match of content.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)){
+    const url=match[1];
+    if(/^https?:|^data:|^#/.test(url))continue;
+    const relative=url.split('?')[0].replace(/^\//,'');
+    if(relative&&!existsSync(join(root,relative)))fail(`${file}: missing local asset ${url}`);
+  }
+}
+
+const motionContract=[
+  "phase='closed'",
+  "phase='opening'",
+  "phase='open'",
+  "phase='dragging'",
+  "phase='settling'",
+  "phase='closing'",
+  "sheetHeight*.28",
+  "y>=52&&velocity>700",
+  "prefers-reduced-motion: reduce",
+  "Cubic Hermite",
+  "Critically damped return"
+];
+for(const token of motionContract){
+  if(!pwa.includes(token))fail(`pwa.js: motion contract token missing: ${token}`);
+}
+
+if(!read('app.js').includes('createBottomSheet'))fail('app.js: shared bottom sheet is not wired');
+if(!read('session.js').includes('createBottomSheet'))fail('session.js: shared bottom sheet is not wired');
+if(read('progress.js').includes('createBottomSheet'))fail('progress.js: bottom sheet should not be used on progress page');
+
+console.log(`Daily Motion checks passed · release v${[...releaseVersions][0]}`);

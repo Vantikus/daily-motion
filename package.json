@@ -1,0 +1,14 @@
+{
+  "name": "daily-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:webkit": "playwright test --project=webkit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

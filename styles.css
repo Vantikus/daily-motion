@@ -321,14 +321,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 }
 
 
-/* Progress, history and personal goals */
+/* Progress and history */
 .activity-card__actions{display:grid;justify-items:end;gap:5px}
 .text-link{color:var(--accent);font-size:12px;font-weight:800;text-decoration:none}
 .text-link:active{opacity:.65}
-.home-goal{margin-top:14px;padding-top:13px;border-top:1px solid rgba(23,25,23,.07);display:grid;gap:8px}
-.home-goal>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}
-.home-goal span{color:var(--muted);font-weight:700}
-.home-goal strong{font-size:12px;font-variant-numeric:tabular-nums}
 
 .progress-body{background:linear-gradient(180deg,#f8f9f6 0,var(--bg) 32%)}
 .progress-topbar{justify-content:flex-start;gap:14px}
@@ -346,12 +342,6 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .progress-card{padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.9);box-shadow:var(--shadow-soft)}
 .progress-card__head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:16px}
 .progress-card__head h3{margin:4px 0 0;font-size:20px;line-height:1.15;letter-spacing:-.025em}
-.progress-card__head select{min-width:108px;height:42px;border:1px solid var(--line);border-radius:12px;background:#f7f8f5;padding:0 28px 0 10px;color:var(--text);font-size:12px;font-weight:750}
-.weekly-goal__row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px}
-.weekly-goal__row strong{font-size:22px;letter-spacing:-.03em}
-.weekly-goal__row span{font-size:12px;color:var(--accent);font-weight:850}
-.weekly-goal__track{height:8px}
-.weekly-goal-card>p{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
 .history-legend{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;white-space:nowrap}
 .history-legend i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .history-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
@@ -441,10 +431,6 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .home-body .activity-day small{font-size:10px}
 .home-body .activity-empty{margin:12px 0 0;padding:0;background:transparent}
 .home-body .activity-card.is-empty .activity-days{opacity:.7}
-.home-body .home-goal{margin-top:14px;padding-top:13px}
-.home-body .home-goal__meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.home-body .home-goal__meta>strong,.home-body .home-goal__meta>span{font-size:12px;color:var(--text);font-weight:600}
-.home-body .home-goal__meta b{font-weight:700}
 .home-body .safety-note{margin:0;padding:0 2px;color:var(--muted);font-size:11px;line-height:1.5}
 .home-body .summary-strip,.home-body .notice-card,.home-body .routine-icon{display:none!important}
 
@@ -915,14 +901,6 @@ html,body{background:var(--bg)}
   width:22px;
   height:22px;
 }
-.home-body .home-goal{
-  margin-top:12px;
-  padding-top:11px;
-  gap:7px;
-}
-.home-body .home-goal .progress-track{
-  height:5px;
-}
 .home-body .safety-note{
   margin-top:-2px;
   font-size:11px;
@@ -1177,10 +1155,6 @@ html,body{background:var(--bg)}
 }
 .home-body .activity-card__head{
   margin-bottom:13px;
-}
-.home-body .home-goal{
-  margin-top:13px;
-  padding-top:12px;
 }
 .home-body .safety-note{
   margin-top:0;
@@ -2385,9 +2359,7 @@ a[href] *,
 }
 .home-body .routine-copy small,
 .home-body .routine-status,
-.home-body .text-link,
-.home-body .home-goal__meta>strong,
-.home-body .home-goal__meta>span{
+.home-body .text-link{
   font-size:12px;
   line-height:1.4;
 }
@@ -2640,11 +2612,6 @@ a[href] *,
 .progress-card__head h3{
   font-size:19px;
 }
-.progress-card__head select{
-  height:42px;
-  font-size:13px;
-}
-.weekly-goal-card>p,
 .data-card>p,
 .history-empty{
   font-size:13px;
@@ -2901,8 +2868,7 @@ a[href] *,
   min-height:44px;
 }
 
-.setting-row select,
-.progress-card__head select{
+.setting-row select{
   height:44px;
   min-height:44px;
 }
