@@ -40,14 +40,14 @@
   <meta name="twitter:title" content="Прогресс тренировок — Daily Motion" />
   <meta name="twitter:description" content="История тренировок Daily Motion: серия дней, выполненные упражнения, время в движении и локальное сохранение прогресса." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-192-v3.png" />
-  <link rel="stylesheet" href="phosphor.css?v=87" />
-  <link rel="stylesheet" href="styles.css?v=87" />
+  <link rel="stylesheet" href="heroicons.css?v=88" />
+  <link rel="stylesheet" href="styles.css?v=88" />
 </head>
 <body class="progress-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
   <div class="app-shell">
     <header class="topbar container progress-topbar">
-      <a class="back-link back-link--icon" href="index.html" aria-label="На главную"><i class="ph ph-caret-left" aria-hidden="true"></i></a>
+      <a class="back-link back-link--icon" href="index.html" aria-label="На главную"><i class="hi hi-chevron-left" aria-hidden="true"></i></a>
       <div class="progress-topbar__copy">
         <span class="eyebrow">Daily Motion</span>
         <h1>Прогресс</h1>
@@ -58,17 +58,17 @@
       <p class="progress-intro">Тренировки и фактическое время в движении сохраняются локально на этом устройстве.</p>
 
       <section class="progress-metrics" aria-label="Основная статистика">
-        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-fire" aria-hidden="true"></i></span><span>Текущая серия</span><strong id="currentStreak">0</strong><small>дней</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-medal" aria-hidden="true"></i></span><span>Лучшая серия</span><strong id="bestStreak">0</strong><small>дней</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-check-circle" aria-hidden="true"></i></span><span>Завершено</span><strong id="completedSessions">0</strong><small>комплексов</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-clock" aria-hidden="true"></i></span><span>В движении</span><strong id="totalMinutes">0</strong><small>минут</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="hi hi-fire" aria-hidden="true"></i></span><span>Текущая серия</span><strong id="currentStreak">0</strong><small>дней</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="hi hi-trophy" aria-hidden="true"></i></span><span>Лучшая серия</span><strong id="bestStreak">0</strong><small>дней</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="hi hi-check-circle" aria-hidden="true"></i></span><span>Завершено</span><strong id="completedSessions">0</strong><small>комплексов</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="hi hi-clock" aria-hidden="true"></i></span><span>В движении</span><strong id="totalMinutes">0</strong><small>минут</small></article>
       </section>
 
       <section class="progress-card">
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">Календарь</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-calendar-blank" aria-hidden="true"></i></span><h3>Последние 28 дней</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="hi hi-calendar-days" aria-hidden="true"></i></span><h3>Последние 28 дней</h3></div>
           </div>
           <span class="history-legend"><i></i> тренировка</span>
         </div>
@@ -79,7 +79,7 @@
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">История</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i></span><h3>Последние активности</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="hi hi-clock" aria-hidden="true"></i></span><h3>Последние активности</h3></div>
           </div>
         </div>
         <div class="history-list" id="historyList"></div>
@@ -90,13 +90,13 @@
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">Локальные данные</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-database" aria-hidden="true"></i></span><h3>Резервная копия</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="hi hi-circle-stack" aria-hidden="true"></i></span><h3>Резервная копия</h3></div>
           </div>
         </div>
         <p>Экспорт сохраняет прогресс и настройки в JSON-файл. Импорт полностью заменяет текущие локальные данные.</p>
         <div class="data-actions">
-          <button id="exportDataBtn" type="button"><i class="ph ph-download-simple" aria-hidden="true"></i><span>Экспортировать</span></button>
-          <button id="importDataBtn" type="button"><i class="ph ph-upload-simple" aria-hidden="true"></i><span>Импортировать</span></button>
+          <button id="exportDataBtn" type="button"><i class="hi hi-arrow-down-tray" aria-hidden="true"></i><span>Экспортировать</span></button>
+          <button id="importDataBtn" type="button"><i class="hi hi-arrow-up-tray" aria-hidden="true"></i><span>Импортировать</span></button>
           <input id="importDataInput" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
@@ -104,11 +104,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=87"></script>
-  <script src="state.js?v=87"></script>
-  <script src="gsap.min.js?v=87"></script>
-  <script src="pwa.js?v=87"></script>
-  <script src="progress.js?v=87"></script>
+  <script src="program.js?v=88"></script>
+  <script src="state.js?v=88"></script>
+  <script src="gsap.min.js?v=88"></script>
+  <script src="pwa.js?v=88"></script>
+  <script src="progress.js?v=88"></script>
 </body>
 </html>
 
