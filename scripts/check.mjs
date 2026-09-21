@@ -105,6 +105,62 @@ for(const [file,content] of Object.entries(html)){
   }
 }
 
+
+const retiredCssClasses=[
+  "activity-card__actions",
+  "activity-day__bar",
+  "activity-streak",
+  "catalog-chevron",
+  "completion-week",
+  "execution-check",
+  "execution-done",
+  "flow-cancel",
+  "flow-card",
+  "flow-overlay",
+  "flow-skip",
+  "flow-value",
+  "flow-value--rest",
+  "is-morphing",
+  "notice-card",
+  "progress-hero",
+  "qm-icon--warn",
+  "routine-catalog",
+  "routine-icon",
+  "routine-reset-button",
+  "routine-reset-overlay",
+  "routine-reset-sheet",
+  "routine-reset-sheet__handle",
+  "summary-strip",
+  "timer-actions",
+  "timer-adjustments",
+  "timer-card",
+  "timer-card__head",
+  "timer-card__status",
+  "timer-grid",
+  "timer-kicker",
+  "timer-primary",
+  "timer-reset-link",
+  "timer-state-row",
+  "today-card__percent",
+  "visual-placeholder__icon",
+  "visual-placeholder__inner"
+];
+for(const className of retiredCssClasses){
+  if(styles.includes(`.${className}`))fail(`styles.css: retired selector still present: .${className}`);
+}
+for(const marker of ['/* v75 —','/* v76 —','/* v77 —','/* v78 —']){
+  if(styles.includes(marker))fail(`styles.css: historical sheet layer still present: ${marker}`);
+}
+if(!styles.includes('/* Bottom sheets — GSAP owns transform and backdrop motion */')){
+  fail('styles.css: consolidated bottom-sheet layer is missing');
+}
+if(!styles.includes('.home-body .home-activity-summary')){
+  fail('styles.css: activity streak summary styling is missing');
+}
+if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
+  fail('index.html: complexes must remain immediately visible, not inside a disclosure');
+}
+
 const motionContract=[
   "phase='closed'",
   "phase='opening'",

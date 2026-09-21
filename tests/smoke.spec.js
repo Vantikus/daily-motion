@@ -27,3 +27,14 @@ for(const pageCase of pages){
     expect(errors).toEqual([]);
   });
 }
+
+test('all workout complexes are immediately visible on home',async({page})=>{
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const cards=page.locator('#routineGrid .routine-card');
+  await expect(cards).toHaveCount(3);
+  for(let index=0;index<3;index++){
+    await expect(cards.nth(index)).toBeVisible();
+  }
+  await expect(page.locator('details#routineCatalog')).toHaveCount(0);
+  await expect(page.locator('.home-activity-summary')).toBeVisible();
+});
