@@ -256,3 +256,29 @@ test('keyboard focus uses the high-contrast accessibility ring',async({page,brow
   expect(focusStyle.outlineOffset).toBe('2px');
   expect(focusStyle.boxShadow).not.toBe('none');
 });
+
+
+test('settings dialogs keep keyboard focus trapped',async({page})=>{
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#settingsClose')).toBeFocused({timeout:1200});
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#resetTodayBtn')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#settingsClose')).toBeFocused();
+
+  await page.locator('#settingsClose').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1200});
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#routineMoreButton').click();
+  await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#routineSettingsClose')).toBeFocused({timeout:1200});
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#routineResetOpen')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#routineSettingsClose')).toBeFocused();
+});
