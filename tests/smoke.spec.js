@@ -206,3 +206,53 @@ test('cached app shell opens progress offline',async({page,context,browserName})
   await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#historyCalendar')).toBeVisible();
 });
+
+
+test('technique accordion exposes semantic headings and labelled regions',async({page})=>{
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+
+  const cards=page.locator('.detail-card');
+  await expect(cards).toHaveCount(6);
+  await expect(page.locator('.detail-card > h3.detail-card__heading')).toHaveCount(6);
+
+  const expected=[
+    ['detail-how','Как делать правильно'],
+    ['detail-breathing','Дыхание и темп'],
+    ['detail-feel','Что чувствовать'],
+    ['detail-mistakes','Частые ошибки'],
+    ['detail-easy','Облегчённый вариант'],
+    ['detail-progression','Как прогрессировать']
+  ];
+
+  for(const [panelId,label] of expected){
+    const button=page.locator(`#${panelId}-toggle`);
+    const panel=page.locator(`#${panelId}`);
+    await expect(button).toContainText(label);
+    await expect(button).toHaveAttribute('aria-controls',panelId);
+    await expect(panel).toHaveAttribute('role','region');
+    await expect(panel).toHaveAttribute('aria-labelledby',`${panelId}-toggle`);
+  }
+});
+
+test('keyboard focus uses the high-contrast accessibility ring',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','focus-visible color contract is verified once in Chromium');
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.keyboard.press('Tab');
+
+  const settings=page.locator('#settingsBtn');
+  await expect(settings).toBeFocused();
+  const focusStyle=await settings.evaluate(element=>{
+    const style=getComputedStyle(element);
+    return {
+      outlineColor:style.outlineColor,
+      outlineWidth:style.outlineWidth,
+      outlineOffset:style.outlineOffset,
+      boxShadow:style.boxShadow
+    };
+  });
+
+  expect(focusStyle.outlineColor).toBe('rgb(47, 107, 85)');
+  expect(focusStyle.outlineWidth).toBe('2px');
+  expect(focusStyle.outlineOffset).toBe('2px');
+  expect(focusStyle.boxShadow).not.toBe('none');
+});
