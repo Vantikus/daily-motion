@@ -7,6 +7,16 @@
   let banner=null;
 
   const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const isIOS=()=>{
+    const ua=navigator.userAgent||'';
+    return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  };
+  const getInstallMode=()=>{
+    if(isStandalone())return 'unavailable';
+    if(deferredPrompt)return 'prompt';
+    if(isIOS())return 'ios-manual';
+    return 'unavailable';
+  };
 
   const installDoubleTapGuard=()=>{
     let lastTapAt=0;
@@ -378,7 +388,9 @@
   });
 
   const install=async()=>{
-    if(!deferredPrompt||isStandalone())return {outcome:'unavailable'};
+    const mode=getInstallMode();
+    if(mode==='ios-manual')return {outcome:'manual-ios'};
+    if(mode!=='prompt'||!deferredPrompt)return {outcome:'unavailable'};
     try{
       deferredPrompt.prompt();
       const choice=await deferredPrompt.userChoice;
@@ -393,7 +405,8 @@
   window.DailyMotionMotion={createBottomSheet};
 
   window.DailyMotionPWA={
-    canInstall:()=>Boolean(deferredPrompt)&&!isStandalone(),
+    canInstall:()=>getInstallMode()!=='unavailable',
+    getInstallMode,
     install,
     isStandalone,
     update:()=>registration?.update?.()
