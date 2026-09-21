@@ -112,7 +112,7 @@ for(const name of heroiconNames){
   const token=`.hi-${name}{--hi-mask:url("/vendor/heroicons/${name}.svg")}`;
   if(!heroicons.includes(token))fail(`heroicons.css: Heroicon mapping missing ${name}`);
   const svg=read(`vendor/heroicons/${name}.svg`);
-  if(!svg.includes('stroke-width="2"'))fail(`vendor/heroicons/${name}.svg: expected 2px stroke`);
+  if(!svg.includes('stroke-width="1.7"'))fail(`vendor/heroicons/${name}.svg: expected 1.7px stroke`);
 }
 for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
   if(/class=["'][^"']*\\bph\\b/.test(content))fail(`${file}: Phosphor class remains after Heroicons migration`);

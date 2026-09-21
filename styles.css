@@ -3114,7 +3114,7 @@ a[href] *,
   .step-segments i,.nav-back-icon{transition:none!important;animation:none!important}
 }
 
-/* Heroicons Outline — primary UI icon system · 2px stroke */
+/* Heroicons Outline — primary UI icon system · 1.7px stroke */
 .qm-icon>.hi{font-size:18px}
 .qm-icon--mini>.hi{font-size:17px}
 .metric-icon>.hi{font-size:18px}
