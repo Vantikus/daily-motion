@@ -39,7 +39,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-512-v2.png" />
-  <link rel="stylesheet" href="styles.css?v=85" />
+  <link rel="stylesheet" href="phosphor.css?v=86" />
+  <link rel="stylesheet" href="styles.css?v=86" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -51,18 +52,14 @@
         <article class="exercise-main">
           <div class="exercise-toolbar" aria-label="Навигация комплекса">
             <a class="back-link back-link--icon" href="index.html" aria-label="На главную">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5"></path></svg>
+              <i class="ph ph-caret-left" aria-hidden="true"></i>
             </a>
             <strong class="exercise-toolbar__title" id="routineName">Утро</strong>
             <div class="step-indicator" aria-label="Текущее упражнение">
               <strong id="headerProgress">1 / 9</strong>
             </div>
             <button class="routine-more-button" id="routineMoreButton" type="button" aria-label="Настройки тренировки" aria-controls="routineSettingsOverlay" aria-expanded="false" title="Настройки тренировки">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="6" cy="12" r="1.25"></circle>
-                <circle cx="12" cy="12" r="1.25"></circle>
-                <circle cx="18" cy="12" r="1.25"></circle>
-              </svg>
+              <i class="ph ph-dots-three" aria-hidden="true"></i>
             </button>
           </div>
 
@@ -76,12 +73,12 @@
           <div class="exercise-visual" id="exerciseVisual" aria-label="Визуал упражнения" hidden></div>
 
           <div class="exercise-facts" aria-label="Параметры упражнения">
-            <div><span class="fact-label"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7v10M17 7v10M4 10v4M20 10v4M7 12h10"></path></svg>Ориентир</span><strong id="exerciseVolume"></strong></div>
-            <div><span class="fact-label fact-label--right"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>Время</span><strong id="exerciseTime"></strong></div>
+            <div><span class="fact-label"><i class="ph ph-barbell" aria-hidden="true"></i>Ориентир</span><strong id="exerciseVolume"></strong></div>
+            <div><span class="fact-label fact-label--right"><i class="ph ph-clock" aria-hidden="true"></i>Время</span><strong id="exerciseTime"></strong></div>
           </div>
 
           <aside class="technique-key">
-            <span class="technique-key__label"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle></svg>Главный ключ</span>
+            <span class="technique-key__label"><i class="ph ph-target" aria-hidden="true"></i>Главный ключ</span>
             <strong id="keyText"></strong>
           </aside>
 
@@ -90,37 +87,37 @@
             <div class="details-stack">
               <article class="detail-card is-open">
                 <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--how"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="7" r="1"></circle><circle cx="5" cy="12" r="1"></circle><circle cx="5" cy="17" r="1"></circle><path d="M9 7h10M9 12h10M9 17h10"></path></svg></span>Как делать правильно</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--how"><i class="ph ph-list-checks" aria-hidden="true"></i></span>Как делать правильно</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-breathing">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--breath"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h8c2 0 2-3 0-3-1.1 0-1.8.6-2 1.4"></path><path d="M4 13h12c2.4 0 2.7 3.6.2 3.6-1.2 0-2-.7-2.2-1.6"></path><path d="M4 17h6"></path></svg></span>Дыхание и темп</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--breath"><i class="ph ph-wind" aria-hidden="true"></i></span>Дыхание и темп</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-breathing"><div class="detail-card__content"><div class="detail-card__inner"><p id="breathingText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--feel"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="3"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg></span>Что чувствовать</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--feel"><i class="ph ph-crosshair" aria-hidden="true"></i></span>Что чувствовать</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--mistakes"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 3.8 18h16.4L12 4Z"></path><path d="M12 9v4M12 16h.01"></path></svg></span>Частые ошибки</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--mistakes"><i class="ph ph-warning" aria-hidden="true"></i></span>Частые ошибки</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--easy"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5C12.5 5 7.6 8.3 5 14.2c-.8 1.8.5 3.8 2.5 3.8 5.8 0 9.5-4.5 11.5-13Z"></path><path d="M6.5 18c2.5-3.2 5.6-5.8 9.8-8"></path></svg></span>Облегчённый вариант</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--easy"><i class="ph ph-leaf" aria-hidden="true"></i></span>Облегчённый вариант</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--progress"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17 10 12l3 3 6-7"></path><path d="M15 8h4v4"></path><path d="M5 7v3M8 7v3"></path></svg></span>Как прогрессировать</span><i aria-hidden="true">+</i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--progress"><i class="ph ph-trend-up" aria-hidden="true"></i></span>Как прогрессировать</span><i class="ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
               </article>
@@ -132,7 +129,7 @@
 
     <nav class="session-nav" aria-label="Навигация по упражнениям">
       <div class="session-nav__inner">
-        <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение"><span class="nav-back-icon" aria-hidden="true">←</span></button>
+        <button class="nav-button nav-button--back" id="prevButton" type="button" aria-label="Предыдущее упражнение"><i class="nav-back-icon ph ph-caret-left" aria-hidden="true"></i></button>
         <span class="sr-only" id="navStepLabel">Упражнение 1 из 9</span>
         <button class="nav-button nav-button--next" id="nextButton" type="button">Начать упражнение</button>
       </div>
@@ -143,7 +140,7 @@
     <section class="execution-shell" role="dialog" aria-modal="true" aria-labelledby="executionTitle">
       <div class="execution-top">
         <span class="execution-meta" id="executionMeta">Утро · 1 из 9</span>
-        <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике">×</button>
+        <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике"><i class="ph ph-x" aria-hidden="true"></i></button>
       </div>
 
       <div class="execution-stage execution-countdown" id="executionCountdownStage" hidden>
@@ -177,8 +174,8 @@
             <button id="plusTen" type="button">+10 сек</button>
           </div>
           <div class="execution-secondary">
-            <button id="timerReset" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5V4.5h4"></path><path d="M5.2 7.2A8 8 0 1 1 4 13"></path></svg><span>Сбросить</span></button>
-            <button id="executionFinishEarly" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg><span>Завершить раньше</span></button>
+            <button id="timerReset" type="button"><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i><span>Сбросить</span></button>
+            <button id="executionFinishEarly" type="button"><i class="ph ph-check-circle" aria-hidden="true"></i><span>Завершить раньше</span></button>
           </div>
         </div>
       </div>
@@ -204,26 +201,26 @@
             <span class="eyebrow">Тренировка</span>
             <h2 id="routineSettingsTitle">Настройки тренировки</h2>
           </div>
-          <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки">×</button>
+          <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
 
         <div class="routine-settings-list">
           <label class="routine-setting-row">
-            <span class="qm-icon qm-icon--soft routine-setting-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l5 4V6L9 10H5Z"></path><path d="M17 9.5a4 4 0 0 1 0 5M19 7a7 7 0 0 1 0 10"></path></svg></span>
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="ph ph-speaker-high" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Звук</strong><small>Отсчёт, последние секунды и завершение</small></span>
             <input class="switch-input" id="workoutSoundSetting" type="checkbox" />
           </label>
 
           <label class="routine-setting-row">
-            <span class="qm-icon qm-icon--soft routine-setting-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"></path><path d="m14 8 4 4-4 4"></path></svg></span>
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="ph ph-arrow-right" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
             <input class="switch-input" id="workoutAutoNextSetting" type="checkbox" />
           </label>
         </div>
 
         <button class="routine-reset-entry" id="routineResetOpen" type="button">
-          <span><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5V4.5h4"></path><path d="M5.2 7.2A8 8 0 1 1 4 13"></path></svg>Сбросить прогресс</span>
-          <i aria-hidden="true">›</i>
+          <span><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>Сбросить прогресс</span>
+          <i class="ph ph-caret-right" aria-hidden="true"></i>
         </button>
       </div>
 
@@ -241,7 +238,7 @@
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
-      <div class="completion-check" aria-hidden="true">✓</div>
+      <div class="completion-check" aria-hidden="true"><i class="ph ph-check-circle"></i></div>
       <span class="eyebrow">Комплекс завершён</span>
       <h2 id="completionTitle" tabindex="-1">Утро готово</h2>
       <p id="completionMeta">9 упражнений завершено</p>
@@ -263,12 +260,12 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=85"></script>
-  <script src="state.js?v=85"></script>
-  <script src="audio.js?v=85"></script>
-  <script src="gsap.min.js?v=85"></script>
-  <script src="pwa.js?v=85"></script>
-  <script src="session.js?v=85"></script>
+  <script src="program.js?v=86"></script>
+  <script src="state.js?v=86"></script>
+  <script src="audio.js?v=86"></script>
+  <script src="gsap.min.js?v=86"></script>
+  <script src="pwa.js?v=86"></script>
+  <script src="session.js?v=86"></script>
 </body>
 </html>
 
