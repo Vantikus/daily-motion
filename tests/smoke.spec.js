@@ -72,3 +72,21 @@ test('state normalization and statistics stay centralized',async({page})=>{
   expect(stats.active).toBe(50);
   expect(stats.exported).not.toContain('weeklyGoalDays');
 });
+
+
+test('iOS exposes manual add-to-home-screen guidance',async({page,browserName})=>{
+  test.skip(browserName!=='webkit','iOS install guidance is WebKit/iPhone specific');
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+
+  const installButton=page.locator('#installAppBtn');
+  await expect(installButton).toBeVisible();
+  await expect(installButton).toHaveText('Добавить на экран «Домой»');
+
+  await installButton.click();
+  const guide=page.locator('#iosInstallGuide');
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText('Поделиться');
+  await expect(guide).toContainText('На экран «Домой»');
+  await expect(guide).toContainText('Открывать как веб‑приложение');
+});
