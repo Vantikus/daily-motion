@@ -3114,29 +3114,22 @@ a[href] *,
   .step-segments i,.nav-back-icon{transition:none!important;animation:none!important}
 }
 
-
-/* Phosphor Icons — primary UI icon system */
-.ph{
-  display:inline-block;
-  flex:0 0 auto;
-  line-height:1;
-  vertical-align:-.125em;
-}
-.qm-icon>.ph{font-size:18px}
-.qm-icon--mini>.ph{font-size:17px}
-.metric-icon>.ph{font-size:18px}
-.home-body .icon-button>.ph{font-size:21px}
-.back-link--icon>.ph{font-size:21px}
-.routine-more-button>.ph{font-size:19px}
-.home-body .routine-glyph>.ph{font-size:19px}
-.routine-status>.ph{font-size:14px}
-.fact-label>.ph{font-size:17px}
-.technique-key__label>.ph{font-size:18px}
-.detail-label .ph{font-size:17px}
-.execution-secondary button>.ph,
-.routine-reset-entry .ph,
-.data-actions button>.ph{font-size:17px}
-.completion-check>.ph{font-size:28px}
-.sheet-close>.ph,
-.execution-close>.ph,
-.routine-settings-close>.ph{font-size:20px}
+/* Heroicons Outline — primary UI icon system · 2px stroke */
+.qm-icon>.hi{font-size:18px}
+.qm-icon--mini>.hi{font-size:17px}
+.metric-icon>.hi{font-size:18px}
+.home-body .icon-button>.hi{font-size:21px}
+.back-link--icon>.hi{font-size:21px}
+.routine-more-button>.hi{font-size:19px}
+.home-body .routine-glyph>.hi{font-size:19px}
+.routine-status>.hi{font-size:14px}
+.fact-label>.hi{font-size:17px}
+.technique-key__label>.hi{font-size:18px}
+.detail-label .hi{font-size:17px}
+.execution-secondary button>.hi,
+.routine-reset-entry .hi,
+.data-actions button>.hi{font-size:17px}
+.completion-check>.hi{font-size:28px}
+.sheet-close>.hi,
+.execution-close>.hi,
+.routine-settings-close>.hi{font-size:20px}
