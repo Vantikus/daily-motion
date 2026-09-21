@@ -230,6 +230,39 @@ for(const id of ['detail-how','detail-breathing','detail-feel','detail-mistakes'
 if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
   fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
 }
+
+const countExactCssRule=selector=>{
+  const escaped=selector.replace(/[.*+?^${}()|[\]\\]/g,'\\if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
+  fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
+}
+');
+  return (styles.match(new RegExp(`(^|\\n)\\s*${escaped}\\s*\\{`,'g'))||[]).length;
+};
+const cssRuleBudgets={
+  '.timer-ring':2,
+  '.timer-ring__inner strong':1,
+  '.exercise-scroll':1,
+  '.session-shell':2,
+  '.exercise-main':1,
+  '.exercise-head':1,
+  '.exercise-head p':2,
+  '.exercise-facts':2,
+  '.exercise-facts>div':1,
+  '.exercise-facts span':1,
+  '.technique-key':1,
+  '.technique-key span':1,
+  '.technique-key strong':1,
+  '.details-section':1,
+  '.details-title':1,
+  '.detail-card__toggle':2,
+  '.setting-row':2,
+  '.settings-reset':1
+};
+for(const [selector,maxCount] of Object.entries(cssRuleBudgets)){
+  const count=countExactCssRule(selector);
+  if(count>maxCount)fail(`styles.css: selector ${selector} regressed to ${count} cascade layers (max ${maxCount})`);
+}
+if(/@media[^{]+\{\s*\}/.test(styles))fail('styles.css: empty media query remains after consolidation');
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
   fail('index.html: complexes must remain immediately visible, not inside a disclosure');
 }
