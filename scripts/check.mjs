@@ -28,8 +28,8 @@ const manifest=JSON.parse(read('manifest.webmanifest'));
 const packageJson=JSON.parse(read('package.json'));
 const ci=read('.github/workflows/ci.yml');
 
-if(packageJson.devDependencies?.['@playwright/test']!=='1.55.0'){
-  fail('package.json: Playwright must be pinned exactly to 1.55.0');
+if(packageJson.devDependencies?.['@playwright/test']!=='1.63.0'){
+  fail('package.json: Playwright must be pinned exactly to 1.63.0');
 }
 if(!ci.includes('node-version: 22.16.0')){
   fail('ci.yml: Node runtime must stay pinned to 22.16.0');
