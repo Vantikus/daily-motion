@@ -1,23 +1,23 @@
-const CACHE_NAME='daily-motion-v84';
+const CACHE_NAME='daily-motion-v85';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/styles.css?v=84',
-  '/program.js?v=84',
-  '/state.js?v=84',
-  '/audio.js?v=84',
-  '/gsap.min.js?v=84',
-  '/pwa.js?v=84',
-  '/app.js?v=84',
-  '/session.js?v=84',
-  '/progress.js?v=84',
+  '/styles.css?v=85',
+  '/program.js?v=85',
+  '/state.js?v=85',
+  '/audio.js?v=85',
+  '/gsap.min.js?v=85',
+  '/pwa.js?v=85',
+  '/app.js?v=85',
+  '/session.js?v=85',
+  '/progress.js?v=85',
   '/manifest.webmanifest',
-  '/icons/daily-motion-32-v1.png',
-  '/icons/daily-motion-180-v1.png',
-  '/icons/daily-motion-192-v1.png',
-  '/icons/daily-motion-512-v1.png'
+  '/icons/daily-motion-32-v2.png',
+  '/icons/daily-motion-180-v2.png',
+  '/icons/daily-motion-192-v2.png',
+  '/icons/daily-motion-512-v2.png'
 ];
 
 self.addEventListener('install',event=>{
