@@ -1,10 +1,10 @@
-const CACHE_NAME='daily-motion-v93';
+const CACHE_NAME='daily-motion-v94';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/heroicons.css?v=93',
+  '/heroicons.css?v=94',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -35,19 +35,19 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=93',
-  '/program.js?v=93',
-  '/state.js?v=93',
-  '/audio.js?v=93',
-  '/gsap.min.js?v=93',
-  '/pwa.js?v=93',
-  '/app.js?v=93',
-  '/session.js?v=93',
-  '/progress.js?v=93',
+  '/styles.css?v=94',
+  '/program.js?v=94',
+  '/state.js?v=94',
+  '/audio.js?v=94',
+  '/gsap.min.js?v=94',
+  '/pwa.js?v=94',
+  '/app.js?v=94',
+  '/session.js?v=94',
+  '/progress.js?v=94',
   '/manifest.webmanifest',
-  '/icons/daily-motion-favicon-32-v93.png',
-  '/icons/daily-motion-app-180-v93.png',
-  '/icons/daily-motion-app-192-v93.png'
+  '/icons/daily-motion-favicon-32-v94.png',
+  '/icons/daily-motion-app-180-v94.png',
+  '/icons/daily-motion-app-192-v94.png'
 ];
 
 self.addEventListener('install',event=>{
