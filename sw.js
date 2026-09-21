@@ -1,10 +1,10 @@
-const CACHE_NAME='daily-motion-v90';
+const CACHE_NAME='daily-motion-v91';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/heroicons.css?v=90',
+  '/heroicons.css?v=91',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -35,18 +35,18 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=90',
-  '/program.js?v=90',
-  '/state.js?v=90',
-  '/audio.js?v=90',
-  '/gsap.min.js?v=90',
-  '/pwa.js?v=90',
-  '/app.js?v=90',
-  '/session.js?v=90',
-  '/progress.js?v=90',
+  '/styles.css?v=91',
+  '/program.js?v=91',
+  '/state.js?v=91',
+  '/audio.js?v=91',
+  '/gsap.min.js?v=91',
+  '/pwa.js?v=91',
+  '/app.js?v=91',
+  '/session.js?v=91',
+  '/progress.js?v=91',
   '/manifest.webmanifest',
-  '/icons/daily-motion-exact-32.png',
-  '/icons/daily-motion-exact-180.png',
+  '/icons/daily-motion-browser-v91.svg',
+  '/icons/daily-motion-app-v91.svg',
   '/icons/daily-motion-exact-192.png'
 ];
 
