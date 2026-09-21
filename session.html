@@ -40,8 +40,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=101" />
-  <link rel="stylesheet" href="styles.css?v=101" />
+  <link rel="stylesheet" href="heroicons.css?v=102" />
+  <link rel="stylesheet" href="styles.css?v=102" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -87,40 +87,52 @@
             <h2 class="details-title" id="techniqueTitle">Техника</h2>
             <div class="details-stack">
               <article class="detail-card is-open">
-                <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-how-toggle" type="button" aria-expanded="true" aria-controls="detail-how">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--how"><i class="hi hi-list-bullet" aria-hidden="true"></i></span>Как делать правильно</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-how" role="region" aria-labelledby="detail-how-toggle"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
               </article>
               <article class="detail-card">
-                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-breathing">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-breathing-toggle" type="button" aria-expanded="false" aria-controls="detail-breathing">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--breath"><i class="hi hi-signal" aria-hidden="true"></i></span>Дыхание и темп</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-breathing"><div class="detail-card__content"><div class="detail-card__inner"><p id="breathingText"></p></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-breathing" role="region" aria-labelledby="detail-breathing-toggle"><div class="detail-card__content"><div class="detail-card__inner"><p id="breathingText"></p></div></div></div>
               </article>
               <article class="detail-card">
-                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-feel-toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--feel"><i class="hi hi-bolt" aria-hidden="true"></i></span>Что чувствовать</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-feel" role="region" aria-labelledby="detail-feel-toggle"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
               </article>
               <article class="detail-card">
-                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-mistakes-toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--mistakes"><i class="hi hi-exclamation-triangle" aria-hidden="true"></i></span>Частые ошибки</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-mistakes" role="region" aria-labelledby="detail-mistakes-toggle"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
               </article>
               <article class="detail-card">
-                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-easy-toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--easy"><i class="hi hi-sparkles" aria-hidden="true"></i></span>Облегчённый вариант</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-easy" role="region" aria-labelledby="detail-easy-toggle"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
               </article>
               <article class="detail-card">
-                <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
+                <h3 class="detail-card__heading">
+                  <button class="detail-card__toggle" id="detail-progression-toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
                   <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--progress"><i class="hi hi-arrow-trending-up" aria-hidden="true"></i></span>Как прогрессировать</span><i class="detail-toggle-icon hi hi-plus" aria-hidden="true"></i>
                 </button>
-                <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
+                </h3>
+                <div class="detail-card__panel" id="detail-progression" role="region" aria-labelledby="detail-progression-toggle"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
               </article>
             </div>
           </section>
@@ -261,12 +273,12 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=101"></script>
-  <script src="state.js?v=101"></script>
-  <script src="audio.js?v=101"></script>
-  <script src="gsap.min.js?v=101"></script>
-  <script src="pwa.js?v=101"></script>
-  <script src="session.js?v=101"></script>
+  <script src="program.js?v=102"></script>
+  <script src="state.js?v=102"></script>
+  <script src="audio.js?v=102"></script>
+  <script src="gsap.min.js?v=102"></script>
+  <script src="pwa.js?v=102"></script>
+  <script src="session.js?v=102"></script>
 </body>
 </html>
 
