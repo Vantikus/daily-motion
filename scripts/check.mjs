@@ -25,6 +25,18 @@ const readme=read('README.md');
 const pwa=read('pwa.js');
 const heroicons=read('heroicons.css');
 const manifest=JSON.parse(read('manifest.webmanifest'));
+const packageJson=JSON.parse(read('package.json'));
+const ci=read('.github/workflows/ci.yml');
+
+if(packageJson.devDependencies?.['@playwright/test']!=='1.55.0'){
+  fail('package.json: Playwright must be pinned exactly to 1.55.0');
+}
+if(!ci.includes('node-version: 22.16.0')){
+  fail('ci.yml: Node runtime must stay pinned to 22.16.0');
+}
+if(!ci.includes('npm install --no-audit --no-fund --package-lock=false')){
+  fail('ci.yml: deterministic test-tooling install command is missing');
+}
 
 const releaseVersions=new Set();
 for(const [file,content] of Object.entries(html)){
@@ -246,6 +258,9 @@ const restStart=sessionSource.indexOf('function startRest');
 const restEnd=sessionSource.indexOf('function onTimerFinished',restStart);
 const restBlock=restStart>=0&&restEnd>restStart?sessionSource.slice(restStart,restEnd):'';
 if(!restBlock.includes('releaseWakeLock();'))fail('session.js: natural rest completion must release wake lock');
+
+if(!read('state.js').includes('ensureProgramVersion'))fail('state.js: safe program-version migration is missing');
+if(!read('session.js').includes('Store.ensureProgramVersion'))fail('session.js: safe program-version migration is not wired');
 
 if(!read('session.js').includes('createBottomSheet'))fail('session.js: shared bottom sheet is not wired');
 if(read('progress.js').includes('createBottomSheet'))fail('progress.js: bottom sheet should not be used on progress page');
