@@ -40,8 +40,8 @@
   <meta name="twitter:title" content="Daily Motion — ежедневная разминка за 10 минут" />
   <meta name="twitter:description" content="Daily Motion — ежедневная 10-минутная разминка всего тела с таймером, техникой выполнения, прогрессом и офлайн-режимом." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=99" />
-  <link rel="stylesheet" href="styles.css?v=99" />
+  <link rel="stylesheet" href="heroicons.css?v=100" />
+  <link rel="stylesheet" href="styles.css?v=100" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -140,17 +140,26 @@
         </label>
       </div>
       <button class="settings-install" id="installAppBtn" type="button" hidden>Установить приложение</button>
+      <div class="ios-install-guide" id="iosInstallGuide" hidden aria-labelledby="iosInstallGuideTitle">
+        <strong class="ios-install-guide__title" id="iosInstallGuideTitle">Добавить Daily Motion на iPhone</strong>
+        <ol class="ios-install-guide__steps">
+          <li><span>1</span><p>Нажмите <b>Поделиться</b> в браузере.</p></li>
+          <li><span>2</span><p>Выберите <b>На экран «Домой»</b>.</p></li>
+          <li><span>3</span><p>Оставьте <b>Открывать как веб‑приложение</b> включённым и нажмите <b>Добавить</b>.</p></li>
+        </ol>
+        <button class="ios-install-guide__done" id="iosInstallGuideClose" type="button">Понятно</button>
+      </div>
       <button class="settings-reset" id="resetTodayBtn" type="button">Сбросить сегодняшний прогресс</button>
     </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=99"></script>
-  <script src="state.js?v=99"></script>
-  <script src="audio.js?v=99"></script>
-  <script src="gsap.min.js?v=99"></script>
-  <script src="pwa.js?v=99"></script>
-  <script src="app.js?v=99"></script>
+  <script src="program.js?v=100"></script>
+  <script src="state.js?v=100"></script>
+  <script src="audio.js?v=100"></script>
+  <script src="gsap.min.js?v=100"></script>
+  <script src="pwa.js?v=100"></script>
+  <script src="app.js?v=100"></script>
 </body>
 </html>
 
