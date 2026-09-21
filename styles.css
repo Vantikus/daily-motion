@@ -3113,3 +3113,30 @@ a[href] *,
   .effort-options button,.completion-card,.completion-overlay,
   .step-segments i,.nav-back-icon{transition:none!important;animation:none!important}
 }
+
+
+/* Phosphor Icons — primary UI icon system */
+.ph{
+  display:inline-block;
+  flex:0 0 auto;
+  line-height:1;
+  vertical-align:-.125em;
+}
+.qm-icon>.ph{font-size:18px}
+.qm-icon--mini>.ph{font-size:17px}
+.metric-icon>.ph{font-size:18px}
+.home-body .icon-button>.ph{font-size:21px}
+.back-link--icon>.ph{font-size:21px}
+.routine-more-button>.ph{font-size:19px}
+.home-body .routine-glyph>.ph{font-size:19px}
+.routine-status>.ph{font-size:14px}
+.fact-label>.ph{font-size:17px}
+.technique-key__label>.ph{font-size:18px}
+.detail-label .ph{font-size:17px}
+.execution-secondary button>.ph,
+.routine-reset-entry .ph,
+.data-actions button>.ph{font-size:17px}
+.completion-check>.ph{font-size:28px}
+.sheet-close>.ph,
+.execution-close>.ph,
+.routine-settings-close>.ph{font-size:20px}
