@@ -39,13 +39,14 @@
   <meta name="twitter:title" content="Прогресс тренировок — Daily Motion" />
   <meta name="twitter:description" content="История тренировок Daily Motion: серия дней, выполненные упражнения, время в движении и локальное сохранение прогресса." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-512-v2.png" />
-  <link rel="stylesheet" href="styles.css?v=85" />
+  <link rel="stylesheet" href="phosphor.css?v=86" />
+  <link rel="stylesheet" href="styles.css?v=86" />
 </head>
 <body class="progress-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
   <div class="app-shell">
     <header class="topbar container progress-topbar">
-      <a class="back-link back-link--icon" href="index.html" aria-label="На главную"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5"></path></svg></a>
+      <a class="back-link back-link--icon" href="index.html" aria-label="На главную"><i class="ph ph-caret-left" aria-hidden="true"></i></a>
       <div class="progress-topbar__copy">
         <span class="eyebrow">Daily Motion</span>
         <h1>Прогресс</h1>
@@ -56,17 +57,17 @@
       <p class="progress-intro">Тренировки и фактическое время в движении сохраняются локально на этом устройстве.</p>
 
       <section class="progress-metrics" aria-label="Основная статистика">
-        <article><span class="qm-icon qm-icon--soft metric-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 3.5c.5 3-1.5 4.5-3 6.5-1.3 1.7-1.4 4 .1 5.5 1.8 1.8 5 .8 5.6-1.6.4-1.7-.2-3-1.2-4.4 3.3 1.6 5 4.4 4.1 7.2-1 3.2-4.2 5-7.3 4.7-3.8-.4-6.7-3.4-6.4-7.1.3-4 3.5-6.1 8.1-10.8Z"></path></svg></span><span>Текущая серия</span><strong id="currentStreak">0</strong><small>дней</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"></circle><path d="m9 13-1 7 4-2 4 2-1-7"></path></svg></span><span>Лучшая серия</span><strong id="bestStreak">0</strong><small>дней</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg></span><span>Завершено</span><strong id="completedSessions">0</strong><small>комплексов</small></article>
-        <article><span class="qm-icon qm-icon--soft metric-icon"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg></span><span>В движении</span><strong id="totalMinutes">0</strong><small>минут</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-fire" aria-hidden="true"></i></span><span>Текущая серия</span><strong id="currentStreak">0</strong><small>дней</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-medal" aria-hidden="true"></i></span><span>Лучшая серия</span><strong id="bestStreak">0</strong><small>дней</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-check-circle" aria-hidden="true"></i></span><span>Завершено</span><strong id="completedSessions">0</strong><small>комплексов</small></article>
+        <article><span class="qm-icon qm-icon--soft metric-icon"><i class="ph ph-clock" aria-hidden="true"></i></span><span>В движении</span><strong id="totalMinutes">0</strong><small>минут</small></article>
       </section>
 
       <section class="progress-card">
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">Календарь</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg></span><h3>Последние 28 дней</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-calendar-blank" aria-hidden="true"></i></span><h3>Последние 28 дней</h3></div>
           </div>
           <span class="history-legend"><i></i> тренировка</span>
         </div>
@@ -77,7 +78,7 @@
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">История</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v5h5"></path><path d="M5.2 9A8 8 0 1 1 4 13"></path><path d="M12 8v5l3 2"></path></svg></span><h3>Последние активности</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i></span><h3>Последние активности</h3></div>
           </div>
         </div>
         <div class="history-list" id="historyList"></div>
@@ -88,13 +89,13 @@
         <div class="progress-card__head">
           <div>
             <span class="eyebrow">Локальные данные</span>
-            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg></span><h3>Резервная копия</h3></div>
+            <div class="progress-title-row"><span class="qm-icon qm-icon--mini"><i class="ph ph-database" aria-hidden="true"></i></span><h3>Резервная копия</h3></div>
           </div>
         </div>
         <p>Экспорт сохраняет прогресс и настройки в JSON-файл. Импорт полностью заменяет текущие локальные данные.</p>
         <div class="data-actions">
-          <button id="exportDataBtn" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v11"></path><path d="m8 12 4 4 4-4"></path><path d="M5 19h14"></path></svg><span>Экспортировать</span></button>
-          <button id="importDataBtn" type="button"><svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V5"></path><path d="m8 9 4-4 4 4"></path><path d="M5 16v3h14v-3"></path></svg><span>Импортировать</span></button>
+          <button id="exportDataBtn" type="button"><i class="ph ph-download-simple" aria-hidden="true"></i><span>Экспортировать</span></button>
+          <button id="importDataBtn" type="button"><i class="ph ph-upload-simple" aria-hidden="true"></i><span>Импортировать</span></button>
           <input id="importDataInput" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
@@ -102,11 +103,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=85"></script>
-  <script src="state.js?v=85"></script>
-  <script src="gsap.min.js?v=85"></script>
-  <script src="pwa.js?v=85"></script>
-  <script src="progress.js?v=85"></script>
+  <script src="program.js?v=86"></script>
+  <script src="state.js?v=86"></script>
+  <script src="gsap.min.js?v=86"></script>
+  <script src="pwa.js?v=86"></script>
+  <script src="progress.js?v=86"></script>
 </body>
 </html>
 
