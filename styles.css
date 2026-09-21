@@ -4,6 +4,7 @@
   --surface-muted:#edf1ec;
   --text:#171917;
   --muted:#687169;
+  --muted-strong:#535c54;
   --line:rgba(23,25,23,.09);
   --accent:#2f6b55;
   --accent-soft:#dfece5;
@@ -27,7 +28,6 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);overflow-x
 button,a{font:inherit}
 button{color:inherit}
 button,.back-link{-webkit-tap-highlight-color:transparent}
-button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outline-offset:2px}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .ios-safe-zone-bar{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:1000;pointer-events:none;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .container{width:min(760px,calc(100% - 28px));margin-inline:auto}
@@ -128,6 +128,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 @keyframes timerEnding{from{transform:scale(1)}to{transform:scale(1.035)}}
 .details-stack{display:grid;gap:8px}
 .detail-card{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.detail-card__heading{margin:0;font:inherit}
 .detail-card__toggle{appearance:none;width:100%;min-height:52px;border:0;background:transparent;padding:0 15px;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;font-size:14px;font-weight:800;cursor:pointer}
 .detail-card__toggle .detail-toggle-icon{font-style:normal;font-size:19px;color:var(--muted);font-weight:400;transition:transform var(--slow) var(--ease)}
 .detail-card.is-open .detail-card__toggle .detail-toggle-icon{transform:rotate(45deg);color:var(--accent)}
@@ -1468,25 +1469,43 @@ a[href],
 }
 
 :where(
-  .primary-button,
-  .nav-button,
-  .icon-button,
-  .back-link--icon,
-  .routine-card,
-  .execution-primary,
-  .execution-adjustments button,
-  .execution-secondary button,
-  .execution-close,
-  .execution-text-action,
-  .sheet-close,
-  .settings-install,
-  .settings-reset,
-  .data-actions button,
-  .detail-card__toggle,
-  .pwa-banner__action
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [tabindex]:not([tabindex="-1"])
 ):focus-visible{
-  outline:3px solid rgba(47,107,85,.18);
-  outline-offset:3px;
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  box-shadow:0 0 0 4px rgba(47,107,85,.18);
+}
+
+:where(
+  .eyebrow,
+  .today-progress__label,
+  .routine-copy small,
+  .routine-status,
+  .activity-day small,
+  .exercise-facts span,
+  .timer-ring__inner span,
+  .setting-row small,
+  .activity-empty,
+  .progress-metrics span,
+  .progress-metrics small,
+  .history-legend,
+  .history-row__date span,
+  .history-row__meta span,
+  .history-empty,
+  .data-card>p,
+  .home-body .safety-note,
+  .execution-meta,
+  .execution-countdown__hint,
+  .execution-secondary button,
+  .routine-setting-copy small,
+  .completion-stats dt
+){
+  color:var(--muted-strong);
 }
 
 @media (hover:hover) and (pointer:fine){
