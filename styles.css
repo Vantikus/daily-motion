@@ -236,6 +236,15 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(47,107,85,.24);outli
 .settings-install,.settings-reset{transition:transform var(--fast) ease,background-color var(--base) ease}
 .settings-install{appearance:none;width:100%;min-height:48px;margin-top:14px;border:0;border-radius:14px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
 .settings-install[hidden]{display:none}
+.ios-install-guide{margin-top:10px;padding:14px;border:1px solid rgba(47,107,85,.14);border-radius:16px;background:#f5f8f5;display:grid;gap:12px}
+.ios-install-guide[hidden]{display:none}
+.ios-install-guide__title{font-size:14px;line-height:1.35;letter-spacing:-.01em}
+.ios-install-guide__steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ios-install-guide__steps li{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:start;gap:10px}
+.ios-install-guide__steps li>span{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:850}
+.ios-install-guide__steps p{margin:3px 0 0;color:#4b554d;font-size:12px;line-height:1.45}
+.ios-install-guide__steps b{color:var(--text);font-weight:800}
+.ios-install-guide__done{appearance:none;min-height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);font-size:12px;font-weight:800;cursor:pointer}
 .settings-install:active,.settings-reset:active,.sheet-close:active,.detail-card__toggle:active{transform:scale(.985)}
 
 .pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:opacity var(--base) ease,transform var(--base) var(--ease),visibility var(--base) ease}
