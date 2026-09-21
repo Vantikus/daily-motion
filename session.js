@@ -405,6 +405,7 @@
         restFinish=null;
         sound('ready');
         haptic('next');
+        releaseWakeLock();
         hideExecution();
         if(finish)finish();
       }
