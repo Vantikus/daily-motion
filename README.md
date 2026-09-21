@@ -27,7 +27,7 @@
 - `program.js` — единый состав упражнений для плеера и продолжения с главной
 - `progress.html` + `progress.js` — история, статистика и backup
 - `state.js` — единая модель состояния, настройки и миграция старой v1-модели
-- `audio.js` — звуковые сигналы для iPhone/PWA с HTMLAudio + Web Audio fallback
+- `audio.js` — звуковые сигналы и разблокировка аудио-сессии для mobile/PWA
 - `pwa.js` — install/update/offline UI
 - `sw.js` — offline app-shell
 - `styles.css` — общая mobile-first визуальная система
