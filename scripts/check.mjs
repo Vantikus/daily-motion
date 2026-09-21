@@ -107,8 +107,17 @@ for(const [file,content] of Object.entries(html)){
 }
 
 
-const heroiconNames=["adjustments-horizontal","queue-list","chart-bar","x-mark","speaker-wave","arrow-right","clock","pause-circle","sun","moon","chevron-left","chevron-right","ellipsis-horizontal","arrows-up-down","key","list-bullet","signal","hand-raised","exclamation-triangle","cloud","arrow-trending-up","plus","arrow-path","check-circle","fire","trophy","calendar-days","circle-stack","arrow-down-tray","arrow-up-tray"];
-for(const name of heroiconNames){
+const heroiconSources={
+  ...html,
+  'app.js':read('app.js'),
+  'session.js':read('session.js'),
+  'progress.js':read('progress.js')
+};
+const usedHeroicons=new Set();
+for(const content of Object.values(heroiconSources)){
+  for(const match of content.matchAll(/\\bhi-([a-z0-9-]+)/g))usedHeroicons.add(match[1]);
+}
+for(const name of usedHeroicons){
   const token=`.hi-${name}{--hi-mask:url("/vendor/heroicons/${name}.svg")}`;
   if(!heroicons.includes(token))fail(`heroicons.css: Heroicon mapping missing ${name}`);
   const svg=read(`vendor/heroicons/${name}.svg`);
@@ -218,6 +227,12 @@ if(/\/\*\s*v\d+\s+—/.test(styles)){
 }
 
 if(!read('app.js').includes('createBottomSheet'))fail('app.js: shared bottom sheet is not wired');
+const sessionSource=read('session.js');
+const restStart=sessionSource.indexOf('function startRest');
+const restEnd=sessionSource.indexOf('function onTimerFinished',restStart);
+const restBlock=restStart>=0&&restEnd>restStart?sessionSource.slice(restStart,restEnd):'';
+if(!restBlock.includes('releaseWakeLock();'))fail('session.js: natural rest completion must release wake lock');
+
 if(!read('session.js').includes('createBottomSheet'))fail('session.js: shared bottom sheet is not wired');
 if(read('progress.js').includes('createBottomSheet'))fail('progress.js: bottom sheet should not be used on progress page');
 
