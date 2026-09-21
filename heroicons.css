@@ -1,0 +1,41 @@
+/* Heroicons Outline · official paths · local vendored assets · stroke 2px */
+.hi{
+  --hi-mask:none;
+  display:inline-block;
+  width:1em;
+  height:1em;
+  flex:0 0 auto;
+  background:currentColor;
+  -webkit-mask:var(--hi-mask) center/contain no-repeat;
+  mask:var(--hi-mask) center/contain no-repeat;
+  vertical-align:-.125em;
+}
+.hi-adjustments-horizontal{--hi-mask:url("/vendor/heroicons/adjustments-horizontal.svg")}
+.hi-queue-list{--hi-mask:url("/vendor/heroicons/queue-list.svg")}
+.hi-chart-bar{--hi-mask:url("/vendor/heroicons/chart-bar.svg")}
+.hi-x-mark{--hi-mask:url("/vendor/heroicons/x-mark.svg")}
+.hi-speaker-wave{--hi-mask:url("/vendor/heroicons/speaker-wave.svg")}
+.hi-arrow-right{--hi-mask:url("/vendor/heroicons/arrow-right.svg")}
+.hi-clock{--hi-mask:url("/vendor/heroicons/clock.svg")}
+.hi-pause-circle{--hi-mask:url("/vendor/heroicons/pause-circle.svg")}
+.hi-sun{--hi-mask:url("/vendor/heroicons/sun.svg")}
+.hi-moon{--hi-mask:url("/vendor/heroicons/moon.svg")}
+.hi-chevron-left{--hi-mask:url("/vendor/heroicons/chevron-left.svg")}
+.hi-ellipsis-horizontal{--hi-mask:url("/vendor/heroicons/ellipsis-horizontal.svg")}
+.hi-arrows-up-down{--hi-mask:url("/vendor/heroicons/arrows-up-down.svg")}
+.hi-key{--hi-mask:url("/vendor/heroicons/key.svg")}
+.hi-list-bullet{--hi-mask:url("/vendor/heroicons/list-bullet.svg")}
+.hi-signal{--hi-mask:url("/vendor/heroicons/signal.svg")}
+.hi-hand-raised{--hi-mask:url("/vendor/heroicons/hand-raised.svg")}
+.hi-exclamation-triangle{--hi-mask:url("/vendor/heroicons/exclamation-triangle.svg")}
+.hi-cloud{--hi-mask:url("/vendor/heroicons/cloud.svg")}
+.hi-arrow-trending-up{--hi-mask:url("/vendor/heroicons/arrow-trending-up.svg")}
+.hi-plus{--hi-mask:url("/vendor/heroicons/plus.svg")}
+.hi-arrow-path{--hi-mask:url("/vendor/heroicons/arrow-path.svg")}
+.hi-check-circle{--hi-mask:url("/vendor/heroicons/check-circle.svg")}
+.hi-fire{--hi-mask:url("/vendor/heroicons/fire.svg")}
+.hi-trophy{--hi-mask:url("/vendor/heroicons/trophy.svg")}
+.hi-calendar-days{--hi-mask:url("/vendor/heroicons/calendar-days.svg")}
+.hi-circle-stack{--hi-mask:url("/vendor/heroicons/circle-stack.svg")}
+.hi-arrow-down-tray{--hi-mask:url("/vendor/heroicons/arrow-down-tray.svg")}
+.hi-arrow-up-tray{--hi-mask:url("/vendor/heroicons/arrow-up-tray.svg")}
