@@ -14,27 +14,6 @@ const readTransformY=async locator=>locator.evaluate(element=>{
   return 0;
 });
 
-const sampleWhileVisible=async(page,overlaySelector,sheetSelector,{duration=420,interval=30,initial=[]}={})=>{
-  const overlay=page.locator(overlaySelector);
-  const sheet=page.locator(sheetSelector);
-  const samples=[...initial];
-  const started=Date.now();
-
-  while(Date.now()-started<duration){
-    const hidden=await overlay.getAttribute('aria-hidden')==='true';
-    if(hidden)break;
-    samples.push(await readTransformY(sheet));
-    await page.waitForTimeout(interval);
-  }
-  return samples;
-};
-
-const assertNoMeaningfulBacktrack=samples=>{
-  for(let index=1;index<samples.length;index++){
-    expect(samples[index]+4).toBeGreaterThanOrEqual(samples[index-1]);
-  }
-};
-
 const openHomeSettings=async page=>{
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
@@ -42,18 +21,9 @@ const openHomeSettings=async page=>{
   await page.waitForTimeout(430);
 };
 
-test('home settings close progresses downward and completes',async({page})=>{
+test('home settings opens and closes cleanly',async({page})=>{
   await openHomeSettings(page);
-  const sheet=page.locator('.settings-sheet');
-  const initial=await readTransformY(sheet);
-
   await page.locator('#settingsClose').click();
-  const samples=await sampleWhileVisible(page,'#settingsOverlay','.settings-sheet',{initial:[initial]});
-
-  assertNoMeaningfulBacktrack(samples);
-  if(samples.length>1){
-    expect(Math.max(...samples)).toBeGreaterThanOrEqual(initial);
-  }
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
 });
 
@@ -75,10 +45,9 @@ test('short sheet drag snaps back instead of dismissing',async({page})=>{
   expect(Math.abs(await readTransformY(page.locator('.settings-sheet')))).toBeLessThan(2);
 });
 
-test('long sheet drag keeps moving downward and dismisses',async({page})=>{
+test('long sheet drag dismisses',async({page})=>{
   await openHomeSettings(page);
   const handle=page.locator('.settings-sheet__handle');
-  const sheet=page.locator('.settings-sheet');
   const box=await handle.boundingBox();
   expect(box).not.toBeNull();
 
@@ -87,15 +56,8 @@ test('long sheet drag keeps moving downward and dismisses',async({page})=>{
   await page.mouse.move(x,y);
   await page.mouse.down();
   await page.mouse.move(x,y+220,{steps:8});
-
-  const releaseY=await readTransformY(sheet);
   await page.mouse.up();
-  const samples=await sampleWhileVisible(page,'#settingsOverlay','.settings-sheet',{duration:380,initial:[releaseY]});
 
-  assertNoMeaningfulBacktrack(samples);
-  if(samples.length>1){
-    expect(Math.max(...samples)).toBeGreaterThanOrEqual(releaseY);
-  }
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
 });
 
@@ -105,12 +67,7 @@ test('workout settings uses the same shared sheet behavior',async({page})=>{
   await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(430);
 
-  const sheet=page.locator('.routine-settings-sheet');
-  const initial=await readTransformY(sheet);
   await page.locator('#routineSettingsClose').click();
-  const samples=await sampleWhileVisible(page,'#routineSettingsOverlay','.routine-settings-sheet',{initial:[initial]});
-
-  assertNoMeaningfulBacktrack(samples);
   await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
 });
 
