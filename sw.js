@@ -1,24 +1,25 @@
-const CACHE_NAME='daily-motion-v86';
+const CACHE_NAME='daily-motion-v87';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/phosphor.css?v=86',
-  '/styles.css?v=86',
-  '/program.js?v=86',
-  '/state.js?v=86',
-  '/audio.js?v=86',
-  '/gsap.min.js?v=86',
-  '/pwa.js?v=86',
-  '/app.js?v=86',
-  '/session.js?v=86',
-  '/progress.js?v=86',
+  '/phosphor.css?v=87',
+  '/styles.css?v=87',
+  '/program.js?v=87',
+  '/state.js?v=87',
+  '/audio.js?v=87',
+  '/gsap.min.js?v=87',
+  '/pwa.js?v=87',
+  '/app.js?v=87',
+  '/session.js?v=87',
+  '/progress.js?v=87',
   '/manifest.webmanifest',
-  '/icons/daily-motion-32-v2.png',
-  '/icons/daily-motion-180-v2.png',
-  '/icons/daily-motion-192-v2.png',
-  '/icons/daily-motion-512-v2.png'
+  '/icons/flow-symbol-v3.svg',
+  '/icons/daily-motion-32-v3.png',
+  '/icons/daily-motion-180-v3.png',
+  '/icons/daily-motion-192-v3.png',
+  '/icons/flow-app-v3.svg'
 ];
 
 self.addEventListener('install',event=>{
