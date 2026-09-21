@@ -90,3 +90,116 @@ test('iOS exposes manual add-to-home-screen guidance',async({page,browserName})=
   await expect(guide).toContainText('На экран «Домой»');
   await expect(guide).toContainText('Открывать как веб‑приложение');
 });
+
+
+test('program version change safely resets only in-progress workout',async({page})=>{
+  await page.addInitScript(()=>{
+    const date=new Date();
+    const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
+      programVersions:{morning:'morning-old-program'},
+      days:{
+        [key]:{routines:{morning:{
+          step:4,
+          completedUntil:3,
+          completed:false,
+          startedAt:new Date().toISOString(),
+          completedAt:null,
+          activeSeconds:12,
+          effort:null,
+          timers:{'cat-cow':{duration:40,remaining:10,running:false,paused:true,endAt:null,runStartedAt:null}}
+        }}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning&resume=1',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#exerciseTitle')).toHaveText('Кошка-корова');
+
+  const migrated=await page.evaluate(()=>{
+    const state=DailyMotionState.getState();
+    const routine=DailyMotionState.getRoutine('morning');
+    return {
+      version:state.programVersions.morning,
+      step:routine.step,
+      completedUntil:routine.completedUntil,
+      activeSeconds:routine.activeSeconds,
+      timers:Object.keys(routine.timers),
+      completed:routine.completed
+    };
+  });
+
+  expect(migrated.version).toBe('morning-v3-active-2026-09-19');
+  expect(migrated.step).toBe(0);
+  expect(migrated.completedUntil).toBe(0);
+  expect(migrated.activeSeconds).toBe(0);
+  expect(migrated.timers).toEqual([]);
+  expect(migrated.completed).toBe(false);
+});
+
+test('morning workout completes end-to-end and reaches history',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
+      programVersions:{},
+      days:{}
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+
+  for(let index=0;index<9;index++){
+    await expect(page.locator('#headerProgress')).toHaveText(`${index+1} / 9`);
+    await page.locator('#nextButton').click();
+    await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+    await expect(page.locator('#timerCard')).toBeVisible();
+    await page.locator('#executionFinishEarly').click();
+
+    if(index<8){
+      await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
+      await page.locator('#nextButton').click();
+      await expect(page.locator('#headerProgress')).toHaveText(`${index+2} / 9`);
+    }
+  }
+
+  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#completionCount')).toHaveText('9 / 9');
+  await page.locator('[data-effort="right"]').click();
+
+  const completed=await page.evaluate(()=>{
+    const routine=DailyMotionState.getRoutine('morning');
+    return {
+      completed:routine.completed,
+      completedUntil:routine.completedUntil,
+      effort:routine.effort,
+      completedAt:routine.completedAt
+    };
+  });
+  expect(completed.completed).toBe(true);
+  expect(completed.completedUntil).toBe(9);
+  expect(completed.effort).toBe('right');
+  expect(completed.completedAt).toBeTruthy();
+
+  await page.locator('#completionHome').click();
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#todayStatus')).toHaveText('Готово');
+  await page.locator('#continueBtn').click();
+  await expect(page).toHaveURL(/\/progress\.html$/);
+  await expect(page.locator('#completedSessions')).toHaveText('1');
+  await expect(page.locator('#historyList .history-row')).toHaveCount(1);
+});
+
+test('cached app shell opens progress offline',async({page,context,browserName})=>{
+  test.skip(browserName!=='chromium','offline service-worker regression is covered in Chromium');
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.evaluate(()=>navigator.serviceWorker.ready);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>Boolean(navigator.serviceWorker.controller))).toBe(true);
+
+  await context.setOffline(true);
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+});
