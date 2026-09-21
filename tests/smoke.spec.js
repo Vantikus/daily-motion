@@ -38,3 +38,37 @@ test('all workout complexes are immediately visible on home',async({page})=>{
   await expect(page.locator('details#routineCatalog')).toHaveCount(0);
   await expect(page.locator('.home-activity-summary')).toBeVisible();
 });
+
+test('state normalization and statistics stay centralized',async({page})=>{
+  await page.addInitScript(()=>{
+    const keyFor=offset=>{
+      const date=new Date();
+      date.setHours(12,0,0,0);
+      date.setDate(date.getDate()+offset);
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    };
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:3,restSeconds:15,sound:true,autoNext:false,weeklyGoalDays:7},
+      days:{
+        [keyFor(0)]:{routines:{morning:{completed:true,completedUntil:9,activeSeconds:0,timers:{x:{duration:60,remaining:30,running:false,paused:true}}}}},
+        [keyFor(-1)]:{routines:{morning:{completed:true,completedUntil:9,activeSeconds:20,timers:{}}}}
+      }
+    }));
+  });
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+
+  const stats=await page.evaluate(()=>({
+    current:DailyMotionState.getCurrentStreak(['morning']),
+    best:DailyMotionState.getBestStreak(['morning']),
+    completed:DailyMotionState.getCompletedRoutineCount(['morning']),
+    active:DailyMotionState.getTotalActiveSeconds(['morning']),
+    exported:DailyMotionState.exportState()
+  }));
+
+  expect(stats.current).toBe(2);
+  expect(stats.best).toBe(2);
+  expect(stats.completed).toBe(2);
+  expect(stats.active).toBe(50);
+  expect(stats.exported).not.toContain('weeklyGoalDays');
+});

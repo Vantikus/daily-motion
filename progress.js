@@ -3,24 +3,14 @@
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
   const ROUTINES={morning:{name:'Утро',total:window.DailyMotionProgram.morning.length}};
-  const supportedEntries=day=>Object.entries(day?.routines||{}).filter(([key])=>Boolean(ROUTINES[key]));
+  const routineKeys=Object.keys(ROUTINES);
+  const supportedEntries=day=>Store.getRoutineEntries(day,routineKeys);
+  const hasWorkout=day=>Store.hasCompletedRoutine(day,routineKeys);
+  const hasActivity=day=>Store.hasRoutineActivity(day,routineKeys);
+  const completedRoutines=day=>supportedEntries(day).filter(([,routine])=>routine.completed);
 
   const dateFromKey=key=>new Date(`${key}T12:00:00`);
   const formatDate=date=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',weekday:'short'}).format(date);
-  const timerElapsedSeconds=timer=>{
-    const duration=Number(timer?.duration);
-    const remaining=Number(timer?.remaining);
-    if(!Number.isFinite(duration)||duration<=0||!Number.isFinite(remaining))return 0;
-    return Math.max(0,Math.min(duration,duration-remaining));
-  };
-  const activeSeconds=routine=>{
-    const recorded=Math.max(0,Number(routine?.activeSeconds)||0);
-    if(recorded>0)return recorded;
-    return Object.values(routine?.timers||{}).reduce((sum,timer)=>sum+timerElapsedSeconds(timer),0);
-  };
-  const hasWorkout=day=>supportedEntries(day).some(([,routine])=>routine?.completed);
-  const hasActivity=day=>supportedEntries(day).some(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||activeSeconds(routine)>0);
-  const completedRoutines=day=>supportedEntries(day).filter(([,routine])=>routine?.completed);
 
   const toast=message=>{
     const node=$('#toast');
@@ -30,55 +20,10 @@
     toast.timer=setTimeout(()=>node.classList.remove('show'),1800);
   };
 
-  const currentStreak=()=>{
-    let count=0;
-    const date=new Date();
-    if(!hasWorkout(state.days[Store.todayKey(date)]))date.setDate(date.getDate()-1);
-    for(let i=0;i<730;i++){
-      const day=state.days[Store.todayKey(date)];
-      if(!hasWorkout(day))break;
-      count++;
-      date.setDate(date.getDate()-1);
-    }
-    return count;
-  };
-
-  const bestStreak=()=>{
-    const dates=Object.keys(state.days)
-      .filter(key=>hasWorkout(state.days[key]))
-      .sort();
-    let best=0;
-    let current=0;
-    let previous=null;
-    for(const key of dates){
-      const date=dateFromKey(key);
-      if(previous){
-        const diff=Math.round((date-previous)/86400000);
-        current=diff===1?current+1:1;
-      }else{
-        current=1;
-      }
-      best=Math.max(best,current);
-      previous=date;
-    }
-    return best;
-  };
-
-  const completedSessionCount=()=>Object.values(state.days).reduce(
-    (sum,day)=>sum+completedRoutines(day).length,0
-  );
-
-  const totalMinutes=()=>{
-    const seconds=Object.values(state.days).reduce(
-      (sum,day)=>sum+supportedEntries(day).reduce((daySum,[,routine])=>daySum+activeSeconds(routine),0),0
-    );
-    return Math.round(seconds/60);
-  };
-
-  $('#currentStreak').textContent=String(currentStreak());
-  $('#bestStreak').textContent=String(bestStreak());
-  $('#completedSessions').textContent=String(completedSessionCount());
-  $('#totalMinutes').textContent=String(totalMinutes());
+  $('#currentStreak').textContent=String(Store.getCurrentStreak(routineKeys));
+  $('#bestStreak').textContent=String(Store.getBestStreak(routineKeys));
+  $('#completedSessions').textContent=String(Store.getCompletedRoutineCount(routineKeys));
+  $('#totalMinutes').textContent=String(Math.round(Store.getTotalActiveSeconds(routineKeys)/60));
 
   const calendar=$('#historyCalendar');
   const weekdays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
@@ -108,8 +53,8 @@
   historyKeys.forEach(key=>{
     const day=state.days[key];
     const completed=completedRoutines(day);
-    const activeRoutines=supportedEntries(day).filter(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||activeSeconds(routine)>0);
-    const seconds=activeRoutines.reduce((sum,[,routine])=>sum+activeSeconds(routine),0);
+    const activeRoutines=supportedEntries(day).filter(([,routine])=>routine?.completed||(routine?.completedUntil||0)>0||Store.getRoutineActiveSeconds(routine)>0);
+    const seconds=activeRoutines.reduce((sum,[,routine])=>sum+Store.getRoutineActiveSeconds(routine),0);
     const duration=Store.formatActiveTime(seconds);
     const effort=completed.map(([,routine])=>Store.EFFORT_LABELS[routine.effort]).filter(Boolean).join(' · ');
     const completedExercises=supportedEntries(day).reduce((sum,[routineKey,routine])=>{

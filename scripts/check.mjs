@@ -178,6 +178,28 @@ for(const token of motionContract){
   if(!pwa.includes(token))fail(`pwa.js: motion contract token missing: ${token}`);
 }
 
+for(const token of [
+  'getRoutineEntries',
+  'getRoutineActiveSeconds',
+  'hasCompletedRoutine',
+  'hasRoutineActivity',
+  'getCurrentStreak',
+  'getBestStreak',
+  'getCompletedRoutineCount',
+  'getTotalActiveSeconds'
+]){
+  if(!read('state.js').includes(token))fail(`state.js: shared activity API missing ${token}`);
+}
+if(read('app.js').includes('availableRoutinesForDay')||read('progress.js').includes('timerElapsedSeconds')){
+  fail('activity/statistics logic was re-duplicated outside state.js');
+}
+if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.endsWith('/session.html')")){
+  fail('sw.js: canonical offline navigation fallbacks are incomplete');
+}
+if(/\/\*\s*v\d+\s+—/.test(styles)){
+  fail('styles.css: historical version-number comments remain');
+}
+
 if(!read('app.js').includes('createBottomSheet'))fail('app.js: shared bottom sheet is not wired');
 if(!read('session.js').includes('createBottomSheet'))fail('session.js: shared bottom sheet is not wired');
 if(read('progress.js').includes('createBottomSheet'))fail('progress.js: bottom sheet should not be used on progress page');

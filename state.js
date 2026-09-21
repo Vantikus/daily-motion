@@ -144,6 +144,81 @@
     const minutes=Math.floor(value/60);
     return minutes?`${minutes} мин ${String(value%60).padStart(2,'0')} сек`:`${value} сек`;
   };
+
+  const normalizeRoutineKeys=routineKeys=>{
+    const keys=Array.isArray(routineKeys)&&routineKeys.length?routineKeys:ROUTINE_KEYS;
+    return [...new Set(keys.filter(key=>typeof key==='string'&&key))];
+  };
+  const getRoutineEntries=(day,routineKeys=ROUTINE_KEYS)=>{
+    const routines=day?.routines&&typeof day.routines==='object'?day.routines:{};
+    return normalizeRoutineKeys(routineKeys)
+      .map(key=>[key,routines[key]])
+      .filter(([,routine])=>Boolean(routine));
+  };
+  const timerElapsedSeconds=timer=>{
+    const duration=Number(timer?.duration);
+    const remaining=Number(timer?.remaining);
+    if(!Number.isFinite(duration)||duration<=0||!Number.isFinite(remaining))return 0;
+    return Math.max(0,Math.min(duration,duration-remaining));
+  };
+  const getRoutineActiveSeconds=routine=>{
+    const recorded=Math.max(0,Number(routine?.activeSeconds)||0);
+    if(recorded>0)return recorded;
+    return Object.values(routine?.timers||{}).reduce((sum,timer)=>sum+timerElapsedSeconds(timer),0);
+  };
+  const hasCompletedRoutine=(day,routineKeys=ROUTINE_KEYS)=>
+    getRoutineEntries(day,routineKeys).some(([,routine])=>Boolean(routine.completed));
+  const hasRoutineActivity=(day,routineKeys=ROUTINE_KEYS)=>
+    getRoutineEntries(day,routineKeys).some(([,routine])=>
+      Boolean(routine.completed)||
+      (Number(routine.completedUntil)||0)>0||
+      getRoutineActiveSeconds(routine)>0
+    );
+  const getCurrentStreak=(routineKeys=ROUTINE_KEYS,maxDays=730)=>{
+    let count=0;
+    const date=new Date();
+    date.setHours(12,0,0,0);
+    if(!hasCompletedRoutine(state.days[todayKey(date)],routineKeys))date.setDate(date.getDate()-1);
+    for(let i=0;i<Math.max(1,Number(maxDays)||730);i++){
+      const day=state.days[todayKey(date)];
+      if(!hasCompletedRoutine(day,routineKeys))break;
+      count++;
+      date.setDate(date.getDate()-1);
+    }
+    return count;
+  };
+  const getBestStreak=(routineKeys=ROUTINE_KEYS)=>{
+    const dates=Object.keys(state.days)
+      .filter(key=>hasCompletedRoutine(state.days[key],routineKeys))
+      .sort();
+    let best=0;
+    let current=0;
+    let previous=null;
+    for(const key of dates){
+      const date=new Date(`${key}T12:00:00`);
+      if(Number.isNaN(date.getTime()))continue;
+      if(previous){
+        const diff=Math.round((date-previous)/86400000);
+        current=diff===1?current+1:1;
+      }else{
+        current=1;
+      }
+      best=Math.max(best,current);
+      previous=date;
+    }
+    return best;
+  };
+  const getCompletedRoutineCount=(routineKeys=ROUTINE_KEYS)=>
+    Object.values(state.days).reduce(
+      (sum,day)=>sum+getRoutineEntries(day,routineKeys).filter(([,routine])=>routine.completed).length,
+      0
+    );
+  const getTotalActiveSeconds=(routineKeys=ROUTINE_KEYS)=>
+    Object.values(state.days).reduce(
+      (sum,day)=>sum+getRoutineEntries(day,routineKeys)
+        .reduce((daySum,[,routine])=>daySum+getRoutineActiveSeconds(routine),0),
+      0
+    );
   const getSettings=()=>state.settings;
   const updateSettings=patch=>{
     state.settings=normalizeSettings({...state.settings,...patch});
@@ -200,6 +275,14 @@
 
   window.DailyMotionState={
     KEY,ROUTINE_KEYS,todayKey,EFFORT_LABELS,formatActiveTime,
+    getRoutineEntries,
+    getRoutineActiveSeconds,
+    hasCompletedRoutine,
+    hasRoutineActivity,
+    getCurrentStreak,
+    getBestStreak,
+    getCompletedRoutineCount,
+    getTotalActiveSeconds,
     getState:()=>state,
     getDay:ensureDay,
     getRoutine:ensureRoutine,

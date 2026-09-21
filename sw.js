@@ -1,18 +1,18 @@
-const CACHE_NAME='daily-motion-v83';
+const CACHE_NAME='daily-motion-v84';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/styles.css?v=83',
-  '/program.js?v=83',
-  '/state.js?v=83',
-  '/audio.js?v=83',
-  '/gsap.min.js?v=83',
-  '/pwa.js?v=83',
-  '/app.js?v=83',
-  '/session.js?v=83',
-  '/progress.js?v=83',
+  '/styles.css?v=84',
+  '/program.js?v=84',
+  '/state.js?v=84',
+  '/audio.js?v=84',
+  '/gsap.min.js?v=84',
+  '/pwa.js?v=84',
+  '/app.js?v=84',
+  '/session.js?v=84',
+  '/progress.js?v=84',
   '/manifest.webmanifest',
   '/icons/daily-motion-32-v1.png',
   '/icons/daily-motion-180-v1.png',
@@ -45,6 +45,12 @@ const cacheStatic=async request=>{
   return response;
 };
 
+const navigationFallback=pathname=>{
+  if(pathname.endsWith('/session.html'))return '/session.html';
+  if(pathname.endsWith('/progress.html'))return '/progress.html';
+  return '/index.html';
+};
+
 const networkNavigation=async request=>{
   const cache=await caches.open(CACHE_NAME);
   try{
@@ -52,11 +58,10 @@ const networkNavigation=async request=>{
     if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch{
-    const direct=await cache.match(request);
-    if(direct)return direct;
     const url=new URL(request.url);
-    if(url.pathname.includes('session'))return cache.match('/session.html');
-    return (await cache.match('/index.html'))||(await cache.match('/'));
+    const direct=(await cache.match(request))||(await cache.match(url.pathname));
+    if(direct)return direct;
+    return (await cache.match(navigationFallback(url.pathname)))||(await cache.match('/'));
   }
 };
 

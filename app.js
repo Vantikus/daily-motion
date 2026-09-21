@@ -6,7 +6,6 @@
     evening:{name:'Вечер',title:'Вечерняя разминка',icon:'moon',available:false}
   };
   const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
-  const availableRoutinesForDay=day=>availableRoutineKeys.map(key=>day?.routines?.[key]).filter(Boolean);
   const routineIcons={
     sunrise:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.6 5.6l2.1 2.1M18.4 5.6l-2.1 2.1M3 15h18M5 19h14"></path><path d="M7 15a5 5 0 0 1 10 0"></path></svg>`,
     sun:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"></path></svg>`,
@@ -26,20 +25,6 @@
   };
   const completedRoutines=()=>availableRoutineKeys.filter(key=>today.routines[key]?.completed).length;
   const nextRoutine=()=>availableRoutineKeys.find(key=>!today.routines[key]?.completed)||availableRoutineKeys[0]||'morning';
-
-  const streak=()=>{
-    let count=0;
-    const date=new Date();
-    for(let i=0;i<365;i++){
-      const key=Store.todayKey(date);
-      const entry=state.days[key];
-      const complete=entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed);
-      if(complete)count++;
-      else if(i>0)break;
-      date.setDate(date.getDate()-1);
-    }
-    return count;
-  };
 
   const allDone=availableRoutineKeys.length>0&&completedRoutines()===availableRoutineKeys.length;
   const nextKey=allDone?'morning':nextRoutine();
@@ -95,7 +80,7 @@
     list.appendChild(button);
   });
 
-  const currentStreak=streak();
+  const currentStreak=Store.getCurrentStreak(availableRoutineKeys,365);
   $('#activityStreak').textContent=currentStreak
     ?`Серия ${currentStreak} ${currentStreak===1?'день':'дня'}`
     :'Серия —';
@@ -109,8 +94,8 @@
     date.setDate(date.getDate()-i);
     const key=Store.todayKey(date);
     const entry=state.days[key];
-    const complete=Boolean(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed));
-    const active=Boolean(entry&&availableRoutinesForDay(entry).some(routine=>routine?.completed||(routine?.completedUntil||0)>0||(routine?.activeSeconds||0)>0));
+    const complete=Store.hasCompletedRoutine(entry,availableRoutineKeys);
+    const active=Store.hasRoutineActivity(entry,availableRoutineKeys);
     if(complete||active)hasActivity=true;
     const item=document.createElement('div');
     item.className=`activity-day${complete?' is-complete':active?' is-active':''}${i===0?' is-today':''}`;
