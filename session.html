@@ -40,8 +40,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-192-v3.png" />
-  <link rel="stylesheet" href="phosphor.css?v=87" />
-  <link rel="stylesheet" href="styles.css?v=87" />
+  <link rel="stylesheet" href="heroicons.css?v=88" />
+  <link rel="stylesheet" href="styles.css?v=88" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -53,14 +53,14 @@
         <article class="exercise-main">
           <div class="exercise-toolbar" aria-label="Навигация комплекса">
             <a class="back-link back-link--icon" href="index.html" aria-label="На главную">
-              <i class="ph ph-caret-left" aria-hidden="true"></i>
+              <i class="hi hi-chevron-left" aria-hidden="true"></i>
             </a>
             <strong class="exercise-toolbar__title" id="routineName">Утро</strong>
             <div class="step-indicator" aria-label="Текущее упражнение">
               <strong id="headerProgress">1 / 9</strong>
             </div>
             <button class="routine-more-button" id="routineMoreButton" type="button" aria-label="Настройки тренировки" aria-controls="routineSettingsOverlay" aria-expanded="false" title="Настройки тренировки">
-              <i class="ph ph-dots-three" aria-hidden="true"></i>
+              <i class="hi hi-ellipsis-horizontal" aria-hidden="true"></i>
             </button>
           </div>
 
@@ -74,12 +74,12 @@
           <div class="exercise-visual" id="exerciseVisual" aria-label="Визуал упражнения" hidden></div>
 
           <div class="exercise-facts" aria-label="Параметры упражнения">
-            <div><span class="fact-label"><i class="ph ph-barbell" aria-hidden="true"></i>Ориентир</span><strong id="exerciseVolume"></strong></div>
-            <div><span class="fact-label fact-label--right"><i class="ph ph-clock" aria-hidden="true"></i>Время</span><strong id="exerciseTime"></strong></div>
+            <div><span class="fact-label"><i class="hi hi-arrows-up-down" aria-hidden="true"></i>Ориентир</span><strong id="exerciseVolume"></strong></div>
+            <div><span class="fact-label fact-label--right"><i class="hi hi-clock" aria-hidden="true"></i>Время</span><strong id="exerciseTime"></strong></div>
           </div>
 
           <aside class="technique-key">
-            <span class="technique-key__label"><i class="ph ph-target" aria-hidden="true"></i>Главный ключ</span>
+            <span class="technique-key__label"><i class="hi hi-key" aria-hidden="true"></i>Главный ключ</span>
             <strong id="keyText"></strong>
           </aside>
 
@@ -88,37 +88,37 @@
             <div class="details-stack">
               <article class="detail-card is-open">
                 <button class="detail-card__toggle" type="button" aria-expanded="true" aria-controls="detail-how">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--how"><i class="ph ph-list-checks" aria-hidden="true"></i></span>Как делать правильно</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--how"><i class="hi hi-list-bullet" aria-hidden="true"></i></span>Как делать правильно</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-how"><div class="detail-card__content"><div class="detail-card__inner"><ol id="howToList"></ol></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-breathing">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--breath"><i class="ph ph-wind" aria-hidden="true"></i></span>Дыхание и темп</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--breath"><i class="hi hi-signal" aria-hidden="true"></i></span>Дыхание и темп</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-breathing"><div class="detail-card__content"><div class="detail-card__inner"><p id="breathingText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-feel">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--feel"><i class="ph ph-crosshair" aria-hidden="true"></i></span>Что чувствовать</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--feel"><i class="hi hi-hand-raised" aria-hidden="true"></i></span>Что чувствовать</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-feel"><div class="detail-card__content"><div class="detail-card__inner"><p id="feelText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-mistakes">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--mistakes"><i class="ph ph-warning" aria-hidden="true"></i></span>Частые ошибки</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--mistakes"><i class="hi hi-exclamation-triangle" aria-hidden="true"></i></span>Частые ошибки</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-mistakes"><div class="detail-card__content"><div class="detail-card__inner"><ul id="mistakesList"></ul></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-easy">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--easy"><i class="ph ph-leaf" aria-hidden="true"></i></span>Облегчённый вариант</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--easy"><i class="hi hi-cloud" aria-hidden="true"></i></span>Облегчённый вариант</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-easy"><div class="detail-card__content"><div class="detail-card__inner"><p id="easyText"></p></div></div></div>
               </article>
               <article class="detail-card">
                 <button class="detail-card__toggle" type="button" aria-expanded="false" aria-controls="detail-progression">
-                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--progress"><i class="ph ph-trend-up" aria-hidden="true"></i></span>Как прогрессировать</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
+                  <span class="detail-label"><span class="qm-icon qm-icon--mini technique-icon technique-icon--progress"><i class="hi hi-arrow-trending-up" aria-hidden="true"></i></span>Как прогрессировать</span><i class="detail-toggle-icon ph ph-plus" aria-hidden="true"></i>
                 </button>
                 <div class="detail-card__panel" id="detail-progression"><div class="detail-card__content"><div class="detail-card__inner"><p id="progressionText"></p></div></div></div>
               </article>
@@ -141,7 +141,7 @@
     <section class="execution-shell" role="dialog" aria-modal="true" aria-labelledby="executionTitle">
       <div class="execution-top">
         <span class="execution-meta" id="executionMeta">Утро · 1 из 9</span>
-        <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике"><i class="ph ph-x" aria-hidden="true"></i></button>
+        <button class="execution-close" id="executionClose" type="button" aria-label="Вернуться к технике"><i class="hi hi-x-mark" aria-hidden="true"></i></button>
       </div>
 
       <div class="execution-stage execution-countdown" id="executionCountdownStage" hidden>
@@ -175,8 +175,8 @@
             <button id="plusTen" type="button">+10 сек</button>
           </div>
           <div class="execution-secondary">
-            <button id="timerReset" type="button"><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i><span>Сбросить</span></button>
-            <button id="executionFinishEarly" type="button"><i class="ph ph-check-circle" aria-hidden="true"></i><span>Завершить раньше</span></button>
+            <button id="timerReset" type="button"><i class="hi hi-arrow-path" aria-hidden="true"></i><span>Сбросить</span></button>
+            <button id="executionFinishEarly" type="button"><i class="hi hi-check-circle" aria-hidden="true"></i><span>Завершить раньше</span></button>
           </div>
         </div>
       </div>
@@ -202,26 +202,26 @@
             <span class="eyebrow">Тренировка</span>
             <h2 id="routineSettingsTitle">Настройки тренировки</h2>
           </div>
-          <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки"><i class="ph ph-x" aria-hidden="true"></i></button>
+          <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки"><i class="hi hi-x-mark" aria-hidden="true"></i></button>
         </div>
 
         <div class="routine-settings-list">
           <label class="routine-setting-row">
-            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="ph ph-speaker-high" aria-hidden="true"></i></span>
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-speaker-wave" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Звук</strong><small>Отсчёт, последние секунды и завершение</small></span>
             <input class="switch-input" id="workoutSoundSetting" type="checkbox" />
           </label>
 
           <label class="routine-setting-row">
-            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="ph ph-arrow-right" aria-hidden="true"></i></span>
+            <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-arrow-right" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Авто-переход</strong><small>После таймера перейти к отдыху и следующему упражнению</small></span>
             <input class="switch-input" id="workoutAutoNextSetting" type="checkbox" />
           </label>
         </div>
 
         <button class="routine-reset-entry" id="routineResetOpen" type="button">
-          <span><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>Сбросить прогресс</span>
-          <i class="ph ph-caret-right" aria-hidden="true"></i>
+          <span><i class="hi hi-arrow-path" aria-hidden="true"></i>Сбросить прогресс</span>
+          <i class="hi hi-chevron-right" aria-hidden="true"></i>
         </button>
       </div>
 
@@ -239,7 +239,7 @@
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
-      <div class="completion-check" aria-hidden="true"><i class="ph ph-check-circle"></i></div>
+      <div class="completion-check" aria-hidden="true"><i class="hi hi-check-circle"></i></div>
       <span class="eyebrow">Комплекс завершён</span>
       <h2 id="completionTitle" tabindex="-1">Утро готово</h2>
       <p id="completionMeta">9 упражнений завершено</p>
@@ -261,12 +261,12 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=87"></script>
-  <script src="state.js?v=87"></script>
-  <script src="audio.js?v=87"></script>
-  <script src="gsap.min.js?v=87"></script>
-  <script src="pwa.js?v=87"></script>
-  <script src="session.js?v=87"></script>
+  <script src="program.js?v=88"></script>
+  <script src="state.js?v=88"></script>
+  <script src="audio.js?v=88"></script>
+  <script src="gsap.min.js?v=88"></script>
+  <script src="pwa.js?v=88"></script>
+  <script src="session.js?v=88"></script>
 </body>
 </html>
 
