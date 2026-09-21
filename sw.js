@@ -1,4 +1,4 @@
-const CACHE_NAME='daily-motion-v94';
+const CACHE_NAME='daily-motion-v95';
 const APP_SHELL=[
   '/',
   '/index.html',
@@ -45,9 +45,8 @@ const APP_SHELL=[
   '/session.js?v=94',
   '/progress.js?v=94',
   '/manifest.webmanifest',
-  '/icons/daily-motion-favicon-32-v94.png',
-  '/icons/daily-motion-app-180-v94.png',
-  '/icons/daily-motion-app-192-v94.png'
+  '/icons/daily-motion-app-180-v95.png',
+  '/icons/daily-motion-app-192-v95.png'
 ];
 
 self.addEventListener('install',event=>{
