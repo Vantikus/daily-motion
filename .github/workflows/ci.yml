@@ -13,9 +13,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.16.0
       - name: Install test tooling
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --package-lock=false
       - name: Static checks
         run: npm run check
       - name: Install Playwright browsers
