@@ -1468,7 +1468,7 @@ a[href],
   transform:scale(.975)!important;
 }
 
-:where(
+:root :where(
   button,
   a,
   input,
