@@ -127,6 +127,7 @@ test('program version change safely resets only in-progress workout',async({page
       completedUntil:routine.completedUntil,
       activeSeconds:routine.activeSeconds,
       timers:Object.keys(routine.timers),
+      firstTimer:routine.timers['cat-cow']||null,
       completed:routine.completed
     };
   });
@@ -135,12 +136,14 @@ test('program version change safely resets only in-progress workout',async({page
   expect(migrated.step).toBe(0);
   expect(migrated.completedUntil).toBe(0);
   expect(migrated.activeSeconds).toBe(0);
-  expect(migrated.timers).toEqual([]);
+  expect(migrated.timers).toEqual(['cat-cow']);
+  expect(migrated.firstTimer).toMatchObject({duration:40,remaining:40,running:false,paused:false});
   expect(migrated.completed).toBe(false);
 });
 
 test('morning workout completes end-to-end and reaches history',async({page})=>{
   await page.addInitScript(()=>{
+    if(localStorage.getItem('dailyMotionState.v3'))return;
     localStorage.setItem('dailyMotionState.v3',JSON.stringify({
       version:3,
       settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
