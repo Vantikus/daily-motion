@@ -23,6 +23,7 @@ const sw=read('sw.js');
 const styles=read('styles.css');
 const readme=read('README.md');
 const pwa=read('pwa.js');
+const phosphor=read('phosphor.css');
 
 const releaseVersions=new Set();
 for(const [file,content] of Object.entries(html)){
@@ -105,6 +106,14 @@ for(const [file,content] of Object.entries(html)){
   }
 }
 
+
+for(const token of ['.ph.ph-sun-horizon:before','.ph.ph-sliders-horizontal:before','.ph.ph-check-circle:before']){
+  if(!phosphor.includes(token))fail(`phosphor.css: Phosphor icon system is missing ${token}`);
+}
+for(const file of htmlFiles){
+  if(/<svg\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Phosphor migration`);
+}
+if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Phosphor migration');
 
 const retiredCssClasses=[
   "activity-card__actions",
