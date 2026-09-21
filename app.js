@@ -124,6 +124,8 @@
   const settingsBtn=$('#settingsBtn');
   const settingsClose=$('#settingsClose');
   const installAppBtn=$('#installAppBtn');
+  const iosInstallGuide=$('#iosInstallGuide');
+  const iosInstallGuideClose=$('#iosInstallGuideClose');
   const Audio=window.DailyMotionAudio;
   const PWA=window.DailyMotionPWA;
   let settingsReturnFocus=null;
@@ -138,9 +140,20 @@
   };
 
   const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
-  const syncInstallButton=()=>{installAppBtn.hidden=!PWA?.canInstall?.();};
+  const hideInstallGuide=(restoreFocus=false)=>{
+    if(!iosInstallGuide)return;
+    iosInstallGuide.hidden=true;
+    if(restoreFocus&&!installAppBtn.hidden)installAppBtn.focus({preventScroll:true});
+  };
+  const syncInstallButton=()=>{
+    const mode=PWA?.getInstallMode?.()||'unavailable';
+    installAppBtn.hidden=mode==='unavailable';
+    installAppBtn.textContent=mode==='ios-manual'?'Добавить на экран «Домой»':'Установить приложение';
+    if(mode!=='ios-manual')hideInstallGuide(false);
+  };
 
   const finishSettingsClose=()=>{
+    hideInstallGuide(false);
     settingsOverlay.setAttribute('aria-hidden','true');
     document.body.classList.remove('settings-open');
     $('.app-shell').inert=false;
@@ -162,6 +175,7 @@
   });
 
   const openSettings=()=>{
+    hideInstallGuide(false);
     syncSettings();
     syncInstallButton();
     settingsReturnFocus=document.activeElement;
@@ -229,8 +243,16 @@
   installAppBtn.onclick=async()=>{
     const result=await PWA?.install?.();
     syncInstallButton();
-    if(result?.outcome==='accepted')toast('Установка началась');
+    if(result?.outcome==='accepted'){
+      toast('Установка началась');
+      return;
+    }
+    if(result?.outcome==='manual-ios'){
+      iosInstallGuide.hidden=false;
+      requestAnimationFrame(()=>iosInstallGuideClose?.focus({preventScroll:true}));
+    }
   };
+  iosInstallGuideClose?.addEventListener('click',()=>hideInstallGuide(true));
   window.addEventListener('daily-motion-install-change',syncInstallButton);
 
   syncSettings();
