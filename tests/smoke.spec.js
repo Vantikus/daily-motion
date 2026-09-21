@@ -282,3 +282,37 @@ test('settings dialogs keep keyboard focus trapped',async({page})=>{
   await page.keyboard.press('Tab');
   await expect(page.locator('#routineSettingsClose')).toBeFocused();
 });
+
+
+test('consolidated workout CSS preserves the compact mobile contract',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','computed CSS consolidation contract is verified once in Chromium');
+  await page.setViewportSize({width:360,height:800});
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+
+  const layout=await page.evaluate(()=>{
+    const style=selector=>getComputedStyle(document.querySelector(selector));
+    const timer=style('#timerRing');
+    const shell=style('.session-shell');
+    const main=style('.exercise-main');
+    const head=style('.exercise-head');
+    const facts=style('.exercise-facts');
+    const technique=style('.technique-key');
+    return {
+      timerWidth:timer.width,
+      shellWidth:shell.width,
+      mainPadding:main.paddingTop,
+      mainBorder:main.borderTopWidth,
+      headGap:head.rowGap,
+      factsGap:facts.columnGap,
+      techniqueMargin:technique.marginBottom
+    };
+  });
+
+  expect(layout.timerWidth).toBe('88px');
+  expect(layout.shellWidth).toBe('336px');
+  expect(layout.mainPadding).toBe('0px');
+  expect(layout.mainBorder).toBe('0px');
+  expect(layout.headGap).toBe('6px');
+  expect(layout.factsGap).toBe('12px');
+  expect(layout.techniqueMargin).toBe('20px');
+});
