@@ -232,6 +232,31 @@
     save();
     return state.programVersions[routineKey];
   };
+  const ensureProgramVersion=(routineKey,version,date=todayKey())=>{
+    const nextVersion=String(version);
+    const previous=getProgramVersion(routineKey);
+    if(previous===nextVersion)return {changed:false,reset:false,previous,current:nextVersion};
+
+    const routine=ensureRoutine(routineKey,date);
+    const hasInProgress=!routine.completed&&(
+      (Number(routine.step)||0)>0||
+      (Number(routine.completedUntil)||0)>0||
+      (Number(routine.activeSeconds)||0)>0||
+      Object.keys(routine.timers||{}).length>0||
+      Boolean(routine.startedAt)
+    );
+
+    if(previous!==null&&hasInProgress){
+      const fresh=blankRoutine();
+      Object.keys(routine).forEach(key=>delete routine[key]);
+      Object.assign(routine,fresh);
+    }
+
+    if(!state.programVersions||typeof state.programVersions!=='object')state.programVersions={};
+    state.programVersions[routineKey]=nextVersion;
+    save();
+    return {changed:true,reset:previous!==null&&hasInProgress,previous,current:nextVersion};
+  };
   const resetToday=()=>{state.days[todayKey()]=normalizeDay();save();};
   const resetRoutine=(routineKey,date=todayKey())=>{
     const routine=ensureRoutine(routineKey,date);
@@ -291,6 +316,7 @@
     updateSettings,
     getProgramVersion,
     setProgramVersion,
+    ensureProgramVersion,
     exportState,
     importState,
     save,
