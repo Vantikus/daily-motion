@@ -755,10 +755,6 @@
     $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
     $('#completionDuration').textContent=Store.formatActiveTime(routine.activeSeconds);
     $('#completionCount').textContent=`${Math.min(routine.completedUntil,exercises.length)} / ${exercises.length}`;
-    const week=Store.getWeeklyProgress();
-    $('#completionWeeklyText').textContent=`${week.done} / ${week.goal} дней`;
-    $('#completionWeeklyBar').style.width=`${week.percent}%`;
-    $('#completionWeeklyHint').textContent=week.done>=week.goal?'Цель недели выполнена.':'Сегодняшний день уже в зачёте.';
     syncEffortButtons();
     modalReturnFocus=document.activeElement;
     overlay.classList.add('is-visible');

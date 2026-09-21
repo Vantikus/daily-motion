@@ -2,7 +2,7 @@
   const KEY='dailyMotionState.v3';
   const LEGACY_KEYS=['dailyMotionState.v2','dailyMotionState.v1'];
   const ROUTINE_KEYS=['morning','day','evening'];
-  const DEFAULT_SETTINGS={countdownSeconds:3,restSeconds:15,sound:true,autoNext:false,weeklyGoalDays:5};
+  const DEFAULT_SETTINGS={countdownSeconds:3,restSeconds:15,sound:true,autoNext:false};
 
   const todayKey=(date=new Date())=>{
     const d=new Date(date);
@@ -17,10 +17,7 @@
     countdownSeconds:[0,3,5].includes(Number(settings.countdownSeconds))?Number(settings.countdownSeconds):DEFAULT_SETTINGS.countdownSeconds,
     restSeconds:[0,15,30,45].includes(Number(settings.restSeconds))?Number(settings.restSeconds):DEFAULT_SETTINGS.restSeconds,
     sound:typeof settings.sound==='boolean'?settings.sound:DEFAULT_SETTINGS.sound,
-    autoNext:typeof settings.autoNext==='boolean'?settings.autoNext:DEFAULT_SETTINGS.autoNext,
-    weeklyGoalDays:Number.isInteger(Number(settings.weeklyGoalDays))
-      ?Math.min(7,Math.max(1,Number(settings.weeklyGoalDays)))
-      :DEFAULT_SETTINGS.weeklyGoalDays
+    autoNext:typeof settings.autoNext==='boolean'?settings.autoNext:DEFAULT_SETTINGS.autoNext
   });
 
   const normalizeTimer=(timer={})=>({
@@ -147,20 +144,6 @@
     const minutes=Math.floor(value/60);
     return minutes?`${minutes} мин ${String(value%60).padStart(2,'0')} сек`:`${value} сек`;
   };
-  const getWeeklyProgress=(date=new Date())=>{
-    const start=new Date(date);
-    start.setHours(12,0,0,0);
-    start.setDate(start.getDate()-((start.getDay()+6)%7));
-    let done=0;
-    for(let i=0;i<7;i++){
-      const day=new Date(start);
-      day.setDate(start.getDate()+i);
-      if(state.days[todayKey(day)]?.routines?.morning?.completed)done++;
-    }
-    const goal=state.settings.weeklyGoalDays;
-    return {done,goal,percent:Math.min(100,Math.round(done/goal*100))};
-  };
-
   const getSettings=()=>state.settings;
   const updateSettings=patch=>{
     state.settings=normalizeSettings({...state.settings,...patch});
@@ -216,7 +199,7 @@
   },60000);
 
   window.DailyMotionState={
-    KEY,ROUTINE_KEYS,todayKey,EFFORT_LABELS,formatActiveTime,getWeeklyProgress,
+    KEY,ROUTINE_KEYS,todayKey,EFFORT_LABELS,formatActiveTime,
     getState:()=>state,
     getDay:ensureDay,
     getRoutine:ensureRoutine,

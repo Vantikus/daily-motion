@@ -122,10 +122,6 @@
   $('#activityEmpty').hidden=hasActivity;
   $('#activityCard').classList.toggle('is-empty',!hasActivity);
 
-  const {done:weeklyDone,goal:weeklyGoal,percent:weeklyPercent}=Store.getWeeklyProgress();
-  $('#homeWeeklyGoalText').textContent=`${weeklyDone} / ${weeklyGoal} дней`;
-  $('#homeWeeklyGoalBar').style.width=`${weeklyPercent}%`;
-
   const toast=message=>{
     const node=$('#toast');
     node.textContent=message;

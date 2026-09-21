@@ -75,37 +75,10 @@
     return Math.round(seconds/60);
   };
 
-  const renderGoal=()=>{
-    const {goal,done,percent}=Store.getWeeklyProgress();
-    $('#weeklyGoalText').textContent=`${done} / ${goal} дней`;
-    $('#weeklyGoalPercent').textContent=`${percent}%`;
-    $('#weeklyGoalBar').style.width=`${percent}%`;
-    $('#weeklyGoalHint').textContent=done>=goal
-      ?'Цель недели выполнена.'
-      :done===0
-        ?'Первый завершённый комплекс засчитает тренировочный день.'
-        :`До цели осталось ${goal-done} ${goal-done===1?'день':'дня'}.`;
-  };
-
   $('#currentStreak').textContent=String(currentStreak());
   $('#bestStreak').textContent=String(bestStreak());
   $('#completedSessions').textContent=String(completedSessionCount());
   $('#totalMinutes').textContent=String(totalMinutes());
-
-  const goalSelect=$('#goalSelect');
-  for(let value=1;value<=7;value++){
-    const option=document.createElement('option');
-    option.value=String(value);
-    option.textContent=`${value} ${value===1?'день':'дней'} / нед`;
-    goalSelect.appendChild(option);
-  }
-  goalSelect.value=String(Store.getSettings().weeklyGoalDays);
-  goalSelect.addEventListener('change',()=>{
-    Store.updateSettings({weeklyGoalDays:Number(goalSelect.value)});
-    renderGoal();
-    toast('Недельная цель обновлена');
-  });
-  renderGoal();
 
   const calendar=$('#historyCalendar');
   const weekdays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
