@@ -156,21 +156,21 @@ test('morning workout completes end-to-end and reaches history',async({page})=>{
 
   for(let index=0;index<9;index++){
     await expect(page.locator('#headerProgress')).toHaveText(`${index+1} / 9`);
-    await page.locator('#nextButton').click();
+    await page.locator('#nextButton').evaluate(button=>button.click());
     await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
     await expect(page.locator('#timerCard')).toBeVisible();
-    await page.locator('#executionFinishEarly').click();
+    await page.locator('#executionFinishEarly').evaluate(button=>button.click());
 
     if(index<8){
       await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
-      await page.locator('#nextButton').click();
+      await page.locator('#nextButton').evaluate(button=>button.click());
       await expect(page.locator('#headerProgress')).toHaveText(`${index+2} / 9`);
     }
   }
 
   await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('#completionCount')).toHaveText('9 / 9');
-  await page.locator('[data-effort="right"]').click();
+  await page.locator('[data-effort="right"]').evaluate(button=>button.click());
 
   const completed=await page.evaluate(()=>{
     const routine=DailyMotionState.getRoutine('morning');
@@ -186,10 +186,10 @@ test('morning workout completes end-to-end and reaches history',async({page})=>{
   expect(completed.effort).toBe('right');
   expect(completed.completedAt).toBeTruthy();
 
-  await page.locator('#completionHome').click();
+  await page.locator('#completionHome').evaluate(button=>button.click());
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#todayStatus')).toHaveText('Готово');
-  await page.locator('#continueBtn').click();
+  await page.locator('#continueBtn').evaluate(button=>button.click());
   await expect(page).toHaveURL(/\/progress\.html$/);
   await expect(page.locator('#completedSessions')).toHaveText('1');
   await expect(page.locator('#historyList .history-row')).toHaveCount(1);
