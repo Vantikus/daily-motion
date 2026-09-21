@@ -50,6 +50,11 @@
   $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
   $('#dayProgressValue').textContent=`${nextPercent}%`;
   $('#dayProgressBar').style.width=`${nextPercent}%`;
+  const dayProgressTrack=$('#dayProgressTrack');
+  if(dayProgressTrack){
+    dayProgressTrack.setAttribute('aria-valuenow',String(nextPercent));
+    dayProgressTrack.setAttribute('aria-valuetext',`${nextPercent}% (${nextDone} из ${next.total} упражнений)`);
+  }
   $('#todayCard').classList.toggle('is-complete',allDone);
 
   const list=$('#routineGrid');
