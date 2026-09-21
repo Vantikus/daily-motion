@@ -209,6 +209,27 @@ if(!styles.includes('/* Bottom sheets — GSAP owns transform and backdrop motio
 if(!styles.includes('.home-body .home-activity-summary')){
   fail('styles.css: activity streak summary styling is missing');
 }
+if(!styles.includes('--muted-strong:#535c54;')){
+  fail('styles.css: accessible microcopy color token is missing');
+}
+if(!styles.includes('outline:2px solid var(--accent);')||!styles.includes('box-shadow:0 0 0 4px rgba(47,107,85,.18);')){
+  fail('styles.css: high-contrast focus-visible contract is missing');
+}
+if(/outline:\s*3px solid rgba\(47,107,85,\.18\)/.test(styles)){
+  fail('styles.css: obsolete low-contrast focus ring remains');
+}
+const techniqueMarkup=html['session.html'];
+const techniqueHeadingCount=(techniqueMarkup.match(/<h3 class="detail-card__heading">/g)||[]).length;
+if(techniqueHeadingCount!==6)fail(`session.html: expected 6 semantic technique headings, found ${techniqueHeadingCount}`);
+for(const id of ['detail-how','detail-breathing','detail-feel','detail-mistakes','detail-easy','detail-progression']){
+  if(!techniqueMarkup.includes(`id="${id}-toggle"`))fail(`session.html: missing accordion toggle id for ${id}`);
+  if(!techniqueMarkup.includes(`id="${id}" role="region" aria-labelledby="${id}-toggle"`)){
+    fail(`session.html: missing labelled accordion region for ${id}`);
+  }
+}
+if(/<button[^>]*>[\s\S]*?<h[1-6]\b/i.test(techniqueMarkup)){
+  fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
+}
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
   fail('index.html: complexes must remain immediately visible, not inside a disclosure');
 }
