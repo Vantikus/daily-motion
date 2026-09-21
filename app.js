@@ -7,9 +7,9 @@
   };
   const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
   const routineIcons={
-    sunrise:`<i class="ph ph-sun-horizon" aria-hidden="true"></i>`,
-    sun:`<i class="ph ph-sun" aria-hidden="true"></i>`,
-    moon:`<i class="ph ph-moon" aria-hidden="true"></i>`
+    sunrise:`<i class="hi hi-sun" aria-hidden="true"></i>`,
+    sun:`<i class="hi hi-sun" aria-hidden="true"></i>`,
+    moon:`<i class="hi hi-moon" aria-hidden="true"></i>`
   };
   const today=Store.getDay();
   const state=Store.getState();
@@ -73,7 +73,7 @@
       button.innerHTML=`
         <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
         <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
-        <span class="routine-status">${status}<i class="ph ph-caret-right" aria-hidden="true"></i></span>
+        <span class="routine-status">${status}<i class="hi hi-chevron-right" aria-hidden="true"></i></span>
         <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
     }
     if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
