@@ -24,6 +24,7 @@ const styles=read('styles.css');
 const readme=read('README.md');
 const pwa=read('pwa.js');
 const heroicons=read('heroicons.css');
+const manifest=JSON.parse(read('manifest.webmanifest'));
 
 const releaseVersions=new Set();
 for(const [file,content] of Object.entries(html)){
@@ -39,6 +40,19 @@ const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
 if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
 releaseVersions.add(swVersions[0]);
 if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersions].join(', ')}`);
+
+const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
+for(const requiredSize of ['192x192','512x512']){
+  if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(requiredSize))){
+    fail(`manifest.webmanifest: missing ${requiredSize} install icon`);
+  }
+}
+for(const icon of manifestIcons){
+  const src=String(icon?.src||'');
+  if(!src.startsWith('/'))continue;
+  const relative=src.replace(/^\//,'');
+  if(!existsSync(join(root,relative)))fail(`manifest.webmanifest: missing icon file ${src}`);
+}
 
 const shellMatch=sw.match(/const APP_SHELL=\[(.*?)\];/s);
 if(!shellMatch)fail('sw.js: APP_SHELL not found');
