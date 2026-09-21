@@ -232,10 +232,7 @@ if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
 }
 
 const countExactCssRule=selector=>{
-  const escaped=selector.replace(/[.*+?^${}()|[\]\\]/g,'\\if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
-  fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
-}
-');
+  const escaped=selector.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   return (styles.match(new RegExp(`(^|\\n)\\s*${escaped}\\s*\\{`,'g'))||[]).length;
 };
 const cssRuleBudgets={
