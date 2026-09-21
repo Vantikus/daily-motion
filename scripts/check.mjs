@@ -115,7 +115,7 @@ const heroiconSources={
 };
 const usedHeroicons=new Set();
 for(const content of Object.values(heroiconSources)){
-  for(const match of content.matchAll(/\\bhi-([a-z0-9-]+)/g))usedHeroicons.add(match[1]);
+  for(const match of content.matchAll(/\bhi-([a-z0-9-]+)/g))usedHeroicons.add(match[1]);
 }
 for(const name of usedHeroicons){
   const token=`.hi-${name}{--hi-mask:url("/vendor/heroicons/${name}.svg")}`;
@@ -124,13 +124,13 @@ for(const name of usedHeroicons){
   if(!svg.includes('stroke-width="1.7"'))fail(`vendor/heroicons/${name}.svg: expected 1.7px stroke`);
 }
 for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
-  if(/class=["'][^"']*\\bph\\b/.test(content))fail(`${file}: Phosphor class remains after Heroicons migration`);
+  if(/class=["'][^"']*\bph\b/.test(content))fail(`${file}: Phosphor class remains after Heroicons migration`);
   if(/phosphor\.css/i.test(content))fail(`${file}: Phosphor stylesheet remains after Heroicons migration`);
 }
 for(const file of htmlFiles){
-  if(/<svg\\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
+  if(/<svg\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
 }
-if(/<svg\\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');
+if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');
 
 const retiredCssClasses=[
   "activity-card__actions",
