@@ -227,7 +227,7 @@ for(const id of ['detail-how','detail-breathing','detail-feel','detail-mistakes'
     fail(`session.html: missing labelled accordion region for ${id}`);
   }
 }
-if(/<button[^>]*>[\s\S]*?<h[1-6]\b/i.test(techniqueMarkup)){
+if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
   fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
 }
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
