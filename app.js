@@ -7,9 +7,9 @@
   };
   const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
   const routineIcons={
-    sunrise:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M5.6 5.6l2.1 2.1M18.4 5.6l-2.1 2.1M3 15h18M5 19h14"></path><path d="M7 15a5 5 0 0 1 10 0"></path></svg>`,
-    sun:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"></path></svg>`,
-    moon:`<svg class="qm-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"></path></svg>`
+    sunrise:`<i class="ph ph-sun-horizon" aria-hidden="true"></i>`,
+    sun:`<i class="ph ph-sun" aria-hidden="true"></i>`,
+    moon:`<i class="ph ph-moon" aria-hidden="true"></i>`
   };
   const today=Store.getDay();
   const state=Store.getState();
@@ -73,7 +73,7 @@
       button.innerHTML=`
         <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
         <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
-        <span class="routine-status">${status}<b aria-hidden="true">›</b></span>
+        <span class="routine-status">${status}<i class="ph ph-caret-right" aria-hidden="true"></i></span>
         <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
     }
     if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
