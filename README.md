@@ -53,7 +53,7 @@ PWA умеет работать офлайн после первого успе�
 
 - `npm run check` — синтаксис, DOM-якоря, PWA-версии и отсутствие удалённого кода целей
 - `npm run test:e2e` — smoke, полный workout flow, offline regression и motion-regression в Chromium/WebKit
-- CI фиксирует Node 22.16.0 и Playwright 1.55.0
+- CI фиксирует Node 22.16.0 и Playwright 1.63.0
 - production deploy остаётся статическим и не требует npm/build-step
 
 ## Важное ограничение
