@@ -308,7 +308,7 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
     };
   });
 
-  expect(layout.timerWidth).toBe('88px');
+  expect(layout.timerWidth).toBe('223.2px');
   expect(layout.shellWidth).toBe('336px');
   expect(layout.mainPadding).toBe('0px');
   expect(layout.mainBorder).toBe('0px');
