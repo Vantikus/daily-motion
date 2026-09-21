@@ -474,17 +474,6 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
   .session-nav{padding-inline:10px}
 }
 
-@media(min-width:900px){
-
-
-}
-
-@media(min-width:1000px){
-
-
-}
-
-
 /* iPhone safe-area and compact timer fix */
 html,body{background:var(--bg)}
 .ios-safe-zone-bar{
@@ -533,19 +522,6 @@ html,body{background:var(--bg)}
   animation:none;
   box-shadow:0 0 0 5px rgba(47,107,85,.07);
 }
-
-@media(max-width:520px){
-
-
-}
-@media(max-width:370px){
-
-
-}
-@media(min-width:1000px){
-
-}
-
 
 /* structural iOS safe-area; no overlay over content */
 .ios-safe-zone-bar{
