@@ -23,7 +23,7 @@ const sw=read('sw.js');
 const styles=read('styles.css');
 const readme=read('README.md');
 const pwa=read('pwa.js');
-const phosphor=read('phosphor.css');
+const heroicons=read('heroicons.css');
 
 const releaseVersions=new Set();
 for(const [file,content] of Object.entries(html)){
@@ -107,13 +107,21 @@ for(const [file,content] of Object.entries(html)){
 }
 
 
-for(const token of ['.ph.ph-sun-horizon:before','.ph.ph-sliders-horizontal:before','.ph.ph-check-circle:before']){
-  if(!phosphor.includes(token))fail(`phosphor.css: Phosphor icon system is missing ${token}`);
+const heroiconNames=["adjustments-horizontal","queue-list","chart-bar","x-mark","speaker-wave","arrow-right","clock","pause-circle","sun","moon","chevron-left","chevron-right","ellipsis-horizontal","arrows-up-down","key","list-bullet","signal","hand-raised","exclamation-triangle","cloud","arrow-trending-up","plus","arrow-path","check-circle","fire","trophy","calendar-days","circle-stack","arrow-down-tray","arrow-up-tray"];
+for(const name of heroiconNames){
+  const token=`.hi-${name}{--hi-mask:url("/vendor/heroicons/${name}.svg")}`;
+  if(!heroicons.includes(token))fail(`heroicons.css: Heroicon mapping missing ${name}`);
+  const svg=read(`vendor/heroicons/${name}.svg`);
+  if(!svg.includes('stroke-width="2"'))fail(`vendor/heroicons/${name}.svg: expected 2px stroke`);
+}
+for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
+  if(/class=["'][^"']*\\bph\\b/.test(content))fail(`${file}: Phosphor class remains after Heroicons migration`);
+  if(/phosphor\.css/i.test(content))fail(`${file}: Phosphor stylesheet remains after Heroicons migration`);
 }
 for(const file of htmlFiles){
-  if(/<svg\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Phosphor migration`);
+  if(/<svg\\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
 }
-if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Phosphor migration');
+if(/<svg\\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');
 
 const retiredCssClasses=[
   "activity-card__actions",
