@@ -752,7 +752,7 @@ html,body{background:var(--bg)}
 }
 
 .timer-ring{--timer-progress:0;width:96px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;margin:0;background:conic-gradient(var(--accent) calc(var(--timer-progress)*1%),rgba(47,107,85,.1) 0);transition:transform var(--base) var(--ease),box-shadow var(--base) ease}
-.timer-ring__inner strong{font-size:1.5625rem;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.timer-ring__inner strong{font-size:1.5625rem;letter-spacing:-.045em;font-variant-numeric:tabular-nums;transition:color 420ms ease}
 
 
 .detail-card__inner p,
@@ -3165,7 +3165,6 @@ a[href] *,
   opacity:0;
   transition:opacity 420ms ease;
 }
-.timer-ring__inner strong{transition:color 420ms ease}
 .timer-ring.is-final-three::before{opacity:1}
 .timer-ring.is-final-three{
   box-shadow:0 0 0 7px rgba(181,109,72,.10);
