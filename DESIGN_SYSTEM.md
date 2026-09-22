@@ -200,7 +200,7 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Workout: content remains mostly flat; the technique key is the accent-soft anchor, technique rows are one grouped surface, and the bottom navigation is a clearly separated raised surface.
 - Progress: metrics are soft surfaces; calendar/history/data are raised content cards with the same border/elevation language as Home.
 - Settings: Home and Workout sheets share the same raised surface, divider and control background language.
-- Settings controls: short choice lists use compact pull-down controls with centered values; trailing controls align to the same edge. The drag handle keeps a 44px hit target while its visual spacing stays compact, and bottom padding uses the safe area itself rather than adding a second large inset.
+- Settings controls: short choice lists use compact pull-down controls with a leading-aligned value and fixed trailing chevron so label and icon read as one balanced unit; trailing controls align to the same edge. The drag handle keeps a 44px hit target while its visual spacing stays compact, and bottom padding uses the safe area itself rather than adding a second large inset.
 - Execution and Completion retain their approved layout; only secondary surfaces and accent treatments are normalized.
 
 ### R3 rules
@@ -209,3 +209,5 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Do not introduce gradients inside cards. The only page-level ambient gradient remains the existing Home canvas treatment.
 - Hover/pressed states should change surface/border first and movement second.
 - Visual polish must not change R0–R2 geometry, touch targets, text scaling, safe-area behavior or bottom-sheet physics.
+
+- Press feedback must follow the control's rounded hit surface; text navigation that gains a filled press state needs an explicit rounded interaction shape.
