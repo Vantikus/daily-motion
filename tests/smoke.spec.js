@@ -575,6 +575,8 @@ test('settings reset uses a rounded destructive press state and releases cleanly
   const resetBox=await reset.boundingBox();
   await page.mouse.move(resetBox.x+resetBox.width/2,resetBox.y+resetBox.height/2);
   await page.mouse.down();
+  await expect(reset).toHaveClass(/is-pressing/);
+  await expect.poll(()=>reset.evaluate(button=>getComputedStyle(button).backgroundColor)).toBe('rgba(138, 74, 71, 0.075)');
 
   const pressed=await reset.evaluate(button=>{
     const style=getComputedStyle(button);
