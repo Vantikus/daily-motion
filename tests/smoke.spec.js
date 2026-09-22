@@ -218,6 +218,70 @@ test('morning workout completes end-to-end and reaches history',async({page})=>{
   await expect(page.locator('#historyList .history-row')).toHaveCount(1);
 });
 
+test('completion celebration reports a real streak without changing workout state',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','completion celebration contract is verified once in Chromium');
+  await page.addInitScript(()=>{
+    const key=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const now=new Date();
+    const yesterday=new Date(now);
+    yesterday.setDate(yesterday.getDate()-1);
+    const blank=()=>({step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,effort:null,timers:{}});
+    const previous=blank();
+    previous.completed=true;
+    previous.completedUntil=9;
+    previous.completedAt=new Date(yesterday).toISOString();
+    const current=blank();
+    current.step=8;
+    current.completedUntil=9;
+    current.activeSeconds=600;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{
+        [key(yesterday)]:{routines:{morning:previous}},
+        [key(now)]:{routines:{morning:current}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('.completion-burst i')).toHaveCount(8);
+  await expect(page.locator('.completion-check .hi-check-circle')).toBeVisible();
+  await expect(page.locator('#completionHighlight')).toHaveText('Новая лучшая серия — 2 дня');
+
+  const routine=await page.evaluate(()=>DailyMotionState.getRoutine('morning'));
+  expect(routine.completed).toBe(true);
+  expect(routine.completedUntil).toBe(9);
+});
+
+test('timer crossfades to warm feedback only in the final three seconds',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','final-three timer feedback is verified once in Chromium');
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{
+        [key]:{routines:{morning:{
+          step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,effort:null,
+          timers:{'cat-cow':{duration:40,remaining:3,running:false,paused:true,endAt:null,runStartedAt:null}}
+        }}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#timerRing')).toHaveClass(/is-final-three/);
+  await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node,'::before').opacity)).toBe('1');
+});
+
 test('cached app shell opens progress offline',async({page,context,browserName})=>{
   test.skip(browserName!=='chromium','offline service-worker regression is covered in Chromium');
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
