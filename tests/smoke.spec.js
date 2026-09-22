@@ -565,38 +565,55 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
-test('settings reset uses inline confirmation and a straight divider',async({page,browserName})=>{
-  test.skip(browserName!=='chromium','reset interaction is verified once in Chromium');
+test('settings reset morphs smoothly without layout shift or native dialog',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','reset morph is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
   let dialogs=0;
   page.on('dialog',async dialog=>{dialogs+=1;await dialog.dismiss();});
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
 
-  const geometry=await page.locator('.settings-reset-block').evaluate(block=>{
-    const blockStyle=getComputedStyle(block);
+  const block=page.locator('#resetTodayBlock');
+  const before=await block.boundingBox();
+  const geometry=await block.evaluate(node=>{
+    const blockStyle=getComputedStyle(node);
     const buttonStyle=getComputedStyle(document.querySelector('#resetTodayBtn'));
+    const confirmStyle=getComputedStyle(document.querySelector('#resetTodayConfirm'));
     return {
       divider:blockStyle.borderTopStyle,
       dividerRadius:blockStyle.borderTopLeftRadius,
       buttonBorderTop:buttonStyle.borderTopColor,
-      buttonRadius:buttonStyle.borderTopLeftRadius
+      buttonRadius:buttonStyle.borderTopLeftRadius,
+      transition:confirmStyle.transitionProperty,
+      duration:confirmStyle.transitionDuration
     };
   });
   expect(geometry.divider).toBe('solid');
   expect(geometry.dividerRadius).toBe('0px');
   expect(geometry.buttonBorderTop).toBe('rgba(0, 0, 0, 0)');
   expect(geometry.buttonRadius).toBe('14px');
+  expect(geometry.transition).toContain('opacity');
+  expect(geometry.transition).toContain('transform');
+  expect(geometry.duration).not.toBe('0s');
+
+  await expect(page.locator('#resetTodayConfirm strong')).toHaveText('Точно сбросить?');
+  await expect(page.locator('#resetTodayConfirm span')).toHaveText('Только за сегодня');
 
   await page.locator('#resetTodayBtn').click();
-  await expect(page.locator('#resetTodayConfirm')).toBeVisible();
-  await expect(page.locator('#resetTodayBtn')).toBeHidden();
+  await expect(block).toHaveClass(/is-confirming/);
+  await expect(page.locator('#resetTodayConfirm')).toHaveAttribute('aria-hidden','false');
   expect(dialogs).toBe(0);
   await expect(page.locator('#resetConfirmBtn')).toBeFocused();
 
+  const after=await block.boundingBox();
+  expect(Math.abs(after.height-before.height)).toBeLessThanOrEqual(1);
+
   await page.locator('#resetCancelBtn').click();
-  await expect(page.locator('#resetTodayConfirm')).toBeHidden();
-  await expect(page.locator('#resetTodayBtn')).toBeVisible();
+  await expect(block).not.toHaveClass(/is-confirming/);
+  await expect(page.locator('#resetTodayConfirm')).toHaveAttribute('aria-hidden','true');
+
+  const restored=await block.boundingBox();
+  expect(Math.abs(restored.height-before.height)).toBeLessThanOrEqual(1);
 });
 
 test('settings sheet uses intrinsic selectors and progress actions keep rounded feedback',async({page,browserName})=>{
