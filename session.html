@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=114"></script>
+  <script src="theme.js?v=115"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=114" />
-  <link rel="stylesheet" href="styles.css?v=114" />
+  <link rel="stylesheet" href="heroicons.css?v=115" />
+  <link rel="stylesheet" href="styles.css?v=115" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -262,10 +262,11 @@
 
   <div class="completion-overlay" id="completionOverlay" aria-hidden="true">
     <div class="completion-card" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
-      <div class="completion-check" aria-hidden="true"><i class="hi hi-check-circle"></i></div>
+      <div class="completion-check" aria-hidden="true"><span class="completion-burst"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><i class="hi hi-check-circle"></i></div>
       <span class="eyebrow">Комплекс завершён</span>
       <h2 id="completionTitle" tabindex="-1">Утро готово</h2>
       <p id="completionMeta">9 упражнений завершено</p>
+      <p class="completion-highlight" id="completionHighlight" hidden></p>
       <dl class="completion-stats">
         <div><dt>В движении</dt><dd id="completionDuration">0 сек</dd></div>
         <div><dt>Упражнений</dt><dd id="completionCount">9 / 9</dd></div>
@@ -284,11 +285,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=114"></script>
-  <script src="state.js?v=114"></script>
-  <script src="audio.js?v=114"></script>
-  <script src="gsap.min.js?v=114"></script>
-  <script src="pwa.js?v=114"></script>
-  <script src="session.js?v=114"></script>
+  <script src="program.js?v=115"></script>
+  <script src="state.js?v=115"></script>
+  <script src="audio.js?v=115"></script>
+  <script src="gsap.min.js?v=115"></script>
+  <script src="pwa.js?v=115"></script>
+  <script src="session.js?v=115"></script>
 </body>
 </html>
