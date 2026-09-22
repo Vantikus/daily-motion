@@ -3481,7 +3481,7 @@ a[href] *,
 }
 .data-actions button{
   overflow:hidden;
-  border-radius:13px;
+  border-radius:var(--radius-control);
 }
 .data-actions button.is-pressing{
   background:var(--accent-soft);
