@@ -1,9 +1,9 @@
 (function HomeApp(){
   const Store=window.DailyMotionState;
   const ROUTINES={
-    morning:{name:'Утро',title:'Вечерняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
+    morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
-    evening:{name:'Вечер',title:'Вечерняя разминка',icon:'moon',available:false}
+    evening:{name:'Вечер',title:'Утренняя разминка',icon:'moon',available:false}
   };
   const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
   const routineIcons={
@@ -36,7 +36,7 @@
 
   $('#todayLabel').textContent=formatDate();
   $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
-  $('#heroTitle').textContent=allDone?'Вечерняя разминка завершена':next.title;
+  $('#heroTitle').textContent=allDone?'Утренняя разминка завершена':next.title;
   const resumeIndex=Math.min(next.total-1,Math.max(nextState.step||0,nextState.completedUntil||0));
   const resumeExercise=window.DailyMotionProgram[nextKey]?.[resumeIndex];
   $('#heroText').textContent=allDone
