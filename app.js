@@ -126,6 +126,7 @@
   const installAppBtn=$('#installAppBtn');
   const iosInstallGuide=$('#iosInstallGuide');
   const iosInstallGuideClose=$('#iosInstallGuideClose');
+  const resetTodayBlock=$('#resetTodayBlock');
   const resetTodayBtn=$('#resetTodayBtn');
   const resetTodayConfirm=$('#resetTodayConfirm');
   const resetCancelBtn=$('#resetCancelBtn');
@@ -144,7 +145,7 @@
     $('#themeSetting').value=settings.theme;
   };
 
-  const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
+  const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null&&!node.closest('[inert]')&&getComputedStyle(node).visibility!=='hidden');
   const hideInstallGuide=(restoreFocus=false)=>{
     if(!iosInstallGuide)return;
     iosInstallGuide.hidden=true;
@@ -158,23 +159,46 @@
   };
 
   let resetRevealTimer=null;
-  const hideResetConfirm=(restoreFocus=false)=>{
+  let resetFocusTimer=null;
+  const clearResetTimers=()=>{
     if(resetRevealTimer!==null){
       clearTimeout(resetRevealTimer);
       resetRevealTimer=null;
     }
-    resetTodayConfirm.hidden=true;
-    resetTodayBtn.hidden=false;
-    if(restoreFocus)requestAnimationFrame(()=>resetTodayBtn.focus({preventScroll:true}));
+    if(resetFocusTimer!==null){
+      clearTimeout(resetFocusTimer);
+      resetFocusTimer=null;
+    }
+  };
+  const hideResetConfirm=(restoreFocus=false)=>{
+    clearResetTimers();
+    resetTodayBlock.classList.remove('is-confirming');
+    resetTodayConfirm.setAttribute('aria-hidden','true');
+    resetTodayConfirm.inert=true;
+    resetTodayBtn.removeAttribute('aria-hidden');
+    resetTodayBtn.inert=false;
+    if(restoreFocus){
+      resetFocusTimer=setTimeout(()=>{
+        resetFocusTimer=null;
+        resetTodayBtn.focus({preventScroll:true});
+      },220);
+    }
   };
   const showResetConfirm=()=>{
-    if(resetRevealTimer!==null)clearTimeout(resetRevealTimer);
+    if(resetTodayBlock.classList.contains('is-confirming')||resetRevealTimer!==null)return;
+    clearResetTimers();
     resetRevealTimer=setTimeout(()=>{
       resetRevealTimer=null;
-      resetTodayBtn.hidden=true;
-      resetTodayConfirm.hidden=false;
-      requestAnimationFrame(()=>resetConfirmBtn.focus({preventScroll:true}));
-    },150);
+      resetTodayBlock.classList.add('is-confirming');
+      resetTodayBtn.setAttribute('aria-hidden','true');
+      resetTodayBtn.inert=true;
+      resetTodayConfirm.setAttribute('aria-hidden','false');
+      resetTodayConfirm.inert=false;
+      resetFocusTimer=setTimeout(()=>{
+        resetFocusTimer=null;
+        resetConfirmBtn.focus({preventScroll:true});
+      },240);
+    },140);
   };
 
   const finishSettingsClose=()=>{
