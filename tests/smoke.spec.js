@@ -590,3 +590,38 @@ test('R2 compact and large iPhone viewports keep essential UI reachable',async({
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
   }
 });
+
+
+test('R3 visual hierarchy stays coherent across pages',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','R3 visual hierarchy is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const home=await page.evaluate(()=>({
+    heroShadow:getComputedStyle(document.querySelector('.home-body .today-card')).boxShadow,
+    routinesShadow:getComputedStyle(document.querySelector('.home-body .routine-list')).boxShadow,
+    activityShadow:getComputedStyle(document.querySelector('.home-body .activity-card')).boxShadow
+  }));
+  expect(home.heroShadow).not.toBe('none');
+  expect(home.routinesShadow).not.toBe('none');
+  expect(home.activityShadow).not.toBe('none');
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#pageLoader')).toHaveClass(/is-hidden/);
+  const workout=await page.evaluate(()=>({
+    navBg:getComputedStyle(document.querySelector('.session-nav')).backgroundColor,
+    keyBg:getComputedStyle(document.querySelector('.technique-key')).backgroundColor,
+    groupShadow:getComputedStyle(document.querySelector('.details-stack')).boxShadow
+  }));
+  expect(workout.navBg).toBe('rgb(255, 255, 255)');
+  expect(workout.keyBg).toBe('rgb(231, 240, 234)');
+  expect(workout.groupShadow).not.toBe('none');
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  const progress=await page.evaluate(()=>({
+    cardShadow:getComputedStyle(document.querySelector('.progress-card')).boxShadow,
+    metricBg:getComputedStyle(document.querySelector('.progress-metrics article')).backgroundColor
+  }));
+  expect(progress.cardShadow).not.toBe('none');
+  expect(progress.metricBg).toBe('rgb(248, 250, 247)');
+});
