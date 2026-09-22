@@ -226,7 +226,7 @@
       resetFocusTimer=setTimeout(()=>{
         resetFocusTimer=null;
         focusTarget.focus({preventScroll:true});
-      },250);
+      },300);
     }
   };
   const hideResetConfirm=(restoreFocus=false,delay=0)=>{
@@ -247,7 +247,7 @@
     resetStateTimer=setTimeout(()=>{
       resetStateTimer=null;
       applyResetConfirmState(true,resetConfirmBtn);
-    },110);
+    },70);
   };
 
   const finishSettingsClose=()=>{
@@ -323,7 +323,7 @@
   document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
-      if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,80);return;}
+      if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,70);return;}
       closeSettings();
       return;
     }
@@ -376,7 +376,7 @@
   document.documentElement.classList.add('app-ready');
 
   resetTodayBtn.onclick=showResetConfirm;
-  resetCancelBtn.onclick=()=>hideResetConfirm(true,80);
+  resetCancelBtn.onclick=()=>hideResetConfirm(true,70);
   resetConfirmBtn.onclick=()=>{
     if(resetInFlight)return;
     resetInFlight=true;
