@@ -1289,11 +1289,13 @@ html,body{background:var(--bg)}
   height:18px;
 }
 .progress-title-row{
+  min-width:0;
   display:flex;
   align-items:center;
   gap:9px;
   margin-top:4px;
 }
+.progress-title-row h3{min-width:0}
 .progress-title-row h3{
   margin:0!important;
 }
@@ -2185,6 +2187,7 @@ a[href] *,
 }
 .progress-card__head{
   align-items:center;
+  flex-wrap:wrap;
   margin-bottom:14px;
 }
 .progress-card__head h3{
