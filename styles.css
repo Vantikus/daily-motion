@@ -3457,3 +3457,42 @@ a[href] *,
     0 0 0 2px var(--surface-raised),
     0 0 0 4px var(--focus-color);
 }
+
+
+/* Rounded interaction surfaces for progress navigation */
+.home-body .activity-card__head .text-link{
+  min-width:72px;
+  padding:0 12px;
+  margin-right:-12px;
+  justify-content:center;
+  border-radius:12px;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-press-in) var(--motion-ease-press-in);
+}
+.home-body .activity-card__head .text-link.is-pressing{
+  background:var(--accent-soft);
+  transform:scale(.97);
+}
+.home-body .activity-card__head .text-link:focus-visible{
+  outline-offset:1px;
+  border-radius:12px;
+}
+.data-actions button{
+  overflow:hidden;
+  border-radius:13px;
+}
+.data-actions button.is-pressing{
+  background:var(--accent-soft);
+  border-color:rgba(47,107,85,.18);
+}
+@media (hover:hover) and (pointer:fine){
+  .home-body .activity-card__head .text-link:hover{
+    background:var(--accent-wash);
+  }
+  .data-actions button:hover{
+    background:var(--accent-wash);
+    border-color:rgba(47,107,85,.14);
+  }
+}
