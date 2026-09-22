@@ -674,7 +674,7 @@ test('progress entry and data actions keep rounded press surfaces',async({page,b
     const style=getComputedStyle(el);
     return {radius:style.borderRadius,overflow:style.overflow,background:style.backgroundColor};
   });
-  expect(exportPress.radius).toBe('13px');
+  expect(exportPress.radius).toBe('14px');
   expect(exportPress.overflow).toBe('hidden');
   expect(exportPress.background).not.toBe('rgba(0, 0, 0, 0)');
 });
