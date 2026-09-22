@@ -565,6 +565,42 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
+test('settings reset uses a rounded destructive press state and releases cleanly',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','destructive reset feedback is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+
+  const reset=page.locator('#resetTodayBtn');
+  await reset.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+
+  const pressed=await reset.evaluate(button=>{
+    const style=getComputedStyle(button);
+    return {
+      radius:style.borderTopLeftRadius,
+      overflow:style.overflow,
+      background:style.backgroundColor,
+      color:style.color,
+      transform:style.transform
+    };
+  });
+  expect(pressed.radius).toBe('14px');
+  expect(pressed.overflow).toBe('hidden');
+  expect(pressed.transform).toBe('none');
+  expect(pressed.background).toBe('rgba(138, 74, 71, 0.075)');
+  expect(pressed.color).toBe('rgb(138, 74, 71)');
+
+  await reset.dispatchEvent('pointerup',{pointerType:'touch',button:0});
+  await expect.poll(()=>reset.evaluate(button=>button.classList.contains('is-pressing'))).toBe(false);
+
+  const released=await reset.evaluate(button=>({
+    background:getComputedStyle(button).backgroundColor,
+    radius:getComputedStyle(button).borderTopLeftRadius
+  }));
+  expect(released.radius).toBe('14px');
+  expect(released.background).toBe('rgba(0, 0, 0, 0)');
+});
+
 test('settings sheet uses intrinsic selectors and progress actions keep rounded feedback',async({page,browserName})=>{
   test.skip(browserName!=='chromium','settings and progress control geometry are verified once in Chromium');
 
