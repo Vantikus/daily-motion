@@ -3390,7 +3390,7 @@ a[href] *,
   height:100%;
   min-height:var(--component-hit);
   margin:0;
-  padding:0 24px;
+  padding:0 36px 0 14px;
   border:1px solid var(--component-border);
   border-radius:12px;
   background:var(--component-surface-muted);
@@ -3398,13 +3398,13 @@ a[href] *,
   font-size:var(--font-size-sm);
   font-weight:750;
   line-height:1;
-  text-align:center;
-  text-align-last:center;
+  text-align:left;
+  text-align-last:left;
   cursor:pointer;
 }
 .settings-select-control__chevron{
   position:absolute;
-  right:10px;
+  right:14px;
   top:50%;
   width:16px;
   height:16px;
@@ -3422,7 +3422,37 @@ a[href] *,
     min-width:108px;
   }
   .settings-select-control select{
-    padding-inline:20px;
+    padding:0 32px 0 12px;
     font-size:var(--font-size-xs);
+  }
+  .settings-select-control__chevron{
+    right:12px;
+  }
+}
+
+
+/* Rounded interaction surface for Home → Progress navigation */
+.home-body .activity-card__head .text-link{
+  min-width:72px;
+  padding:0 12px;
+  margin-right:-12px;
+  justify-content:center;
+  border-radius:12px;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-press-in) var(--motion-ease-press-in);
+}
+.home-body .activity-card__head .text-link.is-pressing{
+  background:var(--accent-soft);
+  transform:scale(.97);
+}
+.home-body .activity-card__head .text-link:focus-visible{
+  outline-offset:1px;
+  border-radius:12px;
+}
+@media (hover:hover) and (pointer:fine){
+  .home-body .activity-card__head .text-link:hover{
+    background:var(--accent-wash);
   }
 }
