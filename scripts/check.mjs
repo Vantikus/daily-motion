@@ -260,6 +260,23 @@ for(const [selector,maxCount] of Object.entries(cssRuleBudgets)){
   if(count>maxCount)fail(`styles.css: selector ${selector} regressed to ${count} cascade layers (max ${maxCount})`);
 }
 if(/@media[^{]+\{\s*\}/.test(styles))fail('styles.css: empty media query remains after consolidation');
+
+const typographyMarker='/* Heroicons Outline — primary UI icon system · 1.7px stroke */';
+const typographyMarkerIndex=styles.indexOf(typographyMarker);
+if(typographyMarkerIndex<0)fail('styles.css: Heroicons boundary marker is missing');
+const textStyles=styles.slice(0,typographyMarkerIndex);
+for(const [token,value] of Object.entries({
+  '--font-size-xs':'.75rem',
+  '--font-size-sm':'.8125rem',
+  '--font-size-md':'.875rem',
+  '--font-size-body':'.9375rem',
+  '--font-size-base':'1rem'
+})){
+  if(!textStyles.includes(`${token}:${value};`))fail(`styles.css: typography token ${token} must remain ${value}`);
+}
+if(!textStyles.includes('font-size:var(--font-size-base);'))fail('styles.css: body typography base token is not wired');
+if(/font-size\s*:\s*[0-9.]+px/.test(textStyles))fail('styles.css: user-facing text layer contains fixed px font-size');
+if(/font-size\s*:\s*(?:10|11|11\.5|12\.5)px/.test(styles))fail('styles.css: legacy micro-font px size returned');
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
   fail('index.html: complexes must remain immediately visible, not inside a disclosure');
 }
