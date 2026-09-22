@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=120"></script>
+  <script src="theme.js?v=121"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Daily Motion — ежедневная разминка за 10 минут" />
   <meta name="twitter:description" content="Daily Motion — ежедневная 10-минутная разминка всего тела с таймером, техникой выполнения, прогрессом и офлайн-режимом." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=120" />
-  <link rel="stylesheet" href="styles.css?v=120" />
+  <link rel="stylesheet" href="heroicons.css?v=121" />
+  <link rel="stylesheet" href="styles.css?v=121" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -168,12 +168,12 @@
         </ol>
         <button class="ios-install-guide__done" id="iosInstallGuideClose" type="button">Понятно</button>
       </div>
-      <div class="settings-reset-block">
+      <div class="settings-reset-block" id="resetTodayBlock">
         <button class="settings-reset" id="resetTodayBtn" type="button">Сбросить сегодняшний прогресс</button>
-        <div class="settings-reset-confirm" id="resetTodayConfirm" hidden role="group" aria-label="Подтверждение сброса">
+        <div class="settings-reset-confirm" id="resetTodayConfirm" role="group" aria-label="Подтверждение сброса" aria-hidden="true" inert>
           <div class="settings-reset-confirm__copy">
-            <strong>Сбросить прогресс?</strong>
-            <span>Прогресс и таймеры только за сегодня</span>
+            <strong>Точно сбросить?</strong>
+            <span>Только за сегодня</span>
           </div>
           <div class="settings-reset-confirm__actions">
             <button class="settings-reset-cancel" id="resetCancelBtn" type="button">Отмена</button>
@@ -185,11 +185,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=120"></script>
-  <script src="state.js?v=120"></script>
-  <script src="audio.js?v=120"></script>
-  <script src="gsap.min.js?v=120"></script>
-  <script src="pwa.js?v=120"></script>
-  <script src="app.js?v=120"></script>
+  <script src="program.js?v=121"></script>
+  <script src="state.js?v=121"></script>
+  <script src="audio.js?v=121"></script>
+  <script src="gsap.min.js?v=121"></script>
+  <script src="pwa.js?v=121"></script>
+  <script src="app.js?v=121"></script>
 </body>
 </html>
