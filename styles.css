@@ -3362,3 +3362,67 @@ a[href] *,
   }
   .timer-ring.is-final-three{animation:none!important}
 }
+
+
+/* Settings sheet rhythm and balanced compact selectors */
+.settings-sheet,
+.routine-settings-sheet{
+  padding-bottom:max(var(--space-3),env(safe-area-inset-bottom,0px));
+}
+.settings-sheet>.settings-sheet__handle,
+.routine-settings-sheet>.routine-settings-sheet__handle{
+  margin-bottom:-10px;
+}
+.settings-select-control{
+  position:relative;
+  width:116px;
+  min-width:116px;
+  height:var(--component-hit);
+  display:grid;
+  align-items:center;
+  justify-self:end;
+}
+.settings-select-control select{
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  min-width:0;
+  height:100%;
+  min-height:var(--component-hit);
+  margin:0;
+  padding:0 24px;
+  border:1px solid var(--component-border);
+  border-radius:12px;
+  background:var(--component-surface-muted);
+  color:var(--text);
+  font-size:var(--font-size-sm);
+  font-weight:750;
+  line-height:1;
+  text-align:center;
+  text-align-last:center;
+  cursor:pointer;
+}
+.settings-select-control__chevron{
+  position:absolute;
+  right:10px;
+  top:50%;
+  width:16px;
+  height:16px;
+  color:var(--muted);
+  pointer-events:none;
+  transform:translateY(-50%) rotate(90deg);
+}
+.settings-sheet .setting-row>.switch-input,
+.routine-settings-sheet .routine-setting-row>.switch-input{
+  justify-self:end;
+}
+@media(max-width:340px){
+  .settings-select-control{
+    width:108px;
+    min-width:108px;
+  }
+  .settings-select-control select{
+    padding-inline:20px;
+    font-size:var(--font-size-xs);
+  }
+}
