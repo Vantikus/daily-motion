@@ -282,6 +282,47 @@ test('timer crossfades to warm feedback only in the final three seconds',async({
   await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node,'::before').opacity)).toBe('1');
 });
 
+test('completion motion is choreographed and respects reduced motion',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','completion motion choreography is verified once in Chromium');
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{
+        [key]:{routines:{morning:{
+          step:8,completedUntil:9,completed:false,startedAt:null,completedAt:null,activeSeconds:600,effort:null,timers:{}
+        }}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
+
+  const motion=await page.evaluate(()=>({
+    check:getComputedStyle(document.querySelector('.completion-check')).animationName,
+    icon:getComputedStyle(document.querySelector('.completion-check>.hi')).animationName,
+    title:getComputedStyle(document.querySelector('.completion-card>h2')).animationName,
+    stats:getComputedStyle(document.querySelector('.completion-stats')).animationName
+  }));
+  expect(motion.check).toContain('completionCheckSettle');
+  expect(motion.icon).toContain('completionIconSweep');
+  expect(motion.title).toContain('completionContentIn');
+  expect(motion.stats).toContain('completionContentIn');
+
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const reduced=await page.evaluate(()=>({
+    burst:getComputedStyle(document.querySelector('.completion-burst i')).display,
+    check:getComputedStyle(document.querySelector('.completion-check')).animationName
+  }));
+  expect(reduced.burst).toBe('none');
+  expect(reduced.check).toBe('none');
+});
+
 test('cached app shell opens progress offline',async({page,context,browserName})=>{
   test.skip(browserName!=='chromium','offline service-worker regression is covered in Chromium');
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
