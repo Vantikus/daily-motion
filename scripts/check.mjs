@@ -9,7 +9,7 @@ const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
   'app.js','audio.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js',
-  'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js'
+  'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
 for(const file of syntaxFiles){
@@ -28,6 +28,7 @@ const heroicons=read('heroicons.css');
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const packageJson=JSON.parse(read('package.json'));
 const ci=read('.github/workflows/ci.yml');
+const visualSpec=read('tests/visual.spec.js');
 
 if(packageJson.devDependencies?.['@playwright/test']!=='1.63.0'){
   fail('package.json: Playwright must be pinned exactly to 1.63.0');
@@ -123,6 +124,58 @@ if(!styles.includes('.details-stack{display:grid;grid-template-columns:1fr!impor
 }
 if(!designSystem.includes('## R1 — layout and spacing normalization')){
   fail('DESIGN_SYSTEM.md: R1 layout contract is missing');
+}
+
+
+for(const token of [
+  '--component-hit:var(--control-touch);',
+  '--component-secondary-h:var(--control-secondary);',
+  '--component-primary-h:var(--control-primary);',
+  '--component-row-h:var(--settings-row-h);',
+  '--switch-off:#7f8981;',
+  '--focus-color:var(--accent);',
+  '--motion-press-in:120ms;',
+  '--motion-fast:140ms;',
+  '--motion-base:220ms;',
+  '--motion-content:220ms;',
+  '--motion-stage:280ms;',
+  '--motion-sheet-close:300ms;',
+  '--motion-slow:320ms;',
+  '--motion-sheet-open:380ms;'
+]){
+  if(!styles.includes(token))fail(`styles.css: R2 component/motion token drifted: ${token}`);
+}
+if(!styles.includes('.settings-sheet__handle,.routine-settings-sheet__handle{width:96px;min-height:var(--component-hit)}')){
+  fail('styles.css: sheet drag target must remain 44px through the R2 component token');
+}
+if(!styles.includes('background:var(--switch-off)')){
+  fail('styles.css: switch off-state contrast token is not wired');
+}
+for(const fragment of [
+  'openDuration:.38',
+  'closeDuration:.30',
+  'dismissRatio:.28',
+  'dismissMin:110',
+  'dismissMax:190',
+  'flingMinY:52',
+  'flingVelocity:700',
+  'flingProjection:.12'
+]){
+  if(!pwa.includes(fragment))fail(`pwa.js: bottom-sheet motion constant changed or disappeared: ${fragment}`);
+}
+if(!pwa.includes('window.DailyMotionMotion={createBottomSheet,sheetMotion:SHEET_MOTION};')){
+  fail('pwa.js: named bottom-sheet motion contract is not exposed');
+}
+if(!visualSpec.includes("toHaveScreenshot('home-390x844.png'")||
+   !visualSpec.includes("toHaveScreenshot('workout-390x844.png'")||
+   !visualSpec.includes("toHaveScreenshot('progress-390x844.png'")){
+  fail('tests/visual.spec.js: R2 visual baselines are incomplete');
+}
+if(!ci.includes('actions/upload-artifact@v4')){
+  fail('ci.yml: browser regression artifacts must be uploaded on failure');
+}
+if(!designSystem.includes('## R2 — component contracts and regression hardening')){
+  fail('DESIGN_SYSTEM.md: R2 component hardening contract is missing');
 }
 
 const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
