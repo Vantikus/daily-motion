@@ -3144,3 +3144,11 @@ a[href] *,
   .home-body .activity-section{grid-area:activity;grid-column:auto;grid-row:auto;align-self:start;}
   .home-body .safety-note{grid-area:safety;grid-column:auto;}
 }
+
+/* Progress cards: consistent vertical rhythm between label, title, body and actions */
+.progress-card__head>div{display:grid;gap:7px;}
+.progress-title-row{margin-top:0;gap:10px;}
+.progress-card__head{margin-bottom:16px;}
+.history-empty{margin-top:2px;padding:13px 14px;line-height:1.55;}
+.data-card>p{margin:0 0 16px;line-height:1.55;}
+.data-actions{margin-top:2px;gap:10px;}

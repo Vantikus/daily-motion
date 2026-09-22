@@ -110,4 +110,3 @@ self.addEventListener('fetch',event=>{
 
   event.respondWith(cacheStatic(request).catch(()=>caches.match(request)));
 });
-
