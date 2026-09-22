@@ -2118,7 +2118,7 @@ a[href] *,
 .settings-sheet__head h2{
   font-size:1.6875rem;
 }
-.setting-row{min-height:var(--settings-row-h);display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:var(--space-3);column-gap:var(--space-3);border-bottom:1px solid rgba(23,25,23,.06)}
+.setting-row{min-height:var(--component-row-h);display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:var(--space-3);column-gap:var(--space-3);border-bottom:1px solid rgba(23,25,23,.06)}
 .setting-row strong{
   font-size:var(--font-size-md);
 }
@@ -2950,7 +2950,6 @@ a[href] *,
   width:var(--component-hit);
   height:var(--component-hit);
 }
-.setting-row{min-height:var(--component-row-h)}
 .setting-row select{
   height:var(--component-hit);
   min-height:var(--component-hit);
