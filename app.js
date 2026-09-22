@@ -221,18 +221,12 @@
     resetTodayBlock.classList.toggle('is-confirming',confirming);
     resetTodayConfirm.setAttribute('aria-hidden',confirming?'false':'true');
     resetTodayConfirm.inert=!confirming;
-    if(confirming){
-      resetTodayBtn.setAttribute('aria-hidden','true');
-      resetTodayBtn.inert=true;
-    }else{
-      resetTodayBtn.removeAttribute('aria-hidden');
-      resetTodayBtn.inert=false;
-    }
+    resetTodayBtn.inert=confirming;
     if(focusTarget){
       resetFocusTimer=setTimeout(()=>{
         resetFocusTimer=null;
         focusTarget.focus({preventScroll:true});
-      },310);
+      },250);
     }
   };
   const hideResetConfirm=(restoreFocus=false,delay=0)=>{
@@ -253,7 +247,7 @@
     resetStateTimer=setTimeout(()=>{
       resetStateTimer=null;
       applyResetConfirmState(true,resetConfirmBtn);
-    },120);
+    },110);
   };
 
   const finishSettingsClose=()=>{
@@ -329,7 +323,7 @@
   document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
-      if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,120);return;}
+      if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,80);return;}
       closeSettings();
       return;
     }
@@ -382,7 +376,7 @@
   document.documentElement.classList.add('app-ready');
 
   resetTodayBtn.onclick=showResetConfirm;
-  resetCancelBtn.onclick=()=>hideResetConfirm(true,120);
+  resetCancelBtn.onclick=()=>hideResetConfirm(true,80);
   resetConfirmBtn.onclick=()=>{
     if(resetInFlight)return;
     resetInFlight=true;

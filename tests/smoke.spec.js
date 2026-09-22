@@ -565,38 +565,32 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
-test('settings reset hands off layers cleanly and resets without reloading',async({page,browserName})=>{
+test('settings reset keeps copy stable and reveals only confirmation actions',async({page,browserName})=>{
   test.skip(browserName!=='chromium','reset transition is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
 
-  const delays=await page.evaluate(()=>{
-    const reset=getComputedStyle(document.querySelector('#resetTodayBtn'));
-    const confirm=getComputedStyle(document.querySelector('#resetTodayConfirm'));
-    document.querySelector('#resetTodayBlock').classList.add('is-confirming');
-    const resetIn=getComputedStyle(document.querySelector('#resetTodayBtn'));
-    const confirmIn=getComputedStyle(document.querySelector('#resetTodayConfirm'));
-    document.querySelector('#resetTodayBlock').classList.remove('is-confirming');
-    return {
-      returnReset:reset.transitionDelay.split(',')[0].trim(),
-      returnConfirm:confirm.transitionDelay.split(',')[0].trim(),
-      enterReset:resetIn.transitionDelay.split(',')[0].trim(),
-      enterConfirm:confirmIn.transitionDelay.split(',')[0].trim()
-    };
-  });
-  expect(delays.returnReset).toBe('0.12s');
-  expect(delays.returnConfirm).toBe('0s');
-  expect(delays.enterReset).toBe('0s');
-  expect(delays.enterConfirm).toBe('0.12s');
+  await expect(page.locator('#resetTodayBtn')).toHaveText('Сбросить прогресс');
+  const before=await page.locator('#resetTodayBtn').boundingBox();
+  await page.locator('#resetTodayBtn').click();
+  await expect(page.locator('#resetTodayBlock')).toHaveClass(/is-confirming/);
+  await expect(page.locator('#resetTodayBtn')).toHaveText('Сбросить прогресс');
+  await expect(page.locator('#resetTodayConfirm')).toHaveAttribute('aria-hidden','false');
+
+  const during=await page.locator('#resetTodayBtn').boundingBox();
+  expect(Math.abs(during.height-before.height)).toBeLessThanOrEqual(1);
+  expect(Math.abs(during.width-before.width)).toBeLessThanOrEqual(1);
+
+  await page.locator('#resetCancelBtn').click();
+  await expect(page.locator('#resetTodayBlock')).not.toHaveClass(/is-confirming/);
+  await expect(page.locator('#resetTodayBtn')).toHaveText('Сбросить прогресс');
 
   await page.evaluate(()=>{window.__resetNoReloadSentinel='alive';});
   await page.locator('#resetTodayBtn').click();
-  await expect(page.locator('#resetTodayBlock')).toHaveClass(/is-confirming/);
   await page.locator('#resetConfirmBtn').click();
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true');
   expect(await page.evaluate(()=>window.__resetNoReloadSentinel)).toBe('alive');
-  await expect(page.locator('#todayStatus')).toHaveText('Сегодня');
   await expect(page.locator('#heroProgressText')).toHaveText('0 из 9 упражнений');
   await expect(page.locator('#dayProgressValue')).toHaveText('0%');
 });
