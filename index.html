@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=116"></script>
+  <script src="theme.js?v=117"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Daily Motion — ежедневная разминка за 10 минут" />
   <meta name="twitter:description" content="Daily Motion — ежедневная 10-минутная разминка всего тела с таймером, техникой выполнения, прогрессом и офлайн-режимом." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=116" />
-  <link rel="stylesheet" href="styles.css?v=116" />
+  <link rel="stylesheet" href="heroicons.css?v=117" />
+  <link rel="stylesheet" href="styles.css?v=117" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -123,30 +123,39 @@
         <label class="setting-row">
           <span class="qm-icon qm-icon--soft setting-icon"><i class="hi hi-clock" aria-hidden="true"></i></span>
           <span class="setting-copy"><strong>Обратный отсчёт</strong><small>Перед началом упражнения</small></span>
-          <select id="countdownSetting" aria-label="Countdown перед таймером">
-            <option value="0">Выкл</option>
-            <option value="3">3 сек</option>
-            <option value="5">5 сек</option>
-          </select>
+          <span class="settings-select-control">
+            <select id="countdownSetting" aria-label="Countdown перед таймером">
+              <option value="0">Нет</option>
+              <option value="3">3 секунды</option>
+              <option value="5">5 секунд</option>
+            </select>
+            <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
+          </span>
         </label>
         <label class="setting-row">
           <span class="qm-icon qm-icon--soft setting-icon"><i class="hi hi-pause-circle" aria-hidden="true"></i></span>
           <span class="setting-copy"><strong>Отдых</strong><small>Между упражнениями</small></span>
-          <select id="restSetting" aria-label="Длительность отдыха">
-            <option value="0">Выкл</option>
-            <option value="15">15 сек</option>
-            <option value="30">30 сек</option>
-            <option value="45">45 сек</option>
-          </select>
+          <span class="settings-select-control">
+            <select id="restSetting" aria-label="Длительность отдыха">
+              <option value="0">Нет</option>
+              <option value="15">15 секунд</option>
+              <option value="30">30 секунд</option>
+              <option value="45">45 секунд</option>
+            </select>
+            <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
+          </span>
         </label>
         <label class="setting-row">
           <span class="qm-icon qm-icon--soft setting-icon"><i class="hi hi-moon" aria-hidden="true"></i></span>
           <span class="setting-copy"><strong>Оформление</strong><small>Системная, светлая или тёмная тема</small></span>
-          <select id="themeSetting" aria-label="Тема оформления">
-            <option value="system">Система</option>
-            <option value="light">Светлая</option>
-            <option value="dark">Тёмная</option>
-          </select>
+          <span class="settings-select-control">
+            <select id="themeSetting" aria-label="Тема оформления">
+              <option value="system">Системная</option>
+              <option value="light">Светлая</option>
+              <option value="dark">Тёмная</option>
+            </select>
+            <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
+          </span>
         </label>
       </div>
       <button class="settings-install" id="installAppBtn" type="button" hidden>Установить приложение</button>
@@ -164,11 +173,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=116"></script>
-  <script src="state.js?v=116"></script>
-  <script src="audio.js?v=116"></script>
-  <script src="gsap.min.js?v=116"></script>
-  <script src="pwa.js?v=116"></script>
-  <script src="app.js?v=116"></script>
+  <script src="program.js?v=117"></script>
+  <script src="state.js?v=117"></script>
+  <script src="audio.js?v=117"></script>
+  <script src="gsap.min.js?v=117"></script>
+  <script src="pwa.js?v=117"></script>
+  <script src="app.js?v=117"></script>
 </body>
 </html>
