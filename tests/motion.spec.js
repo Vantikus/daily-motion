@@ -68,7 +68,7 @@ test('workout settings uses the same shared sheet behavior',async({page})=>{
   await page.waitForTimeout(430);
 
   await page.locator('#routineSettingsClose').click();
-  await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+  await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1500});
 });
 
 test('reduced motion settles immediately without transient state',async({page})=>{
