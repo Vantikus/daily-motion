@@ -22,6 +22,7 @@ const html=Object.fromEntries(htmlFiles.map(file=>[file,read(file)]));
 const sw=read('sw.js');
 const styles=read('styles.css');
 const readme=read('README.md');
+const designSystem=read('DESIGN_SYSTEM.md');
 const pwa=read('pwa.js');
 const heroicons=read('heroicons.css');
 const manifest=JSON.parse(read('manifest.webmanifest'));
@@ -52,6 +53,34 @@ const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
 if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
 releaseVersions.add(swVersions[0]);
 if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersions].join(', ')}`);
+
+const designThemeColor='#f4f5f1';
+if(manifest.theme_color!==designThemeColor)fail('manifest.webmanifest: theme_color drifted from Daily Motion canvas');
+if(manifest.background_color!==designThemeColor)fail('manifest.webmanifest: background_color drifted from Daily Motion canvas');
+if(manifest.background_color!==manifest.theme_color)fail('manifest.webmanifest: background/theme colors must stay synchronized');
+for(const [file,content] of Object.entries(html)){
+  const themeMatch=content.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/i);
+  if(!themeMatch)fail(`${file}: theme-color meta is missing`);
+  if(themeMatch[1].toLowerCase()!==designThemeColor)fail(`${file}: theme-color drifted from Daily Motion canvas`);
+}
+for(const token of [
+  '--bg:#f4f5f1;',
+  '--surface:#fff;',
+  '--surface-muted:#edf1ec;',
+  '--text:#171917;',
+  '--muted:#687169;',
+  '--muted-strong:#535c54;',
+  '--line:rgba(23,25,23,.09);',
+  '--accent:#2f6b55;',
+  '--accent-soft:#dfece5;'
+]){
+  if(!styles.includes(token))fail(`styles.css: P0 design-system token drifted: ${token}`);
+}
+if(!designSystem.includes('# Daily Motion Design System v1')||!designSystem.includes('P0 baseline contract')){
+  fail('DESIGN_SYSTEM.md: P0 design-system contract is missing');
+}
+if(styles.includes('#8a918b'))fail('styles.css: low-contrast calendar microcopy returned');
+if(styles.includes('#9b6b68'))fail('styles.css: low-contrast reset microcopy returned');
 
 const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
 for(const requiredSize of ['192x192','512x512']){
