@@ -179,3 +179,30 @@ The JS bottom-sheet durations, drag ratio, fling threshold and snap constants ar
 - Compact, standard and large iPhone-like viewports are checked for horizontal overflow and essential control reachability.
 - Chromium visual baselines cover Home, Workout and Progress with reduced motion and deterministic local state. The accepted screenshots are pinned by SHA-256; on mismatch the actual PNG is attached to the CI artifact for visual review.
 
+
+## R3 — visual hierarchy and surface polish
+
+R3 is the final visual consistency pass. It does not change page structure, workout behavior or motion physics.
+
+### Surface hierarchy
+
+- Canvas remains the milky `#f4f5f1`.
+- Raised surfaces use `--surface-raised`; soft controls/metric surfaces use `--surface-soft`.
+- Structural separation uses `--line-soft` for ordinary cards/rows and `--line-strong` only where stronger separation is intentionally required.
+- Hero and primary content surfaces use `--shadow-hero` or `--shadow-card`; grouped rows remain visually lighter than primary cards.
+- Bottom sheets use the shared `--shadow-sheet` while GSAP retains complete ownership of their transforms.
+
+### Page hierarchy
+
+- Home: Today is the strongest surface, routines are a grouped list, Activity is a secondary raised surface.
+- Workout: content remains mostly flat; the technique key is the accent-soft anchor, technique rows are one grouped surface, and the bottom navigation is a clearly separated raised surface.
+- Progress: metrics are soft surfaces; calendar/history/data are raised content cards with the same border/elevation language as Home.
+- Settings: Home and Workout sheets share the same raised surface, divider and control background language.
+- Execution and Completion retain their approved layout; only secondary surfaces and accent treatments are normalized.
+
+### R3 rules
+
+- Elevation communicates hierarchy, not decoration. Avoid stacking multiple strong shadows in one viewport.
+- Do not introduce gradients inside cards. The only page-level ambient gradient remains the existing Home canvas treatment.
+- Hover/pressed states should change surface/border first and movement second.
+- Visual polish must not change R0–R2 geometry, touch targets, text scaling, safe-area behavior or bottom-sheet physics.
