@@ -296,7 +296,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .history-legend i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .history-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
 .history-day{min-width:0;aspect-ratio:1;border:1px solid var(--line);border-radius:12px;background:#f7f8f5;padding:6px;display:grid;grid-template-rows:auto 1fr auto;align-items:center;justify-items:center}
-.history-day small{font-size:var(--font-size-xs);color:#8a918b;text-transform:uppercase}
+.history-day small{font-size:var(--font-size-xs);color:var(--muted);text-transform:uppercase}
 .history-day strong{font-size:var(--font-size-md);font-variant-numeric:tabular-nums}
 .history-day i{width:5px;height:5px;border-radius:50%;background:transparent}
 .history-day.is-active{border-color:rgba(47,107,85,.16);background:#f0f4f0}
@@ -729,7 +729,7 @@ html,body{background:var(--bg)}
 
 .settings-reset::after{
   content:"Только данные за сегодня";
-  color:#9b6b68;
+  color:#8a5b57;
   font-size:var(--font-size-xs);
   line-height:1.35;
   font-weight:500;
