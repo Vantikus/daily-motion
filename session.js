@@ -95,6 +95,13 @@
     const value=Math.max(0,Math.round(seconds));
     return `${String(Math.floor(value/60)).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`;
   };
+  const formatStreakDays=count=>{
+    const value=Math.max(0,Math.floor(Number(count)||0));
+    const mod100=value%100;
+    const mod10=value%10;
+    const label=mod100>=11&&mod100<=14?'дней':mod10===1?'день':mod10>=2&&mod10<=4?'дня':'дней';
+    return `${value} ${label}`;
+  };
 
   async function requestWakeLock(){
     if(!('wakeLock' in navigator))return;
@@ -489,6 +496,7 @@
     $('#timerToggle').textContent=timer.running?'Пауза':hasProgress?'Продолжить':'Старт';
     $('#timerRing').classList.toggle('is-running',timer.running);
     $('#timerRing').classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
+    $('#timerRing').classList.toggle('is-final-three',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=3));
     $('#timerCard').classList.toggle('is-running',timer.running);
     updateNextButton();
 
@@ -744,6 +752,8 @@
     pauseCurrentTimer();
     cancelCountdown();
     cancelRest();
+    const wasCompleted=Boolean(routine.completed);
+    const previousBestStreak=Store.getBestStreak([ROUTINE_KEY]);
     routine.completed=true;
     routine.completedUntil=exercises.length;
     routine.step=exercises.length-1;
@@ -757,6 +767,16 @@
     $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
     $('#completionDuration').textContent=Store.formatActiveTime(routine.activeSeconds);
     $('#completionCount').textContent=`${Math.min(routine.completedUntil,exercises.length)} / ${exercises.length}`;
+    const currentStreak=Store.getCurrentStreak([ROUTINE_KEY]);
+    const completionHighlight=$('#completionHighlight');
+    let highlightText='';
+    if(!wasCompleted&&currentStreak>1&&currentStreak>previousBestStreak){
+      highlightText=`Новая лучшая серия — ${formatStreakDays(currentStreak)}`;
+    }else if(currentStreak>1){
+      highlightText=`Серия продолжается — ${formatStreakDays(currentStreak)}`;
+    }
+    completionHighlight.textContent=highlightText;
+    completionHighlight.hidden=!highlightText;
     syncEffortButtons();
     modalReturnFocus=document.activeElement;
     overlay.classList.add('is-visible');
