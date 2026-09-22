@@ -5,15 +5,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 30_000,
-  expect: {
-    timeout: 5_000,
-    toHaveScreenshot: {
-      animations: 'disabled',
-      caret: 'hide',
-      maxDiffPixelRatio: 0.01
-    }
-  },
-  snapshotPathTemplate: '{testDir}/visual-baselines/{arg}{ext}',
+  expect: { timeout: 5_000 },
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
