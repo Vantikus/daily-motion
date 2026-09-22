@@ -520,7 +520,7 @@ test('R2 component targets and switch contrast stay accessible',async({page,brow
     const handle=px('.settings-sheet__handle');
     const close=px('#settingsClose');
     const select=px('.setting-row select');
-    const toggle=px('.switch-input');
+    const toggle=getComputedStyle(document.querySelector('.switch-input:not(:checked)'));
     return {
       handleMinHeight:handle.minHeight,
       close:[close.width,close.height],
