@@ -2170,6 +2170,7 @@ a[href] *,
 }
 .settings-reset-block{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);border-radius:0}
 .settings-reset{appearance:none;position:relative;width:100%;min-height:66px;margin:0;padding:12px 46px 12px 12px;border:1px solid transparent;border-radius:var(--radius-control);background:transparent;color:#8a4a47;display:grid;align-content:center;justify-items:start;gap:3px;text-align:left;font-size:var(--font-size-md);font-weight:800;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background-color 220ms ease,border-color 220ms ease,box-shadow 260ms ease,color 220ms ease}
+.settings-reset[hidden]{display:none}
 .settings-reset::after{
   font-size:var(--font-size-xs);
 }
