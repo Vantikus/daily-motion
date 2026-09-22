@@ -166,10 +166,14 @@ for(const fragment of [
 if(!pwa.includes('window.DailyMotionMotion={createBottomSheet,sheetMotion:SHEET_MOTION};')){
   fail('pwa.js: named bottom-sheet motion contract is not exposed');
 }
-if(!visualSpec.includes("toHaveScreenshot('home-390x844.png'")||
-   !visualSpec.includes("toHaveScreenshot('workout-390x844.png'")||
-   !visualSpec.includes("toHaveScreenshot('progress-390x844.png'")){
-  fail('tests/visual.spec.js: R2 visual baselines are incomplete');
+for(const token of [
+  "createHash('sha256')",
+  "page.screenshot({",
+  "home:'221fce692500e008ca2a214170dd1ac3f8e2cdef3a9dcdd13da29668aff1effb'",
+  "workout:'ab27401a6b8380d39e86554b602569b460d12b1c36c7ece7d862d828b4d6ef4a'",
+  "progress:'4ddec1008a4f7746d74128c5f1106ea3bec087661b29437707267113a7f4080f'"
+]){
+  if(!visualSpec.includes(token))fail(`tests/visual.spec.js: R2 visual baseline contract missing ${token}`);
 }
 if(!ci.includes('actions/upload-artifact@v4')){
   fail('ci.yml: browser regression artifacts must be uploaded on failure');
