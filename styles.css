@@ -3154,7 +3154,7 @@ a[href] *,
 .data-actions{margin-top:2px;gap:10px;}
 
 
-/* v115 — completion celebration and final-three timer feedback */
+/* completion celebration and final-three timer feedback */
 .timer-ring::before{
   content:"";
   position:absolute;
