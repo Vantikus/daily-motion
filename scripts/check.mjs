@@ -337,8 +337,8 @@ if(!styles.includes('.home-body .home-activity-summary')){
 if(!styles.includes('--muted-strong:#535c54;')){
   fail('styles.css: accessible microcopy color token is missing');
 }
-if(!styles.includes('outline:2px solid var(--accent);')||!styles.includes('box-shadow:0 0 0 4px rgba(47,107,85,.18);')){
-  fail('styles.css: high-contrast focus-visible contract is missing');
+if(!styles.includes('outline:2px solid var(--focus-color);')||!styles.includes('box-shadow:0 0 0 4px var(--focus-halo);')){
+  fail('styles.css: semantic high-contrast focus-visible contract is missing');
 }
 if(/outline:\s*3px solid rgba\(47,107,85,\.18\)/.test(styles)){
   fail('styles.css: obsolete low-contrast focus ring remains');
