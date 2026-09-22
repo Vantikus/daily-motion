@@ -3060,3 +3060,19 @@ a[href] *,
 .sheet-close>.hi,
 .execution-close>.hi,
 .routine-settings-close>.hi{font-size:20px}
+
+/* Fix home layout overlap: keep activity card aligned and non-overlapping */
+@media(min-width:900px){
+  .home-body .page-grid{
+    grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+    grid-template-areas:
+      "hero activity"
+      "routines activity"
+      "safety safety";
+    align-items:stretch;
+  }
+  .home-body .today-card{grid-area:hero;grid-row:auto;grid-column:auto;}
+  .home-body .routines-section{grid-area:routines;grid-column:auto;}
+  .home-body .activity-section{grid-area:activity;grid-column:auto;grid-row:auto;align-self:start;}
+  .home-body .safety-note{grid-area:safety;grid-column:auto;}
+}
