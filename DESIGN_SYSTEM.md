@@ -33,6 +33,8 @@ This file is the design-system source of truth for changes that can affect visua
 
 The page canvas, HTML `theme-color`, manifest `theme_color` and manifest `background_color` must remain synchronized at `#f4f5f1`.
 
+The light theme remains the immutable visual baseline. The optional dark theme is a semantic-token override selected through `settings.theme`; `system` follows `prefers-color-scheme`. The runtime HTML `theme-color` changes to `#101612` in dark mode while the manifest install baseline remains `#f4f5f1`.
+
 ## Typography baseline
 
 System stack:

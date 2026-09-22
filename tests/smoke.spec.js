@@ -39,6 +39,29 @@ test('all workout complexes are immediately visible on home',async({page})=>{
   await expect(page.locator('.home-activity-summary')).toBeVisible();
 });
 
+test('theme preference is applied and shared across pages',async({page})=>{
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+  await page.locator('#themeSetting').selectOption('dark');
+
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content','#101612');
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().theme)).toBe('dark');
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+});
+
+test('system theme follows the operating-system preference',async({page})=>{
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('html')).toHaveAttribute('data-theme-preference','system');
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+
+  await page.emulateMedia({colorScheme:'light'});
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+});
+
 test('state normalization and statistics stay centralized',async({page})=>{
   await page.addInitScript(()=>{
     const keyFor=offset=>{

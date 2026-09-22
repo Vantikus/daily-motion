@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f4f5f1" />
-  <meta name="color-scheme" content="light" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Daily Motion" />
@@ -20,6 +20,7 @@
       }
     })();
   </script>
+  <script src="theme.js?v=114"></script>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="/icons/daily-motion-favicon-32-v97.png" />
@@ -40,8 +41,8 @@
   <meta name="twitter:title" content="Daily Motion — ежедневная разминка за 10 минут" />
   <meta name="twitter:description" content="Daily Motion — ежедневная 10-минутная разминка всего тела с таймером, техникой выполнения, прогрессом и офлайн-режимом." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=111" />
-  <link rel="stylesheet" href="styles.css?v=111" />
+  <link rel="stylesheet" href="heroicons.css?v=114" />
+  <link rel="stylesheet" href="styles.css?v=114" />
 </head>
 <body class="home-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -138,6 +139,15 @@
             <option value="45">45 сек</option>
           </select>
         </label>
+        <label class="setting-row">
+          <span class="qm-icon qm-icon--soft setting-icon"><i class="hi hi-moon" aria-hidden="true"></i></span>
+          <span class="setting-copy"><strong>Оформление</strong><small>Системная, светлая или тёмная тема</small></span>
+          <select id="themeSetting" aria-label="Тема оформления">
+            <option value="system">Система</option>
+            <option value="light">Светлая</option>
+            <option value="dark">Тёмная</option>
+          </select>
+        </label>
       </div>
       <button class="settings-install" id="installAppBtn" type="button" hidden>Установить приложение</button>
       <div class="ios-install-guide" id="iosInstallGuide" hidden aria-labelledby="iosInstallGuideTitle">
@@ -154,12 +164,12 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=111"></script>
-  <script src="state.js?v=111"></script>
-  <script src="audio.js?v=111"></script>
-  <script src="gsap.min.js?v=111"></script>
-  <script src="pwa.js?v=111"></script>
-  <script src="app.js?v=111"></script>
+  <script src="program.js?v=114"></script>
+  <script src="state.js?v=114"></script>
+  <script src="audio.js?v=114"></script>
+  <script src="gsap.min.js?v=114"></script>
+  <script src="pwa.js?v=114"></script>
+  <script src="app.js?v=114"></script>
 </body>
 </html>
 

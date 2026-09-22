@@ -8,7 +8,7 @@ const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
-  'app.js','audio.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js',
+  'app.js','audio.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 

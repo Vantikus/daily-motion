@@ -137,6 +137,7 @@
     $('#autoNextSetting').checked=settings.autoNext;
     $('#countdownSetting').value=String(settings.countdownSeconds);
     $('#restSetting').value=String(settings.restSeconds);
+    $('#themeSetting').value=settings.theme;
   };
 
   const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null);
@@ -239,6 +240,10 @@
   $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
   $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});
   $('#restSetting').addEventListener('change',event=>{settings=Store.updateSettings({restSeconds:Number(event.target.value)});});
+  $('#themeSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({theme:event.target.value});
+    window.DailyMotionTheme?.apply(settings.theme);
+  });
 
   installAppBtn.onclick=async()=>{
     const result=await PWA?.install?.();

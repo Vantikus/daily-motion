@@ -128,6 +128,7 @@
     settings=Store.getSettings();
     $('#workoutSoundSetting').checked=Boolean(settings.sound);
     $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
+    $('#workoutThemeSetting').value=settings.theme;
   }
 
   function showRoutineSettingsView(){
@@ -786,6 +787,10 @@
   });
   $('#workoutAutoNextSetting').addEventListener('change',event=>{
     settings=Store.updateSettings({autoNext:event.target.checked});
+  });
+  $('#workoutThemeSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({theme:event.target.value});
+    window.DailyMotionTheme?.apply(settings.theme);
   });
   $('#routineResetOpen').addEventListener('click',()=>{
     haptic('tap');

@@ -3001,6 +3001,17 @@ a[href] *,
   background:var(--component-surface-muted);
   border-color:var(--component-border);
 }
+.routine-setting-row select{
+  min-width:88px;
+  height:var(--component-hit);
+  border:1px solid var(--component-border);
+  border-radius:12px;
+  background:var(--component-surface-muted);
+  color:var(--text);
+  padding:0 28px 0 10px;
+  font-size:var(--font-size-xs);
+  font-weight:750;
+}
 .ios-install-guide__done,
 .pwa-banner__action,
 .execution-secondary button,
@@ -3040,6 +3051,63 @@ a[href] *,
 .completion-stats{
   border-color:var(--line-soft);
 }
+
+/* App themes — light remains the visual baseline; dark overrides semantic surfaces. */
+:root[data-theme="dark"]{
+  --bg:#101612;
+  --surface:#18211b;
+  --surface-muted:#202b23;
+  --text:#f1f5f2;
+  --muted:#a7b3aa;
+  --muted-strong:#c5cec7;
+  --line:rgba(241,245,242,.11);
+  --accent:#79c5a2;
+  --accent-soft:#203b2f;
+  --component-surface:#18211b;
+  --component-surface-muted:#202b23;
+  --component-border:rgba(241,245,242,.12);
+  --component-border-active:rgba(121,197,162,.34);
+  --component-pressed-bg:rgba(121,197,162,.12);
+  --component-selected-bg:#203b2f;
+  --surface-raised:#18211b;
+  --surface-soft:#1d2820;
+  --line-soft:rgba(241,245,242,.08);
+  --line-strong:rgba(241,245,242,.15);
+  --accent-wash:#1d3429;
+  --shadow-card:0 1px 2px rgba(0,0,0,.16),0 10px 28px rgba(0,0,0,.18);
+  --shadow-hero:0 1px 2px rgba(0,0,0,.18),0 18px 42px rgba(0,0,0,.24);
+  --shadow-sheet:0 -20px 64px rgba(0,0,0,.42);
+  --shadow:0 18px 50px rgba(0,0,0,.24);
+  --shadow-soft:0 8px 26px rgba(0,0,0,.2);
+  --switch-off:#68736b;
+  --focus-halo:rgba(121,197,162,.25);
+}
+:root[data-theme="dark"] .home-body{background:linear-gradient(180deg,#151d18 0,var(--bg) 36%)}
+:root[data-theme="dark"] .progress-body{background:linear-gradient(180deg,#151d18 0,var(--bg) 32%)}
+:root[data-theme="dark"] .today-card.is-complete{background:linear-gradient(180deg,var(--surface) 0,#17271f 100%)}
+:root[data-theme="dark"] :is(.routine-card,.activity-card,.progress-metrics article,.progress-card){background:rgba(24,33,27,.92)}
+:root[data-theme="dark"] :is(.back-link--icon,.detail-card,.settings-sheet,.nav-button--back){background:var(--surface-raised)}
+:root[data-theme="dark"] :is(.progress-track,.mini-progress,.step-segments i){background:#2a362d}
+:root[data-theme="dark"] :is(.visual-placeholder,.visual-phase,.activity-empty,.history-day,.history-empty,.data-actions button,.routine-reset-cancel){background:var(--surface-soft)}
+:root[data-theme="dark"] .timer-ring:after{background:var(--surface-raised)}
+:root[data-theme="dark"] .completion-overlay{background:rgba(16,22,18,.97)}
+:root[data-theme="dark"] .completion-card{background:var(--surface-raised)}
+:root[data-theme="dark"] .session-body .completion-card{background:transparent}
+:root[data-theme="dark"] .execution-overlay{background:rgba(16,22,18,.92)}
+:root[data-theme="dark"] :is(.execution-close,.execution-adjustments button){background:rgba(29,40,32,.92);border-color:var(--line)}
+:root[data-theme="dark"] :is(.routine-card.is-pressing,.home-body .routine-card.is-pressing){background:#1d2c23!important;border-color:rgba(121,197,162,.25)!important}
+:root[data-theme="dark"] .activity-day.is-active .activity-day__dot{background:#203b2f}
+:root[data-theme="dark"] .history-day.is-complete{color:var(--accent)}
+:root[data-theme="dark"] :is(.settings-sheet__handle::before,.routine-settings-sheet__handle::before){background:#536057}
+:root[data-theme="dark"] :is(.settings-sheet.is-dragging .settings-sheet__handle::before,.routine-settings-sheet.is-dragging .routine-settings-sheet__handle::before){background:#6b796f}
+:root[data-theme="dark"] .detail-card__inner :is(p,li){color:#bdc7bf}
+:root[data-theme="dark"] .home-body .safety-note{color:var(--muted)}
+:root[data-theme="dark"] :is(.primary-button,.nav-button--next:not(.is-finish),.execution-primary){background:#e8efea;color:#101612}
+:root[data-theme="dark"] :is(.nav-button--next.is-finish,.settings-install,.today-card.is-complete .status-pill){background:var(--accent);color:#101612}
+:root[data-theme="dark"] .toast{background:#eef4ef;color:#101612}
+:root[data-theme="dark"] .pwa-banner{background:#eef4ef;color:#101612;border-color:rgba(16,22,18,.1)}
+:root[data-theme="dark"] .pwa-banner__action{background:#18211b;color:#f1f5f2}
+:root[data-theme="dark"] .switch-input:after{background:#f1f5f2}
 
 /* Heroicons Outline — primary UI icon system · 1.7px stroke */
 .qm-icon>.hi{font-size:18px}
