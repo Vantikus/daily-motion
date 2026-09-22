@@ -211,3 +211,4 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Visual polish must not change R0–R2 geometry, touch targets, text scaling, safe-area behavior or bottom-sheet physics.
 
 - Press feedback must be clipped to the control's own rounded shape; text navigation that receives a filled press state needs an explicit rounded hit surface rather than a rectangular flash.
+- Destructive actions never inherit the green secondary-control press state. Their pressed/focus feedback stays destructive-colored and clipped to the same 14px control radius.
