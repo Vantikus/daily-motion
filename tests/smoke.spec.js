@@ -309,7 +309,7 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   });
 
   expect(layout.timerWidth).toBe('223.2px');
-  expect(layout.shellWidth).toBe('336px');
+  expect(layout.shellWidth).toBe('328px');
   expect(layout.mainPadding).toBe('0px');
   expect(layout.mainBorder).toBe('0px');
   expect(layout.headGap).toBe('6px');
@@ -468,14 +468,16 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
   const workout=await page.evaluate(()=>({
     shell:getComputedStyle(document.querySelector('.session-shell')).width,
     techniqueRadius:getComputedStyle(document.querySelector('.technique-key')).borderTopLeftRadius,
-    detailRadius:getComputedStyle(document.querySelector('.detail-card')).borderTopLeftRadius,
+    detailGroupRadius:getComputedStyle(document.querySelector('.details-stack')).borderTopLeftRadius,
+    detailRowRadius:getComputedStyle(document.querySelector('.detail-card')).borderTopLeftRadius,
     nav:getComputedStyle(document.querySelector('.nav-button')).height,
     executionPadding:getComputedStyle(document.querySelector('.execution-overlay')).paddingLeft
   }));
   expect(workout).toEqual({
     shell:'358px',
     techniqueRadius:'18px',
-    detailRadius:'18px',
+    detailGroupRadius:'18px',
+    detailRowRadius:'0px',
     nav:'54px',
     executionPadding:'16px'
   });
