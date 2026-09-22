@@ -351,3 +351,87 @@ test('typography tokens scale readable text without horizontal overflow',async({
   await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
   await expect(page.locator('.history-day').first().locator('small')).toHaveCSS('font-size','15px');
 });
+
+
+test('Daily Motion Design System v1 baseline stays stable',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','P0 computed design baseline is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const home=await page.evaluate(()=> {
+    const root=getComputedStyle(document.documentElement);
+    const settings=getComputedStyle(document.querySelector('#settingsBtn'));
+    const list=getComputedStyle(document.querySelector('.home-body .routine-list'));
+    const row=getComputedStyle(document.querySelector('.home-body .routine-card'));
+    return {
+      bg:root.getPropertyValue('--bg').trim(),
+      surface:root.getPropertyValue('--surface').trim(),
+      text:root.getPropertyValue('--text').trim(),
+      muted:root.getPropertyValue('--muted').trim(),
+      accent:root.getPropertyValue('--accent').trim(),
+      settings:[settings.width,settings.height],
+      routineListRadius:list.borderTopLeftRadius,
+      routineMinHeight:row.minHeight
+    };
+  });
+  expect(home).toEqual({
+    bg:'#f4f5f1',
+    surface:'#fff',
+    text:'#171917',
+    muted:'#687169',
+    accent:'#2f6b55',
+    settings:['44px','44px'],
+    routineListRadius:'18px',
+    routineMinHeight:'74px'
+  });
+
+  await page.locator('#settingsBtn').click();
+  const settingsSheet=await page.evaluate(()=> {
+    const sheet=getComputedStyle(document.querySelector('.settings-sheet'));
+    const handle=getComputedStyle(document.querySelector('.settings-sheet__handle'));
+    const reset=getComputedStyle(document.querySelector('#resetTodayBtn'),'::after');
+    return {
+      radius:sheet.borderTopLeftRadius,
+      handleWidth:handle.width,
+      handleMinHeight:handle.minHeight,
+      resetMicrocopyColor:reset.color
+    };
+  });
+  expect(settingsSheet).toEqual({
+    radius:'26px',
+    handleWidth:'96px',
+    handleMinHeight:'40px',
+    resetMicrocopyColor:'rgb(138, 91, 87)'
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  const workout=await page.evaluate(()=> {
+    const shell=getComputedStyle(document.querySelector('.session-shell'));
+    const technique=getComputedStyle(document.querySelector('.detail-card__toggle'));
+    const nav=getComputedStyle(document.querySelector('.nav-button'));
+    return {
+      shellWidth:shell.width,
+      techniqueMinHeight:technique.minHeight,
+      navHeight:nav.height
+    };
+  });
+  expect(workout).toEqual({
+    shellWidth:'366px',
+    techniqueMinHeight:'56px',
+    navHeight:'54px'
+  });
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  const progress=await page.evaluate(()=> {
+    const card=getComputedStyle(document.querySelector('.progress-card'));
+    const micro=getComputedStyle(document.querySelector('.history-day small'));
+    return {
+      cardRadius:card.borderTopLeftRadius,
+      calendarMicrocopyColor:micro.color
+    };
+  });
+  expect(progress).toEqual({
+    cardRadius:'18px',
+    calendarMicrocopyColor:'rgb(104, 113, 105)'
+  });
+});
