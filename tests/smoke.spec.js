@@ -400,7 +400,7 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
   expect(settingsSheet).toEqual({
     radius:'26px',
     handleWidth:'96px',
-    handleMinHeight:'40px',
+    handleMinHeight:'44px',
     resetMicrocopyColor:'rgb(138, 91, 87)'
   });
 
@@ -506,4 +506,87 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
     metricGap:'12px',
     metricRadius:'18px'
   });
+});
+
+
+test('R2 component targets and switch contrast stay accessible',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','R2 component contract is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+  const home=await page.evaluate(()=>{
+    const px=selector=>getComputedStyle(document.querySelector(selector));
+    const handle=px('.settings-sheet__handle');
+    const close=px('#settingsClose');
+    const select=px('.setting-row select');
+    const toggle=px('.switch-input');
+    return {
+      handleMinHeight:handle.minHeight,
+      close:[close.width,close.height],
+      selectHeight:select.height,
+      switchOff:toggle.backgroundColor
+    };
+  });
+  expect(home).toEqual({
+    handleMinHeight:'44px',
+    close:['44px','44px'],
+    selectHeight:'44px',
+    switchOff:'rgb(127, 137, 129)'
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+  const execution=await page.evaluate(()=>({
+    close:getComputedStyle(document.querySelector('#executionClose')).height,
+    secondary:[...document.querySelectorAll('.execution-secondary button')].map(el=>getComputedStyle(el).minHeight),
+    adjustment:[...document.querySelectorAll('.execution-adjustments button')].map(el=>getComputedStyle(el).minHeight)
+  }));
+  expect(execution.close).toBe('44px');
+  expect(execution.secondary.every(value=>value==='44px')).toBe(true);
+  expect(execution.adjustment.every(value=>value==='48px')).toBe(true);
+});
+
+test('R2 text reflows at 150 and 200 percent without horizontal overflow',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','extended text scaling is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+
+  for(const rootSize of [24,32]){
+    for(const url of ['/index.html','/session.html?routine=morning','/progress.html']){
+      await page.goto(url,{waitUntil:'domcontentloaded'});
+      await page.evaluate(size=>{document.documentElement.style.fontSize=`${size}px`;},rootSize);
+      const result=await page.evaluate(()=>({
+        overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
+        width:document.documentElement.scrollWidth,
+        client:document.documentElement.clientWidth
+      }));
+      expect(result.overflow,`${url} overflowed at root ${rootSize}px: ${result.width}/${result.client}`).toBe(false);
+    }
+  }
+});
+
+test('R2 compact and large iPhone viewports keep essential UI reachable',async({page,browserName})=>{
+  test.skip(browserName!=='webkit','iPhone viewport coverage is WebKit-specific');
+  const cases=[
+    {width:320,height:568},
+    {width:390,height:844},
+    {width:430,height:932}
+  ];
+
+  for(const viewport of cases){
+    await page.setViewportSize(viewport);
+
+    await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#settingsBtn')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+
+    await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#nextButton')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+
+    await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#historyCalendar')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+  }
 });
