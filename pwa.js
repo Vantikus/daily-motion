@@ -5,6 +5,23 @@
   let deferredPrompt=null;
   let refreshRequested=false;
   let banner=null;
+  const SHEET_MOTION=Object.freeze({
+    openDuration:.38,
+    closeDuration:.30,
+    closeGestureMin:.18,
+    closeGestureMax:.32,
+    snapFastDuration:.22,
+    snapDuration:.55,
+    dismissRatio:.28,
+    dismissMin:110,
+    dismissMax:190,
+    flingMinY:52,
+    flingVelocity:700,
+    flingProjection:.12,
+    openEase:'power3.out',
+    closeEase:'power2.inOut',
+    snapEase:'power2.out'
+  });
 
   const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
   const isIOS=()=>{
@@ -208,7 +225,7 @@
       overlay.classList.remove('is-settling','is-dismissing');
       overlay.classList.add('is-visible','is-moving');
       if(wasClosed){paint(0);measure();paint(travel);}
-      moveTo(0,.38,'power3.out',finishOpen);
+      moveTo(0,SHEET_MOTION.openDuration,SHEET_MOTION.openEase,finishOpen);
     };
     const close=(velocity=0,fromGesture=false)=>{
       if(phase==='closed'||phase==='closing')return;
@@ -219,10 +236,10 @@
       clearGesture();
       overlay.classList.add('is-moving','is-settling','is-dismissing');
       const remaining=Math.max(1,travel-currentY);
-      const duration=fromGesture?clamp(remaining/Math.max(1000,velocity),.18,.32):.30;
+      const duration=fromGesture?clamp(remaining/Math.max(1000,velocity),SHEET_MOTION.closeGestureMin,SHEET_MOTION.closeGestureMax):SHEET_MOTION.closeDuration;
       // Cubic Hermite: match release velocity, settle at rest, no overshoot.
       const slope=clamp(velocity*duration/remaining,0,3);
-      const ease=fromGesture?t=>(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t:'power2.inOut';
+      const ease=fromGesture?t=>(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t:SHEET_MOTION.closeEase;
       moveTo(travel,duration,ease,finishClosed);
     };
     const snapOpen=velocity=>{
@@ -232,13 +249,13 @@
       clearGesture();
       overlay.classList.add('is-moving','is-settling');
       if(reduceMotion.matches){finishOpen();return;}
-      if(currentY<=0){moveTo(0,.22,'power2.out',finishOpen);return;}
+      if(currentY<=0){moveTo(0,SHEET_MOTION.snapFastDuration,SHEET_MOTION.snapEase,finishOpen);return;}
       // Critically damped return: retain gesture momentum, never bounce past zero.
       const origin=currentY;
       const omega=20;
       const speed=clamp(velocity,-omega*origin,1600);
       const clock={t:0};
-      motion=gsap.to(clock,{t:.55,duration:.55,ease:'none',
+      motion=gsap.to(clock,{t:SHEET_MOTION.snapDuration,duration:SHEET_MOTION.snapDuration,ease:'none',
         onUpdate:()=>paint((origin+(speed+omega*origin)*clock.t)*Math.exp(-omega*clock.t)),
         onComplete:finishOpen
       });
@@ -276,8 +293,8 @@
       const first=samples[0];
       const velocity=clamp((event.clientY-first.y)/Math.max(1,now-first.t)*1000,-2200,2200);
       const y=Math.max(0,currentY);
-      const threshold=clamp(sheetHeight*.28,110,190);
-      const dismiss=y>=threshold||(y>=52&&velocity>700&&y+velocity*.12>=threshold);
+      const threshold=clamp(sheetHeight*SHEET_MOTION.dismissRatio,SHEET_MOTION.dismissMin,SHEET_MOTION.dismissMax);
+      const dismiss=y>=threshold||(y>=SHEET_MOTION.flingMinY&&velocity>SHEET_MOTION.flingVelocity&&y+velocity*SHEET_MOTION.flingProjection>=threshold);
       if(dismiss)close(Math.max(0,velocity),true);
       else snapOpen(velocity);
     });
@@ -402,7 +419,7 @@
     }
   };
 
-  window.DailyMotionMotion={createBottomSheet};
+  window.DailyMotionMotion={createBottomSheet,sheetMotion:SHEET_MOTION};
 
   window.DailyMotionPWA={
     canInstall:()=>getInstallMode()!=='unavailable',
