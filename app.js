@@ -126,6 +126,10 @@
   const installAppBtn=$('#installAppBtn');
   const iosInstallGuide=$('#iosInstallGuide');
   const iosInstallGuideClose=$('#iosInstallGuideClose');
+  const resetTodayBtn=$('#resetTodayBtn');
+  const resetTodayConfirm=$('#resetTodayConfirm');
+  const resetCancelBtn=$('#resetCancelBtn');
+  const resetConfirmBtn=$('#resetConfirmBtn');
   const Audio=window.DailyMotionAudio;
   const PWA=window.DailyMotionPWA;
   let settingsReturnFocus=null;
@@ -153,8 +157,29 @@
     if(mode!=='ios-manual')hideInstallGuide(false);
   };
 
+  let resetRevealTimer=null;
+  const hideResetConfirm=(restoreFocus=false)=>{
+    if(resetRevealTimer!==null){
+      clearTimeout(resetRevealTimer);
+      resetRevealTimer=null;
+    }
+    resetTodayConfirm.hidden=true;
+    resetTodayBtn.hidden=false;
+    if(restoreFocus)requestAnimationFrame(()=>resetTodayBtn.focus({preventScroll:true}));
+  };
+  const showResetConfirm=()=>{
+    if(resetRevealTimer!==null)clearTimeout(resetRevealTimer);
+    resetRevealTimer=setTimeout(()=>{
+      resetRevealTimer=null;
+      resetTodayBtn.hidden=true;
+      resetTodayConfirm.hidden=false;
+      requestAnimationFrame(()=>resetConfirmBtn.focus({preventScroll:true}));
+    },150);
+  };
+
   const finishSettingsClose=()=>{
     hideInstallGuide(false);
+    hideResetConfirm(false);
     settingsOverlay.setAttribute('aria-hidden','true');
     document.body.classList.remove('settings-open');
     $('.app-shell').inert=false;
@@ -177,6 +202,7 @@
 
   const openSettings=()=>{
     hideInstallGuide(false);
+    hideResetConfirm(false);
     syncSettings();
     syncInstallButton();
     settingsReturnFocus=document.activeElement;
@@ -215,7 +241,11 @@
   settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
   document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
-    if(event.key==='Escape'){closeSettings();return;}
+    if(event.key==='Escape'){
+      if(!resetTodayConfirm.hidden){hideResetConfirm(true);return;}
+      closeSettings();
+      return;
+    }
     if(event.key!=='Tab')return;
     const focusable=focusableInSettings();
     if(!focusable.length)return;
@@ -264,12 +294,13 @@
   syncInstallButton();
   document.documentElement.classList.add('app-ready');
 
-  $('#resetTodayBtn').onclick=()=>{
-    if(confirm('Сбросить весь сегодняшний прогресс и таймеры?')){
-      Store.resetToday();
-      toast('Сегодняшний прогресс сброшен');
-      setTimeout(()=>location.reload(),300);
-    }
+  resetTodayBtn.onclick=showResetConfirm;
+  resetCancelBtn.onclick=()=>hideResetConfirm(true);
+  resetConfirmBtn.onclick=()=>{
+    resetConfirmBtn.disabled=true;
+    Store.resetToday();
+    toast('Сегодняшний прогресс сброшен');
+    setTimeout(()=>location.reload(),300);
   };
 
   window.addEventListener('pageshow',event=>{
