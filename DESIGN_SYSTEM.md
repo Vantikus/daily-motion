@@ -62,7 +62,7 @@ These values are regression contracts, not a command to normalize unrelated comp
 | Workout bottom-nav control | height 54px |
 | Progress main card radius | 18px |
 | Settings sheet | radius 26px |
-| Sheet drag target | 96px wide, min-height 40px |
+| Sheet drag target | 96px wide, min-height 44px |
 
 ## Accessibility baseline
 
@@ -140,4 +140,42 @@ Use the scale for section gaps, card padding and component internals. One-off va
 - Workout: 16px page gutters, 12px toolbar/detail rhythm, 20px technique separation.
 - Progress: 16px stack gap, 12px metric gap, 16px card padding on mobile and 20px above mobile.
 - Settings: Home and Workout sheets share the same 16px horizontal content padding and 68px row height.
+
+
+## R2 — component contracts and regression hardening
+
+R2 hardens the established visual system without changing product hierarchy or bottom-sheet physics.
+
+### Semantic component aliases
+
+- Component hit target: 44px minimum.
+- Secondary action: 48px minimum.
+- Primary action: 52px minimum.
+- Component surface, muted surface, border, pressed state and selected state are semantic aliases over the P0/R1 palette.
+- Icon controls, selects, PWA actions, execution secondary actions and install guidance use the shared component target contracts.
+- The off-state switch track uses `#7f8981`, which preserves a visible >3:1 non-text contrast against the white/canvas surfaces. Checked state remains the accent green.
+
+### Motion tokens
+
+The CSS motion scale is semantic and the old `--fast/--base/--slow/--ease` names remain compatibility aliases:
+
+- Press-in: 120ms.
+- Fast: 140ms.
+- Base/content: 220ms.
+- Stage: 280ms.
+- Sheet close: 300ms.
+- Slow: 320ms.
+- Sheet open: 380ms.
+- Standard ease: `cubic-bezier(.2,.72,.2,1)`.
+- Emphasized/press-out ease: `cubic-bezier(.16,1,.3,1)`.
+
+The JS bottom-sheet durations, drag ratio, fling threshold and snap constants are named but numerically unchanged from the approved motion implementation.
+
+### Accessibility and resilience
+
+- Interactive targets used as direct controls must be at least 44px where layout permits.
+- The sheet drag handle keeps the same overall sheet geometry while its interactive height increases from 40px to 44px.
+- Text reflow is regression-tested at 150% and 200%.
+- Compact, standard and large iPhone-like viewports are checked for horizontal overflow and essential control reachability.
+- Chromium visual baselines cover Home, Workout and Progress with reduced motion and deterministic local state.
 
