@@ -565,41 +565,38 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
-test('settings reset uses a rounded destructive press surface',async({page,browserName})=>{
-  test.skip(browserName!=='chromium','destructive reset feedback is verified once in Chromium');
+test('settings reset uses inline confirmation and a straight divider',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','reset interaction is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
+  let dialogs=0;
+  page.on('dialog',async dialog=>{dialogs+=1;await dialog.dismiss();});
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
 
-  const reset=page.locator('#resetTodayBtn');
-  await reset.evaluate(button=>button.classList.add('is-pressing'));
-  await expect.poll(()=>reset.evaluate(button=>getComputedStyle(button).backgroundColor)).toBe('rgba(138, 74, 71, 0.075)');
-
-  const pressed=await reset.evaluate(button=>{
-    const style=getComputedStyle(button);
+  const geometry=await page.locator('.settings-reset-block').evaluate(block=>{
+    const blockStyle=getComputedStyle(block);
+    const buttonStyle=getComputedStyle(document.querySelector('#resetTodayBtn'));
     return {
-      radius:style.borderTopLeftRadius,
-      overflow:style.overflow,
-      background:style.backgroundColor,
-      color:style.color,
-      transform:style.transform
+      divider:blockStyle.borderTopStyle,
+      dividerRadius:blockStyle.borderTopLeftRadius,
+      buttonBorderTop:buttonStyle.borderTopColor,
+      buttonRadius:buttonStyle.borderTopLeftRadius
     };
   });
-  expect(pressed.radius).toBe('14px');
-  expect(pressed.overflow).toBe('hidden');
-  expect(pressed.transform).toBe('none');
-  expect(pressed.background).toBe('rgba(138, 74, 71, 0.075)');
-  expect(pressed.color).toBe('rgb(138, 74, 71)');
+  expect(geometry.divider).toBe('solid');
+  expect(geometry.dividerRadius).toBe('0px');
+  expect(geometry.buttonBorderTop).toBe('rgba(0, 0, 0, 0)');
+  expect(geometry.buttonRadius).toBe('14px');
 
-  await reset.evaluate(button=>button.classList.remove('is-pressing'));
-  await expect.poll(()=>reset.evaluate(button=>getComputedStyle(button).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  await page.locator('#resetTodayBtn').click();
+  await expect(page.locator('#resetTodayConfirm')).toBeVisible();
+  await expect(page.locator('#resetTodayBtn')).toBeHidden();
+  expect(dialogs).toBe(0);
+  await expect(page.locator('#resetConfirmBtn')).toBeFocused();
 
-  const released=await reset.evaluate(button=>({
-    background:getComputedStyle(button).backgroundColor,
-    radius:getComputedStyle(button).borderTopLeftRadius
-  }));
-  expect(released.radius).toBe('14px');
-  expect(released.background).toBe('rgba(0, 0, 0, 0)');
+  await page.locator('#resetCancelBtn').click();
+  await expect(page.locator('#resetTodayConfirm')).toBeHidden();
+  await expect(page.locator('#resetTodayBtn')).toBeVisible();
 });
 
 test('settings sheet uses intrinsic selectors and progress actions keep rounded feedback',async({page,browserName})=>{
