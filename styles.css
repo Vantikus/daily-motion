@@ -3491,8 +3491,4 @@ a[href] *,
   .home-body .activity-card__head .text-link:hover{
     background:var(--accent-wash);
   }
-  .data-actions button:hover{
-    background:var(--accent-wash);
-    border-color:rgba(47,107,85,.14);
-  }
 }
