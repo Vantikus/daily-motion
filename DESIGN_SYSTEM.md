@@ -88,3 +88,56 @@ These values are regression contracts, not a command to normalize unrelated comp
 ## Change rule
 
 Tokenization may replace a literal with a token of the **same computed value** without visual approval. Changing the value itself is a visual design change and must be isolated from compatibility/token migrations.
+
+## R1 — layout and spacing normalization
+
+R1 converts the P0 baseline into a shared geometry system.
+
+### Spacing scale
+
+| Token | Value |
+| --- | --- |
+| `--space-1` | 4px |
+| `--space-2` | 8px |
+| `--space-3` | 12px |
+| `--space-4` | 16px |
+| `--space-5` | 20px |
+| `--space-6` | 24px |
+| `--space-8` | 32px |
+| `--space-10` | 40px |
+| `--space-12` | 48px |
+
+Use the scale for section gaps, card padding and component internals. One-off values are reserved for geometry that has a functional reason.
+
+### Layout contract
+
+- Main content max-width: 760px.
+- Mobile inline gutter at ≤520px: 16px per side.
+- Standard inline gutter: 20px per side.
+- Wide Home/Progress desktop canvas may use the existing 24px-per-side wide layout.
+- Home, Workout and Progress use the same mobile gutter.
+- Fullscreen execution also keeps 16px side padding down to the compact mobile breakpoint.
+
+### Radius contract
+
+- Control: 14px.
+- Regular card/list surface: 18px.
+- Hero surface: 24px.
+- Bottom sheet: 26px.
+- Pill: fully rounded.
+
+### Control contract
+
+- Icon/touch controls: 44×44px.
+- Secondary action: 48px minimum.
+- Primary action: 52px minimum.
+- Workout bottom navigation: 54px.
+- Settings rows with title + supporting copy: 68px minimum.
+
+### R1 page rhythm
+
+- Home: 24px between major sections, 12px inside section groups, 16px regular-card padding on mobile.
+- Workout: 16px page gutters, 12px toolbar/detail rhythm, 20px technique separation.
+- Progress: 16px stack gap, 12px metric gap, 16px card padding on mobile and 20px above mobile.
+- Settings: Home and Workout sheets share the same 16px horizontal content padding and 68px row height.
+
