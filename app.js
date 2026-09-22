@@ -63,6 +63,7 @@
     const button=document.createElement('button');
     button.className='routine-card';
     button.type='button';
+    button.dataset.routine=key;
     if(!routine.available){
       button.disabled=true;
       button.classList.add('is-unavailable');
@@ -112,6 +113,50 @@
   $('#activityEmpty').hidden=hasActivity;
   $('#activityCard').classList.toggle('is-empty',!hasActivity);
 
+  const refreshHomeAfterReset=()=>{
+    const freshToday=Store.getDay();
+    const firstKey=availableRoutineKeys[0]||'morning';
+    const first=ROUTINES[firstKey];
+    $('#todayStatus').textContent='Сегодня';
+    $('#heroTitle').textContent=first.title;
+    $('#heroText').textContent=`${first.minutes} · ${first.total} упражнений`;
+    $('#heroNote').textContent='';
+    $('#heroNote').hidden=true;
+    $('#continueBtn').textContent='Начать';
+    $('#continueBtn').onclick=()=>go(firstKey);
+    $('#heroProgressText').textContent=`0 из ${first.total} упражнений`;
+    $('#dayProgressValue').textContent='0%';
+    $('#dayProgressBar').style.width='0%';
+    const track=$('#dayProgressTrack');
+    if(track){
+      track.setAttribute('aria-valuenow','0');
+      track.setAttribute('aria-valuetext',`0% (0 из ${first.total} упражнений)`);
+    }
+    $('#todayCard').classList.remove('is-complete');
+
+    availableRoutineKeys.forEach(key=>{
+      const button=document.querySelector(`.routine-card[data-routine="${key}"]`);
+      const status=button?.querySelector('.routine-status');
+      const bar=button?.querySelector('.mini-progress i');
+      if(status?.firstChild)status.firstChild.nodeValue='Начать';
+      if(bar)bar.style.width='0%';
+    });
+
+    const current=Store.getCurrentStreak(availableRoutineKeys,365);
+    $('#activityStreak').textContent=current
+      ?`Серия ${current} ${current===1?'день':'дня'}`
+      :'Серия —';
+
+    const todayActivity=days.querySelector('.activity-day.is-today');
+    if(todayActivity){
+      todayActivity.classList.remove('is-complete','is-active');
+      todayActivity.setAttribute('aria-label',`${names[new Date().getDay()]}: нет активности`);
+    }
+    const activityLeft=Boolean(days.querySelector('.activity-day.is-complete,.activity-day.is-active'));
+    $('#activityEmpty').hidden=activityLeft;
+    $('#activityCard').classList.toggle('is-empty',!activityLeft);
+  };
+
   const toast=message=>{
     const node=$('#toast');
     node.textContent=message;
@@ -160,7 +205,7 @@
 
   let resetStateTimer=null;
   let resetFocusTimer=null;
-  let reloadAfterSettingsClose=false;
+  let refreshAfterSettingsClose=false;
   let resetInFlight=false;
   const clearResetTimers=()=>{
     if(resetStateTimer!==null){
@@ -212,8 +257,8 @@
   };
 
   const finishSettingsClose=()=>{
-    const shouldReload=reloadAfterSettingsClose;
-    reloadAfterSettingsClose=false;
+    const shouldRefresh=refreshAfterSettingsClose;
+    refreshAfterSettingsClose=false;
     hideInstallGuide(false);
     hideResetConfirm(false);
     settingsOverlay.setAttribute('aria-hidden','true');
@@ -221,8 +266,13 @@
     $('.app-shell').inert=false;
     const returnFocus=settingsReturnFocus||settingsBtn;
     settingsReturnFocus=null;
-    if(!shouldReload)returnFocus?.focus?.({preventScroll:true});
-    if(shouldReload)setTimeout(()=>location.reload(),40);
+    if(shouldRefresh){
+      refreshHomeAfterReset();
+      resetInFlight=false;
+      toast('Сегодняшний прогресс сброшен');
+      return;
+    }
+    returnFocus?.focus?.({preventScroll:true});
   };
 
   const settingsSheet=settingsOverlay.querySelector('.settings-sheet');
@@ -337,7 +387,7 @@
     if(resetInFlight)return;
     resetInFlight=true;
     Store.resetToday();
-    reloadAfterSettingsClose=true;
+    refreshAfterSettingsClose=true;
     setTimeout(closeSettings,120);
   };
 
