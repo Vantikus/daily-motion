@@ -316,3 +316,38 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   expect(layout.factsGap).toBe('12px');
   expect(layout.techniqueMargin).toBe('20px');
 });
+
+
+test('typography tokens scale readable text without horizontal overflow',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','typography scaling contract is verified once in Chromium');
+  await page.setViewportSize({width:360,height:800});
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  const base=await page.evaluate(()=>({
+    eyebrow:getComputedStyle(document.querySelector('.eyebrow')).fontSize,
+    facts:getComputedStyle(document.querySelector('.exercise-facts span')).fontSize,
+    description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize
+  }));
+  expect(base).toEqual({eyebrow:'12px',facts:'12px',description:'13px'});
+
+  await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
+  const scaled=await page.evaluate(()=>({
+    eyebrow:getComputedStyle(document.querySelector('.eyebrow')).fontSize,
+    facts:getComputedStyle(document.querySelector('.exercise-facts span')).fontSize,
+    description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize,
+    overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth
+  }));
+  expect(scaled).toEqual({eyebrow:'15px',facts:'15px',description:'16.25px',overflow:false});
+
+  for(const url of ['/index.html','/progress.html']){
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth);
+    expect(overflow).toBe(false);
+  }
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.history-day').first()).toBeVisible();
+  await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
+  await expect(page.locator('.history-day').first().locator('small')).toHaveCSS('font-size','15px');
+});
