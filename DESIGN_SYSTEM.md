@@ -177,5 +177,5 @@ The JS bottom-sheet durations, drag ratio, fling threshold and snap constants ar
 - The sheet drag handle keeps the same overall sheet geometry while its interactive height increases from 40px to 44px.
 - Text reflow is regression-tested at 150% and 200%.
 - Compact, standard and large iPhone-like viewports are checked for horizontal overflow and essential control reachability.
-- Chromium visual baselines cover Home, Workout and Progress with reduced motion and deterministic local state.
+- Chromium visual baselines cover Home, Workout and Progress with reduced motion and deterministic local state. The accepted screenshots are pinned by SHA-256; on mismatch the actual PNG is attached to the CI artifact for visual review.
 
