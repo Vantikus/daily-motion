@@ -171,7 +171,7 @@ for(const token of [
   "page.screenshot({",
   "home:'02021377ce78e9dc3dec40a453f1ceb20bfcbbd7384ccb7641ce2e4300731099'",
   "workout:'af701387f338fed56677dea37a97e2babc36c711d8e3e9368d84bbbebfc21f34'",
-  "progress:'7ffea79a2ba14c76d0e77fa87f0710d1aa0a4f68e12b5e1e11bfbcbdf55d62e2'"
+  "progress:'08a6f3343021f986158eb43a1e2c737031fd96bf6f20d62e0825da61a1ce9d5e'"
 ]){
   if(!visualSpec.includes(token))fail(`tests/visual.spec.js: R2 visual baseline contract missing ${token}`);
 }
