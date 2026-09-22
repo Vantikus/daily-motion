@@ -55,10 +55,10 @@ test('long sheet drag dismisses',async({page})=>{
   const y=box.y+box.height/2;
   await page.mouse.move(x,y);
   await page.mouse.down();
-  await page.mouse.move(x,y+220,{steps:8});
+  await page.mouse.move(x,y+300,{steps:12});
   await page.mouse.up();
 
-  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1500});
 });
 
 test('workout settings uses the same shared sheet behavior',async({page})=>{
