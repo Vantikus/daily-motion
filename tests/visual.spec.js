@@ -11,7 +11,7 @@ const baseState={
 const visualHashes=Object.freeze({
   home:'02021377ce78e9dc3dec40a453f1ceb20bfcbbd7384ccb7641ce2e4300731099',
   workout:'af701387f338fed56677dea37a97e2babc36c711d8e3e9368d84bbbebfc21f34',
-  progress:'d3a59bd1edfbbe5c00aa7655127be3bc8ef170919a81e8e4ec544f9d98141d0b'
+  progress:'7ffea79a2ba14c76d0e77fa87f0710d1aa0a4f68e12b5e1e11bfbcbdf55d62e2'
 });
 
 const prepare=async page=>{
