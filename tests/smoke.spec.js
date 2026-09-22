@@ -652,6 +652,33 @@ test('settings sheet uses intrinsic selectors and progress actions keep rounded 
   expect(actionGap).toBe('10px');
 });
 
+test('progress entry and data actions keep rounded press surfaces',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','interaction geometry is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+
+  const history=page.locator('.activity-card__head .text-link');
+  await history.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+  const historyPress=await history.evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {radius:style.borderRadius,background:style.backgroundColor,minHeight:style.minHeight};
+  });
+  expect(historyPress.radius).toBe('12px');
+  expect(historyPress.minHeight).toBe('44px');
+  expect(historyPress.background).not.toBe('rgba(0, 0, 0, 0)');
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  const exportButton=page.locator('#exportDataBtn');
+  await exportButton.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+  const exportPress=await exportButton.evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {radius:style.borderRadius,overflow:style.overflow,background:style.backgroundColor};
+  });
+  expect(exportPress.radius).toBe('13px');
+  expect(exportPress.overflow).toBe('hidden');
+  expect(exportPress.background).not.toBe('rgba(0, 0, 0, 0)');
+});
+
 test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
   test.skip(browserName!=='chromium','R1 computed geometry contract is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
