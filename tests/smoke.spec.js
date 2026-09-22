@@ -572,7 +572,9 @@ test('settings reset uses a rounded destructive press state and releases cleanly
   await page.locator('#settingsBtn').click();
 
   const reset=page.locator('#resetTodayBtn');
-  await reset.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+  const resetBox=await reset.boundingBox();
+  await page.mouse.move(resetBox.x+resetBox.width/2,resetBox.y+resetBox.height/2);
+  await page.mouse.down();
 
   const pressed=await reset.evaluate(button=>{
     const style=getComputedStyle(button);
@@ -590,7 +592,7 @@ test('settings reset uses a rounded destructive press state and releases cleanly
   expect(pressed.background).toBe('rgba(138, 74, 71, 0.075)');
   expect(pressed.color).toBe('rgb(138, 74, 71)');
 
-  await reset.dispatchEvent('pointerup',{pointerType:'touch',button:0});
+  await page.mouse.up();
   await expect.poll(()=>reset.evaluate(button=>button.classList.contains('is-pressing'))).toBe(false);
 
   const released=await reset.evaluate(button=>({
