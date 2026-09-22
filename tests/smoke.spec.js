@@ -565,6 +565,59 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
+test('settings sheet keeps compact rhythm and balanced selectors',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','settings geometry is verified once in Chromium');
+
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:844});
+    await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+    await page.locator('#settingsBtn').click();
+
+    const layout=await page.evaluate(()=>{
+      const sheet=document.querySelector('.settings-sheet');
+      const handle=document.querySelector('.settings-sheet__handle');
+      const head=document.querySelector('.settings-sheet__head');
+      const reset=document.querySelector('#resetTodayBtn');
+      const control=document.querySelector('.settings-select-control');
+      const select=control?.querySelector('select');
+      const sheetBox=sheet.getBoundingClientRect();
+      const handleBox=handle.getBoundingClientRect();
+      const headBox=head.getBoundingClientRect();
+      const resetBox=reset.getBoundingClientRect();
+      const style=getComputedStyle(select);
+      return {
+        overflow:document.documentElement.scrollWidth-window.innerWidth,
+        handleToHead:Math.round(headBox.top-handleBox.top),
+        bottomGap:Math.round(sheetBox.bottom-resetBox.bottom),
+        controlWidth:Math.round(control.getBoundingClientRect().width),
+        controlHeight:Math.round(control.getBoundingClientRect().height),
+        appearance:style.appearance,
+        textAlign:style.textAlign
+      };
+    });
+
+    expect(layout.overflow).toBeLessThanOrEqual(0);
+    expect(layout.handleToHead).toBeLessThanOrEqual(38);
+    expect(layout.bottomGap).toBeLessThanOrEqual(16);
+    expect(layout.controlHeight).toBe(44);
+    expect(layout.controlWidth).toBe(width<=340?108:116);
+    expect(layout.appearance).toBe('none');
+    expect(layout.textAlign).toBe('center');
+
+    await expect(page.locator('#countdownSetting option[value="0"]')).toHaveText('Нет');
+    await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 секунд');
+    await expect(page.locator('#themeSetting option[value="system"]')).toHaveText('Системная');
+  }
+
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#routineMoreButton').click();
+  await expect(page.locator('#workoutThemeSetting option[value="system"]')).toHaveText('Системная');
+  const routineSelect=await page.locator('.routine-settings-sheet .settings-select-control').boundingBox();
+  expect(Math.round(routineSelect.width)).toBe(116);
+  expect(Math.round(routineSelect.height)).toBe(44);
+});
+
 test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
   test.skip(browserName!=='chromium','R1 computed geometry contract is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
