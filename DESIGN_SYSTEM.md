@@ -121,7 +121,7 @@ Use the scale for section gaps, card padding and component internals. One-off va
 ### Radius contract
 
 - Control: 14px.
-- Regular card/list surface: 18px.
+- Regular standalone card or grouped-list container: 18px. Rows inside a grouped list stay flat at 0px radius.
 - Hero surface: 24px.
 - Bottom sheet: 26px.
 - Pill: fully rounded.
