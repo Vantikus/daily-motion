@@ -353,7 +353,7 @@ test('typography tokens scale readable text without horizontal overflow',async({
 });
 
 
-test('Daily Motion Design System v1 baseline stays stable',async({page,browserName})=>{
+test('Daily Motion Design System foundation stays stable',async({page,browserName})=>{
   test.skip(browserName!=='chromium','P0 computed design baseline is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
 
@@ -416,7 +416,7 @@ test('Daily Motion Design System v1 baseline stays stable',async({page,browserNa
     };
   });
   expect(workout).toEqual({
-    shellWidth:'366px',
+    shellWidth:'358px',
     techniqueMinHeight:'56px',
     navHeight:'54px'
   });
@@ -433,5 +433,75 @@ test('Daily Motion Design System v1 baseline stays stable',async({page,browserNa
   expect(progress).toEqual({
     cardRadius:'18px',
     calendarMicrocopyColor:'rgb(104, 113, 105)'
+  });
+});
+
+
+test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','R1 computed geometry contract is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const home=await page.evaluate(()=>({
+    container:getComputedStyle(document.querySelector('.home-body .container')).width,
+    heroPadding:getComputedStyle(document.querySelector('.home-body .today-card')).paddingLeft,
+    activityPadding:getComputedStyle(document.querySelector('.home-body .activity-card')).paddingLeft,
+    routineRadius:getComputedStyle(document.querySelector('.home-body .routine-list')).borderTopLeftRadius,
+    touch:getComputedStyle(document.querySelector('#settingsBtn')).width
+  }));
+  expect(home).toEqual({
+    container:'358px',
+    heroPadding:'20px',
+    activityPadding:'16px',
+    routineRadius:'18px',
+    touch:'44px'
+  });
+
+  await page.locator('#settingsBtn').click();
+  const settings=await page.evaluate(()=>({
+    padding:getComputedStyle(document.querySelector('.settings-sheet')).paddingLeft,
+    row:getComputedStyle(document.querySelector('.setting-row')).minHeight
+  }));
+  expect(settings).toEqual({padding:'16px',row:'68px'});
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  const workout=await page.evaluate(()=>({
+    shell:getComputedStyle(document.querySelector('.session-shell')).width,
+    techniqueRadius:getComputedStyle(document.querySelector('.technique-key')).borderTopLeftRadius,
+    detailRadius:getComputedStyle(document.querySelector('.detail-card')).borderTopLeftRadius,
+    nav:getComputedStyle(document.querySelector('.nav-button')).height,
+    executionPadding:getComputedStyle(document.querySelector('.execution-overlay')).paddingLeft
+  }));
+  expect(workout).toEqual({
+    shell:'358px',
+    techniqueRadius:'18px',
+    detailRadius:'18px',
+    nav:'54px',
+    executionPadding:'16px'
+  });
+
+  await page.locator('#routineMoreButton').click();
+  const routineSettings=await page.evaluate(()=>({
+    padding:getComputedStyle(document.querySelector('.routine-settings-sheet')).paddingLeft,
+    row:getComputedStyle(document.querySelector('.routine-setting-row')).minHeight
+  }));
+  expect(routineSettings).toEqual({padding:'16px',row:'68px'});
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  const progress=await page.evaluate(()=>({
+    container:getComputedStyle(document.querySelector('.progress-body .container')).width,
+    gap:getComputedStyle(document.querySelector('.progress-page')).rowGap,
+    cardPadding:getComputedStyle(document.querySelector('.progress-card')).paddingLeft,
+    cardRadius:getComputedStyle(document.querySelector('.progress-card')).borderTopLeftRadius,
+    metricGap:getComputedStyle(document.querySelector('.progress-metrics')).gap,
+    metricRadius:getComputedStyle(document.querySelector('.progress-metrics article')).borderTopLeftRadius
+  }));
+  expect(progress).toEqual({
+    container:'358px',
+    gap:'16px',
+    cardPadding:'16px',
+    cardRadius:'18px',
+    metricGap:'12px',
+    metricRadius:'18px'
   });
 });
