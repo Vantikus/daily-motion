@@ -1968,9 +1968,11 @@ a[href] *,
   padding-bottom:16px;
 }
 .home-body .page-grid{
+  grid-template-columns:minmax(0,1fr);
   gap:var(--qm-page-gap);
   padding-bottom:34px;
 }
+.home-body .page-grid>*{min-width:0}
 .home-body .today-card{
   padding:var(--space-5);
 }
