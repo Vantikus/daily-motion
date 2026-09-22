@@ -2168,7 +2168,7 @@ a[href] *,
   background:var(--surface-soft);
   border-color:var(--line-soft);
 }
-.settings-reset{appearance:none;position:relative;width:100%;min-height:66px;margin-top:8px;padding:12px 46px 12px 12px;border:1px solid transparent;border-top-color:rgba(23,25,23,.06);border-radius:var(--radius-control);background:transparent;color:#8a4a47;display:grid;align-content:center;justify-items:start;gap:3px;text-align:left;font-size:var(--font-size-md);font-weight:800;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.settings-reset{appearance:none;position:relative;width:100%;min-height:66px;margin-top:8px;padding:12px 46px 12px 12px;border:1px solid transparent;border-top-color:rgba(23,25,23,.06);border-radius:var(--radius-control);background:transparent;color:#8a4a47;display:grid;align-content:center;justify-items:start;gap:3px;text-align:left;font-size:var(--font-size-md);font-weight:800;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background-color 220ms ease,border-color 220ms ease,box-shadow 260ms ease,color 220ms ease}
 .settings-reset::after{
   font-size:var(--font-size-xs);
 }
@@ -3495,21 +3495,10 @@ a[href] *,
 
 
 /* Destructive reset feedback stays inside its rounded red surface. */
-.settings-reset,
 .settings-reset:active,
 .settings-reset.is-pressing{
   color:#8a4a47;
   border-radius:var(--radius-control);
-}
-.settings-reset{
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 260ms ease,
-    color 220ms ease;
-}
-.settings-reset:active,
-.settings-reset.is-pressing{
   transform:none!important;
   background:rgba(138,74,71,.075)!important;
   border-color:rgba(138,74,71,.16)!important;
