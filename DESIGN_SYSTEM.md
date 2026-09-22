@@ -209,3 +209,5 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Do not introduce gradients inside cards. The only page-level ambient gradient remains the existing Home canvas treatment.
 - Hover/pressed states should change surface/border first and movement second.
 - Visual polish must not change R0–R2 geometry, touch targets, text scaling, safe-area behavior or bottom-sheet physics.
+
+- Press feedback must be clipped to the control's own rounded shape; text navigation that receives a filled press state needs an explicit rounded hit surface rather than a rectangular flash.
