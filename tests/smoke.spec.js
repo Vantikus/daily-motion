@@ -556,12 +556,30 @@ test('R2 text reflows at 150 and 200 percent without horizontal overflow',async(
     for(const url of ['/index.html','/session.html?routine=morning','/progress.html']){
       await page.goto(url,{waitUntil:'domcontentloaded'});
       await page.evaluate(size=>{document.documentElement.style.fontSize=`${size}px`;},rootSize);
-      const result=await page.evaluate(()=>({
-        overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
-        width:document.documentElement.scrollWidth,
-        client:document.documentElement.clientWidth
-      }));
-      expect(result.overflow,`${url} overflowed at root ${rootSize}px: ${result.width}/${result.client}`).toBe(false);
+      const result=await page.evaluate(()=>{
+        const client=document.documentElement.clientWidth;
+        const offenders=[...document.querySelectorAll('body *')].map(el=>{
+          const rect=el.getBoundingClientRect();
+          return {
+            tag:el.tagName.toLowerCase(),
+            id:el.id||'',
+            className:typeof el.className==='string'?el.className:'',
+            left:Math.round(rect.left*10)/10,
+            right:Math.round(rect.right*10)/10,
+            width:Math.round(rect.width*10)/10,
+            scrollWidth:el.scrollWidth,
+            clientWidth:el.clientWidth,
+            text:(el.textContent||'').trim().replace(/\\s+/g,' ').slice(0,80)
+          };
+        }).filter(item=>item.right>client+1||item.left<-1||item.scrollWidth>item.clientWidth+1).slice(0,18);
+        return {
+          overflow:document.documentElement.scrollWidth>client,
+          width:document.documentElement.scrollWidth,
+          client,
+          offenders
+        };
+      });
+      expect(result.overflow,`${url} overflowed at root ${rootSize}px: ${result.width}/${result.client} :: ${JSON.stringify(result.offenders)}`).toBe(false);
     }
   }
 });
