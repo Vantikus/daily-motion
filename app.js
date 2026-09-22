@@ -158,50 +158,62 @@
     if(mode!=='ios-manual')hideInstallGuide(false);
   };
 
-  let resetRevealTimer=null;
+  let resetStateTimer=null;
   let resetFocusTimer=null;
+  let reloadAfterSettingsClose=false;
+  let resetInFlight=false;
   const clearResetTimers=()=>{
-    if(resetRevealTimer!==null){
-      clearTimeout(resetRevealTimer);
-      resetRevealTimer=null;
+    if(resetStateTimer!==null){
+      clearTimeout(resetStateTimer);
+      resetStateTimer=null;
     }
     if(resetFocusTimer!==null){
       clearTimeout(resetFocusTimer);
       resetFocusTimer=null;
     }
   };
-  const hideResetConfirm=(restoreFocus=false)=>{
-    clearResetTimers();
-    resetTodayBlock.classList.remove('is-confirming');
-    resetTodayConfirm.setAttribute('aria-hidden','true');
-    resetTodayConfirm.inert=true;
-    resetTodayBtn.removeAttribute('aria-hidden');
-    resetTodayBtn.inert=false;
-    if(restoreFocus){
-      resetFocusTimer=setTimeout(()=>{
-        resetFocusTimer=null;
-        resetTodayBtn.focus({preventScroll:true});
-      },220);
-    }
-  };
-  const showResetConfirm=()=>{
-    if(resetTodayBlock.classList.contains('is-confirming')||resetRevealTimer!==null)return;
-    clearResetTimers();
-    resetRevealTimer=setTimeout(()=>{
-      resetRevealTimer=null;
-      resetTodayBlock.classList.add('is-confirming');
+  const applyResetConfirmState=(confirming,focusTarget=null)=>{
+    resetTodayBlock.classList.toggle('is-confirming',confirming);
+    resetTodayConfirm.setAttribute('aria-hidden',confirming?'false':'true');
+    resetTodayConfirm.inert=!confirming;
+    if(confirming){
       resetTodayBtn.setAttribute('aria-hidden','true');
       resetTodayBtn.inert=true;
-      resetTodayConfirm.setAttribute('aria-hidden','false');
-      resetTodayConfirm.inert=false;
+    }else{
+      resetTodayBtn.removeAttribute('aria-hidden');
+      resetTodayBtn.inert=false;
+    }
+    if(focusTarget){
       resetFocusTimer=setTimeout(()=>{
         resetFocusTimer=null;
-        resetConfirmBtn.focus({preventScroll:true});
-      },240);
-    },140);
+        focusTarget.focus({preventScroll:true});
+      },310);
+    }
+  };
+  const hideResetConfirm=(restoreFocus=false,delay=0)=>{
+    clearResetTimers();
+    const apply=()=>applyResetConfirmState(false,restoreFocus?resetTodayBtn:null);
+    if(delay){
+      resetStateTimer=setTimeout(()=>{
+        resetStateTimer=null;
+        apply();
+      },delay);
+      return;
+    }
+    apply();
+  };
+  const showResetConfirm=()=>{
+    if(resetTodayBlock.classList.contains('is-confirming')||resetStateTimer!==null)return;
+    clearResetTimers();
+    resetStateTimer=setTimeout(()=>{
+      resetStateTimer=null;
+      applyResetConfirmState(true,resetConfirmBtn);
+    },120);
   };
 
   const finishSettingsClose=()=>{
+    const shouldReload=reloadAfterSettingsClose;
+    reloadAfterSettingsClose=false;
     hideInstallGuide(false);
     hideResetConfirm(false);
     settingsOverlay.setAttribute('aria-hidden','true');
@@ -209,7 +221,8 @@
     $('.app-shell').inert=false;
     const returnFocus=settingsReturnFocus||settingsBtn;
     settingsReturnFocus=null;
-    returnFocus?.focus?.({preventScroll:true});
+    if(!shouldReload)returnFocus?.focus?.({preventScroll:true});
+    if(shouldReload)setTimeout(()=>location.reload(),40);
   };
 
   const settingsSheet=settingsOverlay.querySelector('.settings-sheet');
@@ -266,7 +279,7 @@
   document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
-      if(!resetTodayConfirm.hidden){hideResetConfirm(true);return;}
+      if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,120);return;}
       closeSettings();
       return;
     }
@@ -319,12 +332,13 @@
   document.documentElement.classList.add('app-ready');
 
   resetTodayBtn.onclick=showResetConfirm;
-  resetCancelBtn.onclick=()=>hideResetConfirm(true);
+  resetCancelBtn.onclick=()=>hideResetConfirm(true,120);
   resetConfirmBtn.onclick=()=>{
-    resetConfirmBtn.disabled=true;
+    if(resetInFlight)return;
+    resetInFlight=true;
     Store.resetToday();
-    toast('Сегодняшний прогресс сброшен');
-    setTimeout(()=>location.reload(),300);
+    reloadAfterSettingsClose=true;
+    setTimeout(closeSettings,120);
   };
 
   window.addEventListener('pageshow',event=>{

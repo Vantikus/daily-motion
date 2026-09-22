@@ -3533,17 +3533,15 @@ a[href] *,
 }
 .settings-reset-block>.settings-reset{
   opacity:1;
-  visibility:visible;
   pointer-events:auto;
   transform:none;
   transition:
-    opacity 170ms ease,
+    opacity 220ms cubic-bezier(.2,.72,.2,1),
     transform 300ms cubic-bezier(.16,1,.3,1),
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 180ms ease,
-    color 160ms ease,
-    visibility 0s linear 0s;
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 200ms ease,
+    color 180ms ease;
 }
 .settings-reset-confirm{
   min-height:66px;
@@ -3556,34 +3554,21 @@ a[href] *,
   align-items:center;
   gap:12px;
   opacity:0;
-  visibility:hidden;
   pointer-events:none;
-  transform:translateY(7px) scale(.985);
+  transform:translateY(6px) scale(.985);
   transition:
-    opacity 180ms ease,
-    transform 320ms cubic-bezier(.16,1,.3,1),
-    visibility 0s linear 220ms;
+    opacity 220ms cubic-bezier(.2,.72,.2,1),
+    transform 300ms cubic-bezier(.16,1,.3,1);
 }
 .settings-reset-block.is-confirming>.settings-reset{
   opacity:0;
-  visibility:hidden;
   pointer-events:none;
-  transform:translateY(-5px) scale(.985);
-  transition:
-    opacity 150ms ease,
-    transform 260ms cubic-bezier(.16,1,.3,1),
-    background-color 120ms ease,
-    border-color 120ms ease,
-    box-shadow 140ms ease,
-    color 120ms ease,
-    visibility 0s linear 170ms;
+  transform:translateY(-6px) scale(.985);
 }
 .settings-reset-block.is-confirming>.settings-reset-confirm{
   opacity:1;
-  visibility:visible;
   pointer-events:auto;
   transform:none;
-  transition-delay:45ms,45ms,0s;
 }
 .settings-reset-confirm__copy{min-width:0;display:grid;gap:2px}
 .settings-reset-confirm__copy strong{font-size:var(--font-size-sm);line-height:1.25;color:#7e4542}
