@@ -47,6 +47,8 @@ test.describe('R2 visual baselines',()=>{
   test('workout visual baseline',async({page},testInfo)=>{
     await prepare(page);
     await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#pageLoader')).toHaveClass(/is-hidden/);
+    await expect(page.locator('#exerciseGoal')).not.toHaveText('');
     await assertVisual(page,testInfo,'workout-390x844',visualHashes.workout);
   });
 
