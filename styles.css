@@ -469,7 +469,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .timer-ring.is-ending{animation:none;box-shadow:0 0 0 5px rgba(47,107,85,.07)}
 
 
-.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface);overflow:hidden}
 .details-stack .detail-card:first-child{grid-column:auto!important}
 .detail-card{border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;overflow:hidden}
 .detail-card:last-child{border-bottom:0}
