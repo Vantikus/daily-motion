@@ -118,6 +118,9 @@ if(styles.includes('.session-shell{width:calc(100% - 24px)')){
 if(!styles.includes('min-height:var(--settings-row-h)')){
   fail('styles.css: shared settings row height is not wired');
 }
+if(!styles.includes('.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line);border-radius:var(--radius-card)')){
+  fail('styles.css: technique grouped-list radius is not wired to R1');
+}
 if(!designSystem.includes('## R1 — layout and spacing normalization')){
   fail('DESIGN_SYSTEM.md: R1 layout contract is missing');
 }
