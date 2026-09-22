@@ -116,8 +116,8 @@ if(!styles.includes('.session-shell{width:min(var(--layout-max),calc(100% - var(
 if(styles.includes('.session-shell{width:calc(100% - 24px)')){
   fail('styles.css: legacy 12px workout gutter returned');
 }
-if(!styles.includes('min-height:var(--settings-row-h)')){
-  fail('styles.css: shared settings row height is not wired');
+if(!styles.includes('min-height:var(--component-row-h)')){
+  fail('styles.css: shared settings row height is not wired through the R2 component token');
 }
 if(!styles.includes('.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line);border-radius:var(--radius-card)')){
   fail('styles.css: technique grouped-list radius is not wired to R1');
