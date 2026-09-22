@@ -182,6 +182,32 @@ if(!designSystem.includes('## R2 — component contracts and regression hardenin
   fail('DESIGN_SYSTEM.md: R2 component hardening contract is missing');
 }
 
+
+for(const token of [
+  '--surface-raised:#fff;',
+  '--surface-soft:#f8faf7;',
+  '--line-soft:rgba(23,25,23,.065);',
+  '--line-strong:rgba(23,25,23,.12);',
+  '--accent-wash:#e7f0ea;',
+  '--shadow-card:0 1px 2px rgba(23,25,23,.025),0 10px 28px rgba(37,49,41,.045);',
+  '--shadow-hero:0 1px 2px rgba(23,25,23,.025),0 18px 42px rgba(37,49,41,.065);',
+  '--shadow-sheet:0 -20px 64px rgba(27,37,30,.16);'
+]){
+  if(!styles.includes(token))fail(`styles.css: R3 polish token drifted: ${token}`);
+}
+for(const fragment of [
+  'box-shadow:var(--shadow-hero);',
+  'box-shadow:var(--shadow-card);',
+  'box-shadow:var(--shadow-sheet);',
+  'background:var(--accent-wash);',
+  'background:var(--surface-soft);'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: R3 visual hierarchy contract missing: ${fragment}`);
+}
+if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
+  fail('DESIGN_SYSTEM.md: R3 visual polish contract is missing');
+}
+
 const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
 for(const requiredSize of ['192x192','512x512']){
   if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(requiredSize))){
