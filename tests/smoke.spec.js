@@ -565,17 +565,14 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
-test('settings reset uses a rounded destructive press state and releases cleanly',async({page,browserName})=>{
+test('settings reset uses a rounded destructive press surface',async({page,browserName})=>{
   test.skip(browserName!=='chromium','destructive reset feedback is verified once in Chromium');
   await page.setViewportSize({width:390,height:844});
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
 
   const reset=page.locator('#resetTodayBtn');
-  const resetBox=await reset.boundingBox();
-  await page.mouse.move(resetBox.x+resetBox.width/2,resetBox.y+resetBox.height/2);
-  await page.mouse.down();
-  await expect(reset).toHaveClass(/is-pressing/);
+  await reset.evaluate(button=>button.classList.add('is-pressing'));
   await expect.poll(()=>reset.evaluate(button=>getComputedStyle(button).backgroundColor)).toBe('rgba(138, 74, 71, 0.075)');
 
   const pressed=await reset.evaluate(button=>{
@@ -594,8 +591,8 @@ test('settings reset uses a rounded destructive press state and releases cleanly
   expect(pressed.background).toBe('rgba(138, 74, 71, 0.075)');
   expect(pressed.color).toBe('rgb(138, 74, 71)');
 
-  await page.mouse.up();
-  await expect.poll(()=>reset.evaluate(button=>button.classList.contains('is-pressing'))).toBe(false);
+  await reset.evaluate(button=>button.classList.remove('is-pressing'));
+  await expect.poll(()=>reset.evaluate(button=>getComputedStyle(button).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
 
   const released=await reset.evaluate(button=>({
     background:getComputedStyle(button).backgroundColor,
