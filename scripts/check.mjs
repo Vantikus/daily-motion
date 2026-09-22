@@ -82,6 +82,46 @@ if(!designSystem.includes('# Daily Motion Design System v1')||!designSystem.incl
 if(styles.includes('#8a918b'))fail('styles.css: low-contrast calendar microcopy returned');
 if(styles.includes('#9b6b68'))fail('styles.css: low-contrast reset microcopy returned');
 
+
+for(const token of [
+  '--space-1:4px;',
+  '--space-2:8px;',
+  '--space-3:12px;',
+  '--space-4:16px;',
+  '--space-5:20px;',
+  '--space-6:24px;',
+  '--space-8:32px;',
+  '--space-10:40px;',
+  '--space-12:48px;',
+  '--layout-max:760px;',
+  '--layout-inline-space:40px;',
+  '--radius-control:14px;',
+  '--radius-card:18px;',
+  '--radius-hero:24px;',
+  '--radius-sheet:26px;',
+  '--control-touch:44px;',
+  '--control-primary:52px;',
+  '--control-nav:54px;',
+  '--settings-row-h:68px;'
+]){
+  if(!styles.includes(token))fail(`styles.css: R1 layout token drifted: ${token}`);
+}
+if(!styles.includes('@media(max-width:520px){:root{--layout-inline-space:32px}}')){
+  fail('styles.css: R1 mobile 16px gutter contract is missing');
+}
+if(!styles.includes('.session-shell{width:min(var(--layout-max),calc(100% - var(--layout-inline-space)))')){
+  fail('styles.css: session shell is not wired to shared layout gutter');
+}
+if(styles.includes('.session-shell{width:calc(100% - 24px)')){
+  fail('styles.css: legacy 12px workout gutter returned');
+}
+if(!styles.includes('min-height:var(--settings-row-h)')){
+  fail('styles.css: shared settings row height is not wired');
+}
+if(!designSystem.includes('## R1 — layout and spacing normalization')){
+  fail('DESIGN_SYSTEM.md: R1 layout contract is missing');
+}
+
 const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
 for(const requiredSize of ['192x192','512x512']){
   if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(requiredSize))){
