@@ -413,8 +413,8 @@ const motionContract=[
   "phase='dragging'",
   "phase='settling'",
   "phase='closing'",
-  "sheetHeight*.28",
-  "y>=52&&velocity>700",
+  "sheetHeight*SHEET_MOTION.dismissRatio",
+  "y>=SHEET_MOTION.flingMinY&&velocity>SHEET_MOTION.flingVelocity",
   "prefers-reduced-motion: reduce",
   "Cubic Hermite",
   "Critically damped return"
