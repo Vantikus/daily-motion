@@ -592,7 +592,9 @@ test('settings sheet keeps compact rhythm and balanced selectors',async({page,br
         controlWidth:Math.round(control.getBoundingClientRect().width),
         controlHeight:Math.round(control.getBoundingClientRect().height),
         appearance:style.appearance,
-        textAlign:style.textAlign
+        textAlign:style.textAlign,
+        paddingLeft:style.paddingLeft,
+        paddingRight:style.paddingRight
       };
     });
 
@@ -602,7 +604,9 @@ test('settings sheet keeps compact rhythm and balanced selectors',async({page,br
     expect(layout.controlHeight).toBe(44);
     expect(layout.controlWidth).toBe(width<=340?108:116);
     expect(layout.appearance).toBe('none');
-    expect(layout.textAlign).toBe('center');
+    expect(layout.textAlign).toBe('left');
+    expect(layout.paddingLeft).toBe(width<=340?'12px':'14px');
+    expect(layout.paddingRight).toBe(width<=340?'32px':'36px');
 
     await expect(page.locator('#countdownSetting option[value="0"]')).toHaveText('Нет');
     await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 секунд');
@@ -616,6 +620,21 @@ test('settings sheet keeps compact rhythm and balanced selectors',async({page,br
   const routineSelect=await page.locator('.routine-settings-sheet .settings-select-control').boundingBox();
   expect(Math.round(routineSelect.width)).toBe(116);
   expect(Math.round(routineSelect.height)).toBe(44);
+});
+
+test('progress entry keeps a rounded press surface',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','interaction geometry is verified once in Chromium');
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const history=page.locator('.activity-card__head .text-link');
+  await history.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+  const pressed=await history.evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {radius:style.borderRadius,background:style.backgroundColor,minHeight:style.minHeight};
+  });
+  expect(pressed.radius).toBe('12px');
+  expect(pressed.minHeight).toBe('44px');
+  expect(pressed.background).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
