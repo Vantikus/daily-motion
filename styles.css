@@ -390,7 +390,8 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .home-body{background:var(--bg)}
 .home-body .container{width:min(var(--layout-max),calc(100% - var(--layout-inline-space)))}
 .home-body .topbar{padding-top:18px;padding-bottom:16px}
-.home-body .topbar h1{font-size:1.75rem;line-height:1.05;letter-spacing:-.04em}
+.home-body .topbar>div{min-width:0}
+.home-body .topbar h1{font-size:1.75rem;line-height:1.05;letter-spacing:-.04em;overflow-wrap:anywhere;text-wrap:balance}
 .home-body .icon-button{width:var(--control-touch);height:var(--control-touch);border-radius:var(--radius-control);box-shadow:none;background:var(--surface)}
 .home-body .icon-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .home-body .page-grid{gap:24px;padding-bottom:32px}
