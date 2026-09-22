@@ -565,21 +565,20 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
 });
 
 
-test('settings sheet keeps compact rhythm and balanced selectors',async({page,browserName})=>{
-  test.skip(browserName!=='chromium','settings geometry is verified once in Chromium');
+test('settings sheet uses intrinsic selectors and progress actions keep rounded feedback',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','settings and progress control geometry are verified once in Chromium');
 
   for(const width of [320,390]){
     await page.setViewportSize({width,height:844});
     await page.goto('/index.html',{waitUntil:'domcontentloaded'});
     await page.locator('#settingsBtn').click();
 
-    const layout=await page.evaluate(()=>{
+    const base=await page.evaluate(()=>{
       const sheet=document.querySelector('.settings-sheet');
       const handle=document.querySelector('.settings-sheet__handle');
       const head=document.querySelector('.settings-sheet__head');
       const reset=document.querySelector('#resetTodayBtn');
-      const control=document.querySelector('.settings-select-control');
-      const select=control?.querySelector('select');
+      const select=document.querySelector('#countdownSetting');
       const sheetBox=sheet.getBoundingClientRect();
       const handleBox=handle.getBoundingClientRect();
       const headBox=head.getBoundingClientRect();
@@ -589,20 +588,30 @@ test('settings sheet keeps compact rhythm and balanced selectors',async({page,br
         overflow:document.documentElement.scrollWidth-window.innerWidth,
         handleToHead:Math.round(headBox.top-handleBox.top),
         bottomGap:Math.round(sheetBox.bottom-resetBox.bottom),
-        controlWidth:Math.round(control.getBoundingClientRect().width),
-        controlHeight:Math.round(control.getBoundingClientRect().height),
-        appearance:style.appearance,
-        textAlign:style.textAlign
+        height:Math.round(select.getBoundingClientRect().height),
+        fieldSizing:style.fieldSizing,
+        paddingLeft:style.paddingLeft,
+        paddingRight:style.paddingRight,
+        textAlign:style.textAlign,
+        radius:style.borderTopLeftRadius
       };
     });
 
-    expect(layout.overflow).toBeLessThanOrEqual(0);
-    expect(layout.handleToHead).toBeLessThanOrEqual(38);
-    expect(layout.bottomGap).toBeLessThanOrEqual(16);
-    expect(layout.controlHeight).toBe(44);
-    expect(layout.controlWidth).toBe(width<=340?108:116);
-    expect(layout.appearance).toBe('none');
-    expect(layout.textAlign).toBe('center');
+    expect(base.overflow).toBeLessThanOrEqual(0);
+    expect(base.handleToHead).toBeLessThanOrEqual(38);
+    expect(base.bottomGap).toBeLessThanOrEqual(16);
+    expect(base.height).toBe(44);
+    expect(base.fieldSizing).toBe('content');
+    expect(base.textAlign).toBe('left');
+    expect(base.radius).toBe('14px');
+
+    await page.locator('#countdownSetting').selectOption('0');
+    const noWidth=Math.round((await page.locator('#countdownSetting').boundingBox()).width);
+    await page.locator('#countdownSetting').selectOption('5');
+    const fiveWidth=Math.round((await page.locator('#countdownSetting').boundingBox()).width);
+    expect(noWidth).toBeGreaterThanOrEqual(78);
+    expect(noWidth).toBeLessThan(fiveWidth);
+    expect(fiveWidth).toBeLessThanOrEqual(122);
 
     await expect(page.locator('#countdownSetting option[value="0"]')).toHaveText('Нет');
     await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 секунд');
@@ -613,9 +622,34 @@ test('settings sheet keeps compact rhythm and balanced selectors',async({page,br
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#routineMoreButton').click();
   await expect(page.locator('#workoutThemeSetting option[value="system"]')).toHaveText('Системная');
-  const routineSelect=await page.locator('.routine-settings-sheet .settings-select-control').boundingBox();
-  expect(Math.round(routineSelect.width)).toBe(116);
-  expect(Math.round(routineSelect.height)).toBe(44);
+  const routineSelect=await page.locator('#workoutThemeSetting').evaluate(select=>{
+    const style=getComputedStyle(select);
+    const box=select.getBoundingClientRect();
+    return {width:Math.round(box.width),height:Math.round(box.height),fieldSizing:style.fieldSizing,radius:style.borderTopLeftRadius};
+  });
+  expect(routineSelect.height).toBe(44);
+  expect(routineSelect.width).toBeLessThanOrEqual(136);
+  expect(routineSelect.fieldSizing).toBe('content');
+  expect(routineSelect.radius).toBe('14px');
+
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  const importButton=page.locator('#importDataBtn');
+  await importButton.evaluate(button=>button.classList.add('is-pressing'));
+  const pressed=await importButton.evaluate(button=>{
+    const style=getComputedStyle(button);
+    return {
+      radius:style.borderTopLeftRadius,
+      overflow:style.overflow,
+      background:style.backgroundColor,
+      transform:style.transform
+    };
+  });
+  expect(pressed.radius).toBe('14px');
+  expect(pressed.overflow).toBe('hidden');
+  expect(pressed.transform).toBe('none');
+
+  const actionGap=await page.locator('.data-actions').evaluate(node=>getComputedStyle(node).gap);
+  expect(actionGap).toBe('10px');
 });
 
 test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
