@@ -299,7 +299,7 @@ for(const content of Object.values(heroiconSources)){
   for(const match of content.matchAll(/\bhi-([a-z0-9-]+)/g))usedHeroicons.add(match[1]);
 }
 for(const name of usedHeroicons){
-  const token=`.hi-${name}{--hi-mask:url("/vendor/heroicons/${name}.svg")}`;
+  const token=`.hi-${name}{--hi-mask:url("vendor/heroicons/${name}.svg")}`;
   if(!heroicons.includes(token))fail(`heroicons.css: Heroicon mapping missing ${name}`);
   const svg=read(`vendor/heroicons/${name}.svg`);
   if(!svg.includes('stroke-width="1.7"'))fail(`vendor/heroicons/${name}.svg: expected 1.7px stroke`);
