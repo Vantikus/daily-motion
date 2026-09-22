@@ -3574,23 +3574,25 @@ a[href] *,
 :root[data-theme="dark"] .settings-reset-block{border-top-color:rgba(255,255,255,.08)}
 
 
-/* Reset has no transient press color; confirmation state owns all visual emphasis. */
+/* Reset keeps a tactile press without any color flash. */
 .settings-reset:active,
 .settings-reset.is-pressing{
-  transform:none!important;
+  transform:scale(.985)!important;
   background:transparent!important;
   border-color:transparent!important;
-  box-shadow:none!important;
+  box-shadow:inset 0 1px 3px rgba(23,25,23,.06)!important;
   color:#8a4a47!important;
+  transition-duration:110ms,110ms,110ms,110ms!important;
 }
 :root[data-theme="dark"] .settings-reset:active,
 :root[data-theme="dark"] .settings-reset.is-pressing{
   background:transparent!important;
   border-color:transparent!important;
-  box-shadow:none!important;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.14)!important;
   color:#d9a19d!important;
 }
 .settings-reset-block.is-confirming>.settings-reset{
+  transform:none!important;
   background:rgba(138,74,71,.045)!important;
   border-color:rgba(138,74,71,.12)!important;
 }
