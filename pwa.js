@@ -142,6 +142,7 @@
     if(!overlay||!sheet||!handle||!gsap)return null;
 
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktopModal=window.matchMedia('(min-width:700px)');
     const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
     let phase='closed';
     let pointerId=null;
@@ -153,6 +154,8 @@
     let samples=[];
     let motion=null;
     let pageLock=null;
+    let desktopCloseTimer=null;
+    const isDesktop=()=>desktopModal.matches;
 
     const measure=()=>{
       const rect=sheet.getBoundingClientRect();
@@ -193,8 +196,12 @@
     };
     const finishClosed=()=>{
       motion=null;
+      if(desktopCloseTimer!==null){
+        clearTimeout(desktopCloseTimer);
+        desktopCloseTimer=null;
+      }
       clearGesture();
-      overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing');
+      overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing','is-desktop-modal');
       overlay.setAttribute('aria-hidden','true');
       gsap.set(sheet,{clearProps:'transform'});
       gsap.set(overlay,{clearProps:'backgroundColor'});
@@ -207,7 +214,7 @@
       motion=null;
       clearGesture();
       overlay.classList.remove('is-moving','is-settling','is-dismissing');
-      paint(0);
+      if(!isDesktop())paint(0);
       phase='open';
       onOpened?.();
     };
@@ -226,6 +233,17 @@
       lockScroll();
       overlay.setAttribute('aria-hidden','false');
       overlay.classList.remove('is-settling','is-dismissing');
+
+      if(isDesktop()){
+        gsap.set(sheet,{clearProps:'transform'});
+        gsap.set(overlay,{clearProps:'backgroundColor'});
+        overlay.classList.add('is-desktop-modal','is-visible');
+        requestAnimationFrame(()=>{
+          if(phase==='opening')finishOpen();
+        });
+        return;
+      }
+
       overlay.classList.add('is-visible','is-moving');
       if(wasClosed){paint(0);measure();paint(travel);}
       moveTo(0,SHEET_MOTION.openDuration,SHEET_MOTION.openEase,finishOpen);
@@ -234,9 +252,20 @@
       if(phase==='closed'||phase==='closing')return;
       onBeforeClose?.();
       kill();
-      measure();
       phase='closing';
       clearGesture();
+
+      if(isDesktop()){
+        overlay.classList.remove('is-visible');
+        if(reduceMotion.matches){
+          finishClosed();
+        }else{
+          desktopCloseTimer=setTimeout(finishClosed,220);
+        }
+        return;
+      }
+
+      measure();
       overlay.classList.add('is-moving','is-settling','is-dismissing');
       const remaining=Math.max(1,travel-currentY);
       const duration=fromGesture?clamp(remaining/Math.max(1000,velocity),SHEET_MOTION.closeGestureMin,SHEET_MOTION.closeGestureMax):SHEET_MOTION.closeDuration;
@@ -264,7 +293,7 @@
       });
     };
     handle.addEventListener('pointerdown',event=>{
-      if(phase==='closed'||phase==='closing'||pointerId!==null)return;
+      if(isDesktop()||phase==='closed'||phase==='closing'||pointerId!==null)return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
       kill();
       measure();
