@@ -204,7 +204,8 @@
   const syncInstallButton=()=>{
     const mode=PWA?.getInstallMode?.()||'unavailable';
     installAppBtn.hidden=mode==='unavailable';
-    installAppBtn.textContent=mode==='ios-manual'?'Добавить на экран «Домой»':'Установить приложение';
+    const label=installAppBtn.querySelector('span');
+    if(label)label.textContent=mode==='ios-manual'?'Добавить на экран «Домой»':'Установить приложение';
     if(mode!=='ios-manual')hideInstallGuide(false);
   };
 
