@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=130"></script>
+  <script src="theme.js?v=131"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=130" />
-  <link rel="stylesheet" href="styles.css?v=130" />
+  <link rel="stylesheet" href="heroicons.css?v=131" />
+  <link rel="stylesheet" href="styles.css?v=131" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -244,18 +244,12 @@
           </label>
         </div>
 
-        <button class="routine-reset-entry" id="routineResetOpen" type="button">
-          <span class="routine-reset-entry__copy"><strong>Сбросить прогресс</strong><small>Только эту тренировку</small></span>
-          <i class="hi hi-arrow-path routine-reset-entry__icon" aria-hidden="true"></i>
-        </button>
-      </div>
-
-      <div class="routine-reset-view" id="routineResetView" hidden>
-        <h2 id="routineResetTitle">Сбросить прогресс?</h2>
-        <p id="routineResetDescription">Пройденные упражнения этой тренировки будут сброшены.</p>
-        <div class="routine-reset-actions">
-          <button class="routine-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
-          <button class="routine-reset-confirm" id="routineResetConfirm" type="button">Сбросить</button>
+        <div class="settings-reset-block routine-settings-reset" id="routineResetBlock">
+          <button class="settings-reset" id="routineResetBtn" type="button">Сбросить прогресс</button>
+          <div class="settings-reset-confirm" id="routineResetConfirm" role="group" aria-label="Подтверждение сброса" aria-hidden="true" inert>
+            <button class="settings-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
+            <button class="settings-reset-accept" id="routineResetAccept" type="button">Сбросить</button>
+          </div>
         </div>
       </div>
     </section>
@@ -286,11 +280,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=130"></script>
-  <script src="state.js?v=130"></script>
-  <script src="audio.js?v=130"></script>
-  <script src="gsap.min.js?v=130"></script>
-  <script src="pwa.js?v=130"></script>
-  <script src="session.js?v=130"></script>
+  <script src="program.js?v=131"></script>
+  <script src="state.js?v=131"></script>
+  <script src="audio.js?v=131"></script>
+  <script src="gsap.min.js?v=131"></script>
+  <script src="pwa.js?v=131"></script>
+  <script src="session.js?v=131"></script>
 </body>
 </html>
