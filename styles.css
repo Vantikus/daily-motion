@@ -3483,3 +3483,61 @@ a[href] *,
 .routine-settings-reset .settings-reset::after{
   content:"Только эту тренировку";
 }
+
+/* P0 motion polish: completion handoff never exposes the workout beneath it. */
+.completion-overlay.is-handoff{
+  opacity:1!important;
+  visibility:visible!important;
+  transition:none!important;
+}
+
+/* Desktop settings are modal dialogs; mobile keeps the draggable GSAP bottom sheet. */
+@media(min-width:700px){
+  .settings-overlay,
+  .routine-settings-overlay{
+    align-items:center;
+    padding:24px;
+    opacity:0;
+    visibility:hidden;
+    background:rgba(23,25,23,.21);
+    transition:opacity 180ms ease,visibility 180ms ease!important;
+  }
+  .settings-overlay.is-visible,
+  .routine-settings-overlay.is-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    background:rgba(23,25,23,.21);
+  }
+  .settings-sheet,
+  .routine-settings-sheet{
+    border-radius:var(--radius-sheet);
+    opacity:0;
+    transform:translate3d(0,10px,0) scale(.985)!important;
+    transition:
+      transform 210ms cubic-bezier(.16,.82,.24,1),
+      opacity 160ms ease!important;
+    animation:none!important;
+    will-change:transform,opacity!important;
+  }
+  .settings-overlay.is-visible .settings-sheet,
+  .routine-settings-overlay.is-visible .routine-settings-sheet{
+    opacity:1;
+    transform:translate3d(0,0,0) scale(1)!important;
+    animation:none!important;
+  }
+  .settings-sheet__handle,
+  .routine-settings-sheet__handle{
+    display:none;
+  }
+}
+
+@media(min-width:700px) and (prefers-reduced-motion:reduce){
+  .settings-overlay,
+  .routine-settings-overlay,
+  .settings-sheet,
+  .routine-settings-sheet{
+    transition:none!important;
+  }
+}
+
