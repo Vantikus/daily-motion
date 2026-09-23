@@ -136,24 +136,82 @@
 
   installPressFeedback();
 
-  const navigatePage=(href,{replace=false}={})=>{
+  const PAGE_TRANSITION_KEY='dm-page-transition-type';
+  const APP_PATHS=new Set(['/','/index.html','/session.html','/progress.html']);
+  let pendingPageTransitionType=null;
+
+  const normalizedPath=url=>{
+    const path=new URL(url,location.href).pathname;
+    return path.endsWith('/')?'/':path;
+  };
+  const rememberPageTransition=type=>{
+    pendingPageTransitionType=type;
+    try{sessionStorage.setItem(PAGE_TRANSITION_KEY,type);}catch{}
+  };
+  const navigatePage=(href,{replace=false,transition='forward'}={})=>{
     const target=new URL(href,location.href);
+    rememberPageTransition(transition);
     if(replace){location.replace(target.href);return;}
     location.assign(target.href);
   };
+  const navigateBack=(fallback='index.html')=>{
+    let canTraverse=false;
+    try{
+      const referrer=document.referrer?new URL(document.referrer):null;
+      canTraverse=Boolean(
+        referrer&&
+        referrer.origin===location.origin&&
+        APP_PATHS.has(normalizedPath(referrer))&&
+        normalizedPath(referrer)!==normalizedPath(location.href)
+      );
+    }catch{}
+    rememberPageTransition('back');
+    if(canTraverse){history.back();return;}
+    navigatePage(fallback,{replace:true,transition:'back'});
+  };
   window.DailyMotionNavigate=navigatePage;
+  window.DailyMotionBack=navigateBack;
+
+  document.addEventListener('click',event=>{
+    const link=event.target.closest?.('a[data-nav-back][href]');
+    if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    event.preventDefault();
+    navigateBack(link.getAttribute('href')||'index.html');
+  });
 
   const hasActivePageMotion=()=>{
     const root=document.documentElement;
     const body=document.body;
     if(root.classList.contains('theme-transitioning'))return true;
     if(body?.classList.contains('settings-open')||body?.classList.contains('modal-open'))return true;
-    return Boolean(document.querySelector(
-      '.settings-overlay.is-visible,.routine-settings-overlay.is-visible,.execution-overlay.is-visible,.completion-overlay.is-visible,.is-dragging,.is-moving,.is-settling,.is-dismissing'
-    ));
+    if(document.querySelector('.settings-overlay.is-visible,.routine-settings-overlay.is-visible,.execution-overlay.is-visible,.is-dragging,.is-moving,.is-settling,.is-dismissing'))return true;
+    const completion=document.querySelector('.completion-overlay.is-visible');
+    return Boolean(completion?.getAnimations?.({subtree:true}).some(animation=>animation.playState==='running'));
+  };
+  const setTransitionType=(viewTransition,type)=>{
+    if(!viewTransition?.types)return;
+    viewTransition.types.delete?.('forward');
+    viewTransition.types.delete?.('back');
+    viewTransition.types.add?.(type);
+  };
+  const resolveTransitionType=event=>{
+    if(pendingPageTransitionType)return pendingPageTransitionType;
+    if(event?.activation?.navigationType==='traverse')return 'back';
+    try{
+      const stored=sessionStorage.getItem(PAGE_TRANSITION_KEY);
+      if(stored==='back'||stored==='forward')return stored;
+    }catch{}
+    return 'forward';
   };
   window.addEventListener('pageswap',event=>{
-    if(event.viewTransition&&hasActivePageMotion())event.viewTransition.skipTransition();
+    if(!event.viewTransition)return;
+    if(hasActivePageMotion()){event.viewTransition.skipTransition();return;}
+    setTransitionType(event.viewTransition,resolveTransitionType(event));
+  });
+  window.addEventListener('pagereveal',event=>{
+    if(event.viewTransition)setTransitionType(event.viewTransition,resolveTransitionType(event));
+    pendingPageTransitionType=null;
+    try{sessionStorage.removeItem(PAGE_TRANSITION_KEY);}catch{}
   });
 
   const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened,lockPage=false}={})=>{

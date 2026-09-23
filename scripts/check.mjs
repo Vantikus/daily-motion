@@ -269,6 +269,26 @@ for(const fragment of [
 ]){
   if(!pwa.includes(fragment))fail(`pwa.js: R1 motion-safe navigation contract missing: ${fragment}`);
 }
+for(const fragment of [
+  'window.DailyMotionBack=navigateBack;',
+  "viewTransition.types.add?.(type)",
+  "navigationType==='traverse'"
+]){
+  if(!pwa.includes(fragment))fail(`pwa.js: R2 history/transition type contract missing: ${fragment}`);
+}
+if(!sessionRuntime.includes("{replace:true,transition:'back'}")){
+  fail('session.js: completion must replace the workout entry when returning Home');
+}
+for(const content of [html['progress.html'],html['session.html']]){
+  if(!content.includes('data-nav-back'))fail('HTML: R2 back links must use history traversal when available');
+}
+for(const fragment of [
+  'types:forward;',
+  ':active-view-transition-type(forward)',
+  ':active-view-transition-type(back)'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: R2 transition direction contract missing: ${fragment}`);
+}
 if(html['index.html'].includes('>Начать тренировку</button>')){
   fail('index.html: initial CTA copy must match runtime copy');
 }

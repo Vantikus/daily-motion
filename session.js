@@ -1305,8 +1305,8 @@
   });
 
   $('#completionHome').addEventListener('click',()=>{
-    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html');return;}
-    location.assign('index.html');
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true,transition:'back'});return;}
+    location.replace('index.html');
   });
 
   document.addEventListener('visibilitychange',()=>{
