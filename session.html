@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=128"></script>
+  <script src="theme.js?v=129"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=128" />
-  <link rel="stylesheet" href="styles.css?v=128" />
+  <link rel="stylesheet" href="heroicons.css?v=129" />
+  <link rel="stylesheet" href="styles.css?v=129" />
 </head>
 <body class="session-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -212,8 +212,7 @@
       <div class="routine-settings-view" id="routineSettingsView">
         <div class="routine-settings-head">
           <div>
-            <span class="eyebrow">Тренировка</span>
-            <h2 id="routineSettingsTitle">Настройки тренировки</h2>
+            <h2 id="routineSettingsTitle">Настройки</h2>
           </div>
           <button class="routine-settings-close" id="routineSettingsClose" type="button" aria-label="Закрыть настройки"><i class="hi hi-x-mark" aria-hidden="true"></i></button>
         </div>
@@ -246,15 +245,14 @@
         </div>
 
         <button class="routine-reset-entry" id="routineResetOpen" type="button">
-          <span><i class="hi hi-arrow-path" aria-hidden="true"></i>Сбросить прогресс</span>
-          <i class="hi hi-chevron-right" aria-hidden="true"></i>
+          <span class="routine-reset-entry__copy"><strong>Сбросить прогресс</strong><small>Только эту тренировку</small></span>
+          <i class="hi hi-arrow-path routine-reset-entry__icon" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="routine-reset-view" id="routineResetView" hidden>
-        <span class="eyebrow">Тренировка</span>
         <h2 id="routineResetTitle">Сбросить прогресс?</h2>
-        <p id="routineResetDescription">Пройденные упражнения и таймеры утреннего комплекса будут сброшены.</p>
+        <p id="routineResetDescription">Пройденные упражнения этой тренировки будут сброшены.</p>
         <div class="routine-reset-actions">
           <button class="routine-reset-cancel" id="routineResetCancel" type="button">Отмена</button>
           <button class="routine-reset-confirm" id="routineResetConfirm" type="button">Сбросить</button>
@@ -288,11 +286,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=128"></script>
-  <script src="state.js?v=128"></script>
-  <script src="audio.js?v=128"></script>
-  <script src="gsap.min.js?v=128"></script>
-  <script src="pwa.js?v=128"></script>
-  <script src="session.js?v=128"></script>
+  <script src="program.js?v=129"></script>
+  <script src="state.js?v=129"></script>
+  <script src="audio.js?v=129"></script>
+  <script src="gsap.min.js?v=129"></script>
+  <script src="pwa.js?v=129"></script>
+  <script src="session.js?v=129"></script>
 </body>
 </html>
