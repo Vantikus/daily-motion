@@ -14,7 +14,11 @@
   const today=Store.getDay();
   const state=Store.getState();
   const $=selector=>document.querySelector(selector);
-  const go=key=>{location.href=`session.html?routine=${key}&resume=1`;};
+  const navigate=href=>{
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate(href);return;}
+    location.assign(href);
+  };
+  const go=key=>navigate(`session.html?routine=${key}&resume=1`);
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
   const exerciseCount=key=>{
@@ -46,7 +50,7 @@
   $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
   $('#heroNote').hidden=!allDone&&!isResuming;
   $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
-  $('#continueBtn').onclick=()=>allDone?location.href='progress.html':go(nextKey);
+  $('#continueBtn').onclick=()=>allDone?navigate('progress.html'):go(nextKey);
   $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
   $('#dayProgressValue').textContent=`${nextPercent}%`;
   $('#dayProgressBar').style.width=`${nextPercent}%`;
@@ -424,7 +428,9 @@
   };
 
   window.addEventListener('pageshow',event=>{
-    if(event.persisted)location.reload();
+    if(!event.persisted)return;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){location.reload();return;}
+    document.documentElement.classList.add('page-leaving');
+    requestAnimationFrame(()=>location.reload());
   });
 })();
-
