@@ -208,6 +208,34 @@ if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
   fail('DESIGN_SYSTEM.md: R3 visual polish contract is missing');
 }
 
+
+for(const fragment of [
+  'html.page-leaving body::after',
+  'html.motion-prep:not(.session-ready) .session-body .exercise-app',
+  '.execution-overlay.is-handoff',
+  '.execution-overlay.is-content-swap',
+  '.session-body.modal-open .pwa-banner'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: R4 transition continuity contract missing: ${fragment}`);
+}
+for(const fragment of [
+  'const PAGE_NAV_DURATION=150;',
+  'window.DailyMotionNavigate=navigatePage;'
+]){
+  if(!pwa.includes(fragment))fail(`pwa.js: R4 navigation transition contract missing: ${fragment}`);
+}
+const sessionRuntime=read('session.js');
+for(const fragment of [
+  "document.documentElement.classList.add('session-ready')",
+  "overlay.classList.add('is-handoff')",
+  "overlay.classList.add('is-content-swap')"
+]){
+  if(!sessionRuntime.includes(fragment))fail(`session.js: R4 workout handoff contract missing: ${fragment}`);
+}
+if(styles.includes('.completion-overlay.is-exiting')){
+  fail('styles.css: obsolete completion exit layer returned');
+}
+
 const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
 for(const requiredSize of ['192x192','512x512']){
   if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(requiredSize))){
