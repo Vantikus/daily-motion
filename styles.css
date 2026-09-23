@@ -177,7 +177,6 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .timer-ring__inner{position:relative;z-index:1;display:grid;text-align:center;gap:1px}
 
 .timer-ring__inner span{font-size:var(--font-size-xs);color:var(--muted)}
-.timer-ring{transition:box-shadow 220ms ease}
 .timer-ring.is-running{animation:none}
 .timer-ring.is-ending{box-shadow:0 0 0 7px rgba(47,107,85,.07)}
 .details-stack{display:grid;gap:8px}
@@ -733,7 +732,7 @@ html,body{background:var(--bg)}
   bottom:10px;
 }
 
-.timer-ring{--timer-progress:0;width:96px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;margin:0;background:conic-gradient(var(--accent) calc(var(--timer-progress)*1%),rgba(47,107,85,.1) 0);transition:transform var(--base) var(--ease),box-shadow var(--base) ease}
+.timer-ring{--timer-progress:0;width:96px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;margin:0;background:conic-gradient(var(--accent) calc(var(--timer-progress)*1%),rgba(47,107,85,.1) 0);transition:box-shadow 220ms ease}
 .timer-ring__inner strong{font-size:1.5625rem;letter-spacing:-.045em;font-variant-numeric:tabular-nums;transition:color 420ms ease}
 
 
