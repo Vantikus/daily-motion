@@ -584,6 +584,99 @@ test('settings dialogs keep keyboard focus trapped',async({page})=>{
 });
 
 
+test('desktop settings use modal motion instead of bottom-sheet travel',async({page})=>{
+  await page.setViewportSize({width:1024,height:800});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+
+  const closed=await page.evaluate(()=>{
+    const overlay=document.querySelector('#settingsOverlay');
+    const sheet=overlay.querySelector('.settings-sheet');
+    const handle=overlay.querySelector('.settings-sheet__handle');
+    const matrix=new DOMMatrix(getComputedStyle(sheet).transform);
+    return {
+      align:getComputedStyle(overlay).alignItems,
+      opacity:getComputedStyle(overlay).opacity,
+      handle:getComputedStyle(handle).display,
+      scale:matrix.a,
+      y:matrix.m42
+    };
+  });
+  expect(closed.align).toBe('center');
+  expect(closed.opacity).toBe('0');
+  expect(closed.handle).toBe('none');
+  expect(closed.scale).toBeCloseTo(.985,3);
+  expect(closed.y).toBeCloseTo(10,1);
+
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(260);
+
+  const opened=await page.evaluate(()=>{
+    const sheet=document.querySelector('#settingsOverlay .settings-sheet');
+    const matrix=new DOMMatrix(getComputedStyle(sheet).transform);
+    return {
+      overlayOpacity:getComputedStyle(document.querySelector('#settingsOverlay')).opacity,
+      sheetOpacity:getComputedStyle(sheet).opacity,
+      scale:matrix.a,
+      y:matrix.m42
+    };
+  });
+  expect(opened.overlayOpacity).toBe('1');
+  expect(opened.sheetOpacity).toBe('1');
+  expect(opened.scale).toBeCloseTo(1,3);
+  expect(opened.y).toBeCloseTo(0,1);
+
+  await page.locator('#settingsClose').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1200});
+});
+
+
+test('final timer hands off directly to completion without exposing technique',async({page})=>{
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{
+        [key]:{routines:{morning:{
+          step:8,completedUntil:8,completed:false,startedAt:new Date().toISOString(),completedAt:null,
+          activeSeconds:120,effort:null,timers:{}
+        }}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning&resume=1',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+
+  await page.evaluate(()=>{
+    const completion=document.querySelector('#completionOverlay');
+    const execution=document.querySelector('#executionOverlay');
+    window.__completionHandoff=[];
+    const capture=()=>window.__completionHandoff.push({
+      completionVisible:completion.classList.contains('is-visible'),
+      handoff:completion.classList.contains('is-handoff'),
+      executionVisible:execution.classList.contains('is-visible')
+    });
+    new MutationObserver(capture).observe(completion,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(capture).observe(execution,{attributes:true,attributeFilter:['class']});
+    capture();
+  });
+
+  await page.locator('#executionFinishEarly').evaluate(button=>button.click());
+  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
+
+  const events=await page.evaluate(()=>window.__completionHandoff);
+  const prepared=events.findIndex(event=>event.completionVisible&&event.handoff&&event.executionVisible);
+  const executionClosed=events.findIndex(event=>event.completionVisible&&!event.executionVisible);
+  expect(prepared).toBeGreaterThanOrEqual(0);
+  expect(executionClosed).toBeGreaterThan(prepared);
+});
+
+
 test('consolidated workout CSS preserves the compact mobile contract',async({page,browserName})=>{
   test.skip(browserName!=='chromium','computed CSS consolidation contract is verified once in Chromium');
   await page.setViewportSize({width:360,height:800});
