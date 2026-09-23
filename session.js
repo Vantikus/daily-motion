@@ -1,17 +1,13 @@
-window.DailyMotionPages=window.DailyMotionPages||{};
-window.DailyMotionPages.session=function mountSession(){
+(() => {
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
   const exercises=window.DailyMotionProgram.morning;
-  return (function SessionRuntime(exercises,ROUTINE_KEY){
+  (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
-  const lifecycle=new AbortController();
-  const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
-  let destroyed=false;
   const $=selector=>document.querySelector(selector);
   const pageLoader=$('#pageLoader');
   let pageLoaderRevealTimer=setTimeout(()=>{
     pageLoaderRevealTimer=null;
-    if(destroyed||!pageLoader)return;
+    if(!pageLoader)return;
     pageLoader.classList.add('is-visible');
     pageLoader.setAttribute('aria-hidden','false');
   },180);
@@ -37,17 +33,10 @@ window.DailyMotionPages.session=function mountSession(){
         <a class="primary-button stage-placeholder__button" href="index.html">На главную</a>
       </div>`;
     requestAnimationFrame(()=>{
-      if(destroyed)return;
       document.documentElement.classList.add('session-ready');
       finishPageLoader();
     });
-    return ()=>{
-      destroyed=true;
-      lifecycle.abort();
-      if(pageLoaderRevealTimer!==null)clearTimeout(pageLoaderRevealTimer);
-      document.documentElement.classList.remove('session-ready');
-      document.body.classList.remove('modal-open');
-    };
+    return;
   }
 
   const PROGRAM_VERSION='morning-v3-active-2026-09-19';
@@ -374,12 +363,9 @@ window.DailyMotionPages.session=function mountSession(){
 
   function afterAnimations(node,callback,{subtree=false}={}){
     requestAnimationFrame(()=>{
-      if(destroyed)return;
       const animations=node?.getAnimations?.({subtree})||[];
       if(!animations.length){callback();return;}
-      Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{
-        if(!destroyed)callback();
-      });
+      Promise.allSettled(animations.map(animation=>animation.finished)).then(callback);
     });
   }
 
@@ -1207,9 +1193,9 @@ window.DailyMotionPages.session=function mountSession(){
     updateTimerUI();
   }
 
-  listen(document,'pointerdown',()=>{unlockAudio();},{once:true,passive:true});
+  document.addEventListener('pointerdown',()=>{unlockAudio();},{once:true,passive:true});
 
-  listen(document,'keydown',event=>{
+  document.addEventListener('keydown',event=>{
     const modal=visibleModal();
     if(!modal)return;
 
@@ -1319,11 +1305,11 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   $('#completionHome').addEventListener('click',()=>{
-    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true});return;}
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true,transition:'back'});return;}
     location.replace('index.html');
   });
 
-  listen(document,'visibilitychange',()=>{
+  document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible'){
       updateTimerUI();
       const timer=timerData(exercises[current]);
@@ -1348,41 +1334,17 @@ window.DailyMotionPages.session=function mountSession(){
     Store.save();
     releaseWakeLock();
   };
-  listen(window,'pagehide',persist);
-  listen(window,'beforeunload',persist);
+  window.addEventListener('pagehide',persist);
+  window.addEventListener('beforeunload',persist);
 
   render(null,'auto');
   requestAnimationFrame(()=>{
-    if(destroyed)return;
     document.documentElement.classList.add('session-ready');
     finishPageLoader();
     if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
     else if(routine.completed)toast('Комплекс уже завершён сегодня');
     else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
   });
-
-  return ()=>{
-    if(destroyed)return;
-    persist();
-    destroyed=true;
-    lifecycle.abort();
-    if(pageLoaderRevealTimer!==null)clearTimeout(pageLoaderRevealTimer);
-    if(stageTimer!==null)clearTimeout(stageTimer);
-    clearRoutineResetTimers();
-    cancelCountdown();
-    cancelRest();
-    stopTicker();
-    restFinish=null;
-    stageTransitionToken++;
-    executionHideToken++;
-    routineSettingsMotion?.destroy?.();
-    document.querySelector('#swup')?.getAnimations?.({subtree:true})?.forEach(animation=>animation.cancel());
-    clearTimeout(toast.timer);
-    releaseWakeLock();
-    if(window.DailyMotionReloadGuard?.isSafe===isReloadSafe)delete window.DailyMotionReloadGuard;
-    document.body.classList.remove('modal-open');
-    document.documentElement.classList.remove('session-ready');
-  };
 })(exercises,ROUTINE_KEY);
-};
+})();
 

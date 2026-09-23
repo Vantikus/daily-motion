@@ -212,15 +212,3 @@ R3 is the final visual consistency pass. It does not change page structure, work
 
 - Press feedback must be clipped to the control's own rounded shape; text navigation that receives a filled press state needs an explicit rounded hit surface rather than a rectangular flash.
 - Destructive actions never inherit the green secondary-control press state. Their pressed/focus feedback stays destructive-colored and clipped to the same 14px control radius.
-
-## v149 — page navigation ownership
-
-- Cross-page navigation is owned exclusively by Swup 4 and the `#swup` container.
-- Home, Progress and Session register explicit mount/unmount lifecycles; page scripts are persistent and are not re-executed after navigation.
-- Do not add the Swup Scripts Plugin. Page cleanup must release listeners, timers, RAF work, Wake Lock and GSAP sheet instances before content replacement.
-- Do not reintroduce cross-document `@view-transition`, `pageswap`, `pagereveal`, manual page fade masks or parallel old/new page overlays.
-- Theme switching may use its separate `theme` View Transition type; it must not own page navigation.
-- GSAP remains the owner of mobile bottom-sheet drag/snap/dismiss motion and is independent from Swup page transitions.
-- Swup page motion is sequential: old `#swup` content exits completely, DOM is replaced, then new `#swup` content enters. Old and new page UI must never be visible simultaneously.
-- If Swup cannot load, normal browser navigation is the required functional fallback.
-

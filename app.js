@@ -1,8 +1,5 @@
-window.DailyMotionPages=window.DailyMotionPages||{};
-window.DailyMotionPages.home=function mountHome(){
+(function HomeApp(){
   const Store=window.DailyMotionState;
-  const lifecycle=new AbortController();
-  const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
   const ROUTINES={
     morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
@@ -202,7 +199,6 @@ window.DailyMotionPages.home=function mountHome(){
   let resetFocusTimer=null;
   let refreshAfterSettingsClose=false;
   let resetInFlight=false;
-  let resetCloseTimer=null;
   const clearResetTimers=()=>{
     if(resetStateTimer!==null){
       clearTimeout(resetStateTimer);
@@ -316,7 +312,7 @@ window.DailyMotionPages.home=function mountHome(){
   settingsBtn.onclick=openSettings;
   settingsClose.onclick=closeSettings;
   settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
-  listen(document,'keydown',event=>{
+  document.addEventListener('keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
       if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,70);return;}
@@ -390,7 +386,7 @@ window.DailyMotionPages.home=function mountHome(){
     }
   };
   iosInstallGuideClose?.addEventListener('click',()=>hideInstallGuide(true));
-  listen(window,'daily-motion-install-change',syncInstallButton);
+  window.addEventListener('daily-motion-install-change',syncInstallButton);
 
   syncSettings();
   syncInstallButton();
@@ -403,18 +399,17 @@ window.DailyMotionPages.home=function mountHome(){
     resetInFlight=true;
     Store.resetToday();
     refreshAfterSettingsClose=true;
-    resetCloseTimer=setTimeout(()=>{resetCloseTimer=null;closeSettings();},120);
+    setTimeout(closeSettings,120);
   };
 
-  return ()=>{
-    lifecycle.abort();
-    settingsMotion?.destroy?.();
-    clearResetTimers();
-    if(resetCloseTimer!==null)clearTimeout(resetCloseTimer);
-    clearTimeout(toast.timer);
-    document.body.classList.remove('settings-open','modal-open');
-    const shell=document.querySelector('.app-shell');
-    if(shell)shell.inert=false;
+  const rehydrateHome=()=>{
+    renderHomeState();
+    syncSettings();
+    syncInstallButton();
   };
-};
+  window.addEventListener('pagereveal',rehydrateHome);
+  window.addEventListener('pageshow',event=>{
+    if(event.persisted)rehydrateHome();
+  });
+})();
 

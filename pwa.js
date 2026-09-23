@@ -136,14 +136,90 @@
 
   installPressFeedback();
 
+  const PAGE_TRANSITION_KEY='dm-page-transition-type';
+  const APP_PATHS=new Set(['/','/index.html','/session.html','/progress.html']);
+  let pendingPageTransitionType=null;
+
+  const normalizedPath=url=>{
+    const path=new URL(url,location.href).pathname;
+    return path.endsWith('/')?'/':path;
+  };
+  const rememberPageTransition=type=>{
+    pendingPageTransitionType=type;
+    try{sessionStorage.setItem(PAGE_TRANSITION_KEY,type);}catch{}
+  };
+  const navigatePage=(href,{replace=false,transition='forward'}={})=>{
+    const target=new URL(href,location.href);
+    rememberPageTransition(transition);
+    if(replace){location.replace(target.href);return;}
+    location.assign(target.href);
+  };
+  const navigateBack=(fallback='index.html')=>{
+    let canTraverse=false;
+    try{
+      const referrer=document.referrer?new URL(document.referrer):null;
+      canTraverse=Boolean(
+        referrer&&
+        referrer.origin===location.origin&&
+        APP_PATHS.has(normalizedPath(referrer))&&
+        normalizedPath(referrer)!==normalizedPath(location.href)
+      );
+    }catch{}
+    rememberPageTransition('back');
+    if(canTraverse){history.back();return;}
+    navigatePage(fallback,{replace:true,transition:'back'});
+  };
+  window.DailyMotionNavigate=navigatePage;
+  window.DailyMotionBack=navigateBack;
+
+  document.addEventListener('click',event=>{
+    const link=event.target.closest?.('a[data-nav-back][href]');
+    if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    event.preventDefault();
+    navigateBack(link.getAttribute('href')||'index.html');
+  });
+
+  const hasActivePageMotion=()=>{
+    const root=document.documentElement;
+    const body=document.body;
+    if(root.classList.contains('theme-transitioning'))return true;
+    if(body?.classList.contains('settings-open')||body?.classList.contains('modal-open'))return true;
+    if(document.querySelector('.settings-overlay.is-visible,.routine-settings-overlay.is-visible,.execution-overlay.is-visible,.is-dragging,.is-moving,.is-settling,.is-dismissing'))return true;
+    const completion=document.querySelector('.completion-overlay.is-visible');
+    return Boolean(completion?.getAnimations?.({subtree:true}).some(animation=>animation.playState==='running'));
+  };
+  const setTransitionType=(viewTransition,type)=>{
+    if(!viewTransition?.types)return;
+    viewTransition.types.delete?.('forward');
+    viewTransition.types.delete?.('back');
+    viewTransition.types.add?.(type);
+  };
+  const resolveTransitionType=event=>{
+    if(pendingPageTransitionType)return pendingPageTransitionType;
+    if(event?.activation?.navigationType==='traverse')return 'back';
+    try{
+      const stored=sessionStorage.getItem(PAGE_TRANSITION_KEY);
+      if(stored==='back'||stored==='forward')return stored;
+    }catch{}
+    return 'forward';
+  };
+  window.addEventListener('pageswap',event=>{
+    if(!event.viewTransition)return;
+    if(hasActivePageMotion()){event.viewTransition.skipTransition();return;}
+    setTransitionType(event.viewTransition,resolveTransitionType(event));
+  });
+  window.addEventListener('pagereveal',event=>{
+    if(event.viewTransition)setTransitionType(event.viewTransition,resolveTransitionType(event));
+    pendingPageTransitionType=null;
+    try{sessionStorage.removeItem(PAGE_TRANSITION_KEY);}catch{}
+  });
+
   const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened,lockPage=false}={})=>{
     const gsap=window.gsap;
     if(!overlay||!sheet||!handle||!gsap)return null;
 
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     const desktopModal=window.matchMedia('(min-width:700px)');
-    const lifecycle=new AbortController();
-    const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
     const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
     let phase='closed';
     let pointerId=null;
@@ -298,7 +374,7 @@
         onComplete:finishOpen
       });
     };
-    listen(handle,'pointerdown',event=>{
+    handle.addEventListener('pointerdown',event=>{
       if(isDesktop()||phase==='closed'||phase==='closing'||pointerId!==null)return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
       kill();
@@ -313,7 +389,7 @@
       sheet.classList.add('is-dragging');
       try{handle.setPointerCapture?.(pointerId);}catch{}
     });
-    listen(handle,'pointermove',event=>{
+    handle.addEventListener('pointermove',event=>{
       if(phase!=='dragging'||event.pointerId!==pointerId)return;
       event.preventDefault();
       const raw=dragOrigin+event.clientY-startY;
@@ -322,7 +398,7 @@
       samples.push({y:event.clientY,t:now});
       while(samples.length>2&&now-samples[0].t>100)samples.shift();
     },{passive:false});
-    listen(handle,'pointerup',event=>{
+    handle.addEventListener('pointerup',event=>{
       if(phase!=='dragging'||event.pointerId!==pointerId)return;
       const now=performance.now();
       // A hold before release is not a fling.
@@ -339,33 +415,17 @@
     const cancelGesture=event=>{
       if(phase==='dragging'&&event.pointerId===pointerId)snapOpen(0);
     };
-    listen(handle,'pointercancel',cancelGesture);
-    listen(handle,'lostpointercapture',cancelGesture);
-    listen(window,'resize',()=>{
+    handle.addEventListener('pointercancel',cancelGesture);
+    handle.addEventListener('lostpointercapture',cancelGesture);
+    window.addEventListener('resize',()=>{
       if(phase==='open')measure();
     });
-    listen(reduceMotion,'change',()=>{
+    reduceMotion.addEventListener('change',()=>{
       if(!reduceMotion.matches||!motion)return;
       kill();
       if(phase==='closing')finishClosed();else finishOpen();
     });
-    const destroy=()=>{
-      lifecycle.abort();
-      kill();
-      if(desktopCloseListener){
-        overlay.removeEventListener('transitionend',desktopCloseListener);
-        desktopCloseListener=null;
-      }
-      clearGesture();
-      unlockScroll();
-      overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing','is-desktop-modal','is-dragging');
-      sheet.classList.remove('is-dragging');
-      overlay.setAttribute('aria-hidden','true');
-      gsap.set(sheet,{clearProps:'transform'});
-      gsap.set(overlay,{clearProps:'backgroundColor'});
-      phase='closed';
-    };
-    return {open,close:()=>close(0,false),destroy,isOpen:()=>phase!=='closed',state:()=>phase};
+    return {open,close:()=>close(0,false),isOpen:()=>phase!=='closed',state:()=>phase};
   };
 
   const ensureBanner=()=>{
