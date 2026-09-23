@@ -469,6 +469,7 @@ test('external state changes defer reload until workout becomes safe',async({pag
   expect(await page.evaluate(()=>Number(sessionStorage.getItem('dailyMotionStorageBoots')))).toBe(1);
   expect(await page.evaluate(()=>DailyMotionPWA.isUpdateSafe())).toBe(false);
 
+  const reloadFinished=page.waitForEvent('load');
   await page.evaluate(()=>{
     const routine=DailyMotionState.getRoutine('morning');
     routine.completed=true;
@@ -479,8 +480,9 @@ test('external state changes defer reload until workout becomes safe',async({pag
     routine.timers={};
     window.dispatchEvent(new CustomEvent('daily-motion-reload-safety-change'));
   });
+  await reloadFinished;
 
-  await expect.poll(()=>page.evaluate(()=>Number(sessionStorage.getItem('dailyMotionStorageBoots')))).toBe(2);
+  expect(await page.evaluate(()=>Number(sessionStorage.getItem('dailyMotionStorageBoots')))).toBe(2);
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
 });
 
