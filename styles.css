@@ -3738,3 +3738,63 @@ html.theme-transitioning::view-transition-new(root){animation-name:themeCrossfad
   visibility:hidden!important;
   pointer-events:none!important;
 }
+
+
+/* P0 atomic fullscreen transitions: never blend old timer text with the next state. */
+.execution-overlay{
+  opacity:1!important;
+  visibility:hidden;
+  transition:none!important;
+}
+.execution-overlay.is-visible,
+.execution-overlay.is-closing{
+  opacity:1!important;
+  visibility:visible;
+}
+.execution-overlay.is-visible:not(.is-closing) .execution-shell{
+  animation:qmExecutionShellIn 150ms cubic-bezier(0,0,.2,1) both;
+}
+.execution-overlay.is-closing .execution-shell{
+  animation:qmExecutionShellOut 110ms cubic-bezier(.4,0,1,1) both;
+  pointer-events:none;
+}
+.execution-overlay.is-surface-fade{
+  opacity:0!important;
+  visibility:visible!important;
+  transition:opacity 120ms cubic-bezier(.4,0,1,1)!important;
+}
+@keyframes qmExecutionShellIn{
+  from{opacity:0;transform:translate3d(0,4px,0)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmExecutionShellOut{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:translate3d(0,-3px,0)}
+}
+
+.completion-overlay{
+  z-index:5200!important;
+  background:var(--bg)!important;
+  opacity:1!important;
+  visibility:hidden;
+  transition:none!important;
+}
+.completion-overlay.is-visible{
+  opacity:1!important;
+  visibility:visible;
+}
+.completion-overlay .completion-card{
+  opacity:0;
+  transform:translate3d(0,8px,0) scale(.99);
+  transition:opacity 150ms ease,transform 180ms cubic-bezier(0,0,.2,1)!important;
+}
+.completion-overlay.is-visible .completion-card{
+  opacity:1;
+  transform:none;
+}
+@media(prefers-reduced-motion:reduce){
+  .execution-overlay.is-visible:not(.is-closing) .execution-shell,
+  .execution-overlay.is-closing .execution-shell{animation:none!important}
+  .execution-overlay.is-surface-fade{transition:none!important}
+  .completion-overlay .completion-card{transition:none!important}
+}

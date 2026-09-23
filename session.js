@@ -416,7 +416,7 @@
     const overlay=$('#executionOverlay');
     if(!overlay)return;
     executionHideToken++;
-    overlay.classList.remove('is-handoff');
+    overlay.classList.remove('is-handoff','is-closing','is-surface-fade');
     if(!overlay.classList.contains('is-visible'))modalReturnFocus=document.activeElement;
     setExecutionStage(stage);
     overlay.classList.add('is-visible');
@@ -443,6 +443,7 @@
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hasHandoff=typeof handoff==='function'&&overlay.classList.contains('is-visible');
     const token=++executionHideToken;
+
     if(hasHandoff){
       overlay.classList.add('is-handoff');
       handoff();
@@ -450,13 +451,12 @@
       handoff?.();
     }
 
-    overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
     executionStage='idle';
 
     const finish=()=>{
       if(token!==executionHideToken)return;
-      overlay.classList.remove('is-handoff');
+      overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade');
       syncModalState();
       emitReloadSafetyChange();
       if(!visibleModal()&&modalReturnFocus?.isConnected){
@@ -464,11 +464,18 @@
         modalReturnFocus=null;
       }
     };
-    if(reduceMotion||!overlay.classList.contains('is-handoff')){
+
+    if(reduceMotion||!overlay.classList.contains('is-visible')){
       finish();
       return;
     }
-    afterAnimations(overlay,finish);
+
+    overlay.classList.add('is-closing');
+    afterAnimations($('.execution-shell'),()=>{
+      if(token!==executionHideToken)return;
+      overlay.classList.add('is-surface-fade');
+      afterAnimations(overlay,finish);
+    });
   }
 
   function cancelCountdown(){
@@ -567,8 +574,7 @@
   function startRest(afterRest){
     const seconds=Number(settings.restSeconds)||0;
     if(seconds<=0){
-      hideExecution();
-      afterRest();
+      hideExecution(afterRest);
       return;
     }
 
