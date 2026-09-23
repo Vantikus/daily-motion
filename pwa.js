@@ -136,6 +136,46 @@
 
   installPressFeedback();
 
+  const PAGE_NAV_DURATION=150;
+  let pageNavigationPending=false;
+  const navigatePage=(href,{replace=false}={})=>{
+    if(pageNavigationPending)return;
+    const target=new URL(href,location.href);
+    const sameDocument=target.origin===location.origin&&target.pathname===location.pathname&&target.search===location.search;
+    if(sameDocument&&target.hash!==location.hash){
+      location.href=target.href;
+      return;
+    }
+
+    const commit=()=>replace?location.replace(target.href):location.assign(target.href);
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      commit();
+      return;
+    }
+
+    pageNavigationPending=true;
+    document.documentElement.classList.add('page-leaving');
+    setTimeout(commit,PAGE_NAV_DURATION);
+  };
+
+  document.addEventListener('click',event=>{
+    if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.('a[href]');
+    if(!link||link.target&&link.target!=='_self'||link.hasAttribute('download'))return;
+    const target=new URL(link.href,location.href);
+    if(target.origin!==location.origin)return;
+    const sameDocument=target.pathname===location.pathname&&target.search===location.search;
+    if(sameDocument&&target.hash)return;
+    event.preventDefault();
+    navigatePage(target.href);
+  });
+
+  window.addEventListener('pageshow',()=>{
+    pageNavigationPending=false;
+    document.documentElement.classList.remove('page-leaving');
+  });
+  window.DailyMotionNavigate=navigatePage;
+
 
   const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened,lockPage=false}={})=>{
     const gsap=window.gsap;
