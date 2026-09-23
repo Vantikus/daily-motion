@@ -122,6 +122,7 @@
     }
   });
 
+  window.addEventListener('pagereveal',renderProgress);
   window.addEventListener('pageshow',event=>{
     if(event.persisted)renderProgress();
   });

@@ -402,11 +402,14 @@
     setTimeout(closeSettings,120);
   };
 
-  window.addEventListener('pageshow',event=>{
-    if(!event.persisted)return;
+  const rehydrateHome=()=>{
     renderHomeState();
     syncSettings();
     syncInstallButton();
+  };
+  window.addEventListener('pagereveal',rehydrateHome);
+  window.addEventListener('pageshow',event=>{
+    if(event.persisted)rehydrateHome();
   });
 })();
 

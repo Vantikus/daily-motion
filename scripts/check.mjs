@@ -248,12 +248,29 @@ for(const forbidden of [
 for(const fragment of [
   'renderHomeState();',
   "window.addEventListener('pageshow',event=>{",
-  'if(!event.persisted)return;'
+  'if(event.persisted)rehydrateHome();'
 ]){
   if(!appRuntime.includes(fragment))fail(`app.js: P1 BFCache rehydrate contract missing: ${fragment}`);
 }
 if(appRuntime.includes("requestAnimationFrame(()=>location.reload())")){
   fail('app.js: BFCache must rehydrate without forced reload');
+}
+for(const fragment of [
+  "window.addEventListener('pagereveal',rehydrateHome)",
+  "window.addEventListener('pagereveal',renderProgress)"
+]){
+  const source=fragment.includes('rehydrateHome')?appRuntime:progressRuntime;
+  if(!source.includes(fragment))fail(`R1 pagereveal rehydrate contract missing: ${fragment}`);
+}
+for(const fragment of [
+  "window.addEventListener('pageswap',event=>{",
+  'hasActivePageMotion()',
+  'event.viewTransition.skipTransition()'
+]){
+  if(!pwa.includes(fragment))fail(`pwa.js: R1 motion-safe navigation contract missing: ${fragment}`);
+}
+if(html['index.html'].includes('>Начать тренировку</button>')){
+  fail('index.html: initial CTA copy must match runtime copy');
 }
 for(const fragment of [
   'const renderProgress=()=>{',

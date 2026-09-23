@@ -143,6 +143,18 @@
   };
   window.DailyMotionNavigate=navigatePage;
 
+  const hasActivePageMotion=()=>{
+    const root=document.documentElement;
+    const body=document.body;
+    if(root.classList.contains('theme-transitioning'))return true;
+    if(body?.classList.contains('settings-open')||body?.classList.contains('modal-open'))return true;
+    return Boolean(document.querySelector(
+      '.settings-overlay.is-visible,.routine-settings-overlay.is-visible,.execution-overlay.is-visible,.completion-overlay.is-visible,.is-dragging,.is-moving,.is-settling,.is-dismissing'
+    ));
+  };
+  window.addEventListener('pageswap',event=>{
+    if(event.viewTransition&&hasActivePageMotion())event.viewTransition.skipTransition();
+  });
 
   const createBottomSheet=({overlay,sheet,handle,onBeforeClose,onClosed,onOpened,lockPage=false}={})=>{
     const gsap=window.gsap;
