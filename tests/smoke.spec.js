@@ -106,6 +106,14 @@ test('iOS exposes manual add-to-home-screen guidance',async({page,browserName})=
   const installButton=page.locator('#installAppBtn');
   await expect(installButton).toBeVisible();
   await expect(installButton).toHaveText('Добавить на экран «Домой»');
+  await expect(installButton.locator('.hi-arrow-down-tray')).toHaveCount(1);
+  const installStyle=await installButton.evaluate(button=>{
+    const style=getComputedStyle(button);
+    return {background:style.backgroundColor,color:style.color,border:style.borderTopWidth};
+  });
+  expect(installStyle.background).not.toBe('rgb(47, 107, 85)');
+  expect(installStyle.color).toBe('rgb(47, 107, 85)');
+  expect(installStyle.border).toBe('1px');
 
   await installButton.click();
   const guide=page.locator('#iosInstallGuide');
@@ -210,7 +218,11 @@ test('morning workout completes end-to-end and reaches history',async({page})=>{
   expect(completed.effort).toBe('right');
   expect(completed.completedAt).toBeTruthy();
 
-  await page.locator('#completionHome').evaluate(button=>button.click());
+  const exitStarted=await page.locator('#completionHome').evaluate(button=>{
+    button.click();
+    return document.querySelector('#completionOverlay').classList.contains('is-exiting');
+  });
+  expect(exitStarted).toBe(true);
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#todayStatus')).toHaveText('Готово');
   await page.locator('#continueBtn').evaluate(button=>button.click());
@@ -308,12 +320,18 @@ test('completion motion is choreographed and respects reduced motion',async({pag
     check:getComputedStyle(document.querySelector('.completion-check')).animationName,
     icon:getComputedStyle(document.querySelector('.completion-check>.hi')).animationName,
     title:getComputedStyle(document.querySelector('.completion-card>h2')).animationName,
-    stats:getComputedStyle(document.querySelector('.completion-stats')).animationName
+    titleDelay:getComputedStyle(document.querySelector('.completion-card>h2')).animationDelay,
+    stats:getComputedStyle(document.querySelector('.completion-stats')).animationName,
+    statsDelay:getComputedStyle(document.querySelector('.completion-stats')).animationDelay,
+    buttonDelay:getComputedStyle(document.querySelector('.completion-button')).animationDelay
   }));
   expect(motion.check).toContain('completionCheckSettle');
   expect(motion.icon).toContain('completionIconSweep');
   expect(motion.title).toContain('completionContentIn');
   expect(motion.stats).toContain('completionContentIn');
+  expect(motion.titleDelay).toBe('0.16s');
+  expect(motion.statsDelay).toBe('0.24s');
+  expect(motion.buttonDelay).toBe('0.32s');
 
   await page.emulateMedia({reducedMotion:'reduce'});
   const reduced=await page.evaluate(()=>({
@@ -799,6 +817,79 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   expect(layout.headGap).toBe('8px');
   expect(layout.factsGap).toBe('12px');
   expect(layout.techniqueMargin).toBe('20px');
+});
+
+
+test('P2 desktop Home uses one balanced wide layout',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','desktop layout geometry is verified once in Chromium');
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+
+  const layout=await page.evaluate(()=>{
+    const container=document.querySelector('.home-body .container').getBoundingClientRect();
+    const grid=getComputedStyle(document.querySelector('.home-body .page-grid'));
+    const hero=document.querySelector('.home-body .today-card').getBoundingClientRect();
+    const activity=document.querySelector('.home-body .activity-section').getBoundingClientRect();
+    const routines=document.querySelector('.home-body .routines-section').getBoundingClientRect();
+    return {
+      containerWidth:Math.round(container.width),
+      areas:grid.gridTemplateAreas,
+      sameTop:Math.abs(hero.top-activity.top),
+      routinesBelow:routines.top>=Math.max(hero.bottom,activity.bottom)-1,
+      routinesWidth:Math.round(routines.width),
+      heroWidth:Math.round(hero.width)
+    };
+  });
+
+  expect(layout.containerWidth).toBe(1100);
+  expect(layout.areas).toContain('"hero activity"');
+  expect(layout.areas).toContain('"routines routines"');
+  expect(layout.sameTop).toBeLessThanOrEqual(1);
+  expect(layout.routinesBelow).toBe(true);
+  expect(layout.routinesWidth).toBeGreaterThan(layout.heroWidth);
+});
+
+
+test('exercise facts stay clustered instead of stretching across the workout',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','facts geometry is verified once in Chromium');
+  await page.setViewportSize({width:760,height:900});
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+
+  const facts=await page.evaluate(()=>{
+    const items=[...document.querySelectorAll('.exercise-facts>div')].map(node=>node.getBoundingClientRect());
+    const secondLabel=getComputedStyle(document.querySelector('.fact-label--right'));
+    return {
+      gap:Math.round(items[1].left-items[0].right),
+      justify:secondLabel.justifyContent,
+      containerWidth:Math.round(document.querySelector('.exercise-facts').getBoundingClientRect().width)
+    };
+  });
+  expect(facts.gap).toBeGreaterThanOrEqual(20);
+  expect(facts.gap).toBeLessThanOrEqual(40);
+  expect(facts.justify).toBe('flex-start');
+  expect(facts.containerWidth).toBeGreaterThan(300);
+});
+
+
+test('workout timing settings apply to the next countdown and rest only',async({page})=>{
+  await page.addInitScript(()=>{
+    const raw=JSON.parse(localStorage.getItem('dailyMotionState.v3')||'null')||{version:3,settings:{},days:{},programVersions:{}};
+    raw.settings={...(raw.settings||{}),countdownSeconds:0,restSeconds:15,sound:false,autoNext:false,theme:'system'};
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify(raw));
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#routineMoreButton').click();
+
+  await page.locator('#workoutCountdownSetting').selectOption('5');
+  await page.locator('#workoutRestSetting').selectOption('30');
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().countdownSeconds)).toBe(5);
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().restSeconds)).toBe(30);
+
+  await page.locator('#routineSettingsClose').click();
+  await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1200});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','countdown');
+  await expect(page.locator('#countdownValue')).toHaveText('5');
 });
 
 
