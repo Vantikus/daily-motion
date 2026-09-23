@@ -32,7 +32,10 @@
         <p>Сейчас полностью прорабатывается основной сценарий тренировки. Состав этого комплекса будет добавлен отдельным этапом.</p>
         <a class="primary-button stage-placeholder__button" href="index.html">На главную</a>
       </div>`;
-    requestAnimationFrame(finishPageLoader);
+    requestAnimationFrame(()=>{
+      document.documentElement.classList.add('session-ready');
+      finishPageLoader();
+    });
     return;
   }
 
@@ -423,23 +426,42 @@
     requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
   }
 
-  function hideExecution(){
+  function hideExecution(handoff=null){
     const overlay=$('#executionOverlay');
-    if(!overlay)return;
+    if(!overlay){handoff?.();return;}
     if(stageTimer!==null){
       clearTimeout(stageTimer);
       stageTimer=null;
     }
     clearExecutionStageTransition();
+
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasHandoff=typeof handoff==='function'&&overlay.classList.contains('is-visible');
+    if(hasHandoff){
+      overlay.classList.add('is-handoff');
+      handoff();
+    }else{
+      handoff?.();
+    }
+
     overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
     executionStage='idle';
     syncModalState();
     emitReloadSafetyChange();
-    if(!visibleModal()&&modalReturnFocus?.isConnected){
-      modalReturnFocus.focus({preventScroll:true});
-      modalReturnFocus=null;
+
+    const finish=()=>{
+      overlay.classList.remove('is-handoff');
+      if(!visibleModal()&&modalReturnFocus?.isConnected){
+        modalReturnFocus.focus({preventScroll:true});
+        modalReturnFocus=null;
+      }
+    };
+    if(reduceMotion||!overlay.classList.contains('is-handoff')){
+      finish();
+      return;
     }
+    setTimeout(finish,230);
   }
 
   function cancelCountdown(){
@@ -521,10 +543,16 @@
   }
 
   function advanceExercise(){
+    const overlay=$('#executionOverlay');
+    const maskSwap=Boolean(overlay?.classList.contains('is-visible')&&!overlay.classList.contains('is-handoff'));
+    if(maskSwap)overlay.classList.add('is-content-swap');
+
     current++;
     routine.step=current;
     Store.save();
     render('forward');
+
+    if(maskSwap)setTimeout(()=>overlay.classList.remove('is-content-swap'),260);
   }
 
   function startRest(afterRest){
@@ -572,8 +600,7 @@
         sound('ready');
         haptic('next');
         releaseWakeLock();
-        hideExecution();
-        if(finish)finish();
+        hideExecution(finish||null);
       }
     };
     restTimer=setInterval(tick,250);
@@ -1245,9 +1272,8 @@
 
   $('#restTechnique').addEventListener('click',()=>{
     const finish=takeRestFinish();
-    hideExecution();
     haptic('soft');
-    if(finish)finish();
+    hideExecution(finish||null);
   });
   function syncEffortButtons(){
     document.querySelectorAll('[data-effort]').forEach(button=>{
@@ -1264,14 +1290,8 @@
   });
 
   $('#completionHome').addEventListener('click',()=>{
-    const overlay=$('#completionOverlay');
-    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduceMotion){
-      location.href='index.html';
-      return;
-    }
-    overlay.classList.add('is-exiting');
-    setTimeout(()=>{location.href='index.html';},150);
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html');return;}
+    location.assign('index.html');
   });
 
   document.addEventListener('visibilitychange',()=>{
@@ -1304,6 +1324,7 @@
 
   render(null,'auto');
   requestAnimationFrame(()=>{
+    document.documentElement.classList.add('session-ready');
     finishPageLoader();
     if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
     else if(routine.completed)toast('Комплекс уже завершён сегодня');
