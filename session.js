@@ -138,28 +138,67 @@
     $('#workoutThemeSetting').value=settings.theme;
   }
 
-  function showRoutineSettingsView(){
-    $('#routineSettingsView').hidden=false;
-    $('#routineResetView').hidden=true;
+  const routineResetBlock=$('#routineResetBlock');
+  const routineResetBtn=$('#routineResetBtn');
+  const routineResetConfirm=$('#routineResetConfirm');
+  const routineResetCancel=$('#routineResetCancel');
+  const routineResetAccept=$('#routineResetAccept');
+  let routineResetStateTimer=null;
+  let routineResetFocusTimer=null;
+  let routineResetInFlight=false;
+
+  function clearRoutineResetTimers(){
+    if(routineResetStateTimer!==null){
+      clearTimeout(routineResetStateTimer);
+      routineResetStateTimer=null;
+    }
+    if(routineResetFocusTimer!==null){
+      clearTimeout(routineResetFocusTimer);
+      routineResetFocusTimer=null;
+    }
+  }
+
+  function applyRoutineResetState(confirming,focusTarget=null){
+    routineResetBlock.classList.toggle('is-confirming',confirming);
+    routineResetConfirm.setAttribute('aria-hidden',confirming?'false':'true');
+    routineResetConfirm.inert=!confirming;
+    routineResetBtn.inert=confirming;
+    if(focusTarget){
+      routineResetFocusTimer=setTimeout(()=>{
+        routineResetFocusTimer=null;
+        focusTarget.focus({preventScroll:true});
+      },300);
+    }
+  }
+
+  function hideRoutineResetConfirm(restoreFocus=false,delay=0){
+    clearRoutineResetTimers();
+    const apply=()=>applyRoutineResetState(false,restoreFocus?routineResetBtn:null);
+    if(delay){
+      routineResetStateTimer=setTimeout(()=>{
+        routineResetStateTimer=null;
+        apply();
+      },delay);
+      return;
+    }
+    apply();
   }
 
   function showRoutineResetConfirm(){
-    $('#routineSettingsView').hidden=true;
-    $('#routineResetView').hidden=false;
-    requestAnimationFrame(()=>$('#routineResetCancel')?.focus({preventScroll:true}));
-  }
-
-  function hideRoutineResetConfirm(){
-    $('#routineSettingsView').hidden=false;
-    $('#routineResetView').hidden=true;
-    requestAnimationFrame(()=>$('#routineResetOpen')?.focus({preventScroll:true}));
+    if(routineResetBlock.classList.contains('is-confirming')||routineResetStateTimer!==null)return;
+    clearRoutineResetTimers();
+    routineResetStateTimer=setTimeout(()=>{
+      routineResetStateTimer=null;
+      applyRoutineResetState(true,routineResetAccept);
+    },70);
   }
 
   function finishRoutineSettingsClose(){
     const overlay=$('#routineSettingsOverlay');
     if(!overlay)return;
     overlay.setAttribute('aria-hidden','true');
-    showRoutineSettingsView();
+    hideRoutineResetConfirm(false);
+    routineResetInFlight=false;
     syncModalState();
     if(!visibleModal()&&modalReturnFocus?.isConnected){
       modalReturnFocus.focus({preventScroll:true});
@@ -183,7 +222,7 @@
     const overlay=routineSettingsOverlay;
     if(!overlay)return;
     syncWorkoutSettingsControls();
-    showRoutineSettingsView();
+    hideRoutineResetConfirm(false);
     modalReturnFocus=document.activeElement;
     $('#routineMoreButton')?.setAttribute('aria-expanded','true');
 
@@ -812,17 +851,22 @@
     settings=Store.updateSettings({theme:event.target.value});
     window.DailyMotionTheme?.apply(settings.theme);
   });
-  $('#routineResetOpen').addEventListener('click',()=>{
+  routineResetBtn.addEventListener('click',()=>{
     haptic('tap');
     showRoutineResetConfirm();
   });
-  $('#routineResetCancel').addEventListener('click',()=>{
+  routineResetCancel.addEventListener('click',()=>{
     haptic('tap');
-    hideRoutineResetConfirm();
+    hideRoutineResetConfirm(true,70);
   });
-  $('#routineResetConfirm').addEventListener('click',()=>{
-    hideRoutineSettingsDialog();
-    resetRoutineProgress();
+  routineResetAccept.addEventListener('click',()=>{
+    if(routineResetInFlight)return;
+    routineResetInFlight=true;
+    haptic('tap');
+    setTimeout(()=>{
+      hideRoutineSettingsDialog();
+      resetRoutineProgress();
+    },120);
   });
 
   $('#prevButton').addEventListener('click',()=>{
