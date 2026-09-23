@@ -1,1 +1,10 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+.wrangler/
+.DS_Store
+Thumbs.db
+npm-debug.log*
+package-lock.json
 _verify*.png
