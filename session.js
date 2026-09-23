@@ -1005,7 +1005,7 @@
     }
 
     if(event.key!=='Tab')return;
-    const focusable=[...modal.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled])')].filter(node=>node.offsetParent!==null);
+    const focusable=[...modal.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled])')].filter(node=>node.offsetParent!==null&&!node.closest('[inert]')&&getComputedStyle(node).visibility!=='hidden');
     if(!focusable.length)return;
     const first=focusable[0];
     const last=focusable[focusable.length-1];

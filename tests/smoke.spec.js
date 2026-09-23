@@ -406,9 +406,17 @@ test('settings dialogs keep keyboard focus trapped',async({page})=>{
   await expect(page.locator('#routineSettingsClose')).toBeFocused({timeout:1200});
 
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#routineResetOpen')).toBeFocused();
+  await expect(page.locator('#routineResetBtn')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('#routineSettingsClose')).toBeFocused();
+
+  await page.locator('#routineResetBtn').click();
+  await expect(page.locator('#routineResetBlock')).toHaveClass(/is-confirming/);
+  await expect(page.locator('#routineResetAccept')).toBeFocused({timeout:1000});
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#routineResetBlock')).not.toHaveClass(/is-confirming/);
+  await expect(page.locator('#routineResetBtn')).toBeFocused({timeout:1000});
+  await expect(page.locator('#routineSettingsOverlay')).toHaveAttribute('aria-hidden','false');
 });
 
 
