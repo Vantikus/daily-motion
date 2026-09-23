@@ -508,8 +508,7 @@
     releaseWakeLock();
 
     if(isLast){
-      hideExecution();
-      finishRoutine();
+      finishRoutine(true);
       return;
     }
 
@@ -821,7 +820,7 @@
     requestAnimationFrame(()=>$('#exerciseScroll').scrollTo({top:0,behavior:scrollMode}));
   }
 
-  function finishRoutine(){
+  function finishRoutine(fromExecution=false){
     pauseCurrentTimer();
     cancelCountdown();
     cancelRest();
@@ -852,10 +851,19 @@
     completionHighlight.hidden=!highlightText;
     syncEffortButtons();
     modalReturnFocus=document.activeElement;
+    if(fromExecution)overlay.classList.add('is-handoff');
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
     emitReloadSafetyChange();
+
+    if(fromExecution){
+      requestAnimationFrame(()=>{
+        hideExecution();
+        requestAnimationFrame(()=>overlay.classList.remove('is-handoff'));
+      });
+    }
+
     $('#completionTitle').focus({preventScroll:true});
   }
 
