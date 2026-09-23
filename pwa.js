@@ -136,44 +136,11 @@
 
   installPressFeedback();
 
-  const PAGE_NAV_DURATION=150;
-  let pageNavigationPending=false;
   const navigatePage=(href,{replace=false}={})=>{
-    if(pageNavigationPending)return;
     const target=new URL(href,location.href);
-    const sameDocument=target.origin===location.origin&&target.pathname===location.pathname&&target.search===location.search;
-    if(sameDocument&&target.hash!==location.hash){
-      location.href=target.href;
-      return;
-    }
-
-    const commit=()=>replace?location.replace(target.href):location.assign(target.href);
-    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-      commit();
-      return;
-    }
-
-    pageNavigationPending=true;
-    document.documentElement.classList.add('page-leaving');
-    setTimeout(commit,PAGE_NAV_DURATION);
+    if(replace){location.replace(target.href);return;}
+    location.assign(target.href);
   };
-
-  document.addEventListener('click',event=>{
-    if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
-    const link=event.target.closest?.('a[href]');
-    if(!link||link.target&&link.target!=='_self'||link.hasAttribute('download'))return;
-    const target=new URL(link.href,location.href);
-    if(target.origin!==location.origin)return;
-    const sameDocument=target.pathname===location.pathname&&target.search===location.search;
-    if(sameDocument&&target.hash)return;
-    event.preventDefault();
-    navigatePage(target.href);
-  });
-
-  window.addEventListener('pageshow',()=>{
-    pageNavigationPending=false;
-    document.documentElement.classList.remove('page-leaving');
-  });
   window.DailyMotionNavigate=navigatePage;
 
 
@@ -194,7 +161,7 @@
     let samples=[];
     let motion=null;
     let pageLock=null;
-    let desktopCloseTimer=null;
+    let desktopCloseListener=null;
     const isDesktop=()=>desktopModal.matches;
 
     const measure=()=>{
@@ -236,9 +203,9 @@
     };
     const finishClosed=()=>{
       motion=null;
-      if(desktopCloseTimer!==null){
-        clearTimeout(desktopCloseTimer);
-        desktopCloseTimer=null;
+      if(desktopCloseListener){
+        overlay.removeEventListener('transitionend',desktopCloseListener);
+        desktopCloseListener=null;
       }
       clearGesture();
       overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing','is-desktop-modal');
@@ -296,11 +263,16 @@
       clearGesture();
 
       if(isDesktop()){
-        overlay.classList.remove('is-visible');
         if(reduceMotion.matches){
+          overlay.classList.remove('is-visible');
           finishClosed();
         }else{
-          desktopCloseTimer=setTimeout(finishClosed,220);
+          desktopCloseListener=event=>{
+            if(event.target!==overlay||event.propertyName!=='opacity')return;
+            finishClosed();
+          };
+          overlay.addEventListener('transitionend',desktopCloseListener);
+          overlay.classList.remove('is-visible');
         }
         return;
       }

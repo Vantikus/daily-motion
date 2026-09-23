@@ -11,8 +11,8 @@
     sun:`<i class="hi hi-sun" aria-hidden="true"></i>`,
     moon:`<i class="hi hi-moon" aria-hidden="true"></i>`
   };
-  const today=Store.getDay();
-  const state=Store.getState();
+  let today=Store.getDay();
+  let state=Store.getState();
   const $=selector=>document.querySelector(selector);
   const navigate=href=>{
     if(window.DailyMotionNavigate){window.DailyMotionNavigate(href);return;}
@@ -20,6 +20,10 @@
   };
   const go=key=>navigate(`session.html?routine=${key}&resume=1`);
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
+
+  const list=$('#routineGrid');
+  const days=$('#activityDays');
+  const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 
   const exerciseCount=key=>{
     const config=ROUTINES[key];
@@ -30,136 +34,107 @@
   const completedRoutines=()=>availableRoutineKeys.filter(key=>today.routines[key]?.completed).length;
   const nextRoutine=()=>availableRoutineKeys.find(key=>!today.routines[key]?.completed)||availableRoutineKeys[0]||'morning';
 
-  const allDone=availableRoutineKeys.length>0&&completedRoutines()===availableRoutineKeys.length;
-  const nextKey=allDone?'morning':nextRoutine();
-  const next=ROUTINES[nextKey];
-  const nextState=today.routines[nextKey];
-  const nextDone=exerciseCount(nextKey);
-  const nextPercent=Math.round(nextDone/next.total*100);
-  const isResuming=!nextState.completed&&(nextState.startedAt||nextState.completedUntil>0||nextState.step>0);
-
-  $('#todayLabel').textContent=formatDate();
-  $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
-  $('#heroTitle').textContent=allDone?'Утренняя разминка завершена':next.title;
-  const resumeIndex=Math.min(next.total-1,Math.max(nextState.step||0,nextState.completedUntil||0));
-  const resumeExercise=window.DailyMotionProgram[nextKey]?.[resumeIndex];
-  $('#heroText').textContent=allDone
-    ?`${next.total} упражнений · ${Store.formatActiveTime(nextState.activeSeconds)} в движении`
-    :isResuming?`Упражнение ${resumeIndex+1} из ${next.total} · ${resumeExercise.title}`
-    :`${next.minutes} · ${next.total} упражнений`;
-  $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
-  $('#heroNote').hidden=!allDone&&!isResuming;
-  $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
-  $('#continueBtn').onclick=()=>allDone?navigate('progress.html'):go(nextKey);
-  $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
-  $('#dayProgressValue').textContent=`${nextPercent}%`;
-  $('#dayProgressBar').style.width=`${nextPercent}%`;
-  const dayProgressTrack=$('#dayProgressTrack');
-  if(dayProgressTrack){
-    dayProgressTrack.setAttribute('aria-valuenow',String(nextPercent));
-    dayProgressTrack.setAttribute('aria-valuetext',`${nextPercent}% (${nextDone} из ${next.total} упражнений)`);
-  }
-  $('#todayCard').classList.toggle('is-complete',allDone);
-
-  const list=$('#routineGrid');
-  Object.entries(ROUTINES).forEach(([key,routine],index)=>{
-    const stateItem=today.routines[key];
-    const button=document.createElement('button');
-    button.className='routine-card';
-    button.type='button';
-    button.dataset.routine=key;
-    if(!routine.available){
-      button.disabled=true;
-      button.classList.add('is-unavailable');
-      button.innerHTML=`
-        <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
-        <span class="routine-copy"><strong>${routine.name}</strong><small>Комплекс в разработке</small></span>
-        <span class="routine-status">Скоро</span>`;
-    }else{
-      const progress=exerciseCount(key);
-      const pct=Math.round(progress/routine.total*100);
-      const status=stateItem.completed?'Готово':progress>0||stateItem.activeSeconds>0?'Продолжить':'Начать';
-      button.onclick=()=>go(key);
-      button.innerHTML=`
-        <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
-        <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
-        <span class="routine-status">${status}<i class="hi hi-chevron-right" aria-hidden="true"></i></span>
-        <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
-    }
-    if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
-    list.appendChild(button);
-  });
-
-  const currentStreak=Store.getCurrentStreak(availableRoutineKeys,365);
-  $('#activityStreak').textContent=currentStreak
-    ?`Серия ${currentStreak} ${currentStreak===1?'день':'дня'}`
-    :'Серия —';
-
-  const days=$('#activityDays');
-  const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  let hasActivity=false;
-  for(let i=6;i>=0;i--){
-    const date=new Date();
-    date.setHours(12,0,0,0);
-    date.setDate(date.getDate()-i);
-    const key=Store.todayKey(date);
-    const entry=state.days[key];
-    const complete=Store.hasCompletedRoutine(entry,availableRoutineKeys);
-    const active=Store.hasRoutineActivity(entry,availableRoutineKeys);
-    if(complete||active)hasActivity=true;
-    const item=document.createElement('div');
-    item.className=`activity-day${complete?' is-complete':active?' is-active':''}${i===0?' is-today':''}`;
-    item.setAttribute('aria-label',`${names[date.getDay()]}: ${complete?'тренировка завершена':active?'есть активность':'нет активности'}`);
-    item.innerHTML=`<span class="activity-day__dot" aria-hidden="true"></span><small>${names[date.getDay()]}</small>`;
-    days.appendChild(item);
-  }
-
-  $('#activityEmpty').hidden=hasActivity;
-  $('#activityCard').classList.toggle('is-empty',!hasActivity);
-
-  const refreshHomeAfterReset=()=>{
-    const freshToday=Store.getDay();
-    const firstKey=availableRoutineKeys[0]||'morning';
-    const first=ROUTINES[firstKey];
-    $('#todayStatus').textContent='Сегодня';
-    $('#heroTitle').textContent=first.title;
-    $('#heroText').textContent=`${first.minutes} · ${first.total} упражнений`;
-    $('#heroNote').textContent='';
-    $('#heroNote').hidden=true;
-    $('#continueBtn').textContent='Начать';
-    $('#continueBtn').onclick=()=>go(firstKey);
-    $('#heroProgressText').textContent=`0 из ${first.total} упражнений`;
-    $('#dayProgressValue').textContent='0%';
-    $('#dayProgressBar').style.width='0%';
-    const track=$('#dayProgressTrack');
-    if(track){
-      track.setAttribute('aria-valuenow','0');
-      track.setAttribute('aria-valuetext',`0% (0 из ${first.total} упражнений)`);
-    }
-    $('#todayCard').classList.remove('is-complete');
-
-    availableRoutineKeys.forEach(key=>{
-      const button=document.querySelector(`.routine-card[data-routine="${key}"]`);
-      const status=button?.querySelector('.routine-status');
-      const bar=button?.querySelector('.mini-progress i');
-      if(status?.firstChild)status.firstChild.nodeValue='Начать';
-      if(bar)bar.style.width='0%';
+  const renderRoutineCards=()=>{
+    list.replaceChildren();
+    Object.entries(ROUTINES).forEach(([key,routine],index)=>{
+      const stateItem=today.routines[key]||{};
+      const button=document.createElement('button');
+      button.className='routine-card';
+      button.type='button';
+      button.dataset.routine=key;
+      if(!routine.available){
+        button.disabled=true;
+        button.classList.add('is-unavailable');
+        button.innerHTML=`
+          <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
+          <span class="routine-copy"><strong>${routine.name}</strong><small>Комплекс в разработке</small></span>
+          <span class="routine-status">Скоро</span>`;
+      }else{
+        const progress=exerciseCount(key);
+        const pct=Math.round(progress/routine.total*100);
+        const status=stateItem.completed?'Готово':progress>0||stateItem.activeSeconds>0?'Продолжить':'Начать';
+        button.onclick=()=>go(key);
+        button.innerHTML=`
+          <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
+          <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
+          <span class="routine-status">${status}<i class="hi hi-chevron-right" aria-hidden="true"></i></span>
+          <span class="mini-progress" aria-hidden="true"><i style="width:${pct}%"></i></span>`;
+      }
+      if(index===Object.keys(ROUTINES).length-1)button.classList.add('is-last');
+      list.appendChild(button);
     });
+  };
 
-    const current=Store.getCurrentStreak(availableRoutineKeys,365);
-    $('#activityStreak').textContent=current
-      ?`Серия ${current} ${current===1?'день':'дня'}`
+  const renderActivity=()=>{
+    days.replaceChildren();
+    const currentStreak=Store.getCurrentStreak(availableRoutineKeys,365);
+    $('#activityStreak').textContent=currentStreak
+      ?`Серия ${currentStreak} ${currentStreak===1?'день':'дня'}`
       :'Серия —';
 
-    const todayActivity=days.querySelector('.activity-day.is-today');
-    if(todayActivity){
-      todayActivity.classList.remove('is-complete','is-active');
-      todayActivity.setAttribute('aria-label',`${names[new Date().getDay()]}: нет активности`);
+    let hasActivity=false;
+    for(let i=6;i>=0;i--){
+      const date=new Date();
+      date.setHours(12,0,0,0);
+      date.setDate(date.getDate()-i);
+      const key=Store.todayKey(date);
+      const entry=state.days[key];
+      const complete=Store.hasCompletedRoutine(entry,availableRoutineKeys);
+      const active=Store.hasRoutineActivity(entry,availableRoutineKeys);
+      if(complete||active)hasActivity=true;
+      const item=document.createElement('div');
+      item.className=`activity-day${complete?' is-complete':active?' is-active':''}${i===0?' is-today':''}`;
+      item.setAttribute('aria-label',`${names[date.getDay()]}: ${complete?'тренировка завершена':active?'есть активность':'нет активности'}`);
+      item.innerHTML=`<span class="activity-day__dot" aria-hidden="true"></span><small>${names[date.getDay()]}</small>`;
+      days.appendChild(item);
     }
-    const activityLeft=Boolean(days.querySelector('.activity-day.is-complete,.activity-day.is-active'));
-    $('#activityEmpty').hidden=activityLeft;
-    $('#activityCard').classList.toggle('is-empty',!activityLeft);
+
+    $('#activityEmpty').hidden=hasActivity;
+    $('#activityCard').classList.toggle('is-empty',!hasActivity);
   };
+
+  const renderHomeState=()=>{
+    today=Store.getDay();
+    state=Store.getState();
+
+    const allDone=availableRoutineKeys.length>0&&completedRoutines()===availableRoutineKeys.length;
+    const nextKey=allDone?'morning':nextRoutine();
+    const next=ROUTINES[nextKey];
+    const nextState=today.routines[nextKey];
+    const nextDone=exerciseCount(nextKey);
+    const nextPercent=Math.round(nextDone/next.total*100);
+    const isResuming=!nextState.completed&&(nextState.startedAt||nextState.completedUntil>0||nextState.step>0);
+    const resumeIndex=Math.min(next.total-1,Math.max(nextState.step||0,nextState.completedUntil||0));
+    const resumeExercise=window.DailyMotionProgram[nextKey]?.[resumeIndex];
+
+    $('#todayLabel').textContent=formatDate();
+    $('#todayStatus').textContent=allDone?'Готово':isResuming?'Продолжить':'Сегодня';
+    $('#heroTitle').textContent=allDone?'Утренняя разминка завершена':next.title;
+    $('#heroText').textContent=allDone
+      ?`${next.total} упражнений · ${Store.formatActiveTime(nextState.activeSeconds)} в движении`
+      :isResuming?`Упражнение ${resumeIndex+1} из ${next.total} · ${resumeExercise.title}`
+      :`${next.minutes} · ${next.total} упражнений`;
+    $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
+    $('#heroNote').hidden=!allDone&&!isResuming;
+    $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
+    $('#continueBtn').onclick=()=>allDone?navigate('progress.html'):go(nextKey);
+    $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
+    $('#dayProgressValue').textContent=`${nextPercent}%`;
+    $('#dayProgressBar').style.width=`${nextPercent}%`;
+    const dayProgressTrack=$('#dayProgressTrack');
+    if(dayProgressTrack){
+      dayProgressTrack.setAttribute('aria-valuenow',String(nextPercent));
+      dayProgressTrack.setAttribute('aria-valuetext',`${nextPercent}% (${nextDone} из ${next.total} упражнений)`);
+    }
+    $('#todayCard').classList.toggle('is-complete',allDone);
+
+    renderRoutineCards();
+    renderActivity();
+  };
+
+  renderHomeState();
+
+  const refreshHomeAfterReset=()=>renderHomeState();
 
   const toast=message=>{
     const node=$('#toast');
@@ -429,9 +404,9 @@
 
   window.addEventListener('pageshow',event=>{
     if(!event.persisted)return;
-    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){location.reload();return;}
-    document.documentElement.classList.add('page-leaving');
-    requestAnimationFrame(()=>location.reload());
+    renderHomeState();
+    syncSettings();
+    syncInstallButton();
   });
 })();
 

@@ -62,8 +62,8 @@
   let lastRestCueSecond=null;
   let executionStage='idle';
   let stageTimer=null;
-  let stageTransitionTimer=null;
   let stageTransitionToken=0;
+  let executionHideToken=0;
   const Audio=window.DailyMotionAudio;
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
@@ -353,15 +353,19 @@
   });
 
   function clearExecutionStageTransition(){
-    if(stageTransitionTimer!==null){
-      clearTimeout(stageTransitionTimer);
-      stageTransitionTimer=null;
-    }
     stageTransitionToken++;
     Object.values(executionStages()).forEach(node=>{
       if(!node)return;
       node.classList.remove('is-stage-entering','is-stage-leaving');
       node.inert=false;
+    });
+  }
+
+  function afterAnimations(node,callback,{subtree=false}={}){
+    requestAnimationFrame(()=>{
+      const animations=node?.getAnimations?.({subtree})||[];
+      if(!animations.length){callback();return;}
+      Promise.allSettled(animations.map(animation=>animation.finished)).then(callback);
     });
   }
 
@@ -399,19 +403,20 @@
     next.classList.add('is-stage-entering');
 
     const token=stageTransitionToken;
-    stageTransitionTimer=setTimeout(()=>{
+    afterAnimations(next,()=>{
       if(token!==stageTransitionToken)return;
-      stageTransitionTimer=null;
       previous.hidden=true;
       previous.inert=false;
       previous.classList.remove('is-stage-leaving');
       next.classList.remove('is-stage-entering');
-    },230);
+    });
   }
 
   function showExecution(stage){
     const overlay=$('#executionOverlay');
     if(!overlay)return;
+    executionHideToken++;
+    overlay.classList.remove('is-handoff');
     if(!overlay.classList.contains('is-visible'))modalReturnFocus=document.activeElement;
     setExecutionStage(stage);
     overlay.classList.add('is-visible');
@@ -437,6 +442,7 @@
 
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hasHandoff=typeof handoff==='function'&&overlay.classList.contains('is-visible');
+    const token=++executionHideToken;
     if(hasHandoff){
       overlay.classList.add('is-handoff');
       handoff();
@@ -447,11 +453,12 @@
     overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
     executionStage='idle';
-    syncModalState();
-    emitReloadSafetyChange();
 
     const finish=()=>{
+      if(token!==executionHideToken)return;
       overlay.classList.remove('is-handoff');
+      syncModalState();
+      emitReloadSafetyChange();
       if(!visibleModal()&&modalReturnFocus?.isConnected){
         modalReturnFocus.focus({preventScroll:true});
         modalReturnFocus=null;
@@ -461,7 +468,7 @@
       finish();
       return;
     }
-    setTimeout(finish,230);
+    afterAnimations(overlay,finish);
   }
 
   function cancelCountdown(){
@@ -552,7 +559,9 @@
     Store.save();
     render('forward');
 
-    if(maskSwap)setTimeout(()=>overlay.classList.remove('is-content-swap'),260);
+    if(maskSwap){
+      afterAnimations($('.exercise-main'),()=>overlay.classList.remove('is-content-swap'),{subtree:true});
+    }
   }
 
   function startRest(afterRest){

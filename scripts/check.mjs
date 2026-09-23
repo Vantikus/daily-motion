@@ -24,6 +24,9 @@ const styles=read('styles.css');
 const readme=read('README.md');
 const designSystem=read('DESIGN_SYSTEM.md');
 const pwa=read('pwa.js');
+const appRuntime=read('app.js');
+const progressRuntime=read('progress.js');
+const sessionRuntime=read('session.js');
 const heroicons=read('heroicons.css');
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const packageJson=JSON.parse(read('package.json'));
@@ -210,27 +213,66 @@ if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
 
 
 for(const fragment of [
-  'html.page-leaving body::after',
-  'html.motion-prep:not(.session-ready) .session-body .exercise-app',
+  '@view-transition{',
+  'navigation:auto;',
   '.execution-overlay.is-handoff',
   '.execution-overlay.is-content-swap',
   '.session-body.modal-open .pwa-banner'
 ]){
-  if(!styles.includes(fragment))fail(`styles.css: R4 transition continuity contract missing: ${fragment}`);
+  if(!styles.includes(fragment))fail(`styles.css: P1 motion contract missing: ${fragment}`);
+}
+for(const forbidden of [
+  'html.page-leaving body::after',
+  'html.motion-prep',
+  'blur(18px) saturate(.92)'
+]){
+  if(styles.includes(forbidden))fail(`styles.css: obsolete P1 transition layer returned: ${forbidden}`);
+}
+for(const content of Object.values(html)){
+  if(content.includes('motion-prep'))fail('HTML: motion-prep must not hide full pages before runtime state resolves');
 }
 for(const fragment of [
-  'const PAGE_NAV_DURATION=150;',
   'window.DailyMotionNavigate=navigatePage;'
 ]){
-  if(!pwa.includes(fragment))fail(`pwa.js: R4 navigation transition contract missing: ${fragment}`);
+  if(!pwa.includes(fragment))fail(`pwa.js: P1 navigation contract missing: ${fragment}`);
 }
-const sessionRuntime=read('session.js');
+for(const forbidden of [
+  'PAGE_NAV_DURATION',
+  'pageNavigationPending',
+  "classList.add('page-leaving')"
+]){
+  if(pwa.includes(forbidden))fail(`pwa.js: obsolete manual page transition returned: ${forbidden}`);
+}
+for(const fragment of [
+  'renderHomeState();',
+  "window.addEventListener('pageshow',event=>{",
+  'if(!event.persisted)return;'
+]){
+  if(!appRuntime.includes(fragment))fail(`app.js: P1 BFCache rehydrate contract missing: ${fragment}`);
+}
+if(appRuntime.includes("requestAnimationFrame(()=>location.reload())")){
+  fail('app.js: BFCache must rehydrate without forced reload');
+}
+for(const fragment of [
+  'const renderProgress=()=>{',
+  'if(event.persisted)renderProgress();'
+]){
+  if(!progressRuntime.includes(fragment))fail(`progress.js: P1 BFCache rehydrate contract missing: ${fragment}`);
+}
 for(const fragment of [
   "document.documentElement.classList.add('session-ready')",
   "overlay.classList.add('is-handoff')",
-  "overlay.classList.add('is-content-swap')"
+  "overlay.classList.add('is-content-swap')",
+  'function afterAnimations(node,callback,{subtree=false}={})'
 ]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: R4 workout handoff contract missing: ${fragment}`);
+  if(!sessionRuntime.includes(fragment))fail(`session.js: P1 workout motion contract missing: ${fragment}`);
+}
+for(const forbidden of [
+  'stageTransitionTimer',
+  'setTimeout(finish,230)',
+  "setTimeout(()=>overlay.classList.remove('is-content-swap'),260)"
+]){
+  if(sessionRuntime.includes(forbidden))fail(`session.js: timer-driven motion returned: ${forbidden}`);
 }
 if(styles.includes('.completion-overlay.is-exiting')){
   fail('styles.css: obsolete completion exit layer returned');
