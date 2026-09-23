@@ -1,9 +1,12 @@
 (() => {
   const SW_URL='/sw.js';
+  const UPDATE_CHECK_INTERVAL=60_000;
   let registration=null;
   let waitingWorker=null;
   let deferredPrompt=null;
   let refreshRequested=false;
+  let updateCheckTimer=null;
+  let updateCheckInFlight=false;
   let banner=null;
   const SHEET_MOTION=Object.freeze({
     openDuration:.38,
@@ -369,14 +372,37 @@
     });
   };
 
+  const checkForUpdate=async()=>{
+    if(!registration||updateCheckInFlight||!navigator.onLine||document.visibilityState==='hidden')return;
+    updateCheckInFlight=true;
+    try{
+      await registration.update();
+      if(registration.waiting&&navigator.serviceWorker.controller)showUpdate(registration.waiting);
+    }catch{}
+    finally{
+      updateCheckInFlight=false;
+    }
+  };
+
+  const startUpdateChecks=()=>{
+    if(updateCheckTimer!==null)return;
+    updateCheckTimer=setInterval(checkForUpdate,UPDATE_CHECK_INTERVAL);
+  };
+
   if('serviceWorker' in navigator){
     window.addEventListener('load',async()=>{
       try{
         const reg=await navigator.serviceWorker.register(SW_URL);
         watchRegistration(reg);
-        setTimeout(()=>reg.update().catch(()=>{}),1200);
+        startUpdateChecks();
+        setTimeout(checkForUpdate,1200);
       }catch{}
     });
+
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible')checkForUpdate();
+    });
+    window.addEventListener('pageshow',checkForUpdate);
 
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(refreshRequested)location.reload();
@@ -398,9 +424,12 @@
 
   window.addEventListener('offline',()=>showBanner('Нет сети — приложение продолжит работать офлайн'));
   window.addEventListener('online',()=>{
+    checkForUpdate();
     if(!waitingWorker){
       showBanner('Соединение восстановлено');
-      setTimeout(hideBanner,1400);
+      setTimeout(()=>{
+        if(!waitingWorker)hideBanner();
+      },1400);
     }
   });
 
