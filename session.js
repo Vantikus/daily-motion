@@ -860,11 +860,12 @@
     if(fromExecution){
       requestAnimationFrame(()=>{
         hideExecution();
+        $('#completionTitle').focus({preventScroll:true});
         requestAnimationFrame(()=>overlay.classList.remove('is-handoff'));
       });
+    }else{
+      $('#completionTitle').focus({preventScroll:true});
     }
-
-    $('#completionTitle').focus({preventScroll:true});
   }
 
   $('#routineMoreButton').addEventListener('click',()=>{
