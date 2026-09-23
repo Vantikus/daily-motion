@@ -215,6 +215,8 @@ if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
 for(const fragment of [
   '@view-transition{',
   'navigation:auto;',
+  'mix-blend-mode:normal;',
+  'animation:qmPageTransitionIn 130ms 85ms',
   '.execution-overlay.is-handoff',
   '.execution-overlay.is-content-swap',
   '.session-body.modal-open .pwa-banner'
