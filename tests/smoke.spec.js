@@ -293,6 +293,12 @@ test('timer crossfades to warm feedback only in the final three seconds',async({
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('#timerRing')).toHaveClass(/is-final-three/);
   await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node,'::before').opacity)).toBe('1');
+  const finalMotion=await page.locator('#timerRing').evaluate(node=>{
+    const style=getComputedStyle(node);
+    return {transform:style.transform,animation:style.animationName};
+  });
+  expect(finalMotion.transform).toBe('none');
+  expect(finalMotion.animation).toContain('timerUrgencyPulse');
 });
 
 test('completion motion is choreographed and respects reduced motion',async({page,browserName})=>{
@@ -817,6 +823,91 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   expect(layout.headGap).toBe('8px');
   expect(layout.factsGap).toBe('20px');
   expect(layout.techniqueMargin).toBe('20px');
+});
+
+
+test('P3 desktop timing controls replace native dropdowns without changing mobile controls',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','desktop timing control geometry is verified once in Chromium');
+
+  await page.setViewportSize({width:1024,height:800});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+
+  await expect(page.locator('#countdownSetting')).toBeHidden();
+  await expect(page.locator('#restSetting')).toBeHidden();
+  await expect(page.locator('#countdownSettingDesktop')).toBeVisible();
+  await expect(page.locator('#restSettingDesktop')).toBeVisible();
+
+  const homeTargets=await page.locator('#countdownSettingDesktop button').evaluateAll(buttons=>
+    buttons.map(button=>Math.round(button.getBoundingClientRect().height))
+  );
+  expect(homeTargets.every(height=>height>=44)).toBe(true);
+
+  await page.locator('#countdownSettingDesktop [data-value="5"]').click();
+  await page.locator('#restSettingDesktop [data-value="30"]').click();
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().countdownSeconds)).toBe(5);
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().restSeconds)).toBe(30);
+  expect(await page.locator('#countdownSetting').inputValue()).toBe('5');
+  expect(await page.locator('#restSetting').inputValue()).toBe('30');
+  await expect(page.locator('#countdownSettingDesktop [data-value="5"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#restSettingDesktop [data-value="30"]')).toHaveAttribute('aria-pressed','true');
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#routineMoreButton').click();
+  await expect(page.locator('#workoutCountdownSetting')).toBeHidden();
+  await expect(page.locator('#workoutRestSetting')).toBeHidden();
+  await expect(page.locator('#workoutCountdownSettingDesktop')).toBeVisible();
+  await expect(page.locator('#workoutRestSettingDesktop')).toBeVisible();
+
+  await page.locator('#workoutCountdownSettingDesktop [data-value="3"]').click();
+  await page.locator('#workoutRestSettingDesktop [data-value="45"]').click();
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().countdownSeconds)).toBe(3);
+  expect(await page.evaluate(()=>DailyMotionState.getSettings().restSeconds)).toBe(45);
+
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#countdownSetting')).toBeVisible();
+  await expect(page.locator('#restSetting')).toBeVisible();
+  await expect(page.locator('#countdownSettingDesktop')).toBeHidden();
+  await expect(page.locator('#restSettingDesktop')).toBeHidden();
+});
+
+
+test('P3 timer urgency never changes ring geometry',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','timer geometry is verified once in Chromium');
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:0,sound:false,autoNext:false,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{
+        [key]:{routines:{morning:{
+          step:0,completedUntil:0,completed:false,startedAt:null,completedAt:null,activeSeconds:0,effort:null,
+          timers:{'cat-cow':{duration:40,remaining:3,running:false,paused:true,endAt:null,runStartedAt:null}}
+        }}}
+      }
+    }));
+  });
+
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#timerRing')).toHaveClass(/is-final-three/);
+  const ring=await page.locator('#timerRing').evaluate(node=>{
+    const box=node.getBoundingClientRect();
+    const style=getComputedStyle(node);
+    return {
+      width:Math.round(box.width),
+      height:Math.round(box.height),
+      transform:style.transform,
+      animation:style.animationName
+    };
+  });
+  expect(ring.width).toBe(ring.height);
+  expect(ring.transform).toBe('none');
+  expect(ring.animation).toContain('timerUrgencyPulse');
 });
 
 
