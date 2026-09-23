@@ -370,6 +370,14 @@ if(!styles.includes('/* Bottom sheets — GSAP owns transform and backdrop motio
 if(!styles.includes('/* P2 desktop Home — one authoritative layout layer. */')){
   fail('styles.css: consolidated P2 desktop Home layout is missing');
 }
+if(!styles.includes('/* P3 micro-polish — desktop timing controls stay native on touch/mobile. */')){
+  fail('styles.css: P3 desktop timing control layer is missing');
+}
+for(const retiredTimerMotion of ['timerBreath','timerEnding','timerFinalThree']){
+  if(styles.includes(retiredTimerMotion))fail(`styles.css: retired timer transform motion returned: ${retiredTimerMotion}`);
+}
+if(!styles.includes('timerUrgencyPulse'))fail('styles.css: geometry-safe timer urgency motion is missing');
+
 for(const retiredHomeLayout of [
   'grid-column:span 7;padding:26px',
   'grid-column:1 / 8;grid-row:1 / span 2',
@@ -389,6 +397,15 @@ if(!styles.includes('outline:2px solid var(--focus-color);')||!styles.includes('
 if(/outline:\s*3px solid rgba\(47,107,85,\.18\)/.test(styles)){
   fail('styles.css: obsolete low-contrast focus ring remains');
 }
+for(const [file,id] of [
+  ['index.html','countdownSettingDesktop'],
+  ['index.html','restSettingDesktop'],
+  ['session.html','workoutCountdownSettingDesktop'],
+  ['session.html','workoutRestSettingDesktop']
+]){
+  if(!html[file].includes(`id="${id}"`))fail(`${file}: P3 desktop timing control missing ${id}`);
+}
+
 const techniqueMarkup=html['session.html'];
 const techniqueHeadingCount=(techniqueMarkup.match(/<h3 class="detail-card__heading">/g)||[]).length;
 if(techniqueHeadingCount!==6)fail(`session.html: expected 6 semantic technique headings, found ${techniqueHeadingCount}`);
