@@ -195,11 +195,14 @@
       </div>
 
       <div class="execution-stage execution-rest" id="executionRestStage" hidden>
-        <span class="execution-eyebrow">Следующее упражнение</span>
+        <span class="execution-eyebrow">Перед следующим упражнением</span>
         <h2>Отдых</h2>
         <strong class="execution-rest__value" id="restValue">15</strong>
         <p id="restNext">Дальше: следующее упражнение</p>
-        <button class="execution-primary" id="restSkip" type="button">Пропустить отдых</button>
+        <div class="execution-rest__actions">
+          <button class="execution-primary" id="restSkip" type="button">Начать следующее</button>
+          <button class="execution-text-action" id="restTechnique" type="button">Посмотреть технику</button>
+        </div>
       </div>
     </section>
   </div>
@@ -230,18 +233,15 @@
             <input class="switch-input" id="workoutAutoNextSetting" type="checkbox" />
           </label>
 
-          <label class="routine-setting-row">
+          <div class="routine-setting-row routine-setting-row--theme">
             <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-moon" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Оформление</strong><small>Системная, светлая или тёмная тема</small></span>
-            <span class="settings-select-control">
-              <select id="workoutThemeSetting" aria-label="Тема оформления">
-                <option value="system">Системная</option>
-                <option value="light">Светлая</option>
-                <option value="dark">Тёмная</option>
-              </select>
-              <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
-            </span>
-          </label>
+            <div class="theme-segmented" id="workoutThemeSetting" role="group" aria-label="Тема оформления">
+              <button type="button" data-theme-value="system" aria-pressed="true">Система</button>
+              <button type="button" data-theme-value="light" aria-pressed="false">Светлая</button>
+              <button type="button" data-theme-value="dark" aria-pressed="false">Тёмная</button>
+            </div>
+          </div>
         </div>
 
         <div class="settings-reset-block routine-settings-reset" id="routineResetBlock">
