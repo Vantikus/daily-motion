@@ -183,12 +183,20 @@
     });
   }
 
+  function syncTimingControl(root,value){
+    root?.querySelectorAll('[data-value]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.value===String(value)));
+    });
+  }
+
   function syncWorkoutSettingsControls(){
     settings=Store.getSettings();
     $('#workoutSoundSetting').checked=Boolean(settings.sound);
     $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
     $('#workoutCountdownSetting').value=String(settings.countdownSeconds);
     $('#workoutRestSetting').value=String(settings.restSeconds);
+    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
+    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
     syncThemeControl($('#workoutThemeSetting'),settings.theme);
   }
 
@@ -982,9 +990,25 @@
   });
   $('#workoutCountdownSetting').addEventListener('change',event=>{
     settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});
+    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
   });
   $('#workoutRestSetting').addEventListener('change',event=>{
     settings=Store.updateSettings({restSeconds:Number(event.target.value)});
+    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
+  });
+  $('#workoutCountdownSettingDesktop').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-value]');
+    if(!button)return;
+    settings=Store.updateSettings({countdownSeconds:Number(button.dataset.value)});
+    $('#workoutCountdownSetting').value=String(settings.countdownSeconds);
+    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
+  });
+  $('#workoutRestSettingDesktop').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-value]');
+    if(!button)return;
+    settings=Store.updateSettings({restSeconds:Number(button.dataset.value)});
+    $('#workoutRestSetting').value=String(settings.restSeconds);
+    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
   });
   $('#workoutThemeSetting').addEventListener('click',event=>{
     const button=event.target.closest?.('[data-theme-value]');
