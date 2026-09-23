@@ -225,7 +225,7 @@ if(!navigation.includes("swup.hooks.on('fetch:error'"))fail('navigation.js: Swup
 if(navigation.includes("swup.hooks.on('visit:fail'"))fail('navigation.js: invalid Swup visit:fail hook returned');
 for(const fragment of [
   "containers:['#swup']",
-  'animationSelector:false',
+  "animationSelector:'.transition-page'",
   'animateHistoryBrowsing:true',
   "swup.hooks.on('page:load'",
   "swup.hooks.replace('animation:out:await'",
@@ -237,6 +237,9 @@ for(const fragment of [
   "window.DailyMotionBack=(fallback='index.html')=>{",
   'script.addEventListener(\'load\',installSwup',
   'clearTransitionStyles();',
+  "new DOMParser().parseFromString(html,'text/html')",
+  "swup.hooks.on('animation:skip'",
+  "swup.hooks.on('page:view'",
   'unmountPage();',
   'syncBodyAndHead(visit);'
 ]){
@@ -244,6 +247,12 @@ for(const fragment of [
 }
 if(!styles.includes('#swup{')||!styles.includes('opacity:1;')||!styles.includes('transform:none;')){
   fail('styles.css: Swup container must stay visible by default');
+}
+for(const fragment of ['.session-body>#swup{','.session-body>#swup>.exercise-app{','.session-body>#swup>.ios-safe-zone-bar{']){
+  if(!styles.includes(fragment))fail(`styles.css: Session Swup wrapper layout missing: ${fragment}`);
+}
+if(navigation.includes("container.style.opacity='0'")){
+  fail('navigation.js: persistent inline opacity:0 can blank the Swup container');
 }
 for(const forbidden of [
   'html.is-changing #swup',

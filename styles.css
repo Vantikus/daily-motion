@@ -588,8 +588,7 @@ html,body{background:var(--bg)}
 }
 
 .session-body{
-  display:grid;
-  grid-template-rows:env(safe-area-inset-top,0px) minmax(0,1fr);
+  display:block;
   height:100vh;
   height:100dvh;
   min-height:0;
@@ -597,7 +596,16 @@ html,body{background:var(--bg)}
   background:var(--bg);
   padding:0!important;
 }
-.session-body>.ios-safe-zone-bar{
+.session-body>#swup{
+  display:grid;
+  grid-template-rows:env(safe-area-inset-top,0px) minmax(0,1fr);
+  width:100%;
+  height:100vh;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+}
+.session-body>#swup>.ios-safe-zone-bar{
   display:block!important;
   grid-row:1;
   position:relative!important;
@@ -608,7 +616,7 @@ html,body{background:var(--bg)}
   background:var(--bg)!important;
   z-index:0!important;
 }
-.session-body>.exercise-app{
+.session-body>#swup>.exercise-app{
   grid-row:2;
   height:auto!important;
   min-height:0;
@@ -625,11 +633,11 @@ html,body{background:var(--bg)}
     padding-top:calc(env(safe-area-inset-top,0px) + 8px);
   }
 
-  .ios-standalone-pwa .session-body{
+  .ios-standalone-pwa .session-body>#swup{
     grid-template-rows:calc(env(safe-area-inset-top,0px) + 8px) minmax(0,1fr);
   }
 
-  .ios-standalone-pwa .session-body>.ios-safe-zone-bar{
+  .ios-standalone-pwa .session-body>#swup>.ios-safe-zone-bar{
     height:calc(env(safe-area-inset-top,0px) + 8px)!important;
     min-height:calc(env(safe-area-inset-top,0px) + 8px)!important;
   }
