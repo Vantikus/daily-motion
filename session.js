@@ -47,6 +47,34 @@
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
 
+  const hasWorkoutActivity=()=>{
+    const timerActivity=Object.values(routine.timers||{}).some(timer=>
+      Boolean(timer?.running)||
+      Boolean(timer?.paused)||
+      (
+        Number.isFinite(Number(timer?.duration))&&
+        Number.isFinite(Number(timer?.remaining))&&
+        Number(timer.remaining)<Number(timer.duration)
+      )
+    );
+    return !routine.completed&&(
+      executionStage!=='idle'||
+      Boolean(routine.startedAt)||
+      (Number(routine.step)||0)>0||
+      (Number(routine.completedUntil)||0)>0||
+      (Number(routine.activeSeconds)||0)>0||
+      timerActivity
+    );
+  };
+  const isReloadSafe=()=>{
+    const modalVisible=Boolean(document.querySelector(
+      '.execution-overlay.is-visible,.routine-settings-overlay.is-visible,.completion-overlay.is-visible'
+    ));
+    return !modalVisible&&!hasWorkoutActivity();
+  };
+  const emitReloadSafetyChange=()=>window.dispatchEvent(new CustomEvent('daily-motion-reload-safety-change'));
+  window.DailyMotionReloadGuard={isSafe:isReloadSafe};
+
   const toast=message=>{
     const node=$('#toast');
     node.textContent=message;
@@ -200,6 +228,7 @@
     hideRoutineResetConfirm(false);
     routineResetInFlight=false;
     syncModalState();
+    emitReloadSafetyChange();
     if(!visibleModal()&&modalReturnFocus?.isConnected){
       modalReturnFocus.focus({preventScroll:true});
       modalReturnFocus=null;
@@ -229,12 +258,14 @@
     if(routineSettingsMotion){
       routineSettingsMotion.open();
       syncModalState();
+      emitReloadSafetyChange();
       return;
     }
 
     overlay.setAttribute('aria-hidden','false');
     overlay.classList.add('is-visible');
     syncModalState();
+    emitReloadSafetyChange();
     $('#routineSettingsClose')?.focus({preventScroll:true});
   }
 
@@ -266,6 +297,7 @@
 
     haptic('soft');
     render('back','smooth');
+    emitReloadSafetyChange();
     toast('Прогресс тренировки сброшен');
   }
 
@@ -298,6 +330,7 @@
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
+    emitReloadSafetyChange();
     const focusTarget=stage==='timer'
       ?$('#timerToggle')
       :stage==='rest'
@@ -317,6 +350,7 @@
     overlay.setAttribute('aria-hidden','true');
     executionStage='idle';
     syncModalState();
+    emitReloadSafetyChange();
     if(!visibleModal()&&modalReturnFocus?.isConnected){
       modalReturnFocus.focus({preventScroll:true});
       modalReturnFocus=null;
@@ -821,6 +855,7 @@
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
+    emitReloadSafetyChange();
     $('#completionTitle').focus({preventScroll:true});
   }
 
