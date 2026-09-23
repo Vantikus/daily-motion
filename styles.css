@@ -2626,7 +2626,6 @@ a[href] *,
 }
 .routine-settings-list{
   border-top:1px solid rgba(23,25,23,.06);
-  border-bottom:1px solid rgba(23,25,23,.06);
 }
 .routine-setting-row{
   min-height:var(--settings-row-h);
