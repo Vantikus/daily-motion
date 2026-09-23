@@ -39,7 +39,15 @@
       root.classList.add('theme-transitioning');
       try{
         if(typeof document.startViewTransition==='function'){
-          const transition=document.startViewTransition(()=>apply(normalized));
+          let transition;
+          try{
+            transition=document.startViewTransition({
+              update:()=>apply(normalized),
+              types:['theme']
+            });
+          }catch{
+            transition=document.startViewTransition(()=>apply(normalized));
+          }
           await transition.finished.catch(()=>{});
           return {preference:normalized,resolved};
         }

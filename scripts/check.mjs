@@ -289,6 +289,21 @@ for(const fragment of [
 ]){
   if(!styles.includes(fragment))fail(`styles.css: R2 transition direction contract missing: ${fragment}`);
 }
+for(const fragment of [
+  "types:['theme']",
+  ':active-view-transition-type(theme)',
+  'mix-blend-mode:normal;'
+]){
+  const source=fragment.includes('types:')?read('theme.js'):styles;
+  if(!source.includes(fragment))fail(`R3 theme/page transition isolation contract missing: ${fragment}`);
+}
+for(const forbidden of [
+  'html.theme-transitioning::view-transition-old(root)',
+  'html.theme-transitioning::view-transition-new(root)',
+  'html:not(.theme-transitioning):active-view-transition-type('
+]){
+  if(styles.includes(forbidden))fail(`styles.css: obsolete class-coupled View Transition rule returned: ${forbidden}`);
+}
 if(html['index.html'].includes('>Начать тренировку</button>')){
   fail('index.html: initial CTA copy must match runtime copy');
 }
