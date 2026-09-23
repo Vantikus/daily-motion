@@ -1,4 +1,5 @@
-(() => {
+window.DailyMotionPages=window.DailyMotionPages||{};
+window.DailyMotionPages.progress=function mountProgress(){
   const Store=window.DailyMotionState;
   const $=selector=>document.querySelector(selector);
   const ROUTINES={morning:{name:'Утро',total:window.DailyMotionProgram.morning.length}};
@@ -122,10 +123,9 @@
     }
   });
 
-  window.addEventListener('pagereveal',renderProgress);
-  window.addEventListener('pageshow',event=>{
-    if(event.persisted)renderProgress();
-  });
-
   document.documentElement.classList.add('app-ready');
-})();
+
+  return ()=>{
+    clearTimeout(toast.timer);
+  };
+};

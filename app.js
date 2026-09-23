@@ -1,5 +1,8 @@
-(function HomeApp(){
+window.DailyMotionPages=window.DailyMotionPages||{};
+window.DailyMotionPages.home=function mountHome(){
   const Store=window.DailyMotionState;
+  const lifecycle=new AbortController();
+  const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
   const ROUTINES={
     morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
@@ -199,6 +202,7 @@
   let resetFocusTimer=null;
   let refreshAfterSettingsClose=false;
   let resetInFlight=false;
+  let resetCloseTimer=null;
   const clearResetTimers=()=>{
     if(resetStateTimer!==null){
       clearTimeout(resetStateTimer);
@@ -312,7 +316,7 @@
   settingsBtn.onclick=openSettings;
   settingsClose.onclick=closeSettings;
   settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
-  document.addEventListener('keydown',event=>{
+  listen(document,'keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
       if(resetTodayBlock.classList.contains('is-confirming')){hideResetConfirm(true,70);return;}
@@ -386,7 +390,7 @@
     }
   };
   iosInstallGuideClose?.addEventListener('click',()=>hideInstallGuide(true));
-  window.addEventListener('daily-motion-install-change',syncInstallButton);
+  listen(window,'daily-motion-install-change',syncInstallButton);
 
   syncSettings();
   syncInstallButton();
@@ -399,17 +403,18 @@
     resetInFlight=true;
     Store.resetToday();
     refreshAfterSettingsClose=true;
-    setTimeout(closeSettings,120);
+    resetCloseTimer=setTimeout(()=>{resetCloseTimer=null;closeSettings();},120);
   };
 
-  const rehydrateHome=()=>{
-    renderHomeState();
-    syncSettings();
-    syncInstallButton();
+  return ()=>{
+    lifecycle.abort();
+    settingsMotion?.destroy?.();
+    clearResetTimers();
+    if(resetCloseTimer!==null)clearTimeout(resetCloseTimer);
+    clearTimeout(toast.timer);
+    document.body.classList.remove('settings-open','modal-open');
+    const shell=document.querySelector('.app-shell');
+    if(shell)shell.inert=false;
   };
-  window.addEventListener('pagereveal',rehydrateHome);
-  window.addEventListener('pageshow',event=>{
-    if(event.persisted)rehydrateHome();
-  });
-})();
+};
 

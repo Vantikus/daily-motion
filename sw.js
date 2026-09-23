@@ -1,10 +1,11 @@
-const CACHE_NAME='daily-motion-v148';
+const CACHE_NAME='daily-motion-v150';
+const SWUP_VENDOR_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/heroicons.css?v=148',
+  '/heroicons.css?v=150',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -35,16 +36,17 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=148',
-  '/theme.js?v=148',
-  '/program.js?v=148',
-  '/state.js?v=148',
-  '/audio.js?v=148',
-  '/gsap.min.js?v=148',
-  '/pwa.js?v=148',
-  '/app.js?v=148',
-  '/session.js?v=148',
-  '/progress.js?v=148',
+  '/styles.css?v=150',
+  '/theme.js?v=150',
+  '/program.js?v=150',
+  '/state.js?v=150',
+  '/audio.js?v=150',
+  '/gsap.min.js?v=150',
+  '/pwa.js?v=150',
+  '/app.js?v=150',
+  '/session.js?v=150',
+  '/progress.js?v=150',
+  '/navigation.js?v=150',
   '/manifest.webmanifest',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
@@ -53,7 +55,12 @@ const APP_SHELL=[
 ];
 
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async cache=>{
+      await cache.addAll(APP_SHELL);
+      await cache.add(SWUP_VENDOR_URL).catch(()=>{});
+    })
+  );
 });
 
 self.addEventListener('activate',event=>{
@@ -97,11 +104,34 @@ const networkNavigation=async request=>{
   }
 };
 
+const swupNavigation=async request=>{
+  const cache=await caches.open(CACHE_NAME);
+  const url=new URL(request.url);
+  const cached=(await cache.match(request))||(await cache.match(url.pathname));
+  if(cached)return cached;
+  try{
+    const response=await fetch(request);
+    if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
+    return response;
+  }catch{
+    return (await cache.match(navigationFallback(url.pathname)))||(await cache.match('/'));
+  }
+};
+
 self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
+  if(request.url===SWUP_VENDOR_URL){
+    event.respondWith(cacheStatic(request).catch(()=>fetch(request)));
+    return;
+  }
   if(url.origin!==self.location.origin)return;
+
+  if(request.headers.get('X-Requested-With')==='swup'){
+    event.respondWith(swupNavigation(request));
+    return;
+  }
 
   if(request.mode==='navigate'){
     event.respondWith(networkNavigation(request));

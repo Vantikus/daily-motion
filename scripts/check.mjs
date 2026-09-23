@@ -8,7 +8,7 @@ const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
-  'app.js','audio.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
+  'app.js','audio.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -24,6 +24,7 @@ const styles=read('styles.css');
 const readme=read('README.md');
 const designSystem=read('DESIGN_SYSTEM.md');
 const pwa=read('pwa.js');
+const navigation=read('navigation.js');
 const appRuntime=read('app.js');
 const progressRuntime=read('progress.js');
 const sessionRuntime=read('session.js');
@@ -212,82 +213,90 @@ if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
 }
 
 
+for(const [file,content] of Object.entries(html)){
+  if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
+  if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
+  if(!content.includes('navigation.js?v='))fail(`${file}: navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=','progress.js?v=','session.js?v=']){
+    if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
+  }
+}
+if(!navigation.includes("swup.hooks.on('fetch:error'"))fail('navigation.js: Swup fetch:error fallback hook is missing');
+if(navigation.includes("swup.hooks.on('visit:fail'"))fail('navigation.js: invalid Swup visit:fail hook returned');
 for(const fragment of [
+  "containers:['#swup']",
+  'animationSelector:false',
+  'animateHistoryBrowsing:true',
+  "swup.hooks.on('page:load'",
+  "swup.hooks.replace('animation:out:await'",
+  "swup.hooks.before('content:replace'",
+  "swup.hooks.on('content:replace'",
+  "swup.hooks.replace('animation:in:await'",
+  "const SWUP_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';",
+  'window.DailyMotionNavigate=(href,{replace=false}={})=>{',
+  "window.DailyMotionBack=(fallback='index.html')=>{",
+  'script.addEventListener(\'load\',installSwup',
+  'clearTransitionStyles();',
+  'unmountPage();',
+  'syncBodyAndHead(visit);'
+]){
+  if(!navigation.includes(fragment))fail(`navigation.js: Swup lifecycle contract missing: ${fragment}`);
+}
+if(!styles.includes('#swup{')||!styles.includes('opacity:1;')||!styles.includes('transform:none;')){
+  fail('styles.css: Swup container must stay visible by default');
+}
+for(const forbidden of [
+  'html.is-changing #swup',
+  'html.is-leaving.is-animating #swup',
+  'html.is-rendering.is-animating #swup'
+]){
+  if(styles.includes(forbidden))fail(`styles.css: class-driven Swup hiding returned: ${forbidden}`);
+}
+for(const forbidden of [
   '@view-transition{',
-  'navigation:auto;',
-  'mix-blend-mode:normal;',
-  'animation:qmPageTransitionIn 130ms 85ms',
-  '.execution-overlay.is-handoff',
-  '.execution-overlay.is-content-swap',
-  '.session-body.modal-open .pwa-banner'
-]){
-  if(!styles.includes(fragment))fail(`styles.css: P1 motion contract missing: ${fragment}`);
-}
-for(const forbidden of [
-  'html.page-leaving body::after',
-  'html.motion-prep',
-  'blur(18px) saturate(.92)'
-]){
-  if(styles.includes(forbidden))fail(`styles.css: obsolete P1 transition layer returned: ${forbidden}`);
-}
-for(const content of Object.values(html)){
-  if(content.includes('motion-prep'))fail('HTML: motion-prep must not hide full pages before runtime state resolves');
-}
-for(const fragment of [
-  'window.DailyMotionNavigate=navigatePage;'
-]){
-  if(!pwa.includes(fragment))fail(`pwa.js: P1 navigation contract missing: ${fragment}`);
-}
-for(const forbidden of [
-  'PAGE_NAV_DURATION',
-  'pageNavigationPending',
-  "classList.add('page-leaving')"
-]){
-  if(pwa.includes(forbidden))fail(`pwa.js: obsolete manual page transition returned: ${forbidden}`);
-}
-for(const fragment of [
-  'renderHomeState();',
-  "window.addEventListener('pageshow',event=>{",
-  'if(event.persisted)rehydrateHome();'
-]){
-  if(!appRuntime.includes(fragment))fail(`app.js: P1 BFCache rehydrate contract missing: ${fragment}`);
-}
-if(appRuntime.includes("requestAnimationFrame(()=>location.reload())")){
-  fail('app.js: BFCache must rehydrate without forced reload');
-}
-for(const fragment of [
-  "window.addEventListener('pagereveal',rehydrateHome)",
-  "window.addEventListener('pagereveal',renderProgress)"
-]){
-  const source=fragment.includes('rehydrateHome')?appRuntime:progressRuntime;
-  if(!source.includes(fragment))fail(`R1 pagereveal rehydrate contract missing: ${fragment}`);
-}
-for(const fragment of [
-  "window.addEventListener('pageswap',event=>{",
-  'hasActivePageMotion()',
-  'event.viewTransition.skipTransition()'
-]){
-  if(!pwa.includes(fragment))fail(`pwa.js: R1 motion-safe navigation contract missing: ${fragment}`);
-}
-for(const fragment of [
-  'window.DailyMotionBack=navigateBack;',
-  "viewTransition.types.add?.(type)",
-  "navigationType==='traverse'"
-]){
-  if(!pwa.includes(fragment))fail(`pwa.js: R2 history/transition type contract missing: ${fragment}`);
-}
-if(!sessionRuntime.includes("{replace:true,transition:'back'}")){
-  fail('session.js: completion must replace the workout entry when returning Home');
-}
-for(const content of [html['progress.html'],html['session.html']]){
-  if(!content.includes('data-nav-back'))fail('HTML: R2 back links must use history traversal when available');
-}
-for(const fragment of [
   'types:forward;',
   ':active-view-transition-type(forward)',
-  ':active-view-transition-type(back)'
+  ':active-view-transition-type(back)',
+  'qmPageTransitionOut',
+  'qmPageTransitionIn'
 ]){
-  if(!styles.includes(fragment))fail(`styles.css: R2 transition direction contract missing: ${fragment}`);
+  if(styles.includes(forbidden))fail(`styles.css: obsolete cross-document View Transition returned: ${forbidden}`);
+}
+for(const forbidden of [
+  'PAGE_TRANSITION_KEY',
+  "window.addEventListener('pageswap'",
+  'window.DailyMotionNavigate=navigatePage;',
+  'window.DailyMotionBack=navigateBack;'
+]){
+  if(pwa.includes(forbidden))fail(`pwa.js: obsolete pre-Swup navigation runtime returned: ${forbidden}`);
+}
+for(const [source,label,page] of [
+  [appRuntime,'app.js','home'],
+  [progressRuntime,'progress.js','progress'],
+  [sessionRuntime,'session.js','session']
+]){
+  if(!source.includes(`window.DailyMotionPages.${page}=function`))fail(`${label}: managed page mount is missing`);
+}
+for(const fragment of [
+  'lifecycle.abort();',
+  'routineSettingsMotion?.destroy?.();',
+  'cancelCountdown();',
+  'cancelRest();',
+  'stopTicker();'
+]){
+  if(!sessionRuntime.includes(fragment))fail(`session.js: managed workout cleanup missing: ${fragment}`);
+}
+if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>close(0,false),destroy,')){
+  fail('pwa.js: bottom-sheet destroy lifecycle is missing');
+}
+for(const fragment of [
+  "const SWUP_VENDOR_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';",
+  "'/navigation.js?v=",
+  'request.url===SWUP_VENDOR_URL',
+  "request.headers.get('X-Requested-With')==='swup'",
+  'const swupNavigation=async request=>'
+]){
+  if(!sw.includes(fragment))fail(`sw.js: Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const fragment of [
   "types:['theme']",
@@ -295,23 +304,17 @@ for(const fragment of [
   'mix-blend-mode:normal;'
 ]){
   const source=fragment.includes('types:')?read('theme.js'):styles;
-  if(!source.includes(fragment))fail(`R3 theme/page transition isolation contract missing: ${fragment}`);
+  if(!source.includes(fragment))fail(`theme transition contract missing: ${fragment}`);
 }
-for(const forbidden of [
-  'html.theme-transitioning::view-transition-old(root)',
-  'html.theme-transitioning::view-transition-new(root)',
-  'html:not(.theme-transitioning):active-view-transition-type('
-]){
-  if(styles.includes(forbidden))fail(`styles.css: obsolete class-coupled View Transition rule returned: ${forbidden}`);
-}
+
 if(html['index.html'].includes('>Начать тренировку</button>')){
   fail('index.html: initial CTA copy must match runtime copy');
 }
 for(const fragment of [
   'const renderProgress=()=>{',
-  'if(event.persisted)renderProgress();'
+  'window.DailyMotionPages.progress=function mountProgress()'
 ]){
-  if(!progressRuntime.includes(fragment))fail(`progress.js: P1 BFCache rehydrate contract missing: ${fragment}`);
+  if(!progressRuntime.includes(fragment))fail(`progress.js: managed progress lifecycle missing: ${fragment}`);
 }
 for(const fragment of [
   "document.documentElement.classList.add('session-ready')",
