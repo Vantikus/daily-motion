@@ -609,7 +609,9 @@ test('desktop settings use modal motion instead of bottom-sheet travel',async({p
 
   await page.locator('#settingsBtn').click();
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','false');
-  await page.waitForTimeout(260);
+  await expect(page.locator('#settingsOverlay')).toHaveClass(/is-visible/);
+  await expect(page.locator('#settingsOverlay')).toHaveCSS('opacity','1',{timeout:1500});
+  await expect(page.locator('#settingsOverlay .settings-sheet')).toHaveCSS('opacity','1',{timeout:1500});
 
   const opened=await page.evaluate(()=>{
     const sheet=document.querySelector('#settingsOverlay .settings-sheet');
@@ -668,6 +670,7 @@ test('final timer hands off directly to completion without exposing technique',a
 
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1200});
 
   const events=await page.evaluate(()=>window.__completionHandoff);
   const prepared=events.findIndex(event=>event.completionVisible&&event.handoff&&event.executionVisible);
