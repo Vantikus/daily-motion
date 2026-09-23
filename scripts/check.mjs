@@ -367,6 +367,16 @@ for(const marker of ['/* v75 —','/* v76 —','/* v77 —','/* v78 —']){
 if(!styles.includes('/* Bottom sheets — GSAP owns transform and backdrop motion */')){
   fail('styles.css: consolidated bottom-sheet layer is missing');
 }
+if(!styles.includes('/* P2 desktop Home — one authoritative layout layer. */')){
+  fail('styles.css: consolidated P2 desktop Home layout is missing');
+}
+for(const retiredHomeLayout of [
+  'grid-column:span 7;padding:26px',
+  'grid-column:1 / 8;grid-row:1 / span 2',
+  '"routines activity"'
+]){
+  if(styles.includes(retiredHomeLayout))fail(`styles.css: retired desktop Home layout returned: ${retiredHomeLayout}`);
+}
 if(!styles.includes('.home-body .home-activity-summary')){
   fail('styles.css: activity streak summary styling is missing');
 }
@@ -414,7 +424,11 @@ const cssRuleBudgets={
   '.details-title':1,
   '.detail-card__toggle':2,
   '.setting-row':2,
-  '.settings-reset':1
+  '.settings-reset':1,
+  '.completion-button':1,
+  '.settings-install':1,
+  '.home-body .routines-section':1,
+  '.home-body .activity-section':1
 };
 for(const [selector,maxCount] of Object.entries(cssRuleBudgets)){
   const count=countExactCssRule(selector);
