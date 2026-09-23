@@ -3728,49 +3728,43 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 
 
-/* R0 page transition: sequential fade-through prevents old/new UI overlap. */
-@view-transition{
-  navigation:auto;
-  types:forward;
+/* Swup page transition: old content leaves fully before the next DOM is mounted. */
+#swup{
+  opacity:1;
+  transform:translate3d(0,0,0);
 }
-::view-transition{
-  background:var(--bg);
+html.is-changing #swup{
+  will-change:opacity,transform;
+  transition-property:opacity,transform;
+  transition-timing-function:cubic-bezier(.2,.7,.2,1);
 }
-html:active-view-transition-type(forward)::view-transition-image-pair(root),
-html:active-view-transition-type(back)::view-transition-image-pair(root){
-  isolation:auto;
+html.is-leaving #swup{
+  transition-duration:95ms,120ms;
 }
-html:active-view-transition-type(forward)::view-transition-old(root),
-html:active-view-transition-type(forward)::view-transition-new(root),
-html:active-view-transition-type(back)::view-transition-old(root),
-html:active-view-transition-type(back)::view-transition-new(root){
-  mix-blend-mode:normal;
+html.is-leaving.is-animating #swup{
+  opacity:0;
+  transform:translate3d(0,-2px,0);
 }
-@media(prefers-reduced-motion:no-preference){
-  html:active-view-transition-type(forward)::view-transition-old(root),
-  html:active-view-transition-type(back)::view-transition-old(root){
-    animation:qmPageTransitionOut 85ms cubic-bezier(.4,0,1,1) both;
-  }
-  html:active-view-transition-type(forward)::view-transition-new(root){
-    animation:qmPageTransitionIn 130ms 85ms cubic-bezier(0,0,.2,1) both;
-  }
-  html:active-view-transition-type(back)::view-transition-new(root){
-    animation:qmPageTransitionIn 120ms 75ms cubic-bezier(0,0,.2,1) both;
-  }
+html.is-rendering #swup{
+  transition-duration:150ms,170ms;
 }
-@keyframes qmPageTransitionOut{
-  from{opacity:1}
-  to{opacity:0}
+html.is-rendering.is-animating #swup{
+  opacity:0;
+  transform:translate3d(0,3px,0);
 }
-@keyframes qmPageTransitionIn{
-  from{opacity:0}
-  to{opacity:1}
+html.is-rendering.app-ready .page-grid>*,
+html.is-rendering.app-ready .routine-card,
+html.is-rendering.app-ready .progress-metrics article,
+html.is-rendering.app-ready .progress-card,
+html.is-rendering.app-ready .activity-day__dot,
+html.is-rendering.app-ready .progress-track i{
+  animation:none!important;
 }
 @media(prefers-reduced-motion:reduce){
-  html:active-view-transition-type(forward)::view-transition-old(root),
-  html:active-view-transition-type(forward)::view-transition-new(root),
-  html:active-view-transition-type(back)::view-transition-old(root),
-  html:active-view-transition-type(back)::view-transition-new(root){animation:none!important}
+  html.is-changing #swup{
+    transition:none!important;
+    transform:none!important;
+  }
 }
 
 .session-body.modal-open .pwa-banner{

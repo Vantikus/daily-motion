@@ -1431,7 +1431,7 @@ test('R3 visual hierarchy stays coherent across pages',async({page,browserName})
   expect(progress.metricBg).toBe('rgb(248, 250, 247)');
 });
 
-test('P1 Home rehydrates restored BFCache state without forcing a reload',async({page})=>{
+test('Swup lifecycle remounts Home and Progress with fresh local state',async({page})=>{
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#todayStatus')).toHaveText('Сегодня');
   await page.evaluate(()=>{
@@ -1441,27 +1441,24 @@ test('P1 Home rehydrates restored BFCache state without forcing a reload',async(
     routine.activeSeconds=600;
     routine.completedAt=new Date().toISOString();
     DailyMotionState.save();
-    window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
   });
-  await expect(page.locator('#todayStatus')).toHaveText('Готово');
-  await expect(page.locator('#heroProgressText')).toHaveText('9 из 9 упражнений');
-  await expect(page).toHaveURL(/\/index\.html$/);
-});
 
-test('P1 Progress rehydrates restored BFCache state without forcing a reload',async({page})=>{
-  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#completedSessions')).toHaveText('0');
-  await page.evaluate(()=>{
-    const routine=DailyMotionState.getRoutine('morning');
-    routine.completed=true;
-    routine.completedUntil=DailyMotionProgram.morning.length;
-    routine.activeSeconds=600;
-    routine.completedAt=new Date().toISOString();
-    DailyMotionState.save();
-    window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
-  });
+  await page.locator('a[href="progress.html"]').click();
+  await expect(page).toHaveURL(/\/progress\.html$/);
   await expect(page.locator('#completedSessions')).toHaveText('1');
   await expect(page.locator('#historyList .history-row')).toHaveCount(1);
-  await expect(page).toHaveURL(/\/progress\.html$/);
+
+  await page.locator('[data-nav-back]').click();
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#todayStatus')).toHaveText('Готово');
+  await expect(page.locator('#heroProgressText')).toHaveText('9 из 9 упражнений');
+});
+
+test('Swup navigation shell is present on every page',async({page})=>{
+  for(const url of ['/index.html','/progress.html','/session.html?routine=morning']){
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#swup.transition-page')).toHaveCount(1);
+    await expect.poll(()=>page.evaluate(()=>typeof DailyMotionNavigate)).toBe('function');
+  }
 });
 
