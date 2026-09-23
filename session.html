@@ -233,7 +233,7 @@
             <input class="switch-input" id="workoutAutoNextSetting" type="checkbox" />
           </label>
 
-          <label class="routine-setting-row">
+          <div class="routine-setting-row routine-setting-row--timing">
             <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-clock" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Обратный отсчёт</strong><small>Применится к следующему запуску упражнения</small></span>
             <span class="settings-select-control">
@@ -244,9 +244,14 @@
               </select>
               <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
             </span>
-          </label>
+            <div class="timing-segmented" id="workoutCountdownSettingDesktop" role="group" aria-label="Обратный отсчёт следующего упражнения">
+              <button type="button" data-value="0" aria-pressed="true">Нет</button>
+              <button type="button" data-value="3" aria-pressed="false">3 сек</button>
+              <button type="button" data-value="5" aria-pressed="false">5 сек</button>
+            </div>
+          </div>
 
-          <label class="routine-setting-row">
+          <div class="routine-setting-row routine-setting-row--timing">
             <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-pause-circle" aria-hidden="true"></i></span>
             <span class="routine-setting-copy"><strong>Отдых</strong><small>Применится после следующего упражнения</small></span>
             <span class="settings-select-control">
@@ -258,7 +263,13 @@
               </select>
               <i class="hi hi-chevron-right settings-select-control__chevron" aria-hidden="true"></i>
             </span>
-          </label>
+            <div class="timing-segmented timing-segmented--rest" id="workoutRestSettingDesktop" role="group" aria-label="Длительность следующего отдыха">
+              <button type="button" data-value="0" aria-pressed="true">Нет</button>
+              <button type="button" data-value="15" aria-pressed="false">15</button>
+              <button type="button" data-value="30" aria-pressed="false">30</button>
+              <button type="button" data-value="45" aria-pressed="false">45</button>
+            </div>
+          </div>
 
           <div class="routine-setting-row routine-setting-row--theme">
             <span class="qm-icon qm-icon--soft routine-setting-icon"><i class="hi hi-moon" aria-hidden="true"></i></span>
