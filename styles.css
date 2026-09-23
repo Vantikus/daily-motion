@@ -2671,11 +2671,12 @@ a[href] *,
   position:relative;
   width:100%;
   min-height:66px;
-  margin-top:8px;
-  padding:12px 46px 12px 12px;
+  margin:0;
+  padding:12px 42px 12px 0;
   border:0;
   border-top:1px solid var(--line-soft);
-  background:transparent;
+  border-radius:0;
+  background:transparent!important;
   color:#8a4a47;
   display:grid;
   align-items:center;
@@ -2684,7 +2685,8 @@ a[href] *,
   text-align:left;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  transition:background-color 220ms ease,color 180ms ease;
+  box-shadow:none!important;
+  transition:color 180ms ease,opacity 180ms ease;
 }
 .routine-reset-entry__copy{
   min-width:0;
@@ -2711,8 +2713,11 @@ a[href] *,
   color:#a56a67;
   transform:translateY(-50%);
 }
-.routine-reset-entry:active{
-  background:rgba(138,74,71,.045);
+.routine-reset-entry:active,
+.routine-reset-entry.is-pressing{
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
 }
 .routine-settings-close:active{
   background:rgba(47,107,85,.06);
@@ -3615,4 +3620,5 @@ a[href] *,
 :root[data-theme="dark"] .routine-reset-entry{color:#d9a19d}
 :root[data-theme="dark"] .routine-reset-entry__copy small{color:#c58f8b}
 :root[data-theme="dark"] .routine-reset-entry__icon{color:#c58f8b}
-:root[data-theme="dark"] .routine-reset-entry:active{background:rgba(217,161,157,.07)}
+:root[data-theme="dark"] .routine-reset-entry:active,
+:root[data-theme="dark"] .routine-reset-entry.is-pressing{background:transparent!important}
