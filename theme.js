@@ -25,12 +25,53 @@
     return {preference:normalized,resolved};
   };
 
+  const applyAnimated=async(preference=readPreference())=>{
+    const normalized=normalize(preference);
+    const resolved=resolve(normalized);
+    const root=document.documentElement;
+    const current=root.dataset.theme||resolve(readPreference());
+    if(current===resolved||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      return apply(normalized);
+    }
+
+    root.classList.add('theme-transitioning');
+    try{
+      if(typeof document.startViewTransition==='function'){
+        const transition=document.startViewTransition(()=>apply(normalized));
+        await transition.finished;
+        return {preference:normalized,resolved};
+      }
+
+      const target=document.body||root;
+      if(typeof target.animate==='function'){
+        const out=target.animate(
+          [{opacity:1},{opacity:.82}],
+          {duration:70,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}
+        );
+        await out.finished.catch(()=>{});
+        apply(normalized);
+        const enter=target.animate(
+          [{opacity:.82},{opacity:1}],
+          {duration:110,easing:'cubic-bezier(0,0,.2,1)',fill:'forwards'}
+        );
+        await enter.finished.catch(()=>{});
+        out.cancel();
+        enter.cancel();
+        return {preference:normalized,resolved};
+      }
+
+      return apply(normalized);
+    }finally{
+      root.classList.remove('theme-transitioning');
+    }
+  };
+
   const handleSystemChange=()=>{
-    if(document.documentElement.dataset.themePreference==='system')apply('system');
+    if(document.documentElement.dataset.themePreference==='system')applyAnimated('system');
   };
   if(typeof media.addEventListener==='function')media.addEventListener('change',handleSystemChange);
   else media.addListener(handleSystemChange);
 
-  window.DailyMotionTheme={PREFERENCES,normalize,readPreference,resolve,apply};
+  window.DailyMotionTheme={PREFERENCES,normalize,readPreference,resolve,apply,applyAnimated};
   apply();
 })();
