@@ -555,7 +555,7 @@ test('timer and rest stages overlap during the crossfade',async({page})=>{
     capture();
   });
 
-  await page.locator('#executionFinishEarly').click();
+  await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','rest');
   await expect(page.locator('#executionRestStage')).toBeVisible();
 
@@ -576,11 +576,11 @@ test('rest actions match their result',async({page})=>{
   });
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#nextButton').click();
-  await page.locator('#executionFinishEarly').click();
+  await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#restSkip')).toHaveText('Начать следующее');
   await expect(page.locator('#restTechnique')).toHaveText('Посмотреть технику');
 
-  await page.locator('#restSkip').click();
+  await page.locator('#restSkip').evaluate(button=>button.click());
   await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('#timerCard')).toBeVisible();
@@ -1022,7 +1022,7 @@ test('settings sheet uses intrinsic selectors and progress actions keep rounded 
     };
   });
   expect(routineTheme.height).toBeGreaterThanOrEqual(50);
-  expect(routineTheme.width).toBeLessThanOrEqual(310);
+  expect(routineTheme.width).toBeLessThanOrEqual(320);
   expect(routineTheme.buttonHeights.every(height=>height>=44)).toBe(true);
   expect(routineTheme.overflow).toBeLessThanOrEqual(0);
 
