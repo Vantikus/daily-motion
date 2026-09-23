@@ -239,7 +239,6 @@ for(const fragment of [
   'clearTransitionStyles();',
   "new DOMParser().parseFromString(html,'text/html')",
   "swup.hooks.on('animation:skip'",
-  "swup.hooks.on('page:view'",
   'unmountPage();',
   'syncBodyAndHead(visit);'
 ]){
@@ -253,6 +252,14 @@ for(const fragment of ['.session-body>#swup{','.session-body>#swup>.exercise-app
 }
 if(navigation.includes("container.style.opacity='0'")){
   fail('navigation.js: persistent inline opacity:0 can blank the Swup container');
+}
+for(const fragment of [
+  "{opacity:.86,transform:'translate3d(0,-3px,0)'}",
+  "container.style.opacity='.86'",
+  "{opacity:.86,transform:'translate3d(0,4px,0)'}",
+  "duration:175,easing:'cubic-bezier(.16,1,.3,1)'"
+]){
+  if(!navigation.includes(fragment))fail(`navigation.js: v152 seamless page motion missing: ${fragment}`);
 }
 for(const forbidden of [
   'html.is-changing #swup',

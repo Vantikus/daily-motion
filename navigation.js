@@ -164,8 +164,8 @@
       container.style.willChange='opacity, transform';
       await animateElement(container,[
         {opacity:1,transform:'translate3d(0,0,0)'},
-        {opacity:0,transform:'translate3d(0,-2px,0)'}
-      ],{duration:90,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
+        {opacity:.86,transform:'translate3d(0,-3px,0)'}
+      ],{duration:105,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
     });
 
     swup.hooks.before('content:replace',visit=>{
@@ -174,6 +174,12 @@
     });
     swup.hooks.on('content:replace',()=>{
       clearTransitionStyles();
+      const container=currentContainer();
+      if(container&&!reduceMotion.matches){
+        container.style.opacity='.86';
+        container.style.transform='translate3d(0,4px,0)';
+        container.style.willChange='opacity, transform';
+      }
       mountPage();
     });
     swup.hooks.replace('animation:in:await',async()=>{
@@ -181,17 +187,13 @@
       if(!container)return;
       if(!reduceMotion.matches){
         await animateElement(container,[
-          {opacity:0,transform:'translate3d(0,3px,0)'},
+          {opacity:.86,transform:'translate3d(0,4px,0)'},
           {opacity:1,transform:'translate3d(0,0,0)'}
-        ],{duration:135,easing:'cubic-bezier(0,0,.2,1)',fill:'both'});
+        ],{duration:175,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
       }
       clearTransitionStyles();
     });
     swup.hooks.on('animation:skip',()=>clearTransitionStyles());
-    swup.hooks.on('page:view',()=>{
-      clearTransitionStyles();
-      if(!unmountCurrent)mountPage();
-    });
     swup.hooks.on('visit:end',visit=>{
       settleReadyGate(visit,true);
       clearTransitionStyles();
