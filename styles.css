@@ -177,10 +177,9 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .timer-ring__inner{position:relative;z-index:1;display:grid;text-align:center;gap:1px}
 
 .timer-ring__inner span{font-size:var(--font-size-xs);color:var(--muted)}
-.timer-ring.is-running{animation:timerBreath 2s ease-in-out infinite}
-.timer-ring.is-ending{box-shadow:0 0 0 7px rgba(47,107,85,.07);animation:timerEnding .72s ease-in-out infinite alternate}
-@keyframes timerBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
-@keyframes timerEnding{from{transform:scale(1)}to{transform:scale(1.035)}}
+.timer-ring{transition:box-shadow 220ms ease}
+.timer-ring.is-running{animation:none}
+.timer-ring.is-ending{box-shadow:0 0 0 7px rgba(47,107,85,.07)}
 .details-stack{display:grid;gap:8px}
 .detail-card{border:1px solid var(--line);border-radius:var(--radius-card);background:#fff;overflow:hidden}
 .detail-card__heading{margin:0;font:inherit}
@@ -3112,7 +3111,7 @@ a[href] *,
 
 @media(prefers-reduced-motion:no-preference){
   .timer-ring.is-final-three{
-    animation:timerFinalThree 720ms cubic-bezier(.2,.72,.24,1) infinite alternate;
+    animation:timerUrgencyPulse 720ms cubic-bezier(.2,.72,.24,1) infinite alternate;
   }
   .completion-overlay.is-visible .completion-check{
     animation:completionCheckSettle 560ms cubic-bezier(.16,.9,.22,1) both!important;
@@ -3162,9 +3161,9 @@ a[href] *,
     animation:completionChoiceSettle 320ms cubic-bezier(.16,.9,.22,1) both;
   }
 }
-@keyframes timerFinalThree{
-  from{transform:scale(1);box-shadow:0 0 0 6px rgba(181,109,72,.075)}
-  to{transform:scale(1.026);box-shadow:0 0 0 9px rgba(181,109,72,.12)}
+@keyframes timerUrgencyPulse{
+  from{box-shadow:0 0 0 6px rgba(181,109,72,.075)}
+  to{box-shadow:0 0 0 9px rgba(181,109,72,.12)}
 }
 @keyframes completionCheckSettle{
   0%{opacity:0;transform:scale(.76)}
@@ -3650,5 +3649,65 @@ html.theme-transitioning::view-transition-new(root){animation-name:themeCrossfad
 @media(prefers-reduced-motion:reduce){
   .completion-overlay.is-exiting,
   .completion-overlay.is-exiting .completion-card{transition:none!important}
+}
+
+/* P3 micro-polish — desktop timing controls stay native on touch/mobile. */
+.timing-segmented{display:none}
+@media(min-width:700px){
+  .setting-row--timing .settings-select-control,
+  .routine-setting-row--timing .settings-select-control{display:none}
+
+  .timing-segmented{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(52px,1fr));
+    gap:3px;
+    width:196px;
+    min-height:50px;
+    padding:3px;
+    border:1px solid var(--line-soft);
+    border-radius:var(--radius-control);
+    background:var(--surface-soft);
+    justify-self:end;
+  }
+  .timing-segmented--rest{
+    grid-template-columns:repeat(4,minmax(44px,1fr));
+    width:224px;
+  }
+  .timing-segmented button{
+    appearance:none;
+    min-width:0;
+    min-height:44px;
+    padding:0 8px;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--muted-strong);
+    font-size:var(--font-size-xs);
+    font-weight:750;
+    cursor:pointer;
+    transition:background-color 150ms ease,color 150ms ease,box-shadow 170ms ease;
+  }
+  .timing-segmented button[aria-pressed="true"]{
+    background:var(--surface-raised);
+    color:var(--text);
+    box-shadow:0 1px 4px rgba(23,25,23,.09);
+  }
+  .timing-segmented button:focus-visible{
+    position:relative;
+    z-index:1;
+    outline:2px solid var(--focus-color);
+    outline-offset:1px;
+    box-shadow:0 0 0 4px var(--focus-halo);
+  }
+  .timing-segmented button:active{background:var(--accent-wash)}
+}
+@media(min-width:700px) and (hover:hover) and (pointer:fine){
+  .timing-segmented button:not([aria-pressed="true"]):hover{
+    background:var(--accent-wash);
+    color:var(--text);
+  }
+}
+:root[data-theme="dark"] .timing-segmented button[aria-pressed="true"]{
+  box-shadow:0 1px 5px rgba(0,0,0,.28);
 }
 
