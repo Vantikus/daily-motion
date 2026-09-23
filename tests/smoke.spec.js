@@ -1232,7 +1232,8 @@ test('R3 visual hierarchy stays coherent across pages',async({page,browserName})
   expect(home.activityShadow).not.toBe('none');
 
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#pageLoader')).toHaveClass(/is-hidden/);
+  await expect(page.locator('#pageLoader')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+  await expect(page.locator('#pageLoader')).not.toHaveClass(/is-visible/);
   const workout=await page.evaluate(()=>({
     navBg:getComputedStyle(document.querySelector('.session-nav')).backgroundColor,
     keyBg:getComputedStyle(document.querySelector('.technique-key')).backgroundColor,
