@@ -42,8 +42,9 @@ test('all workout complexes are immediately visible on home',async({page})=>{
 test('theme preference is applied and shared across pages',async({page})=>{
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
   await page.locator('#settingsBtn').click();
-  await page.locator('#themeSetting').selectOption('dark');
+  await page.locator('#themeSetting [data-theme-value="dark"]').click();
 
+  await expect(page.locator('#themeSetting [data-theme-value="dark"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content','#101612');
   expect(await page.evaluate(()=>DailyMotionState.getSettings().theme)).toBe('dark');
@@ -500,6 +501,93 @@ test('cached app shell opens progress offline',async({page,context,browserName})
 });
 
 
+test('fast workout boot does not flash the page loader',async({page})=>{
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#exerciseGoal')).not.toHaveText('');
+  await expect(page.locator('#pageLoader')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+  await expect(page.locator('#pageLoader')).not.toHaveClass(/is-visible/);
+  await expect(page.locator('#pageLoader')).toHaveCSS('visibility','hidden');
+});
+
+
+test('technique accordion keeps at most one section expanded',async({page})=>{
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  const cards=page.locator('.detail-card');
+  await expect(cards.filter({has:page.locator('[aria-expanded="true"]')})).toHaveCount(1);
+
+  await page.locator('#detail-breathing-toggle').click();
+  await expect(page.locator('#detail-breathing-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('#detail-how-toggle')).toHaveAttribute('aria-expanded','false');
+  await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
+
+  await page.locator('#detail-feel-toggle').click();
+  await expect(page.locator('#detail-feel-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('#detail-breathing-toggle')).toHaveAttribute('aria-expanded','false');
+  await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
+});
+
+
+test('timer and rest stages overlap during the crossfade',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext:true,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{}
+    }));
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').click();
+  await expect(page.locator('#timerCard')).toBeVisible();
+
+  await page.evaluate(()=>{
+    const timer=document.querySelector('#timerCard');
+    const rest=document.querySelector('#executionRestStage');
+    window.__stageCrossfade=[];
+    const capture=()=>window.__stageCrossfade.push({
+      timerLeaving:timer.classList.contains('is-stage-leaving'),
+      restEntering:rest.classList.contains('is-stage-entering'),
+      timerHidden:timer.hidden,
+      restHidden:rest.hidden
+    });
+    new MutationObserver(capture).observe(timer,{attributes:true,attributeFilter:['class','hidden']});
+    new MutationObserver(capture).observe(rest,{attributes:true,attributeFilter:['class','hidden']});
+    capture();
+  });
+
+  await page.locator('#executionFinishEarly').click();
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','rest');
+  await expect(page.locator('#executionRestStage')).toBeVisible();
+
+  const samples=await page.evaluate(()=>window.__stageCrossfade);
+  expect(samples.some(item=>item.timerLeaving&&item.restEntering&&!item.timerHidden&&!item.restHidden)).toBe(true);
+  await expect(page.locator('#timerCard')).toBeHidden({timeout:1000});
+});
+
+
+test('rest actions match their result',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext:true,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{}
+    }));
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').click();
+  await page.locator('#executionFinishEarly').click();
+  await expect(page.locator('#restSkip')).toHaveText('Начать следующее');
+  await expect(page.locator('#restTechnique')).toHaveText('Посмотреть технику');
+
+  await page.locator('#restSkip').click();
+  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#timerCard')).toBeVisible();
+  await expect(page.locator('#timerState')).toHaveText('Идёт');
+});
+
+
 test('technique accordion exposes semantic headings and labelled regions',async({page})=>{
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
 
@@ -913,22 +1001,30 @@ test('settings sheet uses intrinsic selectors and progress actions keep rounded 
 
     await expect(page.locator('#countdownSetting option[value="0"]')).toHaveText('Нет');
     await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 секунд');
-    await expect(page.locator('#themeSetting option[value="system"]')).toHaveText('Системная');
+    await expect(page.locator('#themeSetting [data-theme-value="system"]')).toHaveText('Система');
+    await expect(page.locator('#themeSetting [data-theme-value="system"]')).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#themeSetting [data-theme-value="light"]')).toHaveText('Светлая');
+    await expect(page.locator('#themeSetting [data-theme-value="dark"]')).toHaveText('Тёмная');
   }
 
   await page.setViewportSize({width:390,height:844});
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#routineMoreButton').click();
-  await expect(page.locator('#workoutThemeSetting option[value="system"]')).toHaveText('Системная');
-  const routineSelect=await page.locator('#workoutThemeSetting').evaluate(select=>{
-    const style=getComputedStyle(select);
-    const box=select.getBoundingClientRect();
-    return {width:Math.round(box.width),height:Math.round(box.height),fieldSizing:style.fieldSizing,radius:style.borderTopLeftRadius};
+  await expect(page.locator('#workoutThemeSetting [data-theme-value="system"]')).toHaveText('Система');
+  const routineTheme=await page.locator('#workoutThemeSetting').evaluate(group=>{
+    const box=group.getBoundingClientRect();
+    const buttons=[...group.querySelectorAll('button')].map(button=>button.getBoundingClientRect());
+    return {
+      width:Math.round(box.width),
+      height:Math.round(box.height),
+      buttonHeights:buttons.map(item=>Math.round(item.height)),
+      overflow:document.documentElement.scrollWidth-window.innerWidth
+    };
   });
-  expect(routineSelect.height).toBe(44);
-  expect(routineSelect.width).toBeLessThanOrEqual(136);
-  expect(routineSelect.fieldSizing).toBe('content');
-  expect(routineSelect.radius).toBe('14px');
+  expect(routineTheme.height).toBeGreaterThanOrEqual(50);
+  expect(routineTheme.width).toBeLessThanOrEqual(310);
+  expect(routineTheme.buttonHeights.every(height=>height>=44)).toBe(true);
+  expect(routineTheme.overflow).toBeLessThanOrEqual(0);
 
   await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
   const importButton=page.locator('#importDataBtn');
