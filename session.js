@@ -991,8 +991,8 @@
 
     if(event.key==='Escape'){
       if($('#routineSettingsOverlay').classList.contains('is-visible')){
-        if(!$('#routineResetView').hidden){
-          hideRoutineResetConfirm();
+        if(routineResetBlock.classList.contains('is-confirming')){
+          hideRoutineResetConfirm(true,70);
         }else{
           hideRoutineSettingsDialog();
         }
