@@ -3633,23 +3633,6 @@ html.theme-transitioning::view-transition-new(root){animation-name:themeCrossfad
   }
 }
 
-/* P2 completion exit: bridge completion back to Home instead of a hard cut. */
-.completion-overlay.is-exiting{
-  opacity:0!important;
-  visibility:visible!important;
-  pointer-events:none;
-  transition:opacity 150ms ease!important;
-}
-.completion-overlay.is-exiting .completion-card{
-  opacity:.92;
-  transform:translateY(-4px) scale(.99);
-  transition:transform 150ms cubic-bezier(.4,0,1,1),opacity 120ms ease!important;
-}
-@media(prefers-reduced-motion:reduce){
-  .completion-overlay.is-exiting,
-  .completion-overlay.is-exiting .completion-card{transition:none!important}
-}
-
 /* P3 micro-polish — desktop timing controls stay native on touch/mobile. */
 .timing-segmented{display:none}
 @media(min-width:700px){
@@ -3710,3 +3693,71 @@ html.theme-transitioning::view-transition-new(root){animation-name:themeCrossfad
   box-shadow:0 1px 5px rgba(0,0,0,.28);
 }
 
+
+
+/* R4 transition continuity: never expose partially updated page state. */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:var(--bg);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity 150ms cubic-bezier(.4,0,1,1),visibility 150ms step-end;
+}
+html.page-leaving body::after{
+  opacity:1;
+  visibility:visible;
+  transition:opacity 150ms cubic-bezier(.4,0,1,1),visibility 0ms step-start;
+}
+
+/* Dynamic copy is painted only after state has been resolved. */
+html.motion-prep:not(.app-ready) .home-body .today-card,
+html.motion-prep:not(.app-ready) .progress-body .progress-page{
+  opacity:0;
+  transform:translate3d(0,4px,0);
+}
+html.motion-prep:not(.session-ready) .session-body .exercise-app{
+  opacity:0;
+  visibility:hidden;
+  transform:translate3d(0,3px,0);
+}
+html.session-ready .session-body .exercise-app{
+  opacity:1;
+  visibility:visible;
+  transform:none;
+}
+@media(prefers-reduced-motion:no-preference){
+  html.session-ready .session-body .exercise-app{
+    animation:qmSessionReady 180ms cubic-bezier(.2,.7,.24,1) both;
+  }
+}
+@keyframes qmSessionReady{
+  from{opacity:0;transform:translate3d(0,3px,0)}
+  to{opacity:1;transform:none}
+}
+@media(prefers-reduced-motion:reduce){
+  body::after{transition:none!important}
+  html.session-ready .session-body .exercise-app{animation:none!important}
+}
+
+/* Execution handoff masks background mutations while the fullscreen layer exits. */
+.execution-overlay.is-handoff{
+  background:var(--bg)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  pointer-events:none;
+}
+
+.execution-overlay.is-content-swap{
+  background:var(--bg)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.session-body.modal-open .pwa-banner{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
