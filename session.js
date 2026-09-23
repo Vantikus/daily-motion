@@ -4,6 +4,22 @@
   (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
   const $=selector=>document.querySelector(selector);
+  const pageLoader=$('#pageLoader');
+  let pageLoaderRevealTimer=setTimeout(()=>{
+    pageLoaderRevealTimer=null;
+    if(!pageLoader)return;
+    pageLoader.classList.add('is-visible');
+    pageLoader.setAttribute('aria-hidden','false');
+  },180);
+  const finishPageLoader=()=>{
+    if(pageLoaderRevealTimer!==null){
+      clearTimeout(pageLoaderRevealTimer);
+      pageLoaderRevealTimer=null;
+    }
+    if(!pageLoader)return;
+    pageLoader.classList.remove('is-visible');
+    pageLoader.setAttribute('aria-hidden','true');
+  };
 
   if(ROUTINE_KEY!=='morning'){
     const names={day:'День',evening:'Вечер'};
@@ -16,7 +32,7 @@
         <p>Сейчас полностью прорабатывается основной сценарий тренировки. Состав этого комплекса будет добавлен отдельным этапом.</p>
         <a class="primary-button stage-placeholder__button" href="index.html">На главную</a>
       </div>`;
-    window.addEventListener('load',()=>setTimeout(()=>$('#pageLoader')?.classList.add('is-hidden'),120));
+    requestAnimationFrame(finishPageLoader);
     return;
   }
 
@@ -43,6 +59,8 @@
   let lastRestCueSecond=null;
   let executionStage='idle';
   let stageTimer=null;
+  let stageTransitionTimer=null;
+  let stageTransitionToken=0;
   const Audio=window.DailyMotionAudio;
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
@@ -159,11 +177,17 @@
     document.body.classList.toggle('modal-open',hasModal);
   }
 
+  function syncThemeControl(root,value){
+    root?.querySelectorAll('[data-theme-value]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.themeValue===value));
+    });
+  }
+
   function syncWorkoutSettingsControls(){
     settings=Store.getSettings();
     $('#workoutSoundSetting').checked=Boolean(settings.sound);
     $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
-    $('#workoutThemeSetting').value=settings.theme;
+    syncThemeControl($('#workoutThemeSetting'),settings.theme);
   }
 
   const routineResetBlock=$('#routineResetBlock');
@@ -309,17 +333,67 @@
     $('#executionKey').textContent=exercise.key;
   }
 
-  function setExecutionStage(stage){
-    executionStage=stage;
-    const stages={
-      countdown:$('#executionCountdownStage'),
-      timer:$('#timerCard'),
-      rest:$('#executionRestStage')
-    };
-    Object.entries(stages).forEach(([name,node])=>{
-      if(node)node.hidden=name!==stage;
+  const executionStages=()=>({
+    countdown:$('#executionCountdownStage'),
+    timer:$('#timerCard'),
+    rest:$('#executionRestStage')
+  });
+
+  function clearExecutionStageTransition(){
+    if(stageTransitionTimer!==null){
+      clearTimeout(stageTransitionTimer);
+      stageTransitionTimer=null;
+    }
+    stageTransitionToken++;
+    Object.values(executionStages()).forEach(node=>{
+      if(!node)return;
+      node.classList.remove('is-stage-entering','is-stage-leaving');
+      node.inert=false;
     });
+  }
+
+  function setExecutionStage(stage){
+    const stages=executionStages();
+    const next=stages[stage];
+    const previous=stages[executionStage];
+    const overlay=$('#executionOverlay');
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canAnimate=Boolean(
+      previous&&next&&previous!==next&&
+      overlay?.classList.contains('is-visible')&&!reduceMotion
+    );
+
+    clearExecutionStageTransition();
+    executionStage=stage;
     setExecutionCopy();
+    if(overlay)overlay.dataset.stage=stage;
+
+    if(!canAnimate){
+      Object.entries(stages).forEach(([name,node])=>{
+        if(node)node.hidden=name!==stage;
+      });
+      return;
+    }
+
+    Object.values(stages).forEach(node=>{
+      if(node&&node!==previous&&node!==next)node.hidden=true;
+    });
+    previous.hidden=false;
+    next.hidden=false;
+    previous.inert=true;
+    next.inert=false;
+    previous.classList.add('is-stage-leaving');
+    next.classList.add('is-stage-entering');
+
+    const token=stageTransitionToken;
+    stageTransitionTimer=setTimeout(()=>{
+      if(token!==stageTransitionToken)return;
+      stageTransitionTimer=null;
+      previous.hidden=true;
+      previous.inert=false;
+      previous.classList.remove('is-stage-leaving');
+      next.classList.remove('is-stage-entering');
+    },230);
   }
 
   function showExecution(stage){
@@ -346,6 +420,7 @@
       clearTimeout(stageTimer);
       stageTimer=null;
     }
+    clearExecutionStageTransition();
     overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
     executionStage='idle';
@@ -727,7 +802,19 @@
     toggle.addEventListener('click',()=>{
       const card=toggle.closest('.detail-card');
       const willOpen=!card.classList.contains('is-open');
+      if(willOpen){
+        document.querySelectorAll('.detail-card.is-open').forEach(other=>{
+          if(other!==card)animateDetailState(other,false);
+        });
+      }
       animateDetailState(card,willOpen);
+      if(willOpen){
+        const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(()=>toggle.scrollIntoView({
+          block:'nearest',
+          behavior:reduceMotion?'auto':'smooth'
+        }),80);
+      }
       haptic('tap');
     });
   });
@@ -891,9 +978,14 @@
   $('#workoutAutoNextSetting').addEventListener('change',event=>{
     settings=Store.updateSettings({autoNext:event.target.checked});
   });
-  $('#workoutThemeSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({theme:event.target.value});
-    window.DailyMotionTheme?.apply(settings.theme);
+  $('#workoutThemeSetting').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-theme-value]');
+    if(!button)return;
+    const theme=button.dataset.themeValue;
+    if(settings.theme===theme)return;
+    settings=Store.updateSettings({theme});
+    syncThemeControl($('#workoutThemeSetting'),settings.theme);
+    window.DailyMotionTheme?.applyAnimated?.(settings.theme);
   });
   routineResetBtn.addEventListener('click',()=>{
     haptic('tap');
@@ -1102,14 +1194,27 @@
     onTimerFinished();
   });
 
-  $('#restSkip').addEventListener('click',()=>{
+  const takeRestFinish=()=>{
     const finish=restFinish;
     if(restTimer!==null)clearInterval(restTimer);
     restTimer=null;
     restFinish=null;
     releaseWakeLock();
-    hideExecution();
+    return finish;
+  };
+
+  $('#restSkip').addEventListener('click',async()=>{
+    const finish=takeRestFinish();
     haptic('next');
+    if(finish)finish();
+    await unlockAudio();
+    startCountdown(startTimerNow);
+  });
+
+  $('#restTechnique').addEventListener('click',()=>{
+    const finish=takeRestFinish();
+    hideExecution();
+    haptic('soft');
     if(finish)finish();
   });
   function syncEffortButtons(){
@@ -1156,16 +1261,13 @@
   window.addEventListener('pagehide',persist);
   window.addEventListener('beforeunload',persist);
 
-  window.addEventListener('load',()=>{
-    setTimeout(()=>{
-      $('#pageLoader').classList.add('is-hidden');
-      if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
-      else if(routine.completed)toast('Комплекс уже завершён сегодня');
-      else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
-    },120);
-  });
-
   render(null,'auto');
+  requestAnimationFrame(()=>{
+    finishPageLoader();
+    if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
+    else if(routine.completed)toast('Комплекс уже завершён сегодня');
+    else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
+  });
 })(exercises,ROUTINE_KEY);
 })();
 
