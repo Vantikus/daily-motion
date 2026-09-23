@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <script>
     (() => {
+      document.documentElement.classList.add("motion-prep");
       const ua=navigator.userAgent||"";
       const isiOS=/iPhone|iPad|iPod/.test(ua);
       const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;
@@ -20,7 +21,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=140"></script>
+  <script src="theme.js?v=141"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +42,8 @@
   <meta name="twitter:title" content="Прогресс тренировок — Daily Motion" />
   <meta name="twitter:description" content="История тренировок Daily Motion: серия дней, выполненные упражнения, время в движении и локальное сохранение прогресса." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=140" />
-  <link rel="stylesheet" href="styles.css?v=140" />
+  <link rel="stylesheet" href="heroicons.css?v=141" />
+  <link rel="stylesheet" href="styles.css?v=141" />
 </head>
 <body class="progress-body">
   <div class="ios-safe-zone-bar" aria-hidden="true"></div>
@@ -105,10 +106,10 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="program.js?v=140"></script>
-  <script src="state.js?v=140"></script>
-  <script src="gsap.min.js?v=140"></script>
-  <script src="pwa.js?v=140"></script>
-  <script src="progress.js?v=140"></script>
+  <script src="program.js?v=141"></script>
+  <script src="state.js?v=141"></script>
+  <script src="gsap.min.js?v=141"></script>
+  <script src="pwa.js?v=141"></script>
+  <script src="progress.js?v=141"></script>
 </body>
 </html>
