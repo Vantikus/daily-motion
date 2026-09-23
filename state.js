@@ -278,20 +278,41 @@
   };
 
   let externalChange=false;
+  let pendingExternalState=null;
+  const canReloadPage=()=>{
+    try{
+      return window.DailyMotionReloadGuard?.isSafe?.()!==false;
+    }catch{
+      return false;
+    }
+  };
+
   window.addEventListener('storage',event=>{
     if(event.key!==KEY||!event.newValue)return;
     try{
-      state=normalizeState(JSON.parse(event.newValue));
+      const nextState=normalizeState(JSON.parse(event.newValue));
       externalChange=true;
-      if(document.visibilityState==='visible')setTimeout(()=>location.reload(),0);
+      if(canReloadPage()){
+        state=nextState;
+        if(document.visibilityState==='visible')setTimeout(()=>location.reload(),0);
+      }else{
+        pendingExternalState=nextState;
+      }
     }catch{}
   });
 
   const bootDayKey=todayKey();
   const checkDayBoundary=()=>{
-    if(externalChange||todayKey()!==bootDayKey)location.reload();
+    if(!externalChange&&todayKey()===bootDayKey)return;
+    if(!canReloadPage())return;
+    if(pendingExternalState){
+      state=pendingExternalState;
+      pendingExternalState=null;
+    }
+    location.reload();
   };
   window.addEventListener('focus',checkDayBoundary);
+  window.addEventListener('daily-motion-reload-safety-change',checkDayBoundary);
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')checkDayBoundary();
   });
