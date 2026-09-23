@@ -187,6 +187,8 @@
     settings=Store.getSettings();
     $('#workoutSoundSetting').checked=Boolean(settings.sound);
     $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
+    $('#workoutCountdownSetting').value=String(settings.countdownSeconds);
+    $('#workoutRestSetting').value=String(settings.restSeconds);
     syncThemeControl($('#workoutThemeSetting'),settings.theme);
   }
 
@@ -978,6 +980,12 @@
   $('#workoutAutoNextSetting').addEventListener('change',event=>{
     settings=Store.updateSettings({autoNext:event.target.checked});
   });
+  $('#workoutCountdownSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});
+  });
+  $('#workoutRestSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({restSeconds:Number(event.target.value)});
+  });
   $('#workoutThemeSetting').addEventListener('click',event=>{
     const button=event.target.closest?.('[data-theme-value]');
     if(!button)return;
@@ -1231,7 +1239,16 @@
     });
   });
 
-  $('#completionHome').addEventListener('click',()=>{location.href='index.html';});
+  $('#completionHome').addEventListener('click',()=>{
+    const overlay=$('#completionOverlay');
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion){
+      location.href='index.html';
+      return;
+    }
+    overlay.classList.add('is-exiting');
+    setTimeout(()=>{location.href='index.html';},150);
+  });
 
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible'){
