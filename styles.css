@@ -1147,17 +1147,6 @@ html,body{background:var(--bg)}
   }
 }
 
-/* Quiet Motion rounded icon system */
-.qm-svg{
-  width:20px;
-  height:20px;
-  display:block;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.8;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
 .qm-icon{
   width:36px;
   height:36px;
@@ -1180,10 +1169,7 @@ html,body{background:var(--bg)}
   border-radius:10px;
   background:rgba(47,107,85,.065);
 }
-.qm-icon--mini .qm-svg{
-  width:17px;
-  height:17px;
-}
+
 .qm-section-title{
   display:flex;
   align-items:center;
@@ -1195,10 +1181,7 @@ html,body{background:var(--bg)}
   flex-basis:34px;
   border-radius:11px;
 }
-.qm-section-title .qm-svg{
-  width:18px;
-  height:18px;
-}
+
 
 /* Home */
 
@@ -1211,10 +1194,7 @@ html,body{background:var(--bg)}
   flex-basis:38px;
   border-radius:13px;
 }
-.home-body .routine-glyph .qm-svg{
-  width:19px;
-  height:19px;
-}
+
 .home-body .routine-copy{
   grid-column:2;
   grid-row:1;
@@ -1239,10 +1219,7 @@ html,body{background:var(--bg)}
   gap:3px;
   min-width:0;
 }
-.setting-icon .qm-svg{
-  width:18px;
-  height:18px;
-}
+
 
 /* Workout */
 .fact-label{
@@ -1253,11 +1230,7 @@ html,body{background:var(--bg)}
 .fact-label--right{
   justify-content:flex-end;
 }
-.fact-label .qm-svg,
-.technique-key__label .qm-svg{
-  width:15px;
-  height:15px;
-}
+
 .technique-key__label{
   display:flex;
   align-items:center;
@@ -1278,10 +1251,7 @@ html,body{background:var(--bg)}
   justify-content:center;
   gap:5px;
 }
-.execution-secondary button .qm-svg{
-  width:15px;
-  height:15px;
-}
+
 
 /* Progress */
 .progress-metrics article{
@@ -1293,10 +1263,7 @@ html,body{background:var(--bg)}
   flex-basis:34px;
   margin-bottom:7px;
 }
-.metric-icon .qm-svg{
-  width:18px;
-  height:18px;
-}
+
 .progress-title-row{
   min-width:0;
   display:flex;
@@ -1314,10 +1281,7 @@ html,body{background:var(--bg)}
   justify-content:center;
   gap:7px;
 }
-.data-actions button .qm-svg{
-  width:17px;
-  height:17px;
-}
+
 
 @media(max-width:390px){
 
@@ -1906,11 +1870,6 @@ a[href] *,
     animation:qmDetailReveal 360ms cubic-bezier(.2,.72,.24,1) both;
   }
 
-  .app-ready .routine-glyph .qm-svg{
-    animation:qmGlyphSettle 480ms cubic-bezier(.16,1,.3,1) both;
-  }
-  .app-ready .routine-card:nth-child(2) .routine-glyph .qm-svg{animation-delay:55ms}
-  .app-ready .routine-card:nth-child(3) .routine-glyph .qm-svg{animation-delay:110ms}
 
   .toast.show{
     animation:qmToastSettle 360ms cubic-bezier(.16,1,.3,1) both;
@@ -2261,7 +2220,6 @@ a[href] *,
   .app-ready .progress-metrics article,
   .app-ready .progress-card,
   .app-ready .activity-day__dot,
-  .app-ready .routine-glyph .qm-svg,
   .app-ready .progress-track i{
     animation:none!important;
   }
@@ -2357,10 +2315,7 @@ a[href] *,
 .fact-label{
   gap:5px;
 }
-.fact-label .qm-svg{
-  width:14px;
-  height:14px;
-}
+
 @media(max-width:390px){
   .exercise-facts{gap:12px;margin-top:15px}
   .exercise-facts strong{font-size:var(--font-size-sm)}
@@ -2510,32 +2465,7 @@ a[href] *,
   color:#744b40;
   background:rgba(134,93,80,.07);
 }
-.routine-reset-actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:20px;
-}
-.routine-reset-actions button{
-  min-height:52px;
-  border-radius:15px;
-  font-size:var(--font-size-md);
-  font-weight:800;
-  cursor:pointer;
-}
-.routine-reset-cancel{
-  border:1px solid var(--line);
-  background:#f7f8f5;
-  color:var(--text);
-}
-.routine-reset-confirm{
-  border:0;
-  background:#815448;
-  color:#fff;
-}
-.routine-reset-actions button:active{
-  transform:translateY(1px);
-}
+
 
 .home-body .safety-note{
   margin-top:-2px;
@@ -2602,8 +2532,7 @@ a[href] *,
   gap:14px;
   margin-bottom:10px;
 }
-.routine-settings-head h2,
-.routine-reset-view h2{
+.routine-settings-head h2{
   margin:0;
   font-size:1.625rem;
   line-height:1.08;
@@ -2644,10 +2573,7 @@ a[href] *,
   height:34px;
   border-radius:11px;
 }
-.routine-setting-icon .qm-svg{
-  width:18px;
-  height:18px;
-}
+
 .routine-setting-copy{
   min-width:0;
   display:grid;
@@ -2668,16 +2594,7 @@ a[href] *,
 .routine-settings-close:active{
   background:rgba(47,107,85,.06);
 }
-.routine-reset-view p{
-  margin:8px 0 0;
-  max-width:42ch;
-  color:var(--muted);
-  font-size:var(--font-size-sm);
-  line-height:1.55;
-}
-.routine-reset-view .routine-reset-actions{
-  margin-top:20px;
-}
+
 
 @media(max-width:390px){
   .routine-settings-sheet{
@@ -3047,7 +2964,7 @@ a[href] *,
 :root[data-theme="dark"] :is(.routine-card,.activity-card,.progress-metrics article,.progress-card){background:rgba(24,33,27,.92)}
 :root[data-theme="dark"] :is(.back-link--icon,.detail-card,.settings-sheet,.nav-button--back){background:var(--surface-raised)}
 :root[data-theme="dark"] :is(.progress-track,.mini-progress,.step-segments i){background:#2a362d}
-:root[data-theme="dark"] :is(.visual-placeholder,.visual-phase,.activity-empty,.history-day,.history-empty,.data-actions button,.routine-reset-cancel){background:var(--surface-soft)}
+:root[data-theme="dark"] :is(.visual-placeholder,.visual-phase,.activity-empty,.history-day,.history-empty,.data-actions button){background:var(--surface-soft)}
 :root[data-theme="dark"] .timer-ring:after{background:var(--surface-raised)}
 :root[data-theme="dark"] .completion-overlay{background:rgba(16,22,18,.97)}
 :root[data-theme="dark"] .completion-card{background:var(--surface-raised)}
@@ -3081,7 +2998,6 @@ a[href] *,
 .technique-key__label>.hi{font-size:18px}
 .detail-label .hi{font-size:17px}
 .execution-secondary button>.hi,
-.routine-reset-entry .hi,
 .data-actions button>.hi{font-size:17px}
 .completion-check>.hi{font-size:28px}
 .sheet-close>.hi,
@@ -3561,8 +3477,6 @@ a[href] *,
   background:rgba(138,74,71,.045)!important;
   border-color:rgba(138,74,71,.12)!important;
 }
-
-
 
 
 /* Workout reset reuses the Home reset component exactly; only its scope label differs. */
