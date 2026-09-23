@@ -181,13 +181,18 @@
   let settingsReturnFocus=null;
   let settings=Store.getSettings();
 
+  const syncThemeControl=(root,value)=>{
+    root?.querySelectorAll('[data-theme-value]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.themeValue===value));
+    });
+  };
   const syncSettings=()=>{
     settings=Store.getSettings();
     $('#soundSetting').checked=settings.sound;
     $('#autoNextSetting').checked=settings.autoNext;
     $('#countdownSetting').value=String(settings.countdownSeconds);
     $('#restSetting').value=String(settings.restSeconds);
-    $('#themeSetting').value=settings.theme;
+    syncThemeControl($('#themeSetting'),settings.theme);
   };
 
   const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null&&!node.closest('[inert]')&&getComputedStyle(node).visibility!=='hidden');
@@ -351,9 +356,14 @@
   $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
   $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});
   $('#restSetting').addEventListener('change',event=>{settings=Store.updateSettings({restSeconds:Number(event.target.value)});});
-  $('#themeSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({theme:event.target.value});
-    window.DailyMotionTheme?.apply(settings.theme);
+  $('#themeSetting').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-theme-value]');
+    if(!button)return;
+    const theme=button.dataset.themeValue;
+    if(settings.theme===theme)return;
+    settings=Store.updateSettings({theme});
+    syncThemeControl($('#themeSetting'),settings.theme);
+    window.DailyMotionTheme?.applyAnimated?.(settings.theme);
   });
 
   installAppBtn.onclick=async()=>{
