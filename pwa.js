@@ -351,10 +351,25 @@
   };
 
   const emitInstallChange=()=>window.dispatchEvent(new CustomEvent('daily-motion-install-change'));
+  const isReloadSafe=()=>{
+    try{
+      return window.DailyMotionReloadGuard?.isSafe?.()!==false;
+    }catch{
+      return false;
+    }
+  };
 
   const showUpdate=worker=>{
     waitingWorker=worker;
+    if(!isReloadSafe()){
+      showBanner('Обновление готово — обновить можно после тренировки');
+      return;
+    }
     showBanner('Доступна новая версия Daily Motion','Обновить',()=>{
+      if(!isReloadSafe()){
+        showUpdate(waitingWorker);
+        return;
+      }
       refreshRequested=true;
       waitingWorker?.postMessage({type:'SKIP_WAITING'});
     });
@@ -405,9 +420,19 @@
     window.addEventListener('pageshow',checkForUpdate);
 
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(!isReloadSafe()){
+        refreshRequested=false;
+        waitingWorker=null;
+        showBanner('Обновление установлено — применится после тренировки');
+        return;
+      }
       if(refreshRequested)location.reload();
     });
   }
+
+  window.addEventListener('daily-motion-reload-safety-change',()=>{
+    if(waitingWorker)showUpdate(waitingWorker);
+  });
 
   window.addEventListener('beforeinstallprompt',event=>{
     event.preventDefault();
@@ -455,6 +480,7 @@
     getInstallMode,
     install,
     isStandalone,
+    isUpdateSafe:isReloadSafe,
     update:()=>registration?.update?.()
   };
 })();
