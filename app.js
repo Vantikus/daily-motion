@@ -186,12 +186,19 @@
       button.setAttribute('aria-pressed',String(button.dataset.themeValue===value));
     });
   };
+  const syncTimingControl=(root,value)=>{
+    root?.querySelectorAll('[data-value]').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.value===String(value)));
+    });
+  };
   const syncSettings=()=>{
     settings=Store.getSettings();
     $('#soundSetting').checked=settings.sound;
     $('#autoNextSetting').checked=settings.autoNext;
     $('#countdownSetting').value=String(settings.countdownSeconds);
     $('#restSetting').value=String(settings.restSeconds);
+    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
+    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
     syncThemeControl($('#themeSetting'),settings.theme);
   };
 
@@ -355,8 +362,28 @@
     }
   });
   $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
-  $('#countdownSetting').addEventListener('change',event=>{settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});});
-  $('#restSetting').addEventListener('change',event=>{settings=Store.updateSettings({restSeconds:Number(event.target.value)});});
+  $('#countdownSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});
+    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
+  });
+  $('#restSetting').addEventListener('change',event=>{
+    settings=Store.updateSettings({restSeconds:Number(event.target.value)});
+    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
+  });
+  $('#countdownSettingDesktop').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-value]');
+    if(!button)return;
+    settings=Store.updateSettings({countdownSeconds:Number(button.dataset.value)});
+    $('#countdownSetting').value=String(settings.countdownSeconds);
+    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
+  });
+  $('#restSettingDesktop').addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-value]');
+    if(!button)return;
+    settings=Store.updateSettings({restSeconds:Number(button.dataset.value)});
+    $('#restSetting').value=String(settings.restSeconds);
+    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
+  });
   $('#themeSetting').addEventListener('click',event=>{
     const button=event.target.closest?.('[data-theme-value]');
     if(!button)return;
