@@ -3756,3 +3756,78 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 
 /* v157 page navigation motion is owned by Swup JS Plugin + GSAP. */
+
+/* v158 timer entrance choreography — calm focus reveal, no overshoot. */
+.execution-timer{
+  position:relative;
+  isolation:isolate;
+}
+.execution-timer::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:-1;
+  width:min(82vw,360px);
+  aspect-ratio:1;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0;
+  transform:translate3d(-50%,-47%,0) scale(.72);
+  background:radial-gradient(circle,
+    color-mix(in srgb,var(--accent) 13%,transparent) 0%,
+    color-mix(in srgb,var(--accent) 7%,transparent) 34%,
+    transparent 72%);
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
+    animation:qmTimerFocusBloom 680ms 30ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
+    animation:qmTimerHeadingIn 360ms 20ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-key{
+    animation:qmTimerKeyIn 340ms 90ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
+    animation:qmTimerRingIn 520ms 70ms cubic-bezier(.16,.9,.22,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
+    animation:qmTimerDigitsIn 360ms 150ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
+    animation:qmTimerActionsIn 420ms 185ms cubic-bezier(.16,.82,.24,1) both;
+  }
+}
+
+@keyframes qmTimerFocusBloom{
+  0%{opacity:0;transform:translate3d(-50%,-47%,0) scale(.72)}
+  55%{opacity:.42}
+  100%{opacity:.16;transform:translate3d(-50%,-47%,0) scale(1.08)}
+}
+@keyframes qmTimerHeadingIn{
+  from{opacity:0;transform:translate3d(0,9px,0)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmTimerKeyIn{
+  from{opacity:0;transform:translate3d(0,6px,0) scale(.98)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmTimerRingIn{
+  from{opacity:0;transform:translate3d(0,15px,0) scale(.88)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmTimerDigitsIn{
+  from{opacity:0;transform:scale(.94)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmTimerActionsIn{
+  from{opacity:0;transform:translate3d(0,13px,0)}
+  to{opacity:1;transform:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .execution-timer::before{display:none!important}
+}
+
