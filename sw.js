@@ -1,11 +1,19 @@
-const CACHE_NAME='daily-motion-v156';
-const SWUP_VENDOR_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';
+const CACHE_NAME='daily-motion-v157';
+const SWUP_VENDOR_URLS=[
+  'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
+  'https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js',
+  'https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js',
+  'https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js',
+  'https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js',
+  'https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js',
+  'https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js'
+];
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/heroicons.css?v=156',
+  '/heroicons.css?v=157',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -36,17 +44,17 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=156',
-  '/theme.js?v=156',
-  '/program.js?v=156',
-  '/state.js?v=156',
-  '/audio.js?v=156',
-  '/gsap.min.js?v=156',
-  '/pwa.js?v=156',
-  '/app.js?v=156',
-  '/session.js?v=156',
-  '/progress.js?v=156',
-  '/navigation.js?v=156',
+  '/styles.css?v=157',
+  '/theme.js?v=157',
+  '/program.js?v=157',
+  '/state.js?v=157',
+  '/audio.js?v=157',
+  '/gsap.min.js?v=157',
+  '/pwa.js?v=157',
+  '/app.js?v=157',
+  '/session.js?v=157',
+  '/progress.js?v=157',
+  '/navigation.js?v=157',
   '/manifest.webmanifest',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
@@ -58,7 +66,7 @@ self.addEventListener('install',event=>{
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache=>{
       await cache.addAll(APP_SHELL);
-      await cache.add(SWUP_VENDOR_URL).catch(()=>{});
+      await Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)));
     })
   );
 });
@@ -122,7 +130,7 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
-  if(request.url===SWUP_VENDOR_URL){
+  if(SWUP_VENDOR_URLS.includes(request.url)){
     event.respondWith(cacheStatic(request).catch(()=>fetch(request)));
     return;
   }

@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=156"></script>
+  <script src="theme.js?v=157"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Daily Motion — ежедневная разминка за 10 минут" />
   <meta name="twitter:description" content="Daily Motion — ежедневная 10-минутная разминка всего тела с таймером, техникой выполнения, прогрессом и офлайн-режимом." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=156" />
-  <link rel="stylesheet" href="styles.css?v=156" />
+  <link rel="stylesheet" href="heroicons.css?v=157" />
+  <link rel="stylesheet" href="styles.css?v=157" />
 </head>
 <body class="home-body">
   <div id="swup" class="transition-page" data-page="home">
@@ -87,7 +87,7 @@
         <div class="activity-card" id="activityCard">
           <div class="activity-card__head">
             <div class="qm-section-title"><span class="qm-icon qm-icon--soft"><i class="hi hi-chart-bar" aria-hidden="true"></i></span><h3>Активность</h3></div>
-            <a class="text-link" href="progress.html">История</a>
+            <a class="text-link" href="progress.html" data-swup-animation="progress" data-swup-preload>История</a>
           </div>
           <div class="activity-days" id="activityDays" aria-label="Активность за семь дней"></div>
           <p class="activity-empty" id="activityEmpty" hidden>Активность появится после первой завершённой тренировки.</p>
@@ -190,14 +190,21 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <script src="program.js?v=156"></script>
-  <script src="state.js?v=156"></script>
-  <script src="audio.js?v=156"></script>
-  <script src="gsap.min.js?v=156"></script>
-  <script src="pwa.js?v=156"></script>
-  <script src="app.js?v=156"></script>
-  <script src="progress.js?v=156"></script>
-  <script src="session.js?v=156"></script>
-  <script src="navigation.js?v=156"></script>
+  <script src="program.js?v=157"></script>
+  <script src="state.js?v=157"></script>
+  <script src="audio.js?v=157"></script>
+  <script src="gsap.min.js?v=157"></script>
+  <script src="https://unpkg.com/swup@4.10.0/dist/Swup.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="pwa.js?v=157"></script>
+  <script src="app.js?v=157"></script>
+  <script src="progress.js?v=157"></script>
+  <script src="session.js?v=157"></script>
+  <script src="navigation.js?v=157"></script>
 </body>
 </html>

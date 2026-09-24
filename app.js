@@ -17,11 +17,12 @@ window.DailyMotionPages.home=function mountHome(){
   let today=Store.getDay();
   let state=Store.getState();
   const $=selector=>document.querySelector(selector);
-  const navigate=href=>{
-    if(window.DailyMotionNavigate){window.DailyMotionNavigate(href);return;}
-    location.assign(href);
+  const navigate=(href,options={})=>{
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate(href,options);return;}
+    if(options.replace)location.replace(href);
+    else location.assign(href);
   };
-  const go=key=>navigate(`session.html?routine=${key}&resume=1`);
+  const go=key=>navigate(`session.html?routine=${key}&resume=1`,{animation:'workout'});
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
   const list=$('#routineGrid');
@@ -120,7 +121,7 @@ window.DailyMotionPages.home=function mountHome(){
     $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
     $('#heroNote').hidden=!allDone&&!isResuming;
     $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
-    $('#continueBtn').onclick=()=>allDone?navigate('progress.html'):go(nextKey);
+    $('#continueBtn').onclick=()=>allDone?navigate('progress.html',{animation:'progress'}):go(nextKey);
     $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
     $('#dayProgressValue').textContent=`${nextPercent}%`;
     $('#dayProgressBar').style.width=`${nextPercent}%`;

@@ -20,7 +20,7 @@
       }
     })();
   </script>
-  <script src="theme.js?v=156"></script>
+  <script src="theme.js?v=157"></script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="32x32" href="icons/daily-motion-favicon-32-v97.png" />
   <link rel="shortcut icon" href="icons/daily-motion-favicon-32-v97.png" />
@@ -41,8 +41,8 @@
   <meta name="twitter:title" content="Утренняя разминка — Daily Motion" />
   <meta name="twitter:description" content="Пошаговая утренняя разминка Daily Motion: техника упражнений, таймер, отдых и сохранение прогресса на устройстве." />
   <meta name="twitter:image" content="https://daily-motion.gfgygjhd.workers.dev/icons/daily-motion-app-192-v97.png" />
-  <link rel="stylesheet" href="heroicons.css?v=156" />
-  <link rel="stylesheet" href="styles.css?v=156" />
+  <link rel="stylesheet" href="heroicons.css?v=157" />
+  <link rel="stylesheet" href="styles.css?v=157" />
 </head>
 <body class="session-body">
   <div id="swup" class="transition-page" data-page="session">
@@ -54,7 +54,7 @@
       <main class="session-shell">
         <article class="exercise-main">
           <div class="exercise-toolbar" aria-label="Навигация комплекса">
-            <a class="back-link back-link--icon" href="index.html" data-nav-back aria-label="На главную">
+            <a class="back-link back-link--icon" href="index.html" data-nav-back data-swup-animation="back-home" data-swup-preload aria-label="На главную">
               <i class="hi hi-chevron-left" aria-hidden="true"></i>
             </a>
             <strong class="exercise-toolbar__title" id="routineName">Утро</strong>
@@ -321,14 +321,21 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <script src="program.js?v=156"></script>
-  <script src="state.js?v=156"></script>
-  <script src="audio.js?v=156"></script>
-  <script src="gsap.min.js?v=156"></script>
-  <script src="pwa.js?v=156"></script>
-  <script src="app.js?v=156"></script>
-  <script src="progress.js?v=156"></script>
-  <script src="session.js?v=156"></script>
-  <script src="navigation.js?v=156"></script>
+  <script src="program.js?v=157"></script>
+  <script src="state.js?v=157"></script>
+  <script src="audio.js?v=157"></script>
+  <script src="gsap.min.js?v=157"></script>
+  <script src="https://unpkg.com/swup@4.10.0/dist/Swup.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js" crossorigin="anonymous"></script>
+  <script src="pwa.js?v=157"></script>
+  <script src="app.js?v=157"></script>
+  <script src="progress.js?v=157"></script>
+  <script src="session.js?v=157"></script>
+  <script src="navigation.js?v=157"></script>
 </body>
 </html>

@@ -224,3 +224,16 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Swup page motion is sequential: old `#swup` content exits completely, DOM is replaced, then new `#swup` content enters. Old and new page UI must never be visible simultaneously.
 - If Swup cannot load, normal browser navigation is the required functional fallback.
 
+
+## v157 — Swup plugin architecture
+
+- Swup is the sole owner of cross-page navigation, history, cache and page lifecycle.
+- Preload Plugin owns route prefetching; likely next routes are warmed after each page view.
+- Head Plugin owns title/meta/canonical/head updates; manual head parsing is forbidden.
+- Body Class Plugin owns page body classes; transient modal classes are cleared during unmount.
+- A11y Plugin owns navigation announcements, focus and reduced-motion page skipping.
+- JS Plugin + local GSAP own page transition timing. CSS `is-changing/is-animating` page fades are forbidden.
+- Scroll Plugin owns scroll restoration/anchors; between-page scroll is not animated.
+- `DailyMotionPages.home/progress/session` remain the only page mount/unmount lifecycle. Scripts Plugin and Parallel Plugin remain forbidden.
+- Fragment Plugin is reserved for a future real fragment route and must not be loaded until such a route exists.
+- Theme View Transition remains isolated to theme switching only.

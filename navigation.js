@@ -1,7 +1,6 @@
 (() => {
-  const SWUP_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';
   const pages=window.DailyMotionPages||{};
-  const root=document.documentElement;
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -10,8 +9,15 @@
   const currentPage=()=>currentContainer()?.dataset.page||'';
 
   const clearPageState=()=>{
-    root.classList.remove('app-ready','session-ready');
+    document.documentElement.classList.remove('app-ready','session-ready');
     document.body.classList.remove('settings-open','modal-open');
+  };
+
+  const clearPageMotion=()=>{
+    const container=currentContainer();
+    if(!container)return;
+    window.gsap?.killTweensOf?.(container);
+    window.gsap?.set?.(container,{clearProps:'opacity,transform,willChange'});
   };
 
   const unmountPage=()=>{
@@ -19,42 +25,22 @@
       try{unmountCurrent();}catch(error){console.error('[Daily Motion] page cleanup failed',error);}
     }
     unmountCurrent=null;
+    clearPageMotion();
     clearPageState();
   };
 
   const mountPage=()=>{
+    clearPageMotion();
     clearPageState();
-    const mount=pages[currentPage()];
+    const page=currentPage();
+    const mount=pages[page];
     if(typeof mount!=='function')return;
     try{
       const cleanup=mount();
       unmountCurrent=typeof cleanup==='function'?cleanup:null;
     }catch(error){
-      console.error(`[Daily Motion] failed to mount ${currentPage()}`,error);
+      console.error(`[Daily Motion] failed to mount ${page}`,error);
       unmountCurrent=null;
-    }
-  };
-
-  const syncBodyAndHead=visit=>{
-    const html=visit?.to?.html;
-    if(!html)return;
-    const next=new DOMParser().parseFromString(html,'text/html');
-    document.body.className=next.body?.className||'';
-
-    for(const selector of [
-      'meta[name="description"]',
-      'link[rel="canonical"]',
-      'meta[property="og:title"]',
-      'meta[property="og:description"]',
-      'meta[property="og:url"]',
-      'meta[name="twitter:title"]',
-      'meta[name="twitter:description"]'
-    ]){
-      const current=document.head.querySelector(selector);
-      const incoming=next.head.querySelector(selector);
-      if(!current||!incoming)continue;
-      if(current.tagName==='LINK')current.setAttribute('href',incoming.getAttribute('href')||'');
-      else current.setAttribute('content',incoming.getAttribute('content')||'');
     }
   };
 
@@ -82,59 +68,169 @@
     },true);
   };
 
+  const runTween=(phase,{from,to,duration,ease})=>{
+    const container=currentContainer();
+    if(!container||!window.gsap||reducedMotion.matches)return Promise.resolve();
+    window.gsap.killTweensOf(container);
+    container.style.willChange='opacity, transform';
+    if(phase==='in')window.gsap.set(container,from);
+    return new Promise(resolve=>{
+      window.gsap.to(container,{
+        ...to,
+        duration,
+        ease,
+        overwrite:true,
+        onComplete:()=>{
+          if(phase==='in')window.gsap.set(container,{clearProps:'opacity,transform,willChange'});
+          resolve();
+        }
+      });
+    });
+  };
+
+  const transition=(outMotion,inMotion)=>({
+    from:'(.*)',
+    to:'(.*)',
+    out:()=>runTween('out',outMotion),
+    in:()=>runTween('in',inMotion)
+  });
+
+  const pageAnimations=[
+    {
+      from:'(.*)',
+      to:'completion-home',
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-5,scale:.995},duration:.16,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:7,scale:.995},to:{opacity:1,y:0,scale:1},duration:.24,ease:'power3.out'})
+    },
+    {
+      from:'(.*)',
+      to:'workout',
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-7,scale:.99},duration:.17,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:11,scale:.986},to:{opacity:1,y:0,scale:1},duration:.28,ease:'power3.out'})
+    },
+    {
+      from:'(.*)',
+      to:'back-home',
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:7,scale:.99},duration:.16,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:-7,scale:.992},to:{opacity:1,y:0,scale:1},duration:.25,ease:'power3.out'})
+    },
+    {
+      from:'(.*)',
+      to:'progress',
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3,scale:.996},duration:.15,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:6,scale:.997},to:{opacity:1,y:0,scale:1},duration:.23,ease:'power3.out'})
+    },
+    transition(
+      {from:{},to:{opacity:0,y:-2},duration:.14,ease:'power2.in'},
+      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:.22,ease:'power3.out'}
+    )
+  ];
+
+  const requiredGlobals=[
+    'Swup','SwupPreloadPlugin','SwupHeadPlugin','SwupBodyClassPlugin',
+    'SwupA11yPlugin','SwupJsPlugin','SwupScrollPlugin'
+  ];
+
+  const pluginsReady=()=>requiredGlobals.every(name=>typeof window[name]==='function')&&Boolean(window.gsap);
+
+  const preloadLikelyRoutes=()=>{
+    if(!swup?.preload)return;
+    const page=currentPage();
+    const urls=page==='home'
+      ? ['/progress.html','/session.html?routine=morning&resume=1']
+      : ['/index.html'];
+    swup.preload(urls).catch(()=>{});
+  };
+
   const installSwup=()=>{
-    if(swup||typeof window.Swup!=='function')return;
+    if(swup||!pluginsReady())return false;
+
+    const scrollAnimations=reducedMotion.matches?false:{
+      betweenPages:false,
+      samePageWithHash:true,
+      samePage:true
+    };
 
     swup=new window.Swup({
       containers:['#swup'],
-      animationSelector:'.transition-page',
+      animationSelector:false,
       animateHistoryBrowsing:true,
       cache:true,
+      native:false,
       linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
-      native:false
+      plugins:[
+        new window.SwupPreloadPlugin({
+          throttle:3,
+          preloadHoveredLinks:true,
+          preloadVisibleLinks:false,
+          preloadInitialPage:true
+        }),
+        new window.SwupHeadPlugin({
+          awaitAssets:true,
+          persistAssets:true
+        }),
+        new window.SwupBodyClassPlugin(),
+        new window.SwupA11yPlugin({
+          headingSelector:'h1',
+          respectReducedMotion:true,
+          announcements:{
+            visit:'Открыта страница: {title}',
+            url:'Новая страница: {url}'
+          }
+        }),
+        new window.SwupJsPlugin({animations:pageAnimations}),
+        new window.SwupScrollPlugin({
+          animateScroll:scrollAnimations,
+          doScrollingRightAway:false,
+          shouldResetScrollPosition:trigger=>!trigger?.matches?.('[data-nav-back]')
+        })
+      ]
     });
+
     window.DailyMotionSwup=swup;
 
-    window.DailyMotionNavigate=(href,{replace=false}={})=>{
+    window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{
       const url=new URL(href,location.href);
       if(url.origin!==location.origin){location.assign(url.href);return;}
-      swup.navigate(url.pathname+url.search+url.hash,{history:replace?'replace':'push'});
+      swup.navigate(url.pathname+url.search+url.hash,{
+        history:replace?'replace':'push',
+        animation
+      });
     };
 
     window.DailyMotionBack=(fallback='index.html')=>{
       const state=history.state;
-      if(state?.source==='swup'&&Number(state.index)>1){history.back();return;}
-      window.DailyMotionNavigate(fallback,{replace:true});
+      if(state?.source==='swup'&&Number(state.index)>1){
+        history.back();
+        return;
+      }
+      window.DailyMotionNavigate(fallback,{replace:true,animation:'back-home'});
     };
 
+    swup.hooks.on('visit:start',visit=>{
+      if(visit.history.popstate&&visit.history.direction==='backwards'){
+        visit.animation.name='back-home';
+      }
+    });
+
     swup.hooks.on('fetch:error',visit=>{
+      clearPageMotion();
       location.assign(new URL(visit.to.url,location.href).href);
     });
 
-    swup.hooks.before('content:replace',visit=>{
-      unmountPage();
-      syncBodyAndHead(visit);
-    });
-
+    swup.hooks.before('content:replace',()=>unmountPage());
     swup.hooks.on('content:replace',()=>mountPage());
+    swup.hooks.on('page:view',()=>preloadLikelyRoutes());
+    swup.hooks.on('visit:abort',()=>clearPageMotion());
+    swup.hooks.on('animation:skip',()=>clearPageMotion());
+
+    preloadLikelyRoutes();
+    return true;
   };
 
   window.DailyMotionNavigate=fallbackNavigate;
   window.DailyMotionBack=fallbackBack;
   installBackHandler();
   mountPage();
-
-  if(typeof window.Swup==='function'){
-    installSwup();
-    return;
-  }
-
-  const script=document.createElement('script');
-  script.src=SWUP_URL;
-  script.async=true;
-  script.crossOrigin='anonymous';
-  script.dataset.dailyMotionVendor='swup';
-  script.addEventListener('load',installSwup,{once:true});
-  script.addEventListener('error',()=>script.remove(),{once:true});
-  document.head.appendChild(script);
+  installSwup();
 })();

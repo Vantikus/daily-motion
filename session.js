@@ -1319,7 +1319,7 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   $('#completionHome').addEventListener('click',()=>{
-    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true});return;}
+    if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true,animation:'completion-home'});return;}
     location.replace('index.html');
   });
 
