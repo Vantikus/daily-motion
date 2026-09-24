@@ -227,18 +227,13 @@ for(const fragment of [
   "containers:['#swup']",
   "animationSelector:'.transition-page'",
   'animateHistoryBrowsing:true',
-  "swup.hooks.on('page:load'",
-  "swup.hooks.replace('animation:out:await'",
   "swup.hooks.before('content:replace'",
   "swup.hooks.on('content:replace'",
-  "swup.hooks.replace('animation:in:await'",
+  "swup.hooks.on('fetch:error'",
   "const SWUP_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';",
-  'window.DailyMotionNavigate=(href,{replace=false,direction}={})=>{',
+  'window.DailyMotionNavigate=(href,{replace=false}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{",
   'script.addEventListener(\'load\',installSwup',
-  'clearTransitionStyles();',
-  "new DOMParser().parseFromString(html,'text/html')",
-  "swup.hooks.on('animation:skip'",
   'unmountPage();',
   'syncBodyAndHead(visit);'
 ]){
@@ -250,34 +245,23 @@ if(!styles.includes('#swup{')||!styles.includes('opacity:1;')||!styles.includes(
 for(const fragment of ['.session-body>#swup{','.session-body>#swup>.exercise-app{','.session-body>#swup>.ios-safe-zone-bar{']){
   if(!styles.includes(fragment))fail(`styles.css: Session Swup wrapper layout missing: ${fragment}`);
 }
-if(navigation.includes("container.style.opacity='0'")){
-  fail('navigation.js: persistent inline opacity:0 can blank the Swup container');
-}
 for(const fragment of [
-  'const ensureOrb=()=>{',
-  'const rememberActivation=event=>{',
-  'const transitionOrigin=direction=>{',
-  "visit.meta.motionDirection=resolveDirection(visit)",
-    "{opacity:.78,transform:`translate3d(${-8*sign}px,0,0) scale(.982)`}",
-  "container.style.opacity='.72'",
-  "duration:330,delay:45,easing:'cubic-bezier(.16,1,.3,1)'",
-  "duration:310,easing:'cubic-bezier(.2,.72,.18,1)'",
-  "duration:260,delay:15,easing:'cubic-bezier(.4,0,.2,1)'"
+  'html.is-changing .transition-page{',
+  'transition:opacity 220ms cubic-bezier(.4,0,.2,1);',
+  'html.is-animating .transition-page{',
+  'opacity:0;'
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v154 tap-origin Swup motion missing: ${fragment}`);
-}
-for(const fragment of ['.dm-page-orb{','.dm-page-orb.is-active{opacity:1}','width:230vmax;']){
-  if(!styles.includes(fragment))fail(`styles.css: v154 page orb contract missing: ${fragment}`);
-}
-for(const forbidden of ['.dm-page-curtain{','ensureCurtain=()=>']){
-  if(styles.includes(forbidden)||navigation.includes(forbidden))fail(`v154: obsolete curtain transition returned: ${forbidden}`);
+  if(!styles.includes(fragment))fail(`styles.css: v155 Swup fade contract missing: ${fragment}`);
 }
 for(const forbidden of [
-  'html.is-changing #swup',
-  'html.is-leaving.is-animating #swup',
-  'html.is-rendering.is-animating #swup'
+  '.dm-page-orb{',
+  'ensureOrb=()=>',
+  "swup.hooks.replace('animation:out:await'",
+  "swup.hooks.replace('animation:in:await'",
+  'container.style.opacity=',
+  '.dm-page-curtain{'
 ]){
-  if(styles.includes(forbidden))fail(`styles.css: class-driven Swup hiding returned: ${forbidden}`);
+  if(styles.includes(forbidden)||navigation.includes(forbidden))fail(`v155: obsolete custom page transition returned: ${forbidden}`);
 }
 for(const forbidden of [
   '@view-transition{',
