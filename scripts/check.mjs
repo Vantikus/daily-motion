@@ -239,19 +239,22 @@ for(const fragment of [
 ]){
   if(!navigation.includes(fragment))fail(`navigation.js: Swup lifecycle contract missing: ${fragment}`);
 }
-if(!styles.includes('#swup{')||!styles.includes('opacity:1;')||!styles.includes('transform:none;')){
-  fail('styles.css: Swup container must stay visible by default');
+if(!styles.includes('#swup{')||!styles.includes('transform:none;')){
+  fail('styles.css: Swup container base contract is missing');
+}
+if(styles.includes('#swup{\n  opacity:1;')){
+  fail('styles.css: base #swup opacity must not override Swup fade');
 }
 for(const fragment of ['.session-body>#swup{','.session-body>#swup>.exercise-app{','.session-body>#swup>.ios-safe-zone-bar{']){
   if(!styles.includes(fragment))fail(`styles.css: Session Swup wrapper layout missing: ${fragment}`);
 }
 for(const fragment of [
-  'html.is-changing .transition-page{',
+  'html.is-changing #swup.transition-page{',
   'transition:opacity 220ms cubic-bezier(.4,0,.2,1);',
-  'html.is-animating .transition-page{',
+  'html.is-animating #swup.transition-page{',
   'opacity:0;'
 ]){
-  if(!styles.includes(fragment))fail(`styles.css: v155 Swup fade contract missing: ${fragment}`);
+  if(!styles.includes(fragment))fail(`styles.css: v156 Swup fade contract missing: ${fragment}`);
 }
 for(const forbidden of [
   '.dm-page-orb{',
@@ -261,7 +264,7 @@ for(const forbidden of [
   'container.style.opacity=',
   '.dm-page-curtain{'
 ]){
-  if(styles.includes(forbidden)||navigation.includes(forbidden))fail(`v155: obsolete custom page transition returned: ${forbidden}`);
+  if(styles.includes(forbidden)||navigation.includes(forbidden))fail(`v156: obsolete custom page transition returned: ${forbidden}`);
 }
 for(const forbidden of [
   '@view-transition{',

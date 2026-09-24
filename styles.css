@@ -3739,7 +3739,6 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 /* Swup page transition is driven by navigation.js.
    Keep #swup visible by default so a failed/aborted visit can never leave a blank screen. */
 #swup{
-  opacity:1;
   transform:none;
 }
 
@@ -3757,17 +3756,17 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 
 
-/* v155 Swup fade transition. Swup owns the lifecycle and class toggling. */
-html.is-changing .transition-page{
+/* v156 Swup fade: target the actual container so base #swup rules cannot override motion. */
+html.is-changing #swup.transition-page{
   opacity:1;
   transition:opacity 220ms cubic-bezier(.4,0,.2,1);
   will-change:opacity;
 }
-html.is-animating .transition-page{
+html.is-animating #swup.transition-page{
   opacity:0;
 }
 @media(prefers-reduced-motion:reduce){
-  html.is-changing .transition-page{
+  html.is-changing #swup.transition-page{
     transition:none!important;
     opacity:1!important;
   }
