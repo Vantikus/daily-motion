@@ -3755,3 +3755,49 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .execution-overlay.is-surface-fade{transition:none!important}
   .completion-overlay .completion-card{transition:none!important}
 }
+
+
+/* v153 Swup cinematic page curtain. Swup owns timing; this layer only provides the visual surface. */
+.dm-page-curtain{
+  position:fixed;
+  inset:-2px;
+  z-index:8000;
+  pointer-events:none;
+  opacity:0;
+  transform:translate3d(0,100%,0);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb,var(--bg) 96%,var(--accent) 4%) 0%,
+      var(--bg) 42%,
+      color-mix(in srgb,var(--bg) 97%,var(--text) 3%) 100%);
+  box-shadow:0 -18px 44px rgba(20,24,22,.10);
+  contain:paint;
+}
+.dm-page-curtain.is-active{opacity:1}
+.dm-page-curtain[data-direction="back"]{
+  transform:translate3d(0,-100%,0);
+  box-shadow:0 18px 44px rgba(20,24,22,.10);
+}
+.dm-page-curtain::after{
+  content:"";
+  position:absolute;
+  left:14%;
+  right:14%;
+  top:0;
+  height:1px;
+  opacity:.55;
+  background:linear-gradient(90deg,transparent,var(--line-strong),transparent);
+}
+.dm-page-curtain[data-direction="back"]::after{
+  top:auto;
+  bottom:0;
+}
+:root[data-theme="dark"] .dm-page-curtain{
+  box-shadow:0 -18px 46px rgba(0,0,0,.34);
+}
+:root[data-theme="dark"] .dm-page-curtain[data-direction="back"]{
+  box-shadow:0 18px 46px rgba(0,0,0,.34);
+}
+@media(prefers-reduced-motion:reduce){
+  .dm-page-curtain{display:none!important}
+}

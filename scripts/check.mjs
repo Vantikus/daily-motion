@@ -233,7 +233,7 @@ for(const fragment of [
   "swup.hooks.on('content:replace'",
   "swup.hooks.replace('animation:in:await'",
   "const SWUP_URL='https://unpkg.com/swup@4.10.0/dist/Swup.umd.js';",
-  'window.DailyMotionNavigate=(href,{replace=false}={})=>{',
+  'window.DailyMotionNavigate=(href,{replace=false,direction}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{",
   'script.addEventListener(\'load\',installSwup',
   'clearTransitionStyles();',
@@ -254,12 +254,18 @@ if(navigation.includes("container.style.opacity='0'")){
   fail('navigation.js: persistent inline opacity:0 can blank the Swup container');
 }
 for(const fragment of [
-  "{opacity:.86,transform:'translate3d(0,-3px,0)'}",
-  "container.style.opacity='.86'",
-  "{opacity:.86,transform:'translate3d(0,4px,0)'}",
-  "duration:175,easing:'cubic-bezier(.16,1,.3,1)'"
+  'const ensureCurtain=()=>{',
+  "visit.meta.motionDirection=resolveDirection(visit)",
+  "curtain.dataset.direction=direction",
+  "{opacity:.72,transform:`translate3d(0,${-6*sign}px,0) scale(.985)`}",
+  "container.style.opacity='.74'",
+  "duration:320,delay:35,easing:'cubic-bezier(.16,1,.3,1)'",
+  "duration:300,easing:'cubic-bezier(.22,1,.36,1)'"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v152 seamless page motion missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v153 cinematic Swup motion missing: ${fragment}`);
+}
+for(const fragment of ['.dm-page-curtain{','.dm-page-curtain.is-active{opacity:1}','.dm-page-curtain[data-direction="back"]']){
+  if(!styles.includes(fragment))fail(`styles.css: v153 page curtain contract missing: ${fragment}`);
 }
 for(const forbidden of [
   'html.is-changing #swup',
