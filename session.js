@@ -138,6 +138,25 @@ window.DailyMotionPages.session=function mountSession(){
     );
   };
 
+  const animateCountdownValue=(node,{launch=false}={})=>{
+    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    node.getAnimations?.().forEach(animation=>animation.cancel());
+    node.animate(
+      launch
+        ?[
+          {transform:'translate3d(0,6px,0) scale(.84)',opacity:.35},
+          {transform:'translate3d(0,-1px,0) scale(1.07)',opacity:1,offset:.68},
+          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+        ]
+        :[
+          {transform:'translate3d(0,8px,0) scale(.78)',opacity:.28},
+          {transform:'translate3d(0,-1px,0) scale(1.045)',opacity:1,offset:.7},
+          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+        ],
+      {duration:launch?300:330,easing:'cubic-bezier(.16,.82,.24,1)'}
+    );
+  };
+
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
   const accountTimerRun=(timer,stop=true)=>{
     if(!timer?.running)return;
@@ -421,9 +440,20 @@ window.DailyMotionPages.session=function mountSession(){
       if(token!==stageTransitionToken)return;
       previous.hidden=true;
       previous.inert=false;
-      previous.classList.remove('is-stage-leaving');
+      previous.classList.remove('is-stage-leaving','is-finishing-early');
       next.classList.remove('is-stage-entering');
     });
+  }
+
+  function playEarlyTimerExit(callback){
+    const card=$('#timerCard');
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!card||executionStage!=='timer'||reduceMotion){callback();return;}
+
+    card.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());
+    card.inert=true;
+    card.classList.add('is-finishing-early');
+    afterAnimations(card,callback,{subtree:true});
   }
 
   function showExecution(stage){
@@ -471,6 +501,9 @@ window.DailyMotionPages.session=function mountSession(){
     const finish=()=>{
       if(token!==executionHideToken)return;
       overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade');
+      const timerCard=$('#timerCard');
+      timerCard?.classList.remove('is-finishing-early');
+      if(timerCard)timerCard.inert=false;
       syncModalState();
       emitReloadSafetyChange();
       if(!visibleModal()&&modalReturnFocus?.isConnected){
@@ -544,7 +577,6 @@ window.DailyMotionPages.session=function mountSession(){
     let remaining=seconds;
     $('#countdownValue').textContent=String(remaining);
     showExecution('countdown');
-    animateValue($('#countdownValue'));
     sound('tick');
 
     countdownTimer=setInterval(()=>{
@@ -553,7 +585,7 @@ window.DailyMotionPages.session=function mountSession(){
         clearInterval(countdownTimer);
         countdownTimer=null;
         $('#countdownValue').textContent='Старт';
-        animateValue($('#countdownValue'));
+        animateCountdownValue($('#countdownValue'),{launch:true});
         sound('start');
         haptic('next');
         stageTimer=setTimeout(()=>{
@@ -564,7 +596,7 @@ window.DailyMotionPages.session=function mountSession(){
         return;
       }
       $('#countdownValue').textContent=String(remaining);
-      animateValue($('#countdownValue'));
+      animateCountdownValue($('#countdownValue'));
       sound('tick');
       haptic('tap');
     },1000);
@@ -1269,6 +1301,9 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   $('#executionFinishEarly').addEventListener('click',()=>{
+    const card=$('#timerCard');
+    if(card?.classList.contains('is-finishing-early'))return;
+
     const timer=timerData(exercises[current]);
     stopTicker();
     releaseWakeLock();
@@ -1278,8 +1313,11 @@ window.DailyMotionPages.session=function mountSession(){
     timer.runStartedAt=null;
     timer.remaining=0;
     Store.save();
-    updateTimerUI();
-    onTimerFinished();
+
+    playEarlyTimerExit(()=>{
+      updateTimerUI();
+      onTimerFinished();
+    });
   });
 
   const takeRestFinish=()=>{

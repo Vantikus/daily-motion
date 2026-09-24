@@ -225,8 +225,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=158'))fail(`${file}: v158 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=158','progress.js?v=158','session.js?v=158']){
+  if(!content.includes('navigation.js?v=159'))fail(`${file}: v159 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=159','progress.js?v=159','session.js?v=159']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   for(const url of swupVendorUrls){
@@ -260,7 +260,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v158 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v159 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const animation of ['workout','progress','back-home','completion-home']){
@@ -347,13 +347,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=158'",
+  "'/navigation.js?v=159'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v158 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v159 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -373,6 +373,24 @@ for(const fragment of [
   '@keyframes qmTimerDigitsIn'
 ]){
   if(!styles.includes(fragment))fail(`styles.css: v158 timer entrance motion missing: ${fragment}`);
+}
+
+for(const fragment of [
+  '/* v159 countdown + early timer exit choreography',
+  'animation:qmCountdownValueIn 500ms 85ms',
+  '@keyframes qmCountdownBloomIn',
+  '@keyframes qmTimerRingOut',
+  '.execution-timer.is-finishing-early .execution-actions'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: v159 countdown/exit motion missing: ${fragment}`);
+}
+for(const fragment of [
+  'const animateCountdownValue=',
+  'function playEarlyTimerExit(callback)',
+  "card.classList.add('is-finishing-early')",
+  'playEarlyTimerExit(()=>{'
+]){
+  if(!sessionRuntime.includes(fragment))fail(`session.js: v159 countdown/exit choreography missing: ${fragment}`);
 }
 
 for(const fragment of [

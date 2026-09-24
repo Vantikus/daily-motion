@@ -3831,3 +3831,104 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .execution-timer::before{display:none!important}
 }
 
+/* v159 countdown + early timer exit choreography. */
+.execution-countdown{
+  position:relative;
+  isolation:isolate;
+}
+.execution-countdown::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:52%;
+  z-index:-1;
+  width:min(68vw,310px);
+  aspect-ratio:1;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0;
+  transform:translate3d(-50%,-50%,0) scale(.7);
+  background:radial-gradient(circle,
+    color-mix(in srgb,var(--accent) 12%,transparent) 0%,
+    color-mix(in srgb,var(--accent) 5%,transparent) 38%,
+    transparent 72%);
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
+    animation:qmCountdownBloomIn 720ms 20ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow{
+    animation:qmCountdownTextIn 320ms 10ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2{
+    animation:qmCountdownTextIn 360ms 45ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value{
+    animation:qmCountdownValueIn 500ms 85ms cubic-bezier(.16,.9,.22,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint{
+    animation:qmCountdownTextIn 360ms 150ms cubic-bezier(.16,.82,.24,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action{
+    animation:qmCountdownTextIn 360ms 190ms cubic-bezier(.16,.82,.24,1) both;
+  }
+
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions{
+    animation:qmTimerActionsOut 150ms cubic-bezier(.4,0,1,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner{
+    animation:qmTimerDigitsOut 180ms 25ms cubic-bezier(.4,0,1,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring{
+    animation:qmTimerRingOut 300ms 35ms cubic-bezier(.4,0,.35,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key{
+    animation:qmTimerCopyOut 180ms 70ms cubic-bezier(.4,0,1,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
+    animation:qmTimerCopyOut 200ms 90ms cubic-bezier(.4,0,1,1) both;
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
+    animation:qmTimerBloomOut 320ms cubic-bezier(.4,0,.35,1) both;
+  }
+}
+
+@keyframes qmCountdownBloomIn{
+  0%{opacity:0;transform:translate3d(-50%,-50%,0) scale(.7)}
+  58%{opacity:.34}
+  100%{opacity:.12;transform:translate3d(-50%,-50%,0) scale(1.08)}
+}
+@keyframes qmCountdownTextIn{
+  from{opacity:0;transform:translate3d(0,8px,0)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmCountdownValueIn{
+  from{opacity:0;transform:translate3d(0,16px,0) scale(.82)}
+  72%{opacity:1;transform:translate3d(0,-1px,0) scale(1.035)}
+  to{opacity:1;transform:none}
+}
+@keyframes qmTimerActionsOut{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:translate3d(0,10px,0)}
+}
+@keyframes qmTimerDigitsOut{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:scale(.93)}
+}
+@keyframes qmTimerRingOut{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:translate3d(0,-8px,0) scale(.86)}
+}
+@keyframes qmTimerCopyOut{
+  from{opacity:1;transform:none}
+  to{opacity:0;transform:translate3d(0,-7px,0)}
+}
+@keyframes qmTimerBloomOut{
+  from{opacity:.16;transform:translate3d(-50%,-47%,0) scale(1.08)}
+  to{opacity:0;transform:translate3d(-50%,-47%,0) scale(1.2)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .execution-countdown::before{display:none!important}
+}
