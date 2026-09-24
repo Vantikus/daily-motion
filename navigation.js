@@ -7,19 +7,41 @@
   let swup=null;
   let backHandlerInstalled=false;
   let forcedDirection=null;
+  let lastActivation=null;
   const visitReady=new WeakMap();
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
 
-  const ensureCurtain=()=>{
-    let curtain=document.querySelector('.dm-page-curtain');
-    if(curtain)return curtain;
-    curtain=document.createElement('div');
-    curtain.className='dm-page-curtain';
-    curtain.setAttribute('aria-hidden','true');
-    document.body.appendChild(curtain);
-    return curtain;
+  const ensureOrb=()=>{
+    let orb=document.querySelector('.dm-page-orb');
+    if(orb)return orb;
+    orb=document.createElement('div');
+    orb.className='dm-page-orb';
+    orb.setAttribute('aria-hidden','true');
+    document.body.appendChild(orb);
+    return orb;
+  };
+
+  const rememberActivation=event=>{
+    if(event.type==='pointerdown'&&event.button!==0)return;
+    let x=Number(event.clientX);
+    let y=Number(event.clientY);
+    if((!x&&!y)||event.detail===0){
+      const target=event.target?.closest?.('a,button,[role="button"]');
+      const rect=target?.getBoundingClientRect?.();
+      if(rect){x=rect.left+rect.width/2;y=rect.top+rect.height/2;}
+    }
+    if(Number.isFinite(x)&&Number.isFinite(y))lastActivation={x,y,time:performance.now()};
+  };
+
+  const transitionOrigin=direction=>{
+    if(lastActivation&&performance.now()-lastActivation.time<1400){
+      return {x:lastActivation.x,y:lastActivation.y};
+    }
+    return direction==='back'
+      ? {x:Math.min(44,innerWidth*.12),y:Math.max(54,innerHeight*.09)}
+      : {x:innerWidth*.5,y:innerHeight*.72};
   };
 
   const clearTransitionStyles=()=>{
@@ -30,14 +52,15 @@
       container.style.removeProperty('transform');
       container.style.removeProperty('will-change');
     }
-    const curtain=document.querySelector('.dm-page-curtain');
-    if(curtain){
-      curtain.getAnimations?.().forEach(animation=>animation.cancel());
-      curtain.style.removeProperty('opacity');
-      curtain.style.removeProperty('transform');
-      curtain.style.removeProperty('will-change');
-      curtain.removeAttribute('data-direction');
-      curtain.classList.remove('is-active');
+    const orb=document.querySelector('.dm-page-orb');
+    if(orb){
+      orb.getAnimations?.().forEach(animation=>animation.cancel());
+      orb.style.removeProperty('left');
+      orb.style.removeProperty('top');
+      orb.style.removeProperty('opacity');
+      orb.style.removeProperty('transform');
+      orb.style.removeProperty('will-change');
+      orb.classList.remove('is-active');
     }
   };
 
@@ -141,6 +164,9 @@
     },true);
   };
 
+  document.addEventListener('pointerdown',rememberActivation,{capture:true,passive:true});
+  document.addEventListener('click',event=>{if(event.detail===0)rememberActivation(event);},{capture:true});
+
   const createReadyGate=visit=>{
     let resolve;
     const promise=new Promise(done=>{resolve=done;});
@@ -205,25 +231,27 @@
       if(!pageIsReady||reduceMotion.matches)return;
 
       const container=currentContainer();
-      const curtain=ensureCurtain();
-      if(!container||!curtain)return;
+      const orb=ensureOrb();
+      if(!container||!orb)return;
 
       const direction=visit.meta.motionDirection==='back'?'back':'forward';
       const sign=direction==='back'?-1:1;
-      curtain.dataset.direction=direction;
-      curtain.classList.add('is-active');
-      curtain.style.willChange='transform';
+      const origin=transitionOrigin(direction);
+      orb.style.left=`${origin.x}px`;
+      orb.style.top=`${origin.y}px`;
+      orb.classList.add('is-active');
+      orb.style.willChange='transform, opacity';
       container.style.willChange='opacity, transform';
 
       await Promise.all([
         animateElement(container,[
           {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-          {opacity:.72,transform:`translate3d(0,${-6*sign}px,0) scale(.985)`}
-        ],{duration:180,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}),
-        animateElement(curtain,[
-          {transform:`translate3d(0,${100*sign}%,0)`},
-          {transform:'translate3d(0,0,0)'}
-        ],{duration:240,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'})
+          {opacity:.78,transform:`translate3d(${-8*sign}px,0,0) scale(.982)`}
+        ],{duration:210,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}),
+        animateElement(orb,[
+          {opacity:1,transform:'translate3d(-50%,-50%,0) scale(.018)'},
+          {opacity:1,transform:'translate3d(-50%,-50%,0) scale(1)'}
+        ],{duration:310,easing:'cubic-bezier(.2,.72,.18,1)',fill:'forwards'})
       ]);
     });
 
@@ -237,8 +265,8 @@
       const direction=visit.meta.motionDirection==='back'?'back':'forward';
       const sign=direction==='back'?-1:1;
       if(container&&!reduceMotion.matches){
-        container.style.opacity='.74';
-        container.style.transform=`translate3d(0,${10*sign}px,0) scale(.99)`;
+        container.style.opacity='.72';
+        container.style.transform=`translate3d(${14*sign}px,0,0) scale(1.018)`;
         container.style.willChange='opacity, transform';
       }
       mountPage();
@@ -246,8 +274,8 @@
 
     swup.hooks.replace('animation:in:await',async visit=>{
       const container=currentContainer();
-      const curtain=ensureCurtain();
-      if(!container||!curtain){clearTransitionStyles();return;}
+      const orb=ensureOrb();
+      if(!container||!orb){clearTransitionStyles();return;}
       if(reduceMotion.matches){clearTransitionStyles();return;}
 
       const direction=visit.meta.motionDirection==='back'?'back':'forward';
@@ -255,13 +283,13 @@
 
       await Promise.all([
         animateElement(container,[
-          {opacity:.74,transform:`translate3d(0,${10*sign}px,0) scale(.99)`},
+          {opacity:.72,transform:`translate3d(${14*sign}px,0,0) scale(1.018)`},
           {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
-        ],{duration:320,delay:35,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}),
-        animateElement(curtain,[
-          {transform:'translate3d(0,0,0)'},
-          {transform:`translate3d(0,${-100*sign}%,0)`}
-        ],{duration:300,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'})
+        ],{duration:330,delay:45,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}),
+        animateElement(orb,[
+          {opacity:1,transform:'translate3d(-50%,-50%,0) scale(1)'},
+          {opacity:0,transform:'translate3d(-50%,-50%,0) scale(1.055)'}
+        ],{duration:260,delay:15,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'})
       ]);
 
       clearTransitionStyles();

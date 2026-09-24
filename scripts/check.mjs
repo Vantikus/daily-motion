@@ -254,18 +254,23 @@ if(navigation.includes("container.style.opacity='0'")){
   fail('navigation.js: persistent inline opacity:0 can blank the Swup container');
 }
 for(const fragment of [
-  'const ensureCurtain=()=>{',
+  'const ensureOrb=()=>{',
+  'const rememberActivation=event=>{',
+  'const transitionOrigin=direction=>{',
   "visit.meta.motionDirection=resolveDirection(visit)",
-  "curtain.dataset.direction=direction",
-  "{opacity:.72,transform:`translate3d(0,${-6*sign}px,0) scale(.985)`}",
-  "container.style.opacity='.74'",
-  "duration:320,delay:35,easing:'cubic-bezier(.16,1,.3,1)'",
-  "duration:300,easing:'cubic-bezier(.22,1,.36,1)'"
+    "{opacity:.78,transform:`translate3d(${-8*sign}px,0,0) scale(.982)`}",
+  "container.style.opacity='.72'",
+  "duration:330,delay:45,easing:'cubic-bezier(.16,1,.3,1)'",
+  "duration:310,easing:'cubic-bezier(.2,.72,.18,1)'",
+  "duration:260,delay:15,easing:'cubic-bezier(.4,0,.2,1)'"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v153 cinematic Swup motion missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v154 tap-origin Swup motion missing: ${fragment}`);
 }
-for(const fragment of ['.dm-page-curtain{','.dm-page-curtain.is-active{opacity:1}','.dm-page-curtain[data-direction="back"]']){
-  if(!styles.includes(fragment))fail(`styles.css: v153 page curtain contract missing: ${fragment}`);
+for(const fragment of ['.dm-page-orb{','.dm-page-orb.is-active{opacity:1}','width:230vmax;']){
+  if(!styles.includes(fragment))fail(`styles.css: v154 page orb contract missing: ${fragment}`);
+}
+for(const forbidden of ['.dm-page-curtain{','ensureCurtain=()=>']){
+  if(styles.includes(forbidden)||navigation.includes(forbidden))fail(`v154: obsolete curtain transition returned: ${forbidden}`);
 }
 for(const forbidden of [
   'html.is-changing #swup',
