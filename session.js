@@ -1038,6 +1038,7 @@ window.DailyMotionPages.session=function mountSession(){
     completionHighlight.hidden=!highlightText;
     syncEffortButtons();
     modalReturnFocus=document.activeElement;
+    Motion?.prepareCompletion?.(overlay);
     if(fromExecution)overlay.classList.add('is-handoff');
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');

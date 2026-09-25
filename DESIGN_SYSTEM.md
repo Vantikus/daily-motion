@@ -280,3 +280,11 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Timer entrance is slightly shorter and more immediate while preserving the same calm staged hierarchy.
 - Early timer exit and fullscreen timer close are slightly faster; no abrupt cut or overshoot is introduced.
 - Countdown, bottom-sheet physics, workout logic and Swup navigation remain unchanged.
+
+
+## v163 — Completion check visibility fix
+
+- The completion mark is hidden before the overlay becomes visible.
+- GSAP is the only owner of the completion-check entrance; older CSS check animations are removed.
+- The visible sequence is ring first, then check.
+- Workout logic, timer behavior, sheets and navigation are unchanged.

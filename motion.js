@@ -59,8 +59,20 @@
 
   const cleanupCompletion=(root=document.querySelector('#completionOverlay'))=>{completionTimeline?.kill?.();completionTimeline=null;completionSplit?.revert?.();completionSplit=null;completionContext?.revert?.();completionContext=null;clearCompletionInlineState(root);};
 
+  const prepareCompletion=root=>{
+    if(!root||!window.gsap||reducedMotion())return;
+    const nodes=completionNodes(root);
+    if(!nodes.mark||!nodes.ring||!nodes.check)return;
+    const ringLength=nodes.ring.getTotalLength?.()||0;
+    const checkLength=nodes.check.getTotalLength?.()||0;
+    window.gsap.set(nodes.mark,{opacity:0,scale:.84,willChange:'opacity,transform'});
+    if(ringLength)window.gsap.set(nodes.ring,{strokeDasharray:ringLength,strokeDashoffset:ringLength});
+    if(checkLength)window.gsap.set(nodes.check,{strokeDasharray:checkLength,strokeDashoffset:checkLength});
+    root.classList.add('completion-motion-prepared');
+  };
+
   const playCompletion=root=>{
-    if(!root)return null;cleanupCompletion(root);const gsap=window.gsap,nodes=completionNodes(root);
+    if(!root)return null;const wasPrepared=root.classList.contains('completion-motion-prepared');cleanupCompletion(root);if(wasPrepared)prepareCompletion(root);const gsap=window.gsap,nodes=completionNodes(root);
     if(!gsap||reducedMotion()||!nodes.card||!nodes.title){clearCompletionInlineState(root);return null;}
     const enhanced=registerCompletionPlugins(),titleTargets=[nodes.title];
     let targets=titleTargets;
@@ -72,8 +84,8 @@
       const content=[nodes.eyebrow,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean);
       gsap.set(nodes.card,{opacity:0,y:7,scale:.992,willChange:'opacity,transform'});gsap.set(content,{opacity:0,y:7,willChange:'opacity,transform'});gsap.set(targets,{opacity:0,y:10,willChange:'opacity,transform'});gsap.set(nodes.mark,{opacity:0,scale:.82,willChange:'opacity,transform'});if(nodes.burst.length)gsap.set(nodes.burst,{opacity:0,x:0,y:0,xPercent:-50,yPercent:-50,scale:.35,transformOrigin:'50% 50%'});
       if(strokeLengths.ring&&strokeLengths.check){gsap.set(nodes.ring,{strokeDasharray:strokeLengths.ring,strokeDashoffset:strokeLengths.ring});gsap.set(nodes.check,{strokeDasharray:strokeLengths.check,strokeDashoffset:strokeLengths.check});}
-      tl.to(nodes.card,{opacity:1,y:0,scale:1,duration:.2},0).to(nodes.mark,{opacity:1,scale:1,duration:.3,ease:'back.out(1.45)'},.02);
-      if(strokeLengths.ring&&strokeLengths.check){tl.to(nodes.ring,{strokeDashoffset:0,duration:.28,ease:'power2.out'},.01).to(nodes.check,{strokeDashoffset:0,duration:.2,ease:'power3.out'},.16);}
+      tl.to(nodes.card,{opacity:1,y:0,scale:1,duration:.18},.04).to(nodes.mark,{opacity:1,scale:1,duration:.24,ease:'back.out(1.42)'},.16);
+      if(strokeLengths.ring&&strokeLengths.check){tl.to(nodes.ring,{strokeDashoffset:0,duration:.42,ease:'power2.out'},.20).to(nodes.check,{strokeDashoffset:0,duration:.26,ease:'power3.out'},.50);}
       if(nodes.burst.length){tl.to(nodes.burst,{opacity:.78,duration:.08,stagger:.012,ease:'power1.out'},.14).to(nodes.burst,{x:i=>Math.cos(i*Math.PI/4)*29,y:i=>Math.sin(i*Math.PI/4)*29,opacity:0,scale:.78,duration:.34,stagger:.012,ease:'power2.out'},.2);}
       if(nodes.eyebrow)tl.to(nodes.eyebrow,{opacity:1,y:0,duration:.2},.14);tl.to(targets,{opacity:1,y:0,duration:.3,stagger:.055,ease:'power3.out'},.2);if(nodes.meta)tl.to(nodes.meta,{opacity:1,y:0,duration:.24},.31);if(nodes.highlight)tl.to(nodes.highlight,{opacity:1,y:0,duration:.24},.35);if(nodes.stats)tl.to(nodes.stats,{opacity:1,y:0,duration:.28},.39);if(nodes.effort)tl.to(nodes.effort,{opacity:1,y:0,duration:.28},.47);if(nodes.button)tl.to(nodes.button,{opacity:1,y:0,duration:.28},.51);
     },root);return completionTimeline;
@@ -81,5 +93,5 @@
 
   const cleanupSessionMotion=()=>cleanupCompletion(document.querySelector('#completionOverlay'));
 
-  window.DailyMotionMotion={reducedMotion,ensureCompletionPlugins,playCompletion,cleanupSessionMotion};
+  window.DailyMotionMotion={reducedMotion,ensureCompletionPlugins,prepareCompletion,playCompletion,cleanupSessionMotion};
 })();
