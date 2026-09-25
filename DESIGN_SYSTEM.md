@@ -288,3 +288,10 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - GSAP is the only owner of the completion-check entrance; older CSS check animations are removed.
 - The visible sequence is ring first, then check.
 - Workout logic, timer behavior, sheets and navigation are unchanged.
+
+
+## v164 — Completion sequencing fix
+
+- The fullscreen execution layer must finish its exit before Completion becomes visible or starts its success-mark motion.
+- Completion motion never runs behind the higher-z-index execution overlay.
+- GSAP exclusively owns completion-card entrance transform.

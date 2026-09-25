@@ -477,7 +477,7 @@ window.DailyMotionPages.session=function mountSession(){
     requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
   }
 
-  function hideExecution(handoff=null){
+  function hideExecution(handoff=null,{afterHidden=null}={}){
     const overlay=$('#executionOverlay');
     if(!overlay){handoff?.();return;}
     if(stageTimer!==null){
@@ -503,6 +503,7 @@ window.DailyMotionPages.session=function mountSession(){
     const finish=()=>{
       if(token!==executionHideToken)return;
       overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade');
+      afterHidden?.();
       const timerCard=$('#timerCard');
       timerCard?.classList.remove('is-finishing-early');
       if(timerCard)timerCard.inert=false;
@@ -1039,22 +1040,23 @@ window.DailyMotionPages.session=function mountSession(){
     syncEffortButtons();
     modalReturnFocus=document.activeElement;
     Motion?.prepareCompletion?.(overlay);
-    if(fromExecution)overlay.classList.add('is-handoff');
-    overlay.classList.add('is-visible');
-    overlay.setAttribute('aria-hidden','false');
-    syncModalState();
-    emitReloadSafetyChange();
 
-    if(fromExecution){
+    const revealCompletion=()=>{
+      overlay.classList.remove('is-handoff');
+      overlay.classList.add('is-visible');
+      overlay.setAttribute('aria-hidden','false');
+      syncModalState();
+      emitReloadSafetyChange();
       requestAnimationFrame(()=>{
-        hideExecution();
         Motion?.playCompletion?.(overlay);
         $('#completionTitle').focus({preventScroll:true});
-        requestAnimationFrame(()=>overlay.classList.remove('is-handoff'));
       });
+    };
+
+    if(fromExecution){
+      hideExecution(null,{afterHidden:revealCompletion});
     }else{
-      Motion?.playCompletion?.(overlay);
-      $('#completionTitle').focus({preventScroll:true});
+      revealCompletion();
     }
   }
 
