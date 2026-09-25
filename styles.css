@@ -3808,3 +3808,49 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 @media(prefers-reduced-motion:reduce){
   .execution-countdown::before{display:none!important}
 }
+
+
+/* v165 completion success mark — native, deterministic, no plugin dependency */
+.completion-mark{
+  width:32px;
+  height:32px;
+  opacity:0;
+  transform:scale(.78);
+  transform-origin:50% 50%;
+}
+.completion-mark__ring{
+  stroke-dasharray:126;
+  stroke-dashoffset:126;
+}
+.completion-mark__check{
+  stroke-dasharray:28;
+  stroke-dashoffset:28;
+  opacity:0;
+}
+.completion-overlay.is-visible .completion-mark{
+  animation:completionMarkPop 240ms 90ms cubic-bezier(.16,.9,.22,1) forwards;
+}
+.completion-overlay.is-visible .completion-mark__ring{
+  animation:completionRingDraw 460ms 150ms cubic-bezier(.2,.72,.2,1) forwards;
+}
+.completion-overlay.is-visible .completion-mark__check{
+  animation:completionCheckDraw 300ms 560ms cubic-bezier(.16,.9,.22,1) forwards;
+}
+@keyframes completionMarkPop{
+  0%{opacity:0;transform:scale(.78)}
+  72%{opacity:1;transform:scale(1.04)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes completionRingDraw{
+  from{stroke-dashoffset:126}
+  to{stroke-dashoffset:0}
+}
+@keyframes completionCheckDraw{
+  0%{opacity:0;stroke-dashoffset:28}
+  12%{opacity:1;stroke-dashoffset:28}
+  100%{opacity:1;stroke-dashoffset:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .completion-mark{opacity:1;transform:none}
+  .completion-mark__ring,.completion-mark__check{animation:none!important;stroke-dashoffset:0;opacity:1}
+}

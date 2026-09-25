@@ -295,3 +295,11 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - The fullscreen execution layer must finish its exit before Completion becomes visible or starts its success-mark motion.
 - Completion motion never runs behind the higher-z-index execution overlay.
 - GSAP exclusively owns completion-card entrance transform.
+
+
+## v165 — Deterministic completion mark
+
+- Completion ring/check drawing is now native CSS and does not depend on DrawSVG timing.
+- GSAP still owns the rest of Completion choreography.
+- The visible sequence is mark pop → ring draw → check draw.
+- Reduced-motion settles the mark immediately.

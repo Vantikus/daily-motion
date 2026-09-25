@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=164'))fail(`${file}: v164 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=164','progress.js?v=164','session.js?v=164','motion.js?v=164']){
+  if(!content.includes('navigation.js?v=165'))fail(`${file}: v165 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=165','progress.js?v=165','session.js?v=165','motion.js?v=165']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -264,7 +264,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v164 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v165 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const forbidden of [
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=164'",
+  "'/navigation.js?v=165'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v164 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v165 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -398,17 +398,20 @@ for(const fragment of [
   "['DrawSVGPlugin','/vendor/gsap/DrawSVGPlugin.min.js']",
   "['SplitText','/vendor/gsap/SplitText.min.js']",
   'ensureCompletionPlugins','playCompletion','cleanupSessionMotion',
-  "type:'words'","wordsClass:'completion-title-word'","drawSVG:'0%'","drawSVG:'100%'"
+  "type:'words'","wordsClass:'completion-title-word'"
 ]){if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);}
 for(const fragment of ['Motion?.ensureCompletionPlugins?.();','Motion?.playCompletion?.(overlay);','Motion?.cleanupSessionMotion?.();']){
   if(!sessionRuntime.includes(fragment))fail(`session.js: M1 motion boundary missing: ${fragment}`);
 }
 if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check'))fail('session.html: M1 inline completion mark is missing');
+for(const fragment of ['completionMarkPop','completionRingDraw','completionCheckDraw','stroke-dasharray:126','stroke-dasharray:28']){
+  if(!styles.includes(fragment))fail(`styles.css: v165 completion mark contract missing: ${fragment}`);
+}
 if(html['session.html'].includes('completion-check" aria-hidden="true"><span class="completion-burst')&&html['session.html'].includes('completion-burst</span><i class="hi hi-check-circle'))fail('session.html: old masked completion Heroicon returned');
 for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ["'/motion.js?v=164'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+for(const fragment of ["'/motion.js?v=165'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 
