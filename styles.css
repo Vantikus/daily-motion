@@ -893,16 +893,16 @@ html,body{background:var(--bg)}
 }
 .execution-overlay.is-handoff{pointer-events:none}
 .execution-overlay.is-visible:not(.is-closing) .execution-shell{
-  animation:qmExecutionShellIn 150ms cubic-bezier(0,0,.2,1) both;
+  animation:qmExecutionShellIn 125ms cubic-bezier(0,0,.2,1) both;
 }
 .execution-overlay.is-closing .execution-shell{
-  animation:qmExecutionShellOut 110ms cubic-bezier(.4,0,1,1) both;
+  animation:qmExecutionShellOut 90ms cubic-bezier(.4,0,1,1) both;
   pointer-events:none;
 }
 .execution-overlay.is-surface-fade{
   opacity:0!important;
   visibility:visible!important;
-  transition:opacity 120ms cubic-bezier(.4,0,1,1)!important;
+  transition:opacity 90ms cubic-bezier(.4,0,1,1)!important;
 }
 @keyframes qmExecutionShellIn{
   from{opacity:0;transform:translate3d(0,4px,0)}
@@ -3677,22 +3677,22 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 @media(prefers-reduced-motion:no-preference){
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
-    animation:qmTimerFocusBloom 680ms 30ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerFocusBloom 460ms 10ms cubic-bezier(.16,.82,.24,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
-    animation:qmTimerHeadingIn 360ms 20ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerHeadingIn 250ms 0ms cubic-bezier(.16,.82,.24,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-key{
-    animation:qmTimerKeyIn 340ms 90ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerKeyIn 230ms 40ms cubic-bezier(.16,.82,.24,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
-    animation:qmTimerRingIn 520ms 70ms cubic-bezier(.16,.9,.22,1) both;
+    animation:qmTimerRingIn 360ms 25ms cubic-bezier(.16,.9,.22,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsIn 360ms 150ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerDigitsIn 240ms 80ms cubic-bezier(.16,.82,.24,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
-    animation:qmTimerActionsIn 420ms 185ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerActionsIn 280ms 105ms cubic-bezier(.16,.82,.24,1) both;
   }
 }
 
@@ -3770,22 +3770,22 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions{
-    animation:qmTimerActionsOut 150ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerActionsOut 110ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsOut 180ms 25ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerDigitsOut 125ms 10ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring{
-    animation:qmTimerRingOut 300ms 35ms cubic-bezier(.4,0,.35,1) both;
+    animation:qmTimerRingOut 215ms 15ms cubic-bezier(.4,0,.35,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key{
-    animation:qmTimerCopyOut 180ms 70ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerCopyOut 125ms 35ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
-    animation:qmTimerCopyOut 200ms 90ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerCopyOut 135ms 45ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
-    animation:qmTimerBloomOut 320ms cubic-bezier(.4,0,.35,1) both;
+    animation:qmTimerBloomOut 225ms cubic-bezier(.4,0,.35,1) both;
   }
 }
 

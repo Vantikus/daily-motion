@@ -271,3 +271,12 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Completion remains fully functional if the optional plugins fail to load. GSAP Core provides the minimal fallback and reduced-motion settles immediately.
 - Session unmount must kill the completion timeline and revert any active SplitText instance.
 - Timer, countdown, workout sheets, Swup page motion and exercise state are unchanged by M1.
+
+
+## v162 — Completion reliability + timer pacing
+
+- Completion success-mark must animate reliably even when optional enhancement plugins finish loading later than the screen.
+- The visible ring/check reveal has a GSAP Core stroke fallback and may be enhanced by optional plugins, never blocked by them.
+- Timer entrance is slightly shorter and more immediate while preserving the same calm staged hierarchy.
+- Early timer exit and fullscreen timer close are slightly faster; no abrupt cut or overshoot is introduced.
+- Countdown, bottom-sheet physics, workout logic and Swup navigation remain unchanged.

@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=161'))fail(`${file}: v161 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=161','progress.js?v=161','session.js?v=161','motion.js?v=161']){
+  if(!content.includes('navigation.js?v=162'))fail(`${file}: v162 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=162','progress.js?v=162','session.js?v=162','motion.js?v=162']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -264,7 +264,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v161 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v162 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const forbidden of [
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=161'",
+  "'/navigation.js?v=162'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v161 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v162 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -408,16 +408,16 @@ if(html['session.html'].includes('completion-check" aria-hidden="true"><span cla
 for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ["'/motion.js?v=161'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+for(const fragment of ["'/motion.js?v=162'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 
 for(const fragment of [
   '/* v158 timer entrance choreography',
   '.execution-overlay.is-visible[data-stage=\"timer\"] .execution-timer__ring',
-  'animation:qmTimerRingIn 520ms 70ms',
-  'animation:qmTimerDigitsIn 360ms 150ms',
-  'animation:qmTimerActionsIn 420ms 185ms',
+  'animation:qmTimerRingIn 360ms 25ms',
+  'animation:qmTimerDigitsIn 240ms 80ms',
+  'animation:qmTimerActionsIn 280ms 105ms',
   '@keyframes qmTimerFocusBloom',
   '@keyframes qmTimerRingIn',
   '@keyframes qmTimerDigitsIn'
