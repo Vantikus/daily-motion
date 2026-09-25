@@ -1,6 +1,6 @@
 # Daily Motion — GSAP Motion Roadmap
 
-Status: **v160 motion architecture plan**. This document defines where GSAP plugins are useful in the current Daily Motion UI and, equally important, where they are not.
+Status: **v161 motion architecture plan · M1 implemented**. This document defines where GSAP plugins are useful in the current Daily Motion UI and, equally important, where they are not.
 
 The goal is not to add animation for its own sake. Daily Motion is iPhone/PWA-first, calm, app-like and timing-sensitive. New motion must make state changes easier to understand, improve polish, or remove fragile custom animation code.
 
@@ -355,18 +355,21 @@ A `gsap.context()` scoped to the current page/session is preferred for groups of
 
 # Recommended implementation order
 
-## Phase M1 — Completion only
+## Phase M1 — Completion only · implemented in v161
 
-Add:
+Implemented:
 
-- DrawSVG
-- SplitText
-- local plugin delivery
-- one completion GSAP timeline
-- reduced-motion/static fallback
-- cleanup
+- DrawSVG 3.15.0;
+- SplitText 3.15.0;
+- local `/vendor/gsap/` delivery;
+- lazy Session warm-up;
+- one completion GSAP timeline;
+- dedicated inline SVG success mark;
+- reduced-motion/static fallback;
+- Session lifecycle cleanup;
+- removal of overlapping CSS completion entrance keyframes.
 
-Replace only the CSS completion choreography that overlaps with the new timeline. Do not touch countdown, timer, sheets, page transitions or Progress in the same release.
+Countdown, timer, sheets, page transitions and Progress remain unchanged in M1.
 
 ## Phase M2 — Core GSAP consolidation
 

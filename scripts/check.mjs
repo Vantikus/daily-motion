@@ -8,7 +8,8 @@ const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
-  'app.js','audio.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
+  'app.js','audio.js','motion.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
+  'vendor/gsap/DrawSVGPlugin.min.js','vendor/gsap/SplitText.min.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -225,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=160'))fail(`${file}: v160 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=160','progress.js?v=160','session.js?v=160']){
+  if(!content.includes('navigation.js?v=161'))fail(`${file}: v161 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=161','progress.js?v=161','session.js?v=161','motion.js?v=161']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -263,7 +264,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v160 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v161 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const forbidden of [
@@ -366,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=160'",
+  "'/navigation.js?v=161'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v160 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v161 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -382,6 +383,33 @@ if(!designSystem.includes('## v157 — Swup plugin architecture')){
 }
 if(!designSystem.includes('## v160 — Swup resilience pass')){
   fail('DESIGN_SYSTEM.md: v160 Swup resilience contract is missing');
+}
+if(!designSystem.includes('## v161 — Completion Motion M1')){
+  fail('DESIGN_SYSTEM.md: v161 Completion Motion M1 contract is missing');
+}
+
+const motion=read('motion.js');
+for(const file of ['vendor/gsap/DrawSVGPlugin.min.js','vendor/gsap/SplitText.min.js']){
+  if(!existsSync(join(root,file)))fail(`M1: local GSAP plugin missing: ${file}`);
+}
+if(!read('vendor/gsap/DrawSVGPlugin.min.js').includes('DrawSVGPlugin 3.15.0'))fail('M1: DrawSVGPlugin version drifted');
+if(!read('vendor/gsap/SplitText.min.js').includes('SplitText 3.15.0'))fail('M1: SplitText version drifted');
+for(const fragment of [
+  "['DrawSVGPlugin','/vendor/gsap/DrawSVGPlugin.min.js']",
+  "['SplitText','/vendor/gsap/SplitText.min.js']",
+  'ensureCompletionPlugins','playCompletion','cleanupSessionMotion',
+  "type:'words'","wordsClass:'completion-title-word'","drawSVG:'0%'","drawSVG:'100%'"
+]){if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);}
+for(const fragment of ['Motion?.ensureCompletionPlugins?.();','Motion?.playCompletion?.(overlay);','Motion?.cleanupSessionMotion?.();']){
+  if(!sessionRuntime.includes(fragment))fail(`session.js: M1 motion boundary missing: ${fragment}`);
+}
+if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check'))fail('session.html: M1 inline completion mark is missing');
+if(html['session.html'].includes('completion-check" aria-hidden="true"><span class="completion-burst')&&html['session.html'].includes('completion-burst</span><i class="hi hi-check-circle'))fail('session.html: old masked completion Heroicon returned');
+for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
+  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
+}
+for(const fragment of ["'/motion.js?v=161'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+  if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 
 for(const fragment of [
@@ -553,7 +581,8 @@ for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
   if(/phosphor\.css/i.test(content))fail(`${file}: Phosphor stylesheet remains after Heroicons migration`);
 }
 for(const file of htmlFiles){
-  if(/<svg\b/i.test(html[file]))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
+  const allowed=file==='session.html'?html[file].replace(/<svg class="completion-mark"[\s\S]*?<\/svg>/i,''):html[file];
+  if(/<svg\b/i.test(allowed))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
 }
 if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');
 

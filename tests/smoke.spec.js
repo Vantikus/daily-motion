@@ -316,25 +316,25 @@ test('completion motion is choreographed and respects reduced motion',async({pag
   });
 
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.locator('#nextButton').evaluate(button=>button.click());
-  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
-
-  const motion=await page.evaluate(()=>({
-    check:getComputedStyle(document.querySelector('.completion-check')).animationName,
-    icon:getComputedStyle(document.querySelector('.completion-check>.hi')).animationName,
-    title:getComputedStyle(document.querySelector('.completion-card>h2')).animationName,
-    titleDelay:getComputedStyle(document.querySelector('.completion-card>h2')).animationDelay,
-    stats:getComputedStyle(document.querySelector('.completion-stats')).animationName,
-    statsDelay:getComputedStyle(document.querySelector('.completion-stats')).animationDelay,
-    buttonDelay:getComputedStyle(document.querySelector('.completion-button')).animationDelay
-  }));
-  expect(motion.check).toContain('completionCheckSettle');
-  expect(motion.icon).toContain('completionIconSweep');
-  expect(motion.title).toContain('completionContentIn');
-  expect(motion.stats).toContain('completionContentIn');
-  expect(motion.titleDelay).toBe('0.16s');
-  expect(motion.statsDelay).toBe('0.24s');
-  expect(motion.buttonDelay).toBe('0.32s');
+  await page.waitForFunction(()=>Boolean(window.DrawSVGPlugin&&window.SplitText));
+  const motion=await page.evaluate(async()=>{
+    document.querySelector('#nextButton').click();
+    await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+    return {
+      ariaHidden:document.querySelector('#completionOverlay').getAttribute('aria-hidden'),
+      plugins:Boolean(window.DrawSVGPlugin&&window.SplitText),
+      checkAnimation:getComputedStyle(document.querySelector('.completion-check')).animationName,
+      ringDash:document.querySelector('.completion-mark__ring').style.strokeDasharray,
+      checkDash:document.querySelector('.completion-mark__check').style.strokeDasharray,
+      splitWords:document.querySelectorAll('#completionTitle .completion-title-word').length
+    };
+  });
+  expect(motion.ariaHidden).toBe('false');
+  expect(motion.plugins).toBe(true);
+  expect(motion.checkAnimation).toBe('none');
+  expect(motion.ringDash).not.toBe('');
+  expect(motion.checkDash).not.toBe('');
+  expect(motion.splitWords).toBeGreaterThan(1);
 
   await page.emulateMedia({reducedMotion:'reduce'});
   const reduced=await page.evaluate(()=>({

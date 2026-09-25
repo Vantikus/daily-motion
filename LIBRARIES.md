@@ -1,6 +1,6 @@
 # Daily Motion — Library & Plugin Registry
 
-Status: **architecture decision register for v160+**.
+Status: **architecture decision register for v161+**.
 
 Detailed selector-level motion decisions and rollout order are documented in `MOTION_ROADMAP.md`.
 
@@ -350,3 +350,13 @@ Observer, Draggable/Inertia, ScrollTrigger, Rive, Lottie, Chart.js, focus-trap.
 ### Not planned now
 
 Hammer.js, Animate.css, Workbox, Howler.js, ScrollSmoother, Swup Scripts, Parallel, Route Name and Progress Bar.
+
+
+## Implemented in v161 — Completion Motion M1
+
+- `GSAP 3.15.0` remains the core motion engine.
+- `DrawSVGPlugin 3.15.0` is vendored at `/vendor/gsap/DrawSVGPlugin.min.js` and is used only for the inline completion success mark.
+- `SplitText 3.15.0` is vendored at `/vendor/gsap/SplitText.min.js` and is used only for word-level completion-title reveal.
+- `motion.js` is the plugin-aware motion boundary. Session state/timers/localStorage remain in `session.js`.
+- Both plugins load lazily from same-origin local files when Session mounts and are precached by the Service Worker for offline completion.
+- Plugin failure is non-blocking: completion falls back to a GSAP Core/static settled state.

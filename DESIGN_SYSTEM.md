@@ -260,3 +260,14 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - New runtime dependencies must be version-pinned, non-blocking on app startup and ultimately self-hosted under `/vendor/`.
 - Native APIs are preferred when they are smaller and sufficiently reliable for the exact requirement.
 - Any dependency that duplicates an existing responsibility requires an explicit architecture migration instead of coexistence.
+
+
+## v161 — Completion Motion M1
+
+- Completion is the first isolated GSAP plugin surface. DrawSVG and SplitText are local optional capabilities, not startup dependencies.
+- The completion success mark is a dedicated inline SVG. FLOW assets and the global Heroicons system remain unchanged.
+- DrawSVG owns only the completion ring/check stroke reveal. SplitText owns only word-level reveal of `#completionTitle`.
+- The entire initial completion choreography is one GSAP timeline; the replaced CSS completion keyframes must not run in parallel.
+- Completion remains fully functional if the optional plugins fail to load. GSAP Core provides the minimal fallback and reduced-motion settles immediately.
+- Session unmount must kill the completion timeline and revert any active SplitText instance.
+- Timer, countdown, workout sheets, Swup page motion and exercise state are unchanged by M1.

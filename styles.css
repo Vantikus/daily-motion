@@ -2814,11 +2814,10 @@ a[href] *,
   width:min(420px,100%);
   padding:12px 0;
   gap:10px;
-  opacity:0;
-  transform:translate3d(0,8px,0) scale(.99);
-  transition:opacity 150ms ease,transform 180ms cubic-bezier(0,0,.2,1);
+  opacity:1;
+  transform:none;
+  transition:none;
 }
-.completion-overlay.is-visible .completion-card{opacity:1;transform:none}
 .completion-card h2{font-size:2rem;line-height:1.1}
 .completion-card>p{max-width:32ch;line-height:1.5}
 .completion-check{width:48px;height:48px;margin-bottom:6px;font-size:1.5rem}
@@ -2869,7 +2868,6 @@ a[href] *,
     animation:qmDirectionalSwap var(--qm-content) var(--ease) both!important;
   }
   .execution-stage:not([hidden]){animation:qmStageQuiet var(--qm-stage) var(--ease) both!important}
-  .completion-overlay.is-visible .completion-check{animation:qmStageQuiet 360ms var(--ease) both!important}
   .step-indicator.is-updating{animation:none!important}
 }
 @keyframes qmDirectionalSwap{from{opacity:.6;transform:translateX(var(--qm-direction))}to{opacity:1;transform:none}}
@@ -3018,7 +3016,10 @@ a[href] *,
 .detail-label .hi{font-size:17px}
 .execution-secondary button>.hi,
 .data-actions button>.hi{font-size:17px}
-.completion-check>.hi{font-size:28px}
+.completion-mark{width:32px;height:32px;display:block;overflow:visible;position:relative;z-index:2;color:var(--accent)}
+.completion-mark__ring,.completion-mark__check{fill:none;stroke:currentColor;stroke-width:1.7;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.completion-mark__ring{opacity:.48}
+.completion-title-word{display:inline-block}
 .sheet-close>.hi,
 .execution-close>.hi,
 .routine-settings-close>.hi{font-size:20px}
@@ -3075,21 +3076,6 @@ a[href] *,
   isolation:isolate;
   overflow:visible;
 }
-.completion-check::before,
-.completion-check::after{
-  content:"";
-  position:absolute;
-  inset:-1px;
-  z-index:0;
-  border:1px solid rgba(47,107,85,.24);
-  border-radius:50%;
-  opacity:0;
-  pointer-events:none;
-}
-.completion-check>.hi{
-  position:relative;
-  z-index:2;
-}
 .completion-burst{
   position:absolute;
   inset:-20px;
@@ -3144,10 +3130,6 @@ a[href] *,
   box-shadow:0 0 0 7px rgba(217,147,112,.12);
 }
 :root[data-theme="dark"] .timer-ring.is-final-three .timer-ring__inner strong{color:#e0a07f}
-:root[data-theme="dark"] .completion-check::before,
-:root[data-theme="dark"] .completion-check::after{
-  border-color:rgba(121,197,162,.28);
-}
 :root[data-theme="dark"] .completion-card .completion-highlight{
   border-color:rgba(121,197,162,.16);
 }
@@ -3155,50 +3137,6 @@ a[href] *,
 @media(prefers-reduced-motion:no-preference){
   .timer-ring.is-final-three{
     animation:timerUrgencyPulse 720ms cubic-bezier(.2,.72,.24,1) infinite alternate;
-  }
-  .completion-overlay.is-visible .completion-check{
-    animation:completionCheckSettle 560ms cubic-bezier(.16,.9,.22,1) both!important;
-  }
-  .completion-overlay.is-visible .completion-check::before{
-    animation:completionHaloPrimary 560ms 35ms cubic-bezier(.16,.72,.24,1) both;
-  }
-  .completion-overlay.is-visible .completion-check::after{
-    animation:completionHaloSecondary 680ms 115ms cubic-bezier(.16,.72,.24,1) both;
-  }
-  .completion-overlay.is-visible .completion-check>.hi{
-    animation:completionIconSweep 440ms 80ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-burst i{
-    animation:completionBurst 500ms 105ms cubic-bezier(.16,.72,.24,1) both;
-  }
-  .completion-overlay.is-visible .completion-burst i:nth-child(2){animation-delay:120ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(3){animation-delay:135ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(4){animation-delay:150ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(5){animation-delay:165ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(6){animation-delay:180ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(7){animation-delay:195ms}
-  .completion-overlay.is-visible .completion-burst i:nth-child(8){animation-delay:210ms}
-
-  .completion-overlay.is-visible .completion-card>.eyebrow{
-    animation:completionContentIn 300ms 120ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-card>h2{
-    animation:completionContentIn 320ms 160ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-card>#completionMeta{
-    animation:completionContentIn 320ms 200ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-card>.completion-highlight:not([hidden]){
-    animation:completionContentIn 320ms 220ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-stats{
-    animation:completionContentIn 340ms 240ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-effort{
-    animation:completionContentIn 360ms 280ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .completion-overlay.is-visible .completion-button{
-    animation:completionContentIn 360ms 320ms cubic-bezier(.16,.9,.22,1) both;
   }
   .completion-overlay.is-visible .effort-options button[aria-pressed="true"]{
     animation:completionChoiceSettle 320ms cubic-bezier(.16,.9,.22,1) both;
@@ -3208,36 +3146,6 @@ a[href] *,
   from{box-shadow:0 0 0 6px rgba(181,109,72,.075)}
   to{box-shadow:0 0 0 9px rgba(181,109,72,.12)}
 }
-@keyframes completionCheckSettle{
-  0%{opacity:0;transform:scale(.76)}
-  58%{opacity:1;transform:scale(1.055)}
-  82%{transform:scale(.985)}
-  100%{opacity:1;transform:scale(1)}
-}
-@keyframes completionHaloPrimary{
-  0%{opacity:0;transform:scale(.66)}
-  24%{opacity:.78}
-  100%{opacity:0;transform:scale(1.46)}
-}
-@keyframes completionHaloSecondary{
-  0%{opacity:0;transform:scale(.82)}
-  24%{opacity:.34}
-  100%{opacity:0;transform:scale(1.72)}
-}
-@keyframes completionIconSweep{
-  0%{opacity:.15;clip-path:inset(0 100% 0 0);transform:translateY(1px) scale(.94)}
-  72%{opacity:1;clip-path:inset(0);transform:translateY(0) scale(1.055)}
-  100%{opacity:1;clip-path:inset(0);transform:scale(1)}
-}
-@keyframes completionBurst{
-  0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--burst-angle)) translateY(-9px) scale(.35)}
-  34%{opacity:.9}
-  100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--burst-angle)) translateY(-32px) scale(.8)}
-}
-@keyframes completionContentIn{
-  from{opacity:0;transform:translateY(7px)}
-  to{opacity:1;transform:none}
-}
 @keyframes completionChoiceSettle{
   0%{transform:scale(.97);box-shadow:0 0 0 0 rgba(47,107,85,0)}
   58%{transform:scale(1.018);box-shadow:0 0 0 4px rgba(47,107,85,.08)}
@@ -3245,20 +3153,7 @@ a[href] *,
 }
 @media(prefers-reduced-motion:reduce){
   .completion-burst i{display:none}
-  .completion-overlay.is-visible .completion-check,
-  .completion-overlay.is-visible .completion-check::before,
-  .completion-overlay.is-visible .completion-check::after,
-  .completion-overlay.is-visible .completion-check>.hi,
-  .completion-overlay.is-visible .completion-card>.eyebrow,
-  .completion-overlay.is-visible .completion-card>h2,
-  .completion-overlay.is-visible .completion-card>#completionMeta,
-  .completion-overlay.is-visible .completion-card>.completion-highlight,
-  .completion-overlay.is-visible .completion-stats,
-  .completion-overlay.is-visible .completion-effort,
-  .completion-overlay.is-visible .completion-button,
-  .completion-overlay.is-visible .effort-options button[aria-pressed="true"]{
-    animation:none!important;
-  }
+  .completion-overlay.is-visible .effort-options button[aria-pressed="true"],
   .timer-ring.is-final-three{animation:none!important}
 }
 

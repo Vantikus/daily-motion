@@ -24,6 +24,7 @@
 
 - `index.html` + `app.js` — главный экран Today
 - `session.html` + `session.js` — workout player
+- `motion.js` — motion boundary для optional GSAP plugins; v161 M1 управляет completion timeline и cleanup
 - `program.js` — единый состав упражнений для плеера и продолжения с главной
 - `progress.html` + `progress.js` — история, статистика и backup
 - `state.js` — единая модель состояния, настройки и миграция старой v1-модели
@@ -73,3 +74,8 @@ PWA умеет работать офлайн после первого успе�
 
 Считать этот README и актуальный `main` единственным рабочим контекстом проекта. Старые варианты, промежуточные версии и прежние решения не использовать, если пользователь отдельно к ним не вернётся.
 
+
+
+### v161 · Completion Motion M1
+
+Completion переведён с набора CSS entrance-keyframes на один GSAP timeline. `DrawSVGPlugin 3.15.0` прорисовывает отдельную inline SVG success-mark, `SplitText 3.15.0` анимирует только слова заголовка «Утро готово». Плагины self-hosted в `/vendor/gsap/`, прогреваются при mount Session и не являются обязательными для запуска приложения. При ошибке загрузки остаётся полноценный GSAP Core/static fallback; `prefers-reduced-motion` получает сразу конечное состояние.

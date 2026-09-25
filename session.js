@@ -76,6 +76,8 @@ window.DailyMotionPages.session=function mountSession(){
   let stageTransitionToken=0;
   let executionHideToken=0;
   const Audio=window.DailyMotionAudio;
+  const Motion=window.DailyMotionMotion;
+  Motion?.ensureCompletionPlugins?.();
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
 
@@ -1045,10 +1047,12 @@ window.DailyMotionPages.session=function mountSession(){
     if(fromExecution){
       requestAnimationFrame(()=>{
         hideExecution();
+        Motion?.playCompletion?.(overlay);
         $('#completionTitle').focus({preventScroll:true});
         requestAnimationFrame(()=>overlay.classList.remove('is-handoff'));
       });
     }else{
+      Motion?.playCompletion?.(overlay);
       $('#completionTitle').focus({preventScroll:true});
     }
   }
@@ -1414,6 +1418,7 @@ window.DailyMotionPages.session=function mountSession(){
     stageTransitionToken++;
     executionHideToken++;
     routineSettingsMotion?.destroy?.();
+    Motion?.cleanupSessionMotion?.();
     document.querySelector('#swup')?.getAnimations?.({subtree:true})?.forEach(animation=>animation.cancel());
     clearTimeout(toast.timer);
     releaseWakeLock();
