@@ -225,13 +225,14 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=159'))fail(`${file}: v159 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=159','progress.js?v=159','session.js?v=159']){
+  if(!content.includes('navigation.js?v=160'))fail(`${file}: v160 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=160','progress.js?v=160','session.js?v=160']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
-  for(const url of swupVendorUrls){
-    if(!content.includes(`src="${url}"`))fail(`${file}: pinned Swup dependency missing: ${url}`);
-  }
+  if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
+}
+for(const url of swupVendorUrls){
+  if(!navigation.includes(`'${url}'`))fail(`navigation.js: pinned Swup runtime missing: ${url}`);
 }
 
 for(const fragment of [
@@ -240,27 +241,46 @@ for(const fragment of [
   'animateHistoryBrowsing:true',
   'cache:true',
   'native:false',
-  'new window.SwupPreloadPlugin(',
-  'new window.SwupHeadPlugin(',
+  'timeout:8000',
+  'const SWUP_RUNTIME=[',
+  'const loadRuntimeScript=',
+  'const ensureSwup=',
+  'await Promise.all(SWUP_RUNTIME.map(loadRuntimeScript))',
+  "window.addEventListener('online',()=>{if(!swup)ensureSwup();},{passive:true})",
+  'new window.SwupPreloadPlugin({throttle:3})',
+  'new window.SwupHeadPlugin()',
   'new window.SwupBodyClassPlugin()',
   'new window.SwupA11yPlugin(',
   'new window.SwupJsPlugin({animations:pageAnimations})',
-  'new window.SwupScrollPlugin(',
-  'preloadInitialPage:true',
-  'awaitAssets:true',
-  'persistAssets:true',
+  'new window.SwupScrollPlugin({animateScroll:false})',
   'respectReducedMotion:true',
-  'betweenPages:false',
   "swup.hooks.before('content:replace'",
   "swup.hooks.on('content:replace'",
   "swup.hooks.on('fetch:error'",
   "swup.hooks.on('page:view'",
   'preloadLikelyRoutes',
-  'swup.preload(urls)',
+  "swup.preload('/session.html?routine=morning&resume=1')",
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v159 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v160 Swup plugin contract missing: ${fragment}`);
+}
+
+for(const forbidden of [
+  'preloadHoveredLinks:true',
+  'preloadVisibleLinks:false',
+  'preloadInitialPage:true',
+  'awaitAssets:true',
+  'persistAssets:true',
+  'headingSelector:',
+  'doScrollingRightAway:',
+  'shouldResetScrollPosition:'
+]){
+  if(navigation.includes(forbidden))fail(`navigation.js: redundant Swup option returned: ${forbidden}`);
+}
+const fallbackBackBlock=navigation.match(/const fallbackBack=.*?\n  };/s)?.[0]||'';
+if(fallbackBackBlock.includes('history.state')||fallbackBackBlock.includes('history.back()')){
+  fail('navigation.js: native fallback back must not depend on stale Swup history state');
 }
 
 for(const animation of ['workout','progress','back-home','completion-home']){
@@ -280,7 +300,6 @@ for(const file of ['progress.html','session.html']){
 
 for(const forbidden of [
   'const SWUP_URL=',
-  "document.createElement('script')",
   "script.addEventListener('load',installSwup",
   'syncBodyAndHead',
   'DOMParser',
@@ -347,19 +366,22 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=159'",
+  "'/navigation.js?v=160'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v159 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v160 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
 }
 if(!designSystem.includes('## v157 — Swup plugin architecture')){
   fail('DESIGN_SYSTEM.md: v157 Swup ownership contract is missing');
+}
+if(!designSystem.includes('## v160 — Swup resilience pass')){
+  fail('DESIGN_SYSTEM.md: v160 Swup resilience contract is missing');
 }
 
 for(const fragment of [

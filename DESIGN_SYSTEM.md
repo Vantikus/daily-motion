@@ -237,3 +237,26 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - `DailyMotionPages.home/progress/session` remain the only page mount/unmount lifecycle. Scripts Plugin and Parallel Plugin remain forbidden.
 - Fragment Plugin is reserved for a future real fragment route and must not be loaded until such a route exists.
 - Theme View Transition remains isolated to theme switching only.
+
+
+## v160 — Swup resilience pass
+
+- Page content and page-specific runtimes mount before the optional Swup runtime is available; CDN latency/failure must never block the base application.
+- Swup and official plugins stay pinned to exact versions and load through one guarded runtime manifest in `navigation.js`. The Service Worker warms the same pinned assets for repeat/offline sessions.
+- Native multi-page navigation is the degradation path until every required Swup global is available. A failed/slow dependency must leave `DailyMotionNavigate` and `DailyMotionBack` functional.
+- Swup network visits use an 8s timeout before falling back to full browser navigation.
+- Preload keeps only the mobile-friendly concurrency override (`throttle: 3`); plugin defaults own hover/touch/focus and declared-link preload behavior. The JS-only Morning session route is the only manual warm-up.
+- Head, Body Class and A11y keep default ownership where defaults are sufficient. Head asset persistence/waiting and a custom heading selector are intentionally not configured.
+- Scroll Plugin owns history restoration only; page-scroll animation is disabled so GSAP remains the only page-motion engine.
+- CDN-to-local `/vendor/swup/` migration remains the preferred final packaging step once the exact pinned UMD artifacts are available locally; do not downgrade package versions merely to vendor older cached builds.
+
+
+## v160 — library ownership contract
+
+- `LIBRARIES.md` is the decision register for runtime libraries and plugins. A library is not adopted merely because it is listed as a candidate.
+- GSAP remains the primary UI/motion engine. New GSAP plugins must solve a specific approved interaction and must not change bottom-sheet physics implicitly.
+- Swup remains the only page-navigation/history owner. New routing/navigation libraries are forbidden unless Swup is explicitly replaced.
+- Rive/Lottie are isolated authored-animation runtimes only; they never own general UI transitions.
+- New runtime dependencies must be version-pinned, non-blocking on app startup and ultimately self-hosted under `/vendor/`.
+- Native APIs are preferred when they are smaller and sufficiently reliable for the exact requirement.
+- Any dependency that duplicates an existing responsibility requires an explicit architecture migration instead of coexistence.

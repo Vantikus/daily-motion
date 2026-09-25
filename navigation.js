@@ -51,8 +51,6 @@
   };
 
   const fallbackBack=(fallback='index.html')=>{
-    const state=history.state;
-    if(state?.source==='swup'&&Number(state.index)>1){history.back();return;}
     fallbackNavigate(fallback,{replace:true});
   };
 
@@ -126,66 +124,82 @@
     )
   ];
 
-  const requiredGlobals=[
-    'Swup','SwupPreloadPlugin','SwupHeadPlugin','SwupBodyClassPlugin',
-    'SwupA11yPlugin','SwupJsPlugin','SwupScrollPlugin'
+  const SWUP_RUNTIME=[
+    ['Swup','https://unpkg.com/swup@4.10.0/dist/Swup.umd.js'],
+    ['SwupPreloadPlugin','https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js'],
+    ['SwupHeadPlugin','https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js'],
+    ['SwupBodyClassPlugin','https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js'],
+    ['SwupA11yPlugin','https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js'],
+    ['SwupJsPlugin','https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js'],
+    ['SwupScrollPlugin','https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js']
   ];
+  const requiredGlobals=SWUP_RUNTIME.map(([name])=>name);
+  let runtimePromise=null;
 
   const pluginsReady=()=>requiredGlobals.every(name=>typeof window[name]==='function')&&Boolean(window.gsap);
 
+  const loadRuntimeScript=([name,src])=>{
+    if(typeof window[name]==='function')return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      const timeout=setTimeout(()=>{
+        script.remove();
+        reject(new Error(`${name} timed out`));
+      },6000);
+      const finish=callback=>{
+        clearTimeout(timeout);
+        script.onload=null;
+        script.onerror=null;
+        callback();
+      };
+      script.src=src;
+      script.crossOrigin='anonymous';
+      script.dataset.dmSwupRuntime=name;
+      script.onload=()=>finish(()=>typeof window[name]==='function'
+        ?resolve()
+        :reject(new Error(`${name} loaded without its expected global`)));
+      script.onerror=()=>finish(()=>reject(new Error(`${name} failed to load`)));
+      document.head.append(script);
+    });
+  };
+
   const preloadLikelyRoutes=()=>{
-    if(!swup?.preload)return;
-    const page=currentPage();
-    const urls=page==='home'
-      ? ['/progress.html','/session.html?routine=morning&resume=1']
-      : ['/index.html'];
-    swup.preload(urls).catch(()=>{});
+    if(!swup?.preload||currentPage()!=='home')return;
+    swup.preload('/session.html?routine=morning&resume=1').catch(()=>{});
   };
 
   const installSwup=()=>{
     if(swup||!pluginsReady())return false;
 
-    const scrollAnimations=reducedMotion.matches?false:{
-      betweenPages:false,
-      samePageWithHash:true,
-      samePage:true
-    };
-
-    swup=new window.Swup({
-      containers:['#swup'],
-      animationSelector:false,
-      animateHistoryBrowsing:true,
-      cache:true,
-      native:false,
-      linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
-      plugins:[
-        new window.SwupPreloadPlugin({
-          throttle:3,
-          preloadHoveredLinks:true,
-          preloadVisibleLinks:false,
-          preloadInitialPage:true
-        }),
-        new window.SwupHeadPlugin({
-          awaitAssets:true,
-          persistAssets:true
-        }),
-        new window.SwupBodyClassPlugin(),
-        new window.SwupA11yPlugin({
-          headingSelector:'h1',
-          respectReducedMotion:true,
-          announcements:{
-            visit:'Открыта страница: {title}',
-            url:'Новая страница: {url}'
-          }
-        }),
-        new window.SwupJsPlugin({animations:pageAnimations}),
-        new window.SwupScrollPlugin({
-          animateScroll:scrollAnimations,
-          doScrollingRightAway:false,
-          shouldResetScrollPosition:trigger=>!trigger?.matches?.('[data-nav-back]')
-        })
-      ]
-    });
+    try{
+      swup=new window.Swup({
+        containers:['#swup'],
+        animationSelector:false,
+        animateHistoryBrowsing:true,
+        cache:true,
+        native:false,
+        timeout:8000,
+        linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
+        plugins:[
+          new window.SwupPreloadPlugin({throttle:3}),
+          new window.SwupHeadPlugin(),
+          new window.SwupBodyClassPlugin(),
+          new window.SwupA11yPlugin({
+            respectReducedMotion:true,
+            announcements:{
+              visit:'Открыта страница: {title}',
+              url:'Новая страница: {url}'
+            }
+          }),
+          new window.SwupJsPlugin({animations:pageAnimations}),
+          new window.SwupScrollPlugin({animateScroll:false})
+        ]
+      });
+    }catch(error){
+      console.error('[Daily Motion] Swup initialization failed; using native navigation',error);
+      swup=null;
+      return false;
+    }
 
     window.DailyMotionSwup=swup;
 
@@ -228,9 +242,27 @@
     return true;
   };
 
+  const ensureSwup=()=>{
+    if(swup)return Promise.resolve(true);
+    if(runtimePromise)return runtimePromise;
+    runtimePromise=(async()=>{
+      try{
+        await Promise.all(SWUP_RUNTIME.map(loadRuntimeScript));
+        return installSwup();
+      }catch(error){
+        console.warn('[Daily Motion] Swup runtime unavailable; native navigation remains active',error);
+        return false;
+      }finally{
+        if(!swup)runtimePromise=null;
+      }
+    })();
+    return runtimePromise;
+  };
+
   window.DailyMotionNavigate=fallbackNavigate;
   window.DailyMotionBack=fallbackBack;
   installBackHandler();
   mountPage();
-  installSwup();
+  ensureSwup();
+  window.addEventListener('online',()=>{if(!swup)ensureSwup();},{passive:true});
 })();
