@@ -4114,6 +4114,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .completion-overlay.is-visible .completion-mark__check{
     animation:none!important;
   }
+  .completion-overlay.is-visible .completion-mark{
+    opacity:1;
+    transform:none;
+  }
 }
 @media(prefers-reduced-motion:reduce){
   .completion-check,.completion-mark{transform:none!important}

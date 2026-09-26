@@ -135,10 +135,9 @@
         defaults:{ease:'power3.out'},
         onComplete:()=>{
           gsap.set([nodes.card,nodes.mark,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean),{clearProps:'opacity,transform,visibility,willChange,boxShadow'});
+          // Keep the drawn success mark visible until the overlay is cleaned up.
           [nodes.ring,nodes.check].filter(Boolean).forEach(node=>{
-            node.style.removeProperty('stroke-dasharray');
-            node.style.removeProperty('stroke-dashoffset');
-            node.style.removeProperty('opacity');
+            node.style.removeProperty('will-change');
           });
         }
       });
