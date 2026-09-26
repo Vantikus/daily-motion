@@ -51,6 +51,23 @@
     body:has(#settingsOverlay.is-active) .pwa-banner {
       display:none !important;
     }
+    .topbar-actions{display:flex;align-items:center;gap:8px}
+    .dev-completion-link{
+      min-height:44px;
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--surface);
+      color:var(--text);
+      font-size:.8125rem;
+      font-weight:750;
+      text-decoration:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .dev-completion-link:active{transform:translateY(1px);background:var(--surface-muted)}
   </style>
 </head>
 <body class="home-body">
@@ -62,9 +79,12 @@
         <span class="eyebrow" id="todayLabel">Сегодня</span>
         <h1>Daily Motion</h1>
       </div>
-      <button class="icon-button" id="settingsBtn" type="button" aria-label="Настройки" aria-controls="settingsOverlay" aria-expanded="false" title="Настройки">
-        <i class="hi hi-adjustments-horizontal" aria-hidden="true"></i>
-      </button>
+      <div class="topbar-actions">
+        <a class="dev-completion-link" href="session.html?dev=completion" aria-label="Открыть финальный экран">Финал</a>
+        <button class="icon-button" id="settingsBtn" type="button" aria-label="Настройки" aria-controls="settingsOverlay" aria-expanded="false" title="Настройки">
+          <i class="hi hi-adjustments-horizontal" aria-hidden="true"></i>
+        </button>
+      </div>
     </header>
 
     <main class="container page-grid">
