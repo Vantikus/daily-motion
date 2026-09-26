@@ -303,3 +303,10 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - GSAP still owns the rest of Completion choreography.
 - The visible sequence is mark pop → ring draw → check draw.
 - Reduced-motion settles the mark immediately.
+
+
+## v166 — Completion success emphasis
+
+- Success mark is visually dominant before completion copy.
+- The sequence is mark presence → ring draw → check draw → soft halo/burst → copy.
+- The effect remains restrained: no confetti, no full-screen celebration, no layout changes.
