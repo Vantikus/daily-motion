@@ -435,3 +435,8 @@ The current motion language is intentionally narrow: quick ~140ms exits, ~220ms 
 ## v169 — Motion Foundation M1
 
 Interaction feedback now uses one authoritative timing family: 105ms contact, 175ms release and 150ms state/tone changes. Stable-footprint press behavior replaces competing legacy scale layers. Bottom-sheet physics and the v168 page/workout motion system remain unchanged.
+
+
+## v170 — M2 navigation + content
+
+Cross-page motion is now scale-free and directional, with Swup/GSAP as the sole page owner. Duplicate Home/Progress page reveals are removed. Accordion motion has a single WAAPI owner and asymmetric open/close timing. Toast and PWA banner no longer combine transitions with keyframe animation.

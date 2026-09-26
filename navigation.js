@@ -1,6 +1,9 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+  const motionTokens=window.DailyMotionMotion?.tokens||{};
+  const pageExit=(motionTokens.exitMs||140)/1000;
+  const pageEnter=(motionTokens.enterMs||220)/1000;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -97,30 +100,30 @@
     {
       from:'(.*)',
       to:'completion-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-4,scale:.996},duration:.14,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:6,scale:.996},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'workout',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-6,scale:.992},duration:.15,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:9,scale:.99},to:{opacity:1,y:0,scale:1},duration:.24,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:6},to:{opacity:1,y:0},duration:pageEnter+.02,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:6,scale:.992},duration:.14,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:-6,scale:.994},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:3},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:-4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'progress',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3,scale:.997},duration:.14,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:5,scale:.998},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
     },
     transition(
-      {from:{},to:{opacity:0,y:-2},duration:.14,ease:'power2.in'},
-      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:.22,ease:'power3.out'}
+      {from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'},
+      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'}
     )
   ];
 

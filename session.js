@@ -853,7 +853,7 @@ window.DailyMotionPages.session=function mountSession(){
         {height:`${targetHeight}px`,opacity:open?1:.2}
       ],
       {
-        duration:open?240:180,
+        duration:open?270:190,
         easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
         fill:'forwards'
       }
@@ -870,7 +870,8 @@ window.DailyMotionPages.session=function mountSession(){
           {opacity:0,transform:'translate3d(0,-2px,0)'}
         ],
       {
-        duration:open?200:140,
+        duration:open?190:110,
+        delay:open?35:0,
         easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
         fill:'forwards'
       }
@@ -902,7 +903,7 @@ window.DailyMotionPages.session=function mountSession(){
     };
 
     panelAnimation.addEventListener('finish',finish,{once:true});
-    setTimeout(finish,(open?300:220)+80);
+    setTimeout(finish,(open?270:190)+70);
   }
 
   document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
@@ -920,7 +921,7 @@ window.DailyMotionPages.session=function mountSession(){
         setTimeout(()=>toggle.scrollIntoView({
           block:'nearest',
           behavior:reduceMotion?'auto':'smooth'
-        }),80);
+        }),110);
       }
       haptic('tap');
     });
@@ -1437,4 +1438,3 @@ window.DailyMotionPages.session=function mountSession(){
   };
 })(exercises,ROUTINE_KEY);
 };
-

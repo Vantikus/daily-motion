@@ -329,3 +329,13 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Destructive actions retain destructive-colored press feedback.
 - Technique rows use surface feedback only; accordion expansion remains content motion.
 - Bottom-sheet open/close, drag, dismiss, velocity and snap-back constants remain unchanged.
+
+
+## v170 — Motion M2 navigation + content
+
+- Swup + GSAP exclusively own cross-page movement; page transitions do not scale the whole page.
+- Exit remains faster than enter; back navigation reverses direction subtly.
+- Home/Progress page-settle animation is not replayed after Swup mount.
+- Technique accordion height and inner-content reveal are owned by `session.js` WAAPI only.
+- Accordion open is softer/longer than close; inner content follows the container by a short delay.
+- Toast and PWA banner use transition-only feedback with fast exit and softer enter.

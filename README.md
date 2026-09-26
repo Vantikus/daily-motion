@@ -112,3 +112,8 @@ Completion переведён с набора CSS entrance-keyframes на оди
 ### v169 · Motion Foundation M1
 
 Press-feedback собран в один механизм: быстрый контакт, мягкое короткое возвращение и одинаковый ритм у CTA, карточек, иконок, secondary/text-действий, switches и segmented-controls. Крупные поверхности больше не сжимаются, destructive-действия сохраняют свой цвет. Bottom-sheet physics, countdown/timer и workout-логика не менялись.
+
+
+### v170 · Motion M2 — navigation + content
+
+Page transitions now share one directional fade/settle language without whole-page scaling. Swup owns page movement; Home/Progress no longer replay a second page-level reveal after navigation. Technique accordions use one WAAPI owner with a softer open and faster close. Toast/PWA feedback uses one transition system instead of competing keyframes and transitions.

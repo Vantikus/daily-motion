@@ -107,8 +107,8 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .primary-button:active{transform:scale(.985)}
 .primary-button:hover{box-shadow:0 9px 24px rgba(23,25,23,.12)}
 .status-pill{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:var(--font-size-xs);font-weight:800}
-.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:4000;max-width:calc(100% - 28px);transform:translate(-50%,14px);padding:12px 16px;border-radius:999px;background:#171917;color:#fff;font-size:var(--font-size-sm);font-weight:700;opacity:0;visibility:hidden;transition:opacity var(--base) ease,transform var(--base) var(--ease),visibility var(--base) ease}
-.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:4000;max-width:calc(100% - 28px);transform:translate(-50%,10px);padding:12px 16px;border-radius:999px;background:#171917;color:#fff;font-size:var(--font-size-sm);font-weight:700;opacity:0;visibility:hidden;transition:opacity var(--motion-exit) var(--motion-ease-exit),transform var(--motion-exit) var(--motion-ease-exit),visibility var(--motion-exit) linear}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition-duration:var(--motion-enter),var(--motion-enter),0ms;transition-timing-function:var(--motion-ease-enter),var(--motion-ease-enter),linear}
 
 /* Home */
 .home-body{background:linear-gradient(180deg,#f8f9f6 0,var(--bg) 36%)}
@@ -309,8 +309,8 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .ios-install-guide__done{appearance:none;min-height:var(--component-hit);border:1px solid var(--component-border);border-radius:12px;background:var(--component-surface);color:var(--text);font-size:var(--font-size-xs);font-weight:800;cursor:pointer}
 .settings-install:active,.sheet-close:active,.detail-card__toggle:active{transform:scale(.985)}
 
-.pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:opacity var(--base) ease,transform var(--base) var(--ease),visibility var(--base) ease}
-.pwa-banner.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,10px);transition:opacity var(--motion-exit) var(--motion-ease-exit),transform var(--motion-exit) var(--motion-ease-exit),visibility var(--motion-exit) linear}
+.pwa-banner.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0);transition-duration:var(--motion-enter),var(--motion-enter),0ms;transition-timing-function:var(--motion-ease-enter),var(--motion-ease-enter),linear}
 .pwa-banner__text{font-size:var(--font-size-xs);line-height:1.4;font-weight:700}
 .pwa-banner__action{appearance:none;flex:0 0 auto;min-height:38px;border:0;border-radius:11px;background:#fff;color:#171917;padding:0 12px;font-size:var(--font-size-xs);font-weight:850;cursor:pointer}
 .session-body .pwa-banner{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
@@ -1741,14 +1741,6 @@ a[href] *,
     animation:qmProgressGrow 720ms 120ms cubic-bezier(.16,1,.3,1) both;
   }
 
-  .detail-card.is-open .detail-card__inner{
-    animation:qmDetailReveal 360ms cubic-bezier(.2,.72,.24,1) both;
-  }
-
-
-  .toast.show{
-    animation:qmToastSettle 360ms cubic-bezier(.16,1,.3,1) both;
-  }
 }
 
 @keyframes qmDotReveal{
@@ -3837,7 +3829,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 @media(prefers-reduced-motion:no-preference){
   .app-ready .today-card,
   .app-ready .progress-page{
-    animation:qmPageSettle var(--motion-enter) var(--motion-ease-enter) both!important;
+    animation:none!important;
   }
 
   .exercise-main.enter-forward .exercise-head,
@@ -3853,11 +3845,11 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 
   .detail-card.is-open .detail-card__inner{
-    animation:qmDetailSoft var(--motion-content) var(--motion-ease-standard) both;
+    animation:none!important;
   }
 
   .toast.show{
-    animation:qmToastSettle var(--motion-enter) var(--motion-ease-enter) both;
+    animation:none!important;
   }
 
   .execution-stage.is-stage-leaving{
