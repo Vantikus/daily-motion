@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=166'))fail(`${file}: v166 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=166','progress.js?v=166','session.js?v=166','motion.js?v=166']){
+  if(!content.includes('navigation.js?v=167'))fail(`${file}: v167 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=167','progress.js?v=167','session.js?v=167','motion.js?v=167']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -264,7 +264,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v166 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v167 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const forbidden of [
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=166'",
+  "'/navigation.js?v=167'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v166 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v167 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -414,7 +414,7 @@ if(html['session.html'].includes('completion-check" aria-hidden="true"><span cla
 for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ["'/motion.js?v=166'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+for(const fragment of ["'/motion.js?v=167'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 

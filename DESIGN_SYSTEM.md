@@ -310,3 +310,10 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Success mark is visually dominant before completion copy.
 - The sequence is mark presence → ring draw → check draw → soft halo/burst → copy.
 - The effect remains restrained: no confetti, no full-screen celebration, no layout changes.
+
+
+## v167 — Completion mark scale correction
+
+- Completion success motion remains expressive without oversized geometry.
+- The success mark returns closer to the established visual scale while keeping ring/check drawing and soft halo.
+- No workout logic, navigation or timer changes.
