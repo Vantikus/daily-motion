@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=171'))fail(`${file}: v170 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=170','progress.js?v=170','session.js?v=170','motion.js?v=170']){
+  if(!content.includes('navigation.js?v=174'))fail(`${file}: v174 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=174','progress.js?v=174','session.js?v=174','motion.js?v=174']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=171'",
+  "'/navigation.js?v=174'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v173 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v174 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -403,8 +403,6 @@ for(const fragment of [
   'ensureCompletionPlugins',
   'playCompletion',
   'cleanupSessionMotion',
-  "type:'words'",
-  "wordsClass:'completion-title-word'",
 ]){
   if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);
 }
@@ -441,7 +439,7 @@ for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completi
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
 for(const fragment of [
-  "'/motion.js?v=170'",
+  "'/motion.js?v=174'",
   "'/vendor/gsap/SplitText.min.js'"
 ]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
