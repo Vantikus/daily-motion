@@ -9,7 +9,7 @@ const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
   'app.js','audio.js','motion.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
-  'vendor/gsap/DrawSVGPlugin.min.js','vendor/gsap/SplitText.min.js',
+  'vendor/gsap/SplitText.min.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -143,7 +143,7 @@ for(const token of [
   '--motion-fast:140ms;',
   '--motion-base:220ms;',
   '--motion-content:220ms;',
-  '--motion-stage:280ms;',
+  '--motion-stage:220ms;',
   '--motion-sheet-close:300ms;',
   '--motion-slow:320ms;',
   '--motion-sheet-open:380ms;'
@@ -168,8 +168,8 @@ for(const fragment of [
 ]){
   if(!pwa.includes(fragment))fail(`pwa.js: bottom-sheet motion constant changed or disappeared: ${fragment}`);
 }
-if(!pwa.includes('window.DailyMotionMotion={createBottomSheet,sheetMotion:SHEET_MOTION};')){
-  fail('pwa.js: named bottom-sheet motion contract is not exposed');
+if(!pwa.includes('...(window.DailyMotionMotion||{})')||!pwa.includes('createBottomSheet')||!pwa.includes('sheetMotion:SHEET_MOTION')){
+  fail('pwa.js: shared bottom-sheet motion contract is not exposed');
 }
 for(const token of [
   "createHash('sha256')",
@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=167'))fail(`${file}: v167 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=167','progress.js?v=167','session.js?v=167','motion.js?v=167']){
+  if(!content.includes('navigation.js?v=168'))fail(`${file}: v168 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=168','progress.js?v=168','session.js?v=168','motion.js?v=168']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -264,7 +264,7 @@ for(const fragment of [
   'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
   "window.DailyMotionBack=(fallback='index.html')=>{"
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v167 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(fragment))fail(`navigation.js: v168 Swup plugin contract missing: ${fragment}`);
 }
 
 for(const forbidden of [
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=167'",
+  "'/navigation.js?v=168'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v167 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v168 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -389,13 +389,10 @@ if(!designSystem.includes('## v161 — Completion Motion M1')){
 }
 
 const motion=read('motion.js');
-for(const file of ['vendor/gsap/DrawSVGPlugin.min.js','vendor/gsap/SplitText.min.js']){
-  if(!existsSync(join(root,file)))fail(`M1: local GSAP plugin missing: ${file}`);
-}
-if(!read('vendor/gsap/DrawSVGPlugin.min.js').includes('DrawSVGPlugin 3.15.0'))fail('M1: DrawSVGPlugin version drifted');
-if(!read('vendor/gsap/SplitText.min.js').includes('SplitText 3.15.0'))fail('M1: SplitText version drifted');
+if(!existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: local SplitText plugin missing');
+if(!read('vendor/gsap/SplitText.min.js').includes('SplitText 3.15.0'))fail('Motion: SplitText version drifted');
+if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v168');
 for(const fragment of [
-  "['DrawSVGPlugin','/vendor/gsap/DrawSVGPlugin.min.js']",
   "['SplitText','/vendor/gsap/SplitText.min.js']",
   'ensureCompletionPlugins','playCompletion','cleanupSessionMotion',
   "type:'words'","wordsClass:'completion-title-word'"
@@ -410,11 +407,19 @@ for(const fragment of ['completionMarkPop','completionRingDraw','completionCheck
 for(const fragment of ['completionSuccessSettle','completionSuccessHalo','completionSuccessHaloOuter','completionMarkPopStrong','completionRingDrawStrong','completionCheckDrawStrong']){
   if(!styles.includes(fragment))fail(`styles.css: v166 completion emphasis missing: ${fragment}`);
 }
+for(const fragment of ['/* v168 unified motion system','--motion-enter:220ms','--motion-exit:140ms','--motion-ease-enter:','--motion-ease-exit:']){
+  if(!styles.includes(fragment))fail(`styles.css: v168 unified motion contract missing: ${fragment}`);
+}
+for(const fragment of ['tokens:MOTION_TOKENS','...(window.DailyMotionMotion||{})']){
+  if(!motion.includes(fragment))fail(`motion.js: v168 shared motion namespace missing: ${fragment}`);
+}
+if(!pwa.includes('...(window.DailyMotionMotion||{})'))fail('pwa.js: v168 must preserve shared motion namespace');
+if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v168: unused DrawSVG runtime returned');
 if(html['session.html'].includes('completion-check" aria-hidden="true"><span class="completion-burst')&&html['session.html'].includes('completion-burst</span><i class="hi hi-check-circle'))fail('session.html: old masked completion Heroicon returned');
 for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ["'/motion.js?v=167'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+for(const fragment of ["'/motion.js?v=168'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 

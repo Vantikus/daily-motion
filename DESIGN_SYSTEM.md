@@ -317,3 +317,13 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Completion success motion remains expressive without oversized geometry.
 - The success mark returns closer to the established visual scale while keeping ring/check drawing and soft halo.
 - No workout logic, navigation or timer changes.
+
+
+## v168 — Unified motion system
+
+- One shared motion namespace must survive script load order; modules extend `window.DailyMotionMotion` instead of replacing it.
+- Standard content/page entrance: ~220ms; standard exit: ~140ms; emphasis: ~280ms.
+- Timer, countdown, exercise content swaps, accordions, toast and press feedback use the same timing/easing family.
+- Bottom-sheet drag/snap/dismiss physics remain numerically unchanged.
+- Completion success mark stays native CSS; SplitText remains optional for the completion title.
+- DrawSVG is removed from runtime because it no longer owns any visible motion.

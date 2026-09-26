@@ -111,7 +111,7 @@
       if(!active)return;
       const target=active;
       const elapsed=performance.now()-pressedAt;
-      const delay=Math.max(0,135-elapsed);
+      const delay=Math.max(0,120-elapsed);
       releaseTimer=setTimeout(()=>{
         target.classList.remove('is-pressing');
         if(active===target)active=null;
@@ -524,7 +524,11 @@
     }
   };
 
-  window.DailyMotionMotion={createBottomSheet,sheetMotion:SHEET_MOTION};
+  window.DailyMotionMotion={
+    ...(window.DailyMotionMotion||{}),
+    createBottomSheet,
+    sheetMotion:SHEET_MOTION
+  };
 
   window.DailyMotionPWA={
     canInstall:()=>getInstallMode()!=='unavailable',

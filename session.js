@@ -77,6 +77,12 @@ window.DailyMotionPages.session=function mountSession(){
   let executionHideToken=0;
   const Audio=window.DailyMotionAudio;
   const Motion=window.DailyMotionMotion;
+  const MotionTokens=Motion?.tokens||{
+    microMs:160,enterMs:220,exitMs:140,emphasisMs:280,
+    easeEnter:'cubic-bezier(.16,.82,.24,1)',
+    easeStandard:'cubic-bezier(.2,.72,.2,1)',
+    easeExit:'cubic-bezier(.4,0,1,1)'
+  };
   Motion?.ensureCompletionPlugins?.();
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
@@ -136,7 +142,7 @@ window.DailyMotionPages.session=function mountSession(){
         {transform:'translateY(3px)',opacity:.55},
         {transform:'translateY(0)',opacity:1}
       ],
-      {duration:160,easing:'cubic-bezier(.2,.7,.24,1)'}
+      {duration:MotionTokens.microMs,easing:MotionTokens.easeStandard}
     );
   };
 
@@ -155,7 +161,7 @@ window.DailyMotionPages.session=function mountSession(){
           {transform:'translate3d(0,-1px,0) scale(1.045)',opacity:1,offset:.7},
           {transform:'translate3d(0,0,0) scale(1)',opacity:1}
         ],
-      {duration:launch?300:330,easing:'cubic-bezier(.16,.82,.24,1)'}
+      {duration:launch?240:270,easing:MotionTokens.easeEnter}
     );
   };
 
@@ -847,8 +853,8 @@ window.DailyMotionPages.session=function mountSession(){
         {height:`${targetHeight}px`,opacity:open?1:.2}
       ],
       {
-        duration:open?300:220,
-        easing:'cubic-bezier(.32,.72,0,1)',
+        duration:open?240:180,
+        easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
         fill:'forwards'
       }
     );
@@ -864,8 +870,8 @@ window.DailyMotionPages.session=function mountSession(){
           {opacity:0,transform:'translate3d(0,-2px,0)'}
         ],
       {
-        duration:open?220:160,
-        easing:'cubic-bezier(.32,.72,0,1)',
+        duration:open?200:140,
+        easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
         fill:'forwards'
       }
     );

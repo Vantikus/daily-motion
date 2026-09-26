@@ -1,6 +1,6 @@
 # Daily Motion — GSAP Motion Roadmap
 
-Status: **v161 motion architecture plan · M1 implemented**. This document defines where GSAP plugins are useful in the current Daily Motion UI and, equally important, where they are not.
+Status: **v168 unified motion system**. This document defines where GSAP plugins are useful in the current Daily Motion UI and, equally important, where they are not.
 
 The goal is not to add animation for its own sake. Daily Motion is iPhone/PWA-first, calm, app-like and timing-sensitive. New motion must make state changes easier to understand, improve polish, or remove fragile custom animation code.
 
@@ -19,7 +19,7 @@ This split is acceptable today, but future motion work must avoid adding another
 
 | Plugin | Current Daily Motion use | Decision |
 | --- | --- | --- |
-| DrawSVG | completion success stroke only | **P1 — use narrowly** |
+| DrawSVG | no current owner | **Removed in v168** |
 | SplitText | completion title only | **P1 — use narrowly** |
 | Flip | no strong current use | **P2 — wait for a real layout transition** |
 | Observer | no current need | **P2 — reserve for new gesture UI** |
@@ -426,3 +426,8 @@ DO NOT ADD FOR CURRENT UI
 ```
 
 The first implementation should therefore be **Completion Motion M1**, not a broad “install every GSAP plugin” release.
+
+
+## v168 — Unification pass
+
+The current motion language is intentionally narrow: quick ~140ms exits, ~220ms content/page entrances and ~280ms emphasis. Timer, countdown, exercise swaps, accordion content, toast and press feedback follow the same family. Bottom-sheet physics remain isolated and unchanged. DrawSVG is no longer shipped because native CSS owns the completion stroke; SplitText remains optional for the completion title.

@@ -97,26 +97,26 @@
     {
       from:'(.*)',
       to:'completion-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-5,scale:.995},duration:.16,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:7,scale:.995},to:{opacity:1,y:0,scale:1},duration:.24,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-4,scale:.996},duration:.14,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:6,scale:.996},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'workout',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-7,scale:.99},duration:.17,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:11,scale:.986},to:{opacity:1,y:0,scale:1},duration:.28,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-6,scale:.992},duration:.15,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:9,scale:.99},to:{opacity:1,y:0,scale:1},duration:.24,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:7,scale:.99},duration:.16,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:-7,scale:.992},to:{opacity:1,y:0,scale:1},duration:.25,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:6,scale:.992},duration:.14,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:-6,scale:.994},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
     },
     {
       from:'(.*)',
       to:'progress',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3,scale:.996},duration:.15,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:6,scale:.997},to:{opacity:1,y:0,scale:1},duration:.23,ease:'power3.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3,scale:.997},duration:.14,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,y:5,scale:.998},to:{opacity:1,y:0,scale:1},duration:.22,ease:'power3.out'})
     },
     transition(
       {from:{},to:{opacity:0,y:-2},duration:.14,ease:'power2.in'},

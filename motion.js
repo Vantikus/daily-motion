@@ -1,7 +1,17 @@
 (() => {
   const reducedQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
+  const MOTION_TOKENS=Object.freeze({
+    microMs:160,
+    enterMs:220,
+    exitMs:140,
+    emphasisMs:280,
+    staggerMs:40,
+    easeEnter:'cubic-bezier(.16,.82,.24,1)',
+    easeStandard:'cubic-bezier(.2,.72,.2,1)',
+    easeExit:'cubic-bezier(.4,0,1,1)',
+    easeEmphasized:'cubic-bezier(.16,1,.3,1)'
+  });
   const COMPLETION_PLUGINS=[
-    ['DrawSVGPlugin','/vendor/gsap/DrawSVGPlugin.min.js'],
     ['SplitText','/vendor/gsap/SplitText.min.js']
   ];
   let completionPluginsPromise=null;
@@ -12,9 +22,9 @@
   const reducedMotion=()=>reducedQuery.matches;
 
   const registerCompletionPlugins=()=>{
-    if(!window.gsap||!window.DrawSVGPlugin||!window.SplitText)return false;
+    if(!window.gsap||!window.SplitText)return false;
     try{
-      window.gsap.registerPlugin(window.DrawSVGPlugin,window.SplitText);
+      window.gsap.registerPlugin(window.SplitText);
       return true;
     }catch(error){
       console.warn('[Daily Motion] completion motion plugins could not register',error);

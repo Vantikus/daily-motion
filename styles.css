@@ -53,14 +53,20 @@
   --focus-color:var(--accent);
   --focus-halo:rgba(47,107,85,.18);
   --motion-press-in:120ms;
+  --motion-micro:160ms;
   --motion-fast:140ms;
+  --motion-exit:140ms;
   --motion-base:220ms;
+  --motion-enter:220ms;
   --motion-content:220ms;
-  --motion-stage:280ms;
+  --motion-stage:220ms;
+  --motion-emphasis:280ms;
   --motion-sheet-close:300ms;
   --motion-slow:320ms;
   --motion-sheet-open:380ms;
   --motion-ease-standard:cubic-bezier(.2,.72,.2,1);
+  --motion-ease-enter:cubic-bezier(.16,.82,.24,1);
+  --motion-ease-exit:cubic-bezier(.4,0,1,1);
   --motion-ease-emphasized:cubic-bezier(.16,1,.3,1);
   --motion-ease-press-in:cubic-bezier(.22,.72,.28,1);
   --motion-ease-press-out:cubic-bezier(.16,1,.3,1);
@@ -3952,4 +3958,188 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .completion-check{transform:none}
   .completion-mark{opacity:1;transform:none}
   .completion-mark__ring,.completion-mark__check{stroke-dashoffset:0;opacity:1}
+}
+
+
+/* v168 unified motion system — one rhythm across Daily Motion */
+@media(prefers-reduced-motion:no-preference){
+  .app-ready .today-card,
+  .app-ready .progress-page{
+    animation:qmPageSettle var(--motion-enter) var(--motion-ease-enter) both!important;
+  }
+
+  .exercise-main.enter-forward .exercise-head,
+  .exercise-main.enter-forward .exercise-facts,
+  .exercise-main.enter-forward .technique-key,
+  .exercise-main.enter-forward .details-section,
+  .exercise-main.enter-back .exercise-head,
+  .exercise-main.enter-back .exercise-facts,
+  .exercise-main.enter-back .technique-key,
+  .exercise-main.enter-back .details-section{
+    animation:qmContentSwap var(--motion-content) var(--motion-ease-standard) both!important;
+    animation-delay:0ms!important;
+  }
+
+  .detail-card.is-open .detail-card__inner{
+    animation:qmDetailSoft var(--motion-content) var(--motion-ease-standard) both;
+  }
+
+  .toast.show{
+    animation:qmToastSettle var(--motion-enter) var(--motion-ease-enter) both;
+  }
+
+  .execution-stage.is-stage-leaving{
+    animation-duration:120ms!important;
+    animation-timing-function:var(--motion-ease-exit)!important;
+  }
+  .execution-stage.is-stage-entering{
+    animation-duration:180ms!important;
+    animation-delay:0ms!important;
+    animation-timing-function:var(--motion-ease-enter)!important;
+  }
+
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
+    animation-duration:360ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
+    animation-duration:200ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-key{
+    animation-duration:190ms;
+    animation-delay:24ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
+    animation-duration:300ms;
+    animation-delay:18ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
+    animation-duration:200ms;
+    animation-delay:62ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
+    animation-duration:220ms;
+    animation-delay:82ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
+    animation-duration:420ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow{
+    animation-duration:200ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2{
+    animation-duration:220ms;
+    animation-delay:30ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value{
+    animation-duration:300ms;
+    animation-delay:60ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint{
+    animation-duration:220ms;
+    animation-delay:100ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action{
+    animation-duration:220ms;
+    animation-delay:130ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
+    animation-duration:120ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-exit);
+  }
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
+    animation-duration:160ms;
+    animation-delay:0ms;
+    animation-timing-function:var(--motion-ease-exit);
+  }
+
+  .completion-overlay.is-visible .completion-check{
+    animation-duration:440ms;
+    animation-delay:80ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .completion-overlay.is-visible .completion-check::before{
+    animation-duration:460ms;
+    animation-delay:300ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .completion-overlay.is-visible .completion-check::after{
+    animation-duration:520ms;
+    animation-delay:350ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .completion-overlay.is-visible .completion-mark{
+    animation-duration:260ms;
+    animation-delay:90ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+  .completion-overlay.is-visible .completion-mark__ring{
+    animation-duration:360ms;
+    animation-delay:140ms;
+    animation-timing-function:var(--motion-ease-standard);
+  }
+  .completion-overlay.is-visible .completion-mark__check{
+    animation-duration:240ms;
+    animation-delay:440ms;
+    animation-timing-function:var(--motion-ease-enter);
+  }
+}
+
+.primary-button,
+.nav-button--next,
+.execution-primary{
+  transition-duration:280ms,280ms,220ms,220ms;
+  transition-timing-function:var(--motion-ease-emphasized),var(--motion-ease-emphasized),ease,ease;
+}
+.routine-card,
+.home-body .routine-card{
+  transition-duration:280ms,280ms,220ms,280ms;
+  transition-timing-function:var(--motion-ease-emphasized),var(--motion-ease-emphasized),ease,var(--motion-ease-emphasized);
+}
+.icon-button,
+.back-link--icon,
+.execution-close,
+.sheet-close{
+  transition-duration:240ms,220ms,220ms,200ms,240ms;
+  transition-timing-function:var(--motion-ease-emphasized),ease,ease,ease,var(--motion-ease-emphasized);
+}
+.nav-button--back,
+.execution-adjustments button,
+.settings-install,
+.data-actions button{
+  transition-duration:240ms,220ms,220ms,240ms,200ms;
+  transition-timing-function:var(--motion-ease-emphasized),ease,ease,var(--motion-ease-emphasized),ease;
+}
+.detail-card__toggle,
+.detail-card__toggle .qm-icon,
+.detail-card__toggle .detail-toggle-icon{
+  transition-duration:220ms!important;
+  transition-timing-function:var(--motion-ease-standard)!important;
+}
+.execution-secondary button,
+.execution-text-action,
+.pwa-banner__action{
+  transition-duration:220ms,200ms,200ms;
 }

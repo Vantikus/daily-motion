@@ -1,6 +1,6 @@
 # Daily Motion — Library & Plugin Registry
 
-Status: **architecture decision register for v161+**.
+Status: **architecture decision register for v168+**.
 
 Detailed selector-level motion decisions and rollout order are documented in `MOTION_ROADMAP.md`.
 
@@ -61,7 +61,7 @@ Do not let a new dependency silently take over any of these responsibilities.
 
 These libraries/plugins are approved for a future implementation **when a matching feature exists**. Approval means "safe to prototype", not "install now".
 
-## GSAP DrawSVG — P1
+## GSAP DrawSVG — removed in v168
 
 **Use for:** completion checkmark drawing, timer-ring strokes, small branded SVG reveals, technique-path highlights.
 
@@ -337,8 +337,8 @@ GSAP, Swup Core, Preload, Head, Body Class, A11y, JS, Scroll, Heroicons, localSt
 
 ### Best next candidates
 
-1. **DrawSVG** — highest-value visual addition for completion/timer SVG motion.
-2. **SplitText** — selective title/completion choreography.
+1. **SplitText** — selective title/completion choreography.
+2. **Flip** — only when a real shared-element/layout transition appears.
 3. **web-vitals** — once real telemetry storage is defined.
 4. **Flip** — when a real layout-state transition appears.
 5. **idb-keyval** — when persistence actually outgrows localStorage.
@@ -355,8 +355,15 @@ Hammer.js, Animate.css, Workbox, Howler.js, ScrollSmoother, Swup Scripts, Parall
 ## Implemented in v161 — Completion Motion M1
 
 - `GSAP 3.15.0` remains the core motion engine.
-- `DrawSVGPlugin 3.15.0` is vendored at `/vendor/gsap/DrawSVGPlugin.min.js` and is used only for the inline completion success mark.
+- DrawSVG was retired in v168 after the completion mark moved to deterministic native CSS stroke animation.
 - `SplitText 3.15.0` is vendored at `/vendor/gsap/SplitText.min.js` and is used only for word-level completion-title reveal.
 - `motion.js` is the plugin-aware motion boundary. Session state/timers/localStorage remain in `session.js`.
 - Both plugins load lazily from same-origin local files when Session mounts and are precached by the Service Worker for offline completion.
 - Plugin failure is non-blocking: completion falls back to a GSAP Core/static settled state.
+
+
+## v168 — Runtime simplification
+
+- `DrawSVGPlugin` is removed from the shipped runtime because no current UI needs it.
+- `SplitText` remains the only optional GSAP plugin currently used.
+- `window.DailyMotionMotion` is a shared namespace; `motion.js` and `pwa.js` extend it instead of overwriting each other.

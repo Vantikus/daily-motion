@@ -316,24 +316,24 @@ test('completion motion is choreographed and respects reduced motion',async({pag
   });
 
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>Boolean(window.DrawSVGPlugin&&window.SplitText));
+  await page.waitForFunction(()=>Boolean(window.SplitText));
   const motion=await page.evaluate(async()=>{
     document.querySelector('#nextButton').click();
     await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
     return {
       ariaHidden:document.querySelector('#completionOverlay').getAttribute('aria-hidden'),
-      plugins:Boolean(window.DrawSVGPlugin&&window.SplitText),
+      plugins:Boolean(window.SplitText),
       checkAnimation:getComputedStyle(document.querySelector('.completion-check')).animationName,
-      ringDash:document.querySelector('.completion-mark__ring').style.strokeDasharray,
-      checkDash:document.querySelector('.completion-mark__check').style.strokeDasharray,
+      ringAnimation:getComputedStyle(document.querySelector('.completion-mark__ring')).animationName,
+      checkDrawAnimation:getComputedStyle(document.querySelector('.completion-mark__check')).animationName,
       splitWords:document.querySelectorAll('#completionTitle .completion-title-word').length
     };
   });
   expect(motion.ariaHidden).toBe('false');
   expect(motion.plugins).toBe(true);
-  expect(motion.checkAnimation).toBe('none');
-  expect(motion.ringDash).not.toBe('');
-  expect(motion.checkDash).not.toBe('');
+  expect(motion.checkAnimation).toContain('completionSuccessSettle');
+  expect(motion.ringAnimation).toContain('completionRingDrawStrong');
+  expect(motion.checkDrawAnimation).toContain('completionCheckDrawStrong');
   expect(motion.splitWords).toBeGreaterThan(1);
 
   await page.emulateMedia({reducedMotion:'reduce'});
