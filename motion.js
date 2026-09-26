@@ -98,10 +98,11 @@
   const clearCompletionInlineState=root=>{
     const nodes=completionNodes(root);
     const all=[nodes.card,nodes.mark,...nodes.burst,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean);
-    if(window.gsap&&all.length)window.gsap.set(all,{clearProps:'opacity,transform,visibility,willChange'});
+    if(window.gsap&&all.length)window.gsap.set(all,{clearProps:'opacity,transform,visibility,willChange,boxShadow'});
     [nodes.ring,nodes.check].filter(Boolean).forEach(node=>{
       node.style.removeProperty('stroke-dasharray');
       node.style.removeProperty('stroke-dashoffset');
+      node.style.removeProperty('opacity');
     });
   };
 
@@ -129,58 +130,46 @@
       return null;
     }
 
-    const enhanced=registerCompletionPlugins();
-    let titleTargets=[nodes.title];
-    if(enhanced){
-      try{
-        completionSplit=window.SplitText.create(nodes.title,{type:'words',wordsClass:'completion-title-word'});
-        if(completionSplit.words.length)titleTargets=completionSplit.words;
-      }catch(error){
-        console.warn('[Daily Motion] SplitText fallback used',error);
-        completionSplit=null;
-      }
-    }
-
     completionContext=gsap.context(()=>{
       const tl=gsap.timeline({
         defaults:{ease:'power3.out'},
         onComplete:()=>{
-          completionSplit?.revert?.();
-          completionSplit=null;
-          gsap.set(nodes.title,{clearProps:'opacity,transform,visibility,willChange'});
-          titleTargets=[nodes.title];
+          gsap.set([nodes.card,nodes.mark,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean),{clearProps:'opacity,transform,visibility,willChange,boxShadow'});
+          [nodes.ring,nodes.check].filter(Boolean).forEach(node=>{
+            node.style.removeProperty('stroke-dasharray');
+            node.style.removeProperty('stroke-dashoffset');
+            node.style.removeProperty('opacity');
+          });
         }
       });
       completionTimeline=tl;
 
       const content=[nodes.eyebrow,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean);
-      gsap.set(nodes.card,{opacity:0,y:7,scale:.992,willChange:'opacity,transform'});
-      gsap.set(content,{opacity:0,y:7,willChange:'opacity,transform'});
-      gsap.set(titleTargets,{opacity:0,y:10,willChange:'opacity,transform'});
-      if(nodes.burst.length)gsap.set(nodes.burst,{opacity:0,x:0,y:0,xPercent:-50,yPercent:-50,scale:.35,transformOrigin:'50% 50%'});
+      gsap.set(nodes.card,{opacity:0,y:5,scale:.996,willChange:'opacity,transform'});
+      gsap.set(content,{opacity:0,y:6,willChange:'opacity,transform'});
+      gsap.set(nodes.title,{opacity:0,y:8,willChange:'opacity,transform'});
+      if(nodes.mark)gsap.set(nodes.mark,{opacity:0,scale:.88,boxShadow:'0 0 0 0 rgba(47,107,85,0)',willChange:'opacity,transform,box-shadow'});
+      if(nodes.ring)gsap.set(nodes.ring,{strokeDasharray:126,strokeDashoffset:126,opacity:.5});
+      if(nodes.check)gsap.set(nodes.check,{strokeDasharray:28,strokeDashoffset:28,opacity:0});
 
-      tl.to(nodes.card,{opacity:1,y:0,scale:1,duration:.18},.04);
-
-      if(nodes.burst.length){
-        tl.to(nodes.burst,{opacity:.88,duration:.06,stagger:.009,ease:'power1.out'},.54);
-        tl.to(nodes.burst,{
-          x:index=>Math.cos(index*Math.PI/4)*42,
-          y:index=>Math.sin(index*Math.PI/4)*42,
-          opacity:0,
-          scale:.78,
-          duration:.28,
-          stagger:.009,
-          ease:'power2.out'
-        },.58);
+      tl.to(nodes.card,{opacity:1,y:0,scale:1,duration:.14},0);
+      if(nodes.mark)tl.to(nodes.mark,{opacity:1,scale:1,duration:.20,ease:'power3.out'},.05);
+      if(nodes.ring)tl.to(nodes.ring,{strokeDashoffset:0,duration:.26,ease:'power2.out'},.08);
+      if(nodes.check){
+        tl.to(nodes.check,{opacity:1,duration:.04,ease:'none'},.25);
+        tl.to(nodes.check,{strokeDashoffset:0,duration:.18,ease:'power3.out'},.27);
       }
-
-      if(nodes.eyebrow)tl.to(nodes.eyebrow,{opacity:1,y:0,duration:.18},.54);
-      tl.to(titleTargets,{opacity:1,y:0,duration:.24,stagger:.04,ease:'power3.out'},.60);
-      if(nodes.meta)tl.to(nodes.meta,{opacity:1,y:0,duration:.18},.70);
-      if(nodes.highlight)tl.to(nodes.highlight,{opacity:1,y:0,duration:.18},.74);
-      if(nodes.stats)tl.to(nodes.stats,{opacity:1,y:0,duration:.22},.78);
-      if(nodes.effort)tl.to(nodes.effort,{opacity:1,y:0,duration:.22},.86);
-      if(nodes.button)tl.to(nodes.button,{opacity:1,y:0,duration:.22},.92);
+      if(nodes.mark){
+        tl.to(nodes.mark,{scale:1.045,boxShadow:'0 0 0 7px rgba(47,107,85,.05)',duration:.09,ease:'power2.out'},.40);
+        tl.to(nodes.mark,{scale:1,boxShadow:'0 0 0 0 rgba(47,107,85,0)',duration:.13,ease:'power2.out'},.49);
+      }
+      if(nodes.eyebrow)tl.to(nodes.eyebrow,{opacity:1,y:0,duration:.16},.34);
+      tl.to(nodes.title,{opacity:1,y:0,duration:.20,ease:'power3.out'},.39);
+      if(nodes.meta)tl.to(nodes.meta,{opacity:1,y:0,duration:.16},.46);
+      if(nodes.highlight)tl.to(nodes.highlight,{opacity:1,y:0,duration:.16},.49);
+      if(nodes.stats)tl.to(nodes.stats,{opacity:1,y:0,duration:.18},.50);
+      if(nodes.effort)tl.to(nodes.effort,{opacity:1,y:0,duration:.18},.55);
+      if(nodes.button)tl.to(nodes.button,{opacity:1,y:0,duration:.18},.60);
     },root);
 
     return completionTimeline;
