@@ -152,17 +152,31 @@ window.DailyMotionPages.session=function mountSession(){
     node.animate(
       launch
         ?[
-          {transform:'translate3d(0,6px,0) scale(.84)',opacity:.35},
-          {transform:'translate3d(0,-1px,0) scale(1.07)',opacity:1,offset:.68},
+          {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
+          {transform:'translate3d(0,-1px,0) scale(1.035)',opacity:1,offset:.72},
           {transform:'translate3d(0,0,0) scale(1)',opacity:1}
         ]
         :[
-          {transform:'translate3d(0,8px,0) scale(.78)',opacity:.28},
-          {transform:'translate3d(0,-1px,0) scale(1.045)',opacity:1,offset:.7},
+          {transform:'translate3d(0,5px,0) scale(.88)',opacity:.3},
+          {transform:'translate3d(0,-1px,0) scale(1.025)',opacity:1,offset:.72},
           {transform:'translate3d(0,0,0) scale(1)',opacity:1}
         ],
-      {duration:launch?240:270,easing:MotionTokens.easeEnter}
+      {duration:launch?235:215,easing:launch?MotionTokens.easeEmphasized:MotionTokens.easeEnter}
     );
+  };
+
+  const animateTimerState=()=>{
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    [$('#timerValue'),$('#timerLabel'),$('#timerState')].filter(Boolean).forEach((node,index)=>{
+      node.getAnimations?.().forEach(animation=>animation.cancel());
+      node.animate(
+        [
+          {transform:'translate3d(0,2px,0)',opacity:.58},
+          {transform:'translate3d(0,0,0)',opacity:1}
+        ],
+        {duration:150+index*12,easing:MotionTokens.easeEnter}
+      );
+    });
   };
 
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
@@ -601,7 +615,7 @@ window.DailyMotionPages.session=function mountSession(){
           stageTimer=null;
           showExecution('timer');
           done();
-        },180);
+        },160);
         return;
       }
       $('#countdownValue').textContent=String(remaining);
@@ -1196,6 +1210,7 @@ window.DailyMotionPages.session=function mountSession(){
       pauseCurrentTimer();
       sound('pause');
       updateTimerUI();
+      animateTimerState();
       return;
     }
 
@@ -1208,6 +1223,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     sound('resume');
     startTimerNow();
+    animateTimerState();
   });
 
   $('#timerReset').addEventListener('click',()=>{
