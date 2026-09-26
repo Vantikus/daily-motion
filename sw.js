@@ -1,4 +1,4 @@
-const CACHE_NAME='daily-motion-v175';
+const CACHE_NAME='daily-motion-v176';
 const SWUP_VENDOR_URLS=[
   'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
   'https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js',

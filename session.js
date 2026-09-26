@@ -1,6 +1,7 @@
 window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.session=function mountSession(){
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
+  const DEV_COMPLETION=new URLSearchParams(location.search).get('dev')==='completion';
   const exercises=window.DailyMotionProgram.morning;
   return (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
@@ -1372,14 +1373,21 @@ window.DailyMotionPages.session=function mountSession(){
     haptic('soft');
     hideExecution(finish||null);
   });
+  let devEffort=null;
   function syncEffortButtons(){
+    const selectedEffort=DEV_COMPLETION?devEffort:routine.effort;
     document.querySelectorAll('[data-effort]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.effort===routine.effort));
+      button.setAttribute('aria-pressed',String(button.dataset.effort===selectedEffort));
     });
-    $('#effortStatus').textContent=routine.effort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
+    $('#effortStatus').textContent=selectedEffort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
   }
   document.querySelectorAll('[data-effort]').forEach(button=>{
     button.addEventListener('click',()=>{
+      if(DEV_COMPLETION){
+        devEffort=devEffort===button.dataset.effort?null:button.dataset.effort;
+        syncEffortButtons();
+        return;
+      }
       routine.effort=routine.effort===button.dataset.effort?null:button.dataset.effort;
       Store.save();
       syncEffortButtons();
@@ -1424,6 +1432,30 @@ window.DailyMotionPages.session=function mountSession(){
     if(destroyed)return;
     document.documentElement.classList.add('session-ready');
     finishPageLoader();
+
+    if(DEV_COMPLETION){
+      const overlay=$('#completionOverlay');
+      $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
+      $('#completionDuration').textContent=Store.formatActiveTime(Number(routine.activeSeconds)>0?routine.activeSeconds:720);
+      $('#completionCount').textContent=`${exercises.length} / ${exercises.length}`;
+      const completionHighlight=$('#completionHighlight');
+      completionHighlight.textContent='Новая лучшая серия — 2 дня';
+      completionHighlight.hidden=false;
+      syncEffortButtons();
+      modalReturnFocus=document.activeElement;
+      Motion?.prepareCompletion?.(overlay);
+      overlay.classList.remove('is-handoff');
+      overlay.classList.add('is-visible');
+      overlay.setAttribute('aria-hidden','false');
+      syncModalState();
+      emitReloadSafetyChange();
+      requestAnimationFrame(()=>{
+        Motion?.playCompletion?.(overlay);
+        $('#completionTitle').focus({preventScroll:true});
+      });
+      return;
+    }
+
     if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
     else if(routine.completed)toast('Комплекс уже завершён сегодня');
     else if(resumedFromStep!==null)toast(`Продолжено с упражнения ${resumedFromStep+1}`);
