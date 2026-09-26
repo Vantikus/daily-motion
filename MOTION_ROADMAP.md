@@ -431,3 +431,7 @@ The first implementation should therefore be **Completion Motion M1**, not a bro
 ## v168 — Unification pass
 
 The current motion language is intentionally narrow: quick ~140ms exits, ~220ms content/page entrances and ~280ms emphasis. Timer, countdown, exercise swaps, accordion content, toast and press feedback follow the same family. Bottom-sheet physics remain isolated and unchanged. DrawSVG is no longer shipped because native CSS owns the completion stroke; SplitText remains optional for the completion title.
+
+## v169 — Motion Foundation M1
+
+Interaction feedback now uses one authoritative timing family: 105ms contact, 175ms release and 150ms state/tone changes. Stable-footprint press behavior replaces competing legacy scale layers. Bottom-sheet physics and the v168 page/workout motion system remain unchanged.

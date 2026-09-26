@@ -226,8 +226,8 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=168'))fail(`${file}: v168 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=168','progress.js?v=168','session.js?v=168','motion.js?v=168']){
+  if(!content.includes('navigation.js?v=169'))fail(`${file}: v169 navigation bootstrap is missing`);
+  for(const runtime of ['app.js?v=169','progress.js?v=169','session.js?v=169','motion.js?v=169']){
     if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
@@ -367,13 +367,13 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=168'",
+  "'/navigation.js?v=169'",
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
   'const swupNavigation=async request=>'
 ]){
-  if(!sw.includes(fragment))fail(`sw.js: v168 Swup offline/runtime cache contract missing: ${fragment}`);
+  if(!sw.includes(fragment))fail(`sw.js: v169 Swup offline/runtime cache contract missing: ${fragment}`);
 }
 for(const url of swupVendorUrls){
   if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
@@ -387,6 +387,12 @@ if(!designSystem.includes('## v160 — Swup resilience pass')){
 if(!designSystem.includes('## v161 — Completion Motion M1')){
   fail('DESIGN_SYSTEM.md: v161 Completion Motion M1 contract is missing');
 }
+if(!designSystem.includes('## v162 — Motion timing patch')){
+  fail('DESIGN_SYSTEM.md: v162 motion timing contract is missing');
+}
+if(!designSystem.includes('## v163 — Completion check visibility fix')){
+  fail('DESIGN_SYSTEM.md: v163 completion check contract is missing');
+}
 
 const motion=read('motion.js');
 if(!existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: local SplitText plugin missing');
@@ -394,13 +400,24 @@ if(!read('vendor/gsap/SplitText.min.js').includes('SplitText 3.15.0'))fail('Moti
 if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v168');
 for(const fragment of [
   "['SplitText','/vendor/gsap/SplitText.min.js']",
-  'ensureCompletionPlugins','playCompletion','cleanupSessionMotion',
-  "type:'words'","wordsClass:'completion-title-word'"
-]){if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);}
-for(const fragment of ['Motion?.ensureCompletionPlugins?.();','Motion?.playCompletion?.(overlay);','Motion?.cleanupSessionMotion?.();']){
+  'ensureCompletionPlugins',
+  'playCompletion',
+  'cleanupSessionMotion',
+  "type:'words'",
+  "wordsClass:'completion-title-word'",
+]){
+  if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);
+}
+for(const fragment of [
+  'Motion?.ensureCompletionPlugins?.();',
+  'Motion?.playCompletion?.(overlay);',
+  'Motion?.cleanupSessionMotion?.();'
+]){
   if(!sessionRuntime.includes(fragment))fail(`session.js: M1 motion boundary missing: ${fragment}`);
 }
-if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check'))fail('session.html: M1 inline completion mark is missing');
+if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check')){
+  fail('session.html: M1 inline completion mark is missing');
+}
 for(const fragment of ['completionMarkPop','completionRingDraw','completionCheckDraw','stroke-dasharray:126','stroke-dasharray:28']){
   if(!styles.includes(fragment))fail(`styles.css: v165 completion mark contract missing: ${fragment}`);
 }
@@ -416,19 +433,26 @@ for(const fragment of ['tokens:MOTION_TOKENS','...(window.DailyMotionMotion||{})
 if(!pwa.includes('...(window.DailyMotionMotion||{})'))fail('pwa.js: v168 must preserve shared motion namespace');
 if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v168: unused DrawSVG runtime returned');
 if(html['session.html'].includes('completion-check" aria-hidden="true"><span class="completion-burst')&&html['session.html'].includes('completion-burst</span><i class="hi hi-check-circle'))fail('session.html: old masked completion Heroicon returned');
+
+for(const obsolete of ['qmCheckIn','qmCheckInSoft','qmCheckSoft']){
+  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: legacy completion-check animation returned: ${obsolete}`);
+}
 for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ["'/motion.js?v=168'","'/vendor/gsap/DrawSVGPlugin.min.js'","'/vendor/gsap/SplitText.min.js'"]){
+for(const fragment of [
+  "'/motion.js?v=169'",
+  "'/vendor/gsap/SplitText.min.js'"
+]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 
 for(const fragment of [
   '/* v158 timer entrance choreography',
   '.execution-overlay.is-visible[data-stage=\"timer\"] .execution-timer__ring',
-  'animation:qmTimerRingIn 360ms 25ms',
-  'animation:qmTimerDigitsIn 240ms 80ms',
-  'animation:qmTimerActionsIn 280ms 105ms',
+  'animation:qmTimerRingIn 340ms 22ms',
+  'animation:qmTimerDigitsIn 210ms 72ms',
+  'animation:qmTimerActionsIn 250ms 92ms',
   '@keyframes qmTimerFocusBloom',
   '@keyframes qmTimerRingIn',
   '@keyframes qmTimerDigitsIn'
@@ -592,7 +616,9 @@ for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
   if(/phosphor\.css/i.test(content))fail(`${file}: Phosphor stylesheet remains after Heroicons migration`);
 }
 for(const file of htmlFiles){
-  const allowed=file==='session.html'?html[file].replace(/<svg class="completion-mark"[\s\S]*?<\/svg>/i,''):html[file];
+  const allowed=file==='session.html'
+    ?html[file].replace(/<svg class="completion-mark"[\s\S]*?<\/svg>/i,'')
+    :html[file];
   if(/<svg\b/i.test(allowed))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
 }
 if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');

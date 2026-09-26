@@ -273,35 +273,27 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Timer, countdown, workout sheets, Swup page motion and exercise state are unchanged by M1.
 
 
-## v162 — Completion reliability + timer pacing
+## v162 — Motion timing patch
 
-- Completion success-mark must animate reliably even when optional enhancement plugins finish loading later than the screen.
-- The visible ring/check reveal has a GSAP Core stroke fallback and may be enhanced by optional plugins, never blocked by them.
-- Timer entrance is slightly shorter and more immediate while preserving the same calm staged hierarchy.
-- Early timer exit and fullscreen timer close are slightly faster; no abrupt cut or overshoot is introduced.
-- Countdown, bottom-sheet physics, workout logic and Swup navigation remain unchanged.
+- Completion check drawing must remain visibly readable even when optional DrawSVG is not ready; GSAP Core stroke-dash fallback is mandatory.
+- The completion overlay reveal is shortened so the ring/check drawing is not hidden behind the screen fade.
+- Timer entrance and exit are intentionally quicker and more decisive while keeping the same visual hierarchy and reduced-motion behavior.
+- Workout state, timers, exercise order, sheet physics and Swup navigation are unchanged.
 
 
 ## v163 — Completion check visibility fix
 
-- The completion mark is hidden before the overlay becomes visible.
-- GSAP is the only owner of the completion-check entrance; older CSS check animations are removed.
-- The visible sequence is ring first, then check.
-- Workout logic, timer behavior, sheets and navigation are unchanged.
-
-
-## v164 — Completion sequencing fix
-
-- The fullscreen execution layer must finish its exit before Completion becomes visible or starts its success-mark motion.
-- Completion motion never runs behind the higher-z-index execution overlay.
-- GSAP exclusively owns completion-card entrance transform.
+- Completion success-mark is prepared before the completion overlay becomes visible, so the user never sees the final static check before the draw begins.
+- GSAP is the sole owner of the completion-check entrance; legacy CSS check animations are removed.
+- The visible sequence is ring first, then check, then completion copy.
+- Timer, workout logic, sheet physics and navigation are unchanged.
 
 
 ## v165 — Deterministic completion mark
 
-- Completion ring/check drawing is now native CSS and does not depend on DrawSVG timing.
-- GSAP still owns the rest of Completion choreography.
-- The visible sequence is mark pop → ring draw → check draw.
+- The small completion success-mark no longer depends on DrawSVG timing.
+- Ring/check drawing is native CSS stroke animation triggered by the visible completion overlay.
+- Completion content choreography remains GSAP-owned; the mark itself has one deterministic CSS owner.
 - Reduced-motion settles the mark immediately.
 
 
@@ -327,3 +319,13 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Bottom-sheet drag/snap/dismiss physics remain numerically unchanged.
 - Completion success mark stays native CSS; SplitText remains optional for the completion title.
 - DrawSVG is removed from runtime because it no longer owns any visible motion.
+
+## v169 — Motion Foundation M1
+
+- Press contact is 105ms, release is 175ms, and small tone/state changes are 150ms.
+- Primary actions and routine rows keep a stable outer footprint and use depth/surface feedback instead of scale compression.
+- Icon-button frames remain fixed; the glyph carries the small tactile response.
+- Text-like actions use tone/opacity rather than movement.
+- Destructive actions retain destructive-colored press feedback.
+- Technique rows use surface feedback only; accordion expansion remains content motion.
+- Bottom-sheet open/close, drag, dismiss, velocity and snap-back constants remain unchanged.

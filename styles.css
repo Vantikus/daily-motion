@@ -70,6 +70,9 @@
   --motion-ease-emphasized:cubic-bezier(.16,1,.3,1);
   --motion-ease-press-in:cubic-bezier(.22,.72,.28,1);
   --motion-ease-press-out:cubic-bezier(.16,1,.3,1);
+  --motion-interaction-press:105ms;
+  --motion-interaction-release:175ms;
+  --motion-interaction-state:150ms;
   --font-size-xs:.75rem;
   --font-size-sm:.8125rem;
   --font-size-md:.875rem;
@@ -217,8 +220,8 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .setting-row strong{font-size:var(--font-size-sm);color:var(--text)}
 .setting-row small{font-size:var(--font-size-xs);line-height:1.4;color:var(--muted)}
 .setting-row select{min-width:88px;height:42px;border:1px solid var(--line);border-radius:12px;background:#f7f8f5;color:var(--text);padding:0 28px 0 10px;font-size:var(--font-size-xs);font-weight:750}
-.switch-input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:var(--switch-off);position:relative;cursor:pointer;transition:background-color var(--base) ease}
-.switch-input:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform var(--base) var(--ease)}
+.switch-input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:var(--switch-off);position:relative;cursor:pointer;transition:background-color var(--motion-interaction-state) ease}
+.switch-input:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform var(--motion-interaction-release) var(--motion-ease-press-out)}
 .switch-input:checked{background:var(--accent)}
 .switch-input:checked:after{transform:translateX(18px)}
 .session-nav{position:relative;z-index:60;width:100%;padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--bg);border-top:1px solid var(--line);backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -898,16 +901,16 @@ html,body{background:var(--bg)}
 }
 .execution-overlay.is-handoff{pointer-events:none}
 .execution-overlay.is-visible:not(.is-closing) .execution-shell{
-  animation:qmExecutionShellIn 125ms cubic-bezier(0,0,.2,1) both;
+  animation:qmExecutionShellIn 120ms cubic-bezier(.16,.82,.24,1) both;
 }
 .execution-overlay.is-closing .execution-shell{
-  animation:qmExecutionShellOut 90ms cubic-bezier(.4,0,1,1) both;
+  animation:qmExecutionShellOut 80ms cubic-bezier(.4,0,1,1) both;
   pointer-events:none;
 }
 .execution-overlay.is-surface-fade{
   opacity:0!important;
   visibility:visible!important;
-  transition:opacity 90ms cubic-bezier(.4,0,1,1)!important;
+  transition:opacity 80ms cubic-bezier(.4,0,1,1)!important;
 }
 @keyframes qmExecutionShellIn{
   from{opacity:0;transform:translate3d(0,4px,0)}
@@ -1340,35 +1343,6 @@ a[href],
   will-change:transform;
 }
 
-.primary-button.is-pressing,
-.nav-button.is-pressing,
-.execution-primary.is-pressing{
-  transform:scale(.965)!important;
-}
-
-.icon-button.is-pressing,
-.back-link--icon.is-pressing,
-.execution-close.is-pressing,
-.sheet-close.is-pressing{
-  transform:scale(.91)!important;
-}
-
-.routine-card.is-pressing{
-  transform:scale(.982)!important;
-  border-color:rgba(47,107,85,.18);
-  background:rgba(247,250,247,.96);
-}
-
-.execution-adjustments button.is-pressing,
-.execution-secondary button.is-pressing,
-.execution-text-action.is-pressing,
-.settings-install.is-pressing,
-.data-actions button.is-pressing,
-.detail-card__toggle.is-pressing,
-.pwa-banner__action.is-pressing{
-  transform:scale(.975)!important;
-}
-
 :root :where(
   button,
   a,
@@ -1438,7 +1412,8 @@ a[href],
   .execution-stage:not([hidden]){
     animation:qmStageIn 300ms cubic-bezier(.18,.78,.22,1) both;
   }
-.exercise-main.enter-forward .exercise-facts,
+
+  .exercise-main.enter-forward .exercise-facts,
   .exercise-main.enter-back .exercise-facts{
     animation:fadeUp 260ms 45ms var(--ease) both;
   }
@@ -1491,7 +1466,7 @@ a[href],
   to{opacity:1;transform:none}
 }
 
-65%{opacity:1;transform:scale(1.08) rotate(2deg)}
+  65%{opacity:1;transform:scale(1.08) rotate(2deg)}
   100%{opacity:1;transform:scale(1) rotate(0)}
 }
 
@@ -1505,129 +1480,7 @@ a[href],
   to{opacity:1;transform:none}
 }
 
-/* softer, longer and more readable press physics */
-:root{
-  --press-in:var(--motion-ease-press-in);
-  --press-out:var(--motion-ease-press-out);
-}
-
-/* Main CTA: deeper press, slower elastic return */
-.primary-button,
-.nav-button--next,
-.execution-primary{
-  transition:
-    transform 300ms var(--press-out),
-    box-shadow 320ms var(--press-out),
-    background-color 260ms ease,
-    filter 260ms ease;
-}
-.primary-button.is-pressing,
-.nav-button--next.is-pressing,
-.execution-primary.is-pressing{
-  transform:translateY(1px) scale(.972)!important;
-  transition-duration:135ms,150ms,150ms,150ms;
-  transition-timing-function:var(--press-in),var(--press-in),ease,ease;
-  box-shadow:
-    inset 0 2px 7px rgba(0,0,0,.16),
-    0 2px 5px rgba(23,25,23,.08);
-  filter:saturate(.94);
-}
-
-/* Secondary rectangular controls: quieter but still tactile */
-.nav-button--back,
-.execution-adjustments button,
-.settings-install,
-.data-actions button{
-  transition:
-    transform 280ms var(--press-out),
-    background-color 260ms ease,
-    border-color 260ms ease,
-    box-shadow 300ms var(--press-out),
-    color 240ms ease;
-}
-.nav-button--back.is-pressing,
-.execution-adjustments button.is-pressing,
-.settings-install.is-pressing,
-.data-actions button.is-pressing{
-  transform:translateY(1px) scale(.965)!important;
-  transition-duration:125ms,135ms,135ms,140ms,135ms;
-  background:rgba(47,107,85,.085);
-  border-color:rgba(47,107,85,.22);
-  box-shadow:inset 0 2px 5px rgba(47,107,85,.09);
-  color:var(--accent);
-}
-
-/* Small icon buttons need more visible state than scale alone */
-.icon-button,
-.back-link--icon,
-.execution-close,
-.sheet-close{
-  transition:
-    transform 260ms var(--press-out),
-    background-color 250ms ease,
-    border-color 250ms ease,
-    color 230ms ease,
-    box-shadow 300ms var(--press-out);
-}
-.icon-button.is-pressing,
-.back-link--icon.is-pressing,
-.execution-close.is-pressing,
-.sheet-close.is-pressing{
-  transform:translateY(1px) scale(.925)!important;
-  transition-duration:115ms,125ms,125ms,125ms,135ms;
-  transition-timing-function:var(--press-in),ease,ease,ease,var(--press-in);
-  background:rgba(47,107,85,.11)!important;
-  border-color:rgba(47,107,85,.26)!important;
-  color:var(--accent)!important;
-  box-shadow:
-    inset 0 2px 5px rgba(47,107,85,.11),
-    0 1px 2px rgba(23,25,23,.035)!important;
-}
-
-/* Technique rows: surface feedback rather than a sharp shrink */
-
-.detail-card__toggle.is-pressing{
-  transform:scale(.988)!important;
-  transition-duration:135ms,145ms;
-  background:rgba(47,107,85,.055);
-}
-
-/* Routine cards feel like a soft surface being pressed */
-.routine-card{
-  transition:
-    transform 340ms var(--press-out),
-    border-color 300ms ease,
-    background-color 300ms ease,
-    box-shadow 340ms var(--press-out);
-}
-.routine-card.is-pressing{
-  transform:translateY(1px) scale(.985)!important;
-  transition-duration:145ms,150ms,150ms,155ms;
-  transition-timing-function:var(--press-in),ease,ease,var(--press-in);
-  border-color:rgba(47,107,85,.20);
-  background:rgba(243,248,244,.98);
-  box-shadow:
-    inset 0 2px 7px rgba(47,107,85,.055),
-    0 2px 6px rgba(30,42,34,.03);
-}
-
-/* Text-like controls get a tiny soft compression only */
-.execution-secondary button,
-.execution-text-action,
-.pwa-banner__action{
-  transition:
-    transform 250ms var(--press-out),
-    background-color 250ms ease,
-    color 220ms ease;
-}
-.execution-secondary button.is-pressing,
-.execution-text-action.is-pressing,
-.pwa-banner__action.is-pressing{
-  transform:scale(.968)!important;
-  transition-duration:115ms,120ms,120ms;
-  background:rgba(47,107,85,.07);
-  color:var(--accent);
-}
+/* Interaction motion is consolidated in the M1 layer below. */
 
 /* Smooth out stage/sheet motion: no overshoot on large surfaces */
 @media(prefers-reduced-motion:no-preference){
@@ -1640,7 +1493,7 @@ a[href],
   .execution-overlay.is-visible .execution-top{
     animation:qmFadeDownSoft 320ms cubic-bezier(.2,.7,.25,1) both;
   }
-.exercise-main.enter-forward .exercise-head,
+  .exercise-main.enter-forward .exercise-head,
   .exercise-main.enter-back .exercise-head{
     animation-duration:380ms;
   }
@@ -1673,11 +1526,11 @@ a[href],
   from{opacity:0;transform:translateY(-5px)}
   to{opacity:1;transform:none}
 }
-68%{opacity:1;transform:scale(1.035)}
+  68%{opacity:1;transform:scale(1.035)}
   100%{opacity:1;transform:scale(1)}
 }
 
-/* surface press, iOS selection guard and slower micro-motion */
+/* M1 — unified interaction motion: fast contact, soft release, stable footprints */
 button,
 button *,
 a[href],
@@ -1689,18 +1542,15 @@ a[href] *,
   -webkit-touch-callout:none;
 }
 
-/*
-  Large surfaces no longer scale inward.
-  The footprint stays fixed so no white seams appear around the control.
-*/
+/* Primary actions respond immediately, but their outer footprint never shrinks. */
 .primary-button,
 .nav-button--next,
 .execution-primary{
   transition:
-    transform 420ms cubic-bezier(.16,1,.3,1),
-    box-shadow 440ms cubic-bezier(.16,1,.3,1),
-    background-color 340ms ease,
-    filter 340ms ease;
+    transform var(--motion-interaction-release) var(--motion-ease-press-out),
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out),
+    background-color var(--motion-interaction-state) ease,
+    filter var(--motion-interaction-state) ease;
 }
 .primary-button:active,
 .nav-button--next:active,
@@ -1709,51 +1559,55 @@ a[href] *,
 .nav-button--next.is-pressing,
 .execution-primary.is-pressing{
   transform:translateY(1px)!important;
-  transition-duration:175ms,185ms,175ms,175ms;
-  transition-timing-function:cubic-bezier(.22,.72,.28,1),cubic-bezier(.22,.72,.28,1),ease,ease;
-  box-shadow:
-    inset 0 3px 9px rgba(0,0,0,.16),
-    0 1px 3px rgba(23,25,23,.045);
-  filter:brightness(.965) saturate(.96);
+  transition-duration:
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press);
+  transition-timing-function:var(--motion-ease-press-in),var(--motion-ease-press-in),ease,ease;
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.14),0 1px 3px rgba(23,25,23,.035);
+  filter:brightness(.975) saturate(.98);
 }
 
-/* Home routine rows keep their full width and press only into the surface. */
+/* Routine rows react through depth/surface rather than visible scaling. */
 .routine-card,
 .home-body .routine-card{
   transition:
-    transform 440ms cubic-bezier(.16,1,.3,1),
-    background-color 400ms cubic-bezier(.16,1,.3,1),
-    border-color 360ms ease,
-    box-shadow 440ms cubic-bezier(.16,1,.3,1);
+    transform var(--motion-interaction-release) var(--motion-ease-press-out),
+    background-color var(--motion-interaction-release) var(--motion-ease-standard),
+    border-color var(--motion-interaction-state) ease,
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
 }
 .routine-card:active,
 .home-body .routine-card:active,
 .routine-card.is-pressing,
 .home-body .routine-card.is-pressing{
   transform:translateY(1px)!important;
-  transition-duration:180ms,190ms,180ms,190ms;
-  background:rgba(241,247,243,.96)!important;
+  transition-duration:
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press);
+  background:rgba(243,248,244,.96)!important;
   border-color:rgba(47,107,85,.16)!important;
-  box-shadow:inset 0 3px 9px rgba(47,107,85,.055)!important;
+  box-shadow:inset 0 2px 7px rgba(47,107,85,.05)!important;
 }
 .routine-status b{
-  transition:transform 400ms cubic-bezier(.16,1,.3,1),color 300ms ease;
+  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out),color var(--motion-interaction-state) ease;
 }
-.routine-card.is-pressing .routine-status b{
-  transform:translateX(3px);
-}
+.routine-card.is-pressing .routine-status b{transform:translateX(2px)}
 
-/* Small buttons keep the outer border fixed; only surface + glyph reacts. */
+/* Icon controls keep their frame fixed; only the surface and glyph react. */
 .icon-button,
 .back-link--icon,
 .execution-close,
 .sheet-close{
   transform:none;
   transition:
-    background-color 380ms cubic-bezier(.16,1,.3,1),
-    border-color 360ms ease,
-    color 340ms ease,
-    box-shadow 420ms cubic-bezier(.16,1,.3,1);
+    background-color var(--motion-interaction-release) var(--motion-ease-standard),
+    border-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease,
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
 }
 .icon-button:active,
 .back-link--icon:active,
@@ -1764,41 +1618,39 @@ a[href] *,
 .execution-close.is-pressing,
 .sheet-close.is-pressing{
   transform:none!important;
-  background:rgba(47,107,85,.115)!important;
-  border-color:rgba(47,107,85,.28)!important;
+  transition-duration:
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press);
+  background:rgba(47,107,85,.09)!important;
+  border-color:rgba(47,107,85,.22)!important;
   color:var(--accent)!important;
-  box-shadow:
-    inset 0 3px 7px rgba(47,107,85,.105),
-    0 1px 3px rgba(23,25,23,.025)!important;
-  transition-duration:175ms,175ms,160ms,180ms;
+  box-shadow:inset 0 2px 5px rgba(47,107,85,.08),0 1px 2px rgba(23,25,23,.02)!important;
 }
-.icon-button svg,
-.back-link--icon svg,
-.execution-close svg,
-.sheet-close svg{
+.icon-button .hi,
+.back-link--icon .hi,
+.execution-close .hi,
+.sheet-close .hi{
   transform-origin:center;
-  transition:transform 420ms cubic-bezier(.16,1,.3,1);
+  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out);
 }
-.icon-button.is-pressing svg,
-.execution-close.is-pressing svg,
-.sheet-close.is-pressing svg{
-  transform:translateY(1px) scale(.90);
-}
-.back-link--icon.is-pressing svg{
-  transform:translate(-2px,1px) scale(.92);
-}
+.icon-button.is-pressing .hi,
+.execution-close.is-pressing .hi,
+.sheet-close.is-pressing .hi{transform:translateY(1px) scale(.94)}
+.back-link--icon.is-pressing .hi{transform:translate(-2px,1px) scale(.95)}
 
-/* Secondary controls press by changing depth, not footprint. */
+/* Secondary rectangular controls use the same timing with a quieter depth cue. */
 .nav-button--back,
 .execution-adjustments button,
 .settings-install,
 .data-actions button{
   transition:
-    transform 400ms cubic-bezier(.16,1,.3,1),
-    background-color 360ms ease,
-    border-color 340ms ease,
-    box-shadow 420ms cubic-bezier(.16,1,.3,1),
-    color 320ms ease;
+    transform var(--motion-interaction-release) var(--motion-ease-press-out),
+    background-color var(--motion-interaction-release) var(--motion-ease-standard),
+    border-color var(--motion-interaction-state) ease,
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out),
+    color var(--motion-interaction-state) ease;
 }
 .nav-button--back:active,
 .execution-adjustments button:active,
@@ -1809,43 +1661,49 @@ a[href] *,
 .settings-install.is-pressing,
 .data-actions button.is-pressing{
   transform:translateY(1px)!important;
-  background:rgba(47,107,85,.085);
-  border-color:rgba(47,107,85,.22);
+  transition-duration:
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press),
+    var(--motion-interaction-press);
+  background:rgba(47,107,85,.07);
+  border-color:rgba(47,107,85,.20);
   color:var(--accent);
-  box-shadow:inset 0 3px 7px rgba(47,107,85,.075);
-  transition-duration:170ms,175ms,170ms,185ms,170ms;
+  box-shadow:inset 0 2px 5px rgba(47,107,85,.06);
 }
 
-/* Accordion: no jump; the active row gently fills and the icon tile wakes up. */
-.detail-card__toggle{transform:none!important;transition:background-color 380ms cubic-bezier(.16,1,.3,1)}
+/* Accordion feedback is surface-only: no jump and no shrink. */
+.detail-card__toggle{
+  transform:none!important;
+  transition:background-color var(--motion-interaction-release) var(--motion-ease-standard);
+}
 .detail-card__toggle:active,
 .detail-card__toggle.is-pressing{
   transform:none!important;
-  background:rgba(47,107,85,.055);
+  background:rgba(47,107,85,.05);
+  transition-duration:var(--motion-interaction-press);
 }
 .detail-card__toggle .qm-icon{
-  transition:
-    transform 420ms cubic-bezier(.16,1,.3,1),
-    background-color 360ms ease;
+  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out),background-color var(--motion-interaction-state) ease;
 }
 .detail-card.is-open .detail-card__toggle .qm-icon{
-  transform:scale(1.045);
-  background:rgba(47,107,85,.10);
+  transform:scale(1.035);
+  background:rgba(47,107,85,.09);
 }
 .detail-card__toggle .detail-toggle-icon{
-  transition:
-    transform 440ms cubic-bezier(.16,1,.3,1),
-    color 320ms ease;
+  transition:transform var(--motion-content) var(--motion-ease-standard),color var(--motion-interaction-state) ease;
 }
 
+/* Text-like actions communicate touch through tone/opacity, not movement. */
 .execution-secondary button,
 .execution-text-action,
 .pwa-banner__action{
   transform:none!important;
   transition:
-    background-color 340ms ease,
-    color 320ms ease,
-    opacity 320ms ease;
+    background-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease,
+    opacity var(--motion-interaction-state) ease;
 }
 .execution-secondary button:active,
 .execution-text-action:active,
@@ -1854,8 +1712,15 @@ a[href] *,
 .execution-text-action.is-pressing,
 .pwa-banner__action.is-pressing{
   transform:none!important;
-  background:rgba(47,107,85,.065);
+  transition-duration:var(--motion-interaction-press);
+  background:rgba(47,107,85,.05);
   color:var(--accent);
+}
+/* Destructive text action keeps destructive semantics while pressed. */
+.execution-secondary button:last-child:active,
+.execution-secondary button:last-child.is-pressing{
+  background:rgba(138,91,87,.07);
+  color:#8a5b57;
 }
 
 /* Small ambient motion: enough life without making the UI busy. */
@@ -2125,7 +1990,7 @@ a[href] *,
   border-color:var(--line-soft);
 }
 .settings-reset-block{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);border-radius:0;display:grid}
-.settings-reset{appearance:none;position:relative;width:100%;min-height:66px;margin:0;padding:12px var(--settings-reset-pad-right,142px) 12px 12px;border:1px solid transparent;border-radius:var(--radius-control);background:transparent;color:#8a4a47;display:grid;align-content:center;justify-items:start;gap:3px;text-align:left;font-size:var(--settings-reset-font-size,var(--font-size-md));font-weight:800;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background-color 240ms cubic-bezier(.22,1,.36,1),border-color 240ms cubic-bezier(.22,1,.36,1),box-shadow 240ms cubic-bezier(.22,1,.36,1),color 180ms ease}
+.settings-reset{appearance:none;position:relative;width:100%;min-height:66px;margin:0;padding:12px var(--settings-reset-pad-right,142px) 12px 12px;border:1px solid transparent;border-radius:var(--radius-control);background:transparent;color:#8a4a47;display:grid;align-content:center;justify-items:start;gap:3px;text-align:left;font-size:var(--settings-reset-font-size,var(--font-size-md));font-weight:800;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background-color var(--motion-interaction-release) var(--motion-ease-press-out),border-color var(--motion-interaction-release) var(--motion-ease-press-out),box-shadow var(--motion-interaction-release) var(--motion-ease-press-out),color var(--motion-interaction-state) ease}
 .settings-reset::after{
   font-size:var(--font-size-xs);
 }
@@ -2263,7 +2128,7 @@ a[href] *,
   from{opacity:0;transform:translateY(-3px)}
   to{opacity:1;transform:none}
 }
-75%{opacity:1;transform:scale(1.025)}
+  75%{opacity:1;transform:scale(1.025)}
   100%{opacity:1;transform:scale(1)}
 }
 
@@ -2424,10 +2289,10 @@ a[href] *,
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   transition:
-    background-color 240ms ease,
-    border-color 240ms ease,
-    color 240ms ease,
-    box-shadow 280ms ease;
+    background-color var(--motion-interaction-state) ease,
+    border-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease,
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
 }
 .routine-more-button svg{
   width:19px;
@@ -2435,6 +2300,7 @@ a[href] *,
   fill:currentColor;
 }
 .routine-more-button:active,
+.routine-more-button.is-pressing,
 .routine-more-button[aria-expanded="true"]{
   background:rgba(47,107,85,.09);
   border-color:rgba(47,107,85,.22);
@@ -2676,8 +2542,8 @@ a[href] *,
   background:#d3d9d3;
   transform:translate3d(-50%,0,0);
   transition:
-    width 180ms cubic-bezier(.2,.8,.2,1),
-    background-color 180ms ease;
+    width var(--motion-interaction-release) var(--motion-ease-standard),
+    background-color var(--motion-interaction-state) ease;
 }
 
 .settings-sheet.is-dragging .settings-sheet__handle,
@@ -2695,9 +2561,9 @@ a[href] *,
 .routine-settings-close{
   transform:none!important;
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease!important;
+    background-color var(--motion-interaction-state) ease,
+    border-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease!important;
 }
 
 .sheet-close:active,
@@ -2756,8 +2622,8 @@ a[href] *,
 .detail-card__toggle .detail-toggle-icon{
   transform-origin:50% 50%;
   transition:
-    transform 340ms cubic-bezier(.32,.72,0,1),
-    color 220ms ease;
+    transform var(--motion-content) var(--motion-ease-standard),
+    color var(--motion-interaction-state) ease;
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -2778,8 +2644,8 @@ a[href] *,
 
 /* useful completion and motion with one purpose per transition. */
 :root{
-  --qm-press-in:var(--motion-press-in);
-  --qm-press-out:var(--motion-base);
+  --qm-press-in:var(--motion-interaction-press);
+  --qm-press-out:var(--motion-interaction-release);
   --qm-content:var(--motion-content);
   --qm-stage:var(--motion-stage);
 }
@@ -2818,10 +2684,10 @@ a[href] *,
 .effort-options button{
   min-height:48px;padding:8px 5px;border:1px solid var(--line);border-radius:12px;
   background:transparent;color:var(--text);font-size:var(--font-size-sm);font-weight:600;cursor:pointer;
-  transition:background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease;
+  transition:background-color var(--motion-interaction-state) ease,border-color var(--motion-interaction-state) ease,box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
 }
 .effort-options button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.effort-options button.is-pressing{background:#d5e6da;box-shadow:inset 0 2px 5px rgba(47,107,85,.10)}
+.effort-options button.is-pressing{background:rgba(47,107,85,.07);box-shadow:inset 0 2px 5px rgba(47,107,85,.07)}
 .completion-effort p{margin-top:10px;font-size:var(--font-size-xs);min-height:17px;line-height:1.5}
 .execution-timer.is-paused #timerLabel{color:var(--accent);font-weight:650}
 .execution-timer.is-paused .timer-ring{box-shadow:0 0 0 5px rgba(47,107,85,.055);animation:none!important}
@@ -2835,7 +2701,7 @@ a[href] *,
   transition-duration:var(--qm-press-in)!important;
 }
 .nav-button--back,.nav-button--back:active,.nav-button--back.is-pressing{transform:none!important}
-.nav-button--back .nav-back-icon{display:inline-block;transition:transform 180ms var(--ease)}
+.nav-button--back .nav-back-icon{display:inline-block;transition:transform var(--motion-interaction-release) var(--motion-ease-press-out)}
 .nav-button--back.is-pressing .nav-back-icon{transform:translateX(-2px)}
 .settings-sheet,.routine-settings-sheet{scrollbar-gutter:stable}
 .settings-sheet__handle,.routine-settings-sheet__handle{width:96px;min-height:var(--component-hit)}
@@ -3074,8 +2940,8 @@ a[href] *,
   position:absolute;
   left:50%;
   top:50%;
-  width:4px;
-  height:4px;
+  width:3px;
+  height:3px;
   border-radius:999px;
   background:var(--accent);
   opacity:0;
@@ -3248,13 +3114,14 @@ a[href] *,
   justify-content:center;
   border-radius:12px;
   transition:
-    background-color var(--motion-fast) ease,
-    color var(--motion-fast) ease,
-    transform var(--motion-press-in) var(--motion-ease-press-in);
+    background-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease,
+    opacity var(--motion-interaction-state) ease;
 }
 .home-body .activity-card__head .text-link.is-pressing{
-  background:var(--accent-soft);
-  transform:scale(.97);
+  background:rgba(47,107,85,.06);
+  opacity:.82;
+  transform:none;
 }
 .home-body .activity-card__head .text-link:focus-visible{
   outline-offset:1px;
@@ -3265,7 +3132,7 @@ a[href] *,
   border-radius:var(--radius-control);
 }
 .data-actions button.is-pressing{
-  background:var(--accent-soft);
+  background:rgba(47,107,85,.07);
   border-color:rgba(47,107,85,.18);
 }
 @media (hover:hover) and (pointer:fine){
@@ -3361,15 +3228,15 @@ a[href] *,
 :root[data-theme="dark"] .settings-reset-block{border-top-color:rgba(255,255,255,.08)}
 
 
-/* Reset keeps a tactile press without any color flash. */
+/* Reset keeps destructive semantics and a stable footprint while pressed. */
 .settings-reset:active,
 .settings-reset.is-pressing{
-  transform:scale(.985)!important;
-  background:transparent!important;
-  border-color:transparent!important;
-  box-shadow:inset 0 1px 3px rgba(23,25,23,.06)!important;
+  transform:none!important;
+  background:rgba(138,74,71,.035)!important;
+  border-color:rgba(138,74,71,.08)!important;
+  box-shadow:inset 0 1px 3px rgba(23,25,23,.05)!important;
   color:#8a4a47!important;
-  transition-duration:110ms,110ms,110ms,110ms!important;
+  transition-duration:var(--motion-interaction-press)!important;
 }
 :root[data-theme="dark"] .settings-reset:active,
 :root[data-theme="dark"] .settings-reset.is-pressing{
@@ -3467,9 +3334,9 @@ a[href] *,
   cursor:pointer;
   white-space:nowrap;
   transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    box-shadow 180ms ease;
+    background-color var(--motion-interaction-state) ease,
+    color var(--motion-interaction-state) ease,
+    box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
 }
 .theme-segmented button[aria-pressed="true"]{
   background:var(--surface-raised);
@@ -3521,17 +3388,17 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 .execution-stage.is-stage-leaving{
   pointer-events:none;
-  animation:executionStageOut 150ms cubic-bezier(.4,0,1,1) both!important;
+  animation:executionStageOut 115ms cubic-bezier(.4,0,1,1) both!important;
 }
 .execution-stage.is-stage-entering{
-  animation:executionStageIn 220ms 20ms cubic-bezier(.16,.82,.24,1) both!important;
+  animation:executionStageIn 165ms 10ms cubic-bezier(.16,.82,.24,1) both!important;
 }
 @keyframes executionStageOut{
   from{opacity:1;transform:translateY(0)}
-  to{opacity:0;transform:translateY(-4px)}
+  to{opacity:0;transform:translateY(-6px)}
 }
 @keyframes executionStageIn{
-  from{opacity:0;transform:translateY(6px)}
+  from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
 
@@ -3590,7 +3457,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     font-size:var(--font-size-xs);
     font-weight:750;
     cursor:pointer;
-    transition:background-color 150ms ease,color 150ms ease,box-shadow 170ms ease;
+    transition:background-color var(--motion-interaction-state) ease,color var(--motion-interaction-state) ease,box-shadow var(--motion-interaction-release) var(--motion-ease-press-out);
   }
   .timing-segmented button[aria-pressed="true"]{
     background:var(--surface-raised);
@@ -3604,7 +3471,8 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     outline-offset:1px;
     box-shadow:0 0 0 4px var(--focus-halo);
   }
-  .timing-segmented button:active{background:var(--accent-wash)}
+  .timing-segmented button:active,
+  .timing-segmented button.is-pressing{background:var(--accent-wash)}
 }
 @media(min-width:700px) and (hover:hover) and (pointer:fine){
   .timing-segmented button:not([aria-pressed="true"]):hover{
@@ -3664,48 +3532,48 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 @media(prefers-reduced-motion:no-preference){
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
-    animation:qmTimerFocusBloom 460ms 10ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerFocusBloom 420ms 5ms cubic-bezier(.16,.86,.22,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
-    animation:qmTimerHeadingIn 250ms 0ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerHeadingIn 230ms 0ms cubic-bezier(.16,.86,.22,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-key{
-    animation:qmTimerKeyIn 230ms 40ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerKeyIn 210ms 28ms cubic-bezier(.16,.86,.22,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
-    animation:qmTimerRingIn 360ms 25ms cubic-bezier(.16,.9,.22,1) both;
+    animation:qmTimerRingIn 340ms 22ms cubic-bezier(.16,.92,.2,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsIn 240ms 80ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerDigitsIn 210ms 72ms cubic-bezier(.16,.9,.22,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
-    animation:qmTimerActionsIn 280ms 105ms cubic-bezier(.16,.82,.24,1) both;
+    animation:qmTimerActionsIn 250ms 92ms cubic-bezier(.16,.86,.22,1) both;
   }
 }
 
 @keyframes qmTimerFocusBloom{
-  0%{opacity:0;transform:translate3d(-50%,-47%,0) scale(.72)}
-  55%{opacity:.42}
-  100%{opacity:.16;transform:translate3d(-50%,-47%,0) scale(1.08)}
+  0%{opacity:0;transform:translate3d(-50%,-47%,0) scale(.78)}
+  52%{opacity:.38}
+  100%{opacity:.13;transform:translate3d(-50%,-47%,0) scale(1.04)}
 }
 @keyframes qmTimerHeadingIn{
-  from{opacity:0;transform:translate3d(0,9px,0)}
+  from{opacity:0;transform:translate3d(0,7px,0)}
   to{opacity:1;transform:none}
 }
 @keyframes qmTimerKeyIn{
-  from{opacity:0;transform:translate3d(0,6px,0) scale(.98)}
+  from{opacity:0;transform:translate3d(0,5px,0) scale(.985)}
   to{opacity:1;transform:none}
 }
 @keyframes qmTimerRingIn{
-  from{opacity:0;transform:translate3d(0,15px,0) scale(.88)}
+  from{opacity:0;transform:translate3d(0,11px,0) scale(.91)}
   to{opacity:1;transform:none}
 }
 @keyframes qmTimerDigitsIn{
-  from{opacity:0;transform:scale(.94)}
+  from{opacity:0;transform:scale(.955)}
   to{opacity:1;transform:none}
 }
 @keyframes qmTimerActionsIn{
-  from{opacity:0;transform:translate3d(0,13px,0)}
+  from{opacity:0;transform:translate3d(0,9px,0)}
   to{opacity:1;transform:none}
 }
 
@@ -3757,22 +3625,22 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions{
-    animation:qmTimerActionsOut 110ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerActionsOut 95ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsOut 125ms 10ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerDigitsOut 105ms 0ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring{
-    animation:qmTimerRingOut 215ms 15ms cubic-bezier(.4,0,.35,1) both;
+    animation:qmTimerRingOut 175ms 10ms cubic-bezier(.4,0,.35,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key{
-    animation:qmTimerCopyOut 125ms 35ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerCopyOut 105ms 18ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
-    animation:qmTimerCopyOut 135ms 45ms cubic-bezier(.4,0,1,1) both;
+    animation:qmTimerCopyOut 115ms 28ms cubic-bezier(.4,0,1,1) both;
   }
   .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
-    animation:qmTimerBloomOut 225ms cubic-bezier(.4,0,.35,1) both;
+    animation:qmTimerBloomOut 180ms cubic-bezier(.4,0,.35,1) both;
   }
 }
 
@@ -3792,23 +3660,23 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 @keyframes qmTimerActionsOut{
   from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,10px,0)}
+  to{opacity:0;transform:translate3d(0,7px,0)}
 }
 @keyframes qmTimerDigitsOut{
   from{opacity:1;transform:none}
-  to{opacity:0;transform:scale(.93)}
+  to{opacity:0;transform:scale(.95)}
 }
 @keyframes qmTimerRingOut{
   from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,-8px,0) scale(.86)}
+  to{opacity:0;transform:translate3d(0,-6px,0) scale(.9)}
 }
 @keyframes qmTimerCopyOut{
   from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,-7px,0)}
+  to{opacity:0;transform:translate3d(0,-5px,0)}
 }
 @keyframes qmTimerBloomOut{
   from{opacity:.16;transform:translate3d(-50%,-47%,0) scale(1.08)}
-  to{opacity:0;transform:translate3d(-50%,-47%,0) scale(1.2)}
+  to{opacity:0;transform:translate3d(-50%,-47%,0) scale(1.12)}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -3895,8 +3763,12 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .completion-mark__check{
   stroke-width:2;
 }
-.completion-mark__ring{opacity:.58}
-.completion-burst{inset:-28px}
+.completion-mark__ring{
+  opacity:.58;
+}
+.completion-burst{
+  inset:-22px;
+}
 .completion-burst i{
   width:4px;
   height:4px;
@@ -4105,41 +3977,4 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     animation-delay:440ms;
     animation-timing-function:var(--motion-ease-enter);
   }
-}
-
-.primary-button,
-.nav-button--next,
-.execution-primary{
-  transition-duration:280ms,280ms,220ms,220ms;
-  transition-timing-function:var(--motion-ease-emphasized),var(--motion-ease-emphasized),ease,ease;
-}
-.routine-card,
-.home-body .routine-card{
-  transition-duration:280ms,280ms,220ms,280ms;
-  transition-timing-function:var(--motion-ease-emphasized),var(--motion-ease-emphasized),ease,var(--motion-ease-emphasized);
-}
-.icon-button,
-.back-link--icon,
-.execution-close,
-.sheet-close{
-  transition-duration:240ms,220ms,220ms,200ms,240ms;
-  transition-timing-function:var(--motion-ease-emphasized),ease,ease,ease,var(--motion-ease-emphasized);
-}
-.nav-button--back,
-.execution-adjustments button,
-.settings-install,
-.data-actions button{
-  transition-duration:240ms,220ms,220ms,240ms,200ms;
-  transition-timing-function:var(--motion-ease-emphasized),ease,ease,var(--motion-ease-emphasized),ease;
-}
-.detail-card__toggle,
-.detail-card__toggle .qm-icon,
-.detail-card__toggle .detail-toggle-icon{
-  transition-duration:220ms!important;
-  transition-timing-function:var(--motion-ease-standard)!important;
-}
-.execution-secondary button,
-.execution-text-action,
-.pwa-banner__action{
-  transition-duration:220ms,200ms,200ms;
 }
