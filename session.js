@@ -1,7 +1,12 @@
 window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.session=function mountSession(){
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
-  const DEV_COMPLETION=new URLSearchParams(location.search).get('dev')==='completion';
+  let storedDevCompletion=false;
+  try{
+    storedDevCompletion=sessionStorage.getItem('dm-dev-completion')==='1';
+    if(storedDevCompletion)sessionStorage.removeItem('dm-dev-completion');
+  }catch{}
+  const DEV_COMPLETION=new URLSearchParams(location.search).get('dev')==='completion'||storedDevCompletion;
   const exercises=window.DailyMotionProgram.morning;
   return (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
