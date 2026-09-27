@@ -4847,3 +4847,50 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     margin:14px 0 18px!important;
   }
 }
+
+
+/* v189 U3 — emphasize the key cue without turning it into another heavy card. */
+.technique-key{
+  margin:0 0 20px;
+  padding:13px 14px 14px;
+  border:1px solid rgba(47,107,85,.09);
+  border-radius:16px;
+  background:color-mix(in srgb,var(--accent-wash) 74%,var(--surface));
+  box-shadow:none;
+  gap:5px;
+}
+.technique-key::before{
+  display:none!important;
+}
+.technique-key__label{
+  gap:5px;
+  color:var(--accent);
+  font-size:.6875rem;
+  line-height:1.2;
+  font-weight:720;
+  letter-spacing:.02em;
+}
+.technique-key__label>.hi{
+  font-size:15px!important;
+  opacity:.82;
+}
+.technique-key strong{
+  color:var(--text);
+  font-size:.9375rem;
+  line-height:1.45;
+  font-weight:650;
+  letter-spacing:-.01em;
+}
+@media(max-width:390px){
+  .technique-key{
+    margin-bottom:18px;
+    padding:12px 13px 13px;
+  }
+  .technique-key strong{
+    font-size:.875rem;
+  }
+}
+:root[data-theme="dark"] .technique-key{
+  border-color:rgba(121,197,162,.11);
+  background:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
+}
