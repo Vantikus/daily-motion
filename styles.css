@@ -4645,3 +4645,17 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .home-body .activity-card{
   background:color-mix(in srgb,var(--surface-raised) 92%,var(--bg));
 }
+
+
+/* v181 quick fix — safety note is quiet footer copy, not an alert. */
+.home-body .safety-note{
+  margin:0;
+  padding:12px 2px 0;
+  border:0!important;
+  border-top:1px solid var(--line-soft)!important;
+  color:var(--muted)!important;
+  font-size:.6875rem;
+  line-height:1.48;
+  font-weight:450!important;
+  letter-spacing:0;
+}
