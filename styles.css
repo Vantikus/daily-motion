@@ -4385,3 +4385,263 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .effort-options button[aria-pressed="true"]{
   border-color:rgba(121,197,162,.42);
 }
+
+
+/* v180 — Home UI/UX hierarchy pass. Motion intentionally unchanged. */
+.home-body .topbar{
+  align-items:center;
+  padding-top:14px;
+  padding-bottom:13px;
+}
+.home-body .topbar .eyebrow{
+  color:var(--muted);
+  font-size:.6875rem;
+  line-height:1.2;
+  letter-spacing:.095em;
+}
+.home-body .topbar h1{
+  margin-top:4px;
+  font-size:1.6875rem;
+  line-height:1.02;
+  letter-spacing:-.045em;
+}
+.home-body .topbar-actions{
+  gap:6px;
+}
+.home-body .dev-completion-link{
+  min-height:38px;
+  padding:0 11px;
+  border-color:var(--line-soft);
+  border-radius:12px;
+  background:var(--surface-soft);
+  color:var(--muted-strong);
+  font-size:.75rem;
+  font-weight:700;
+}
+.home-body .icon-button{
+  width:44px;
+  height:44px;
+  border-color:var(--line-soft);
+  border-radius:14px;
+  background:var(--surface-raised);
+}
+.home-body .page-grid{
+  gap:20px;
+  padding-bottom:28px;
+}
+
+/* Morning is the single primary task on the page. */
+.home-body .today-card{
+  position:relative;
+  overflow:hidden;
+  padding:22px;
+  border-radius:22px;
+  border-color:rgba(47,107,85,.12);
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.98) 0%,rgba(246,250,247,.98) 100%);
+  box-shadow:0 10px 28px rgba(37,49,41,.055);
+}
+.home-body .today-card__meta{
+  min-height:26px;
+}
+.home-body .today-card .status-pill{
+  min-height:26px;
+  padding-inline:9px;
+  font-size:.6875rem;
+  font-weight:760;
+}
+.home-body .today-card h2{
+  margin:15px 0 6px;
+  font-size:clamp(1.875rem,7.6vw,2.1875rem);
+  line-height:1.02;
+  letter-spacing:-.05em;
+}
+.home-body .today-card>p{
+  max-width:38ch;
+  color:var(--muted);
+  font-size:.875rem;
+  line-height:1.45;
+}
+.home-body .today-card>.hero-note{
+  margin-top:7px;
+  color:var(--accent);
+  font-size:.75rem;
+  font-weight:650;
+  line-height:1.4;
+}
+.home-body .today-progress{
+  margin-top:16px;
+  gap:7px;
+}
+.home-body .today-progress__label{
+  font-size:.75rem;
+  font-weight:620;
+}
+.home-body .today-progress__label strong{
+  font-size:.75rem;
+  font-weight:760;
+}
+.home-body .progress-track{
+  height:5px;
+  background:color-mix(in srgb,var(--surface-muted) 86%,var(--bg));
+}
+.home-body .primary-button--large{
+  min-height:52px;
+  margin-top:16px;
+  border-radius:15px;
+}
+
+/* Secondary modes remain visible but do not compete with the morning CTA. */
+.home-body .section-block{
+  gap:9px;
+}
+.home-body .section-heading h3{
+  font-size:1.0625rem;
+  line-height:1.15;
+  font-weight:760;
+  letter-spacing:-.02em;
+}
+.home-body .section-heading .qm-icon{
+  width:34px;
+  height:34px;
+  border-radius:11px;
+}
+.home-body .routine-list{
+  border-radius:16px;
+  box-shadow:none;
+}
+.home-body .routine-card{
+  min-height:68px;
+  padding:10px 13px;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  gap:6px 11px;
+}
+.home-body .routine-glyph{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+}
+.home-body .routine-copy{
+  gap:2px;
+}
+.home-body .routine-copy strong{
+  font-size:.9375rem;
+  font-weight:720;
+}
+.home-body .routine-copy small{
+  color:var(--muted);
+  font-size:.71875rem;
+  line-height:1.35;
+}
+.home-body .routine-status{
+  align-self:center;
+  font-size:.71875rem;
+  font-weight:700;
+}
+.home-body .routine-status .hi{
+  opacity:.72;
+}
+.home-body .mini-progress{
+  height:3px;
+  margin-top:1px;
+  background:var(--surface-muted);
+}
+.home-body .routine-card.is-unavailable{
+  opacity:.62;
+}
+.home-body .routine-card.is-unavailable .routine-glyph{
+  background:var(--surface-muted);
+  color:var(--muted);
+}
+.home-body .routine-card.is-unavailable .routine-status{
+  padding:4px 7px;
+  border-radius:999px;
+  background:var(--surface-muted);
+  color:var(--muted);
+  font-size:.6875rem;
+  font-weight:650;
+}
+
+/* Activity reads as lightweight context, not another primary card. */
+.home-body .activity-card{
+  padding:14px 15px 13px;
+  border-color:var(--line-soft);
+  border-radius:16px;
+  background:color-mix(in srgb,var(--surface-raised) 88%,var(--bg));
+  box-shadow:none;
+}
+.home-body .activity-card__head{
+  margin-bottom:12px;
+}
+.home-body .activity-card__head h3{
+  font-size:1.0625rem;
+  font-weight:760;
+}
+.home-body .activity-card__head .qm-icon{
+  width:34px;
+  height:34px;
+  border-radius:11px;
+}
+.home-body .text-link{
+  color:var(--accent);
+  font-size:.71875rem;
+  font-weight:700;
+}
+.home-body .activity-days{
+  gap:6px;
+}
+.home-body .activity-day{
+  gap:5px;
+}
+.home-body .activity-day__dot{
+  width:20px;
+  height:20px;
+}
+.home-body .activity-day.is-today .activity-day__dot{
+  box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--accent);
+}
+.home-body .activity-day small{
+  font-size:.6875rem;
+}
+.home-body .activity-empty{
+  margin-top:9px;
+  color:var(--muted);
+  font-size:.71875rem;
+  line-height:1.45;
+}
+.home-body .home-activity-summary{
+  margin-top:10px;
+  padding-top:9px;
+  border-top-color:var(--line-soft);
+}
+.home-body .home-activity-summary strong{
+  color:var(--muted-strong);
+  font-size:.71875rem;
+  font-weight:650;
+}
+
+/* Safety belongs to the footer level. */
+.home-body .safety-note{
+  margin-top:-2px;
+  padding:13px 2px 2px;
+  border-top:1px solid var(--line-soft);
+  color:var(--muted);
+  font-size:.6875rem;
+  line-height:1.5;
+}
+
+@media(max-width:390px){
+  .home-body .today-card{padding:19px}
+  .home-body .today-card h2{font-size:1.875rem}
+  .home-body .routine-card{padding-inline:11px}
+  .home-body .dev-completion-link{padding-inline:9px}
+}
+
+:root[data-theme="dark"] .home-body .today-card{
+  border-color:rgba(121,197,162,.13);
+  background:linear-gradient(160deg,var(--surface-raised) 0%,color-mix(in srgb,var(--surface-raised) 84%,var(--accent-soft)) 100%);
+  box-shadow:0 10px 28px rgba(0,0,0,.12);
+}
+:root[data-theme="dark"] .home-body .activity-card{
+  background:color-mix(in srgb,var(--surface-raised) 92%,var(--bg));
+}

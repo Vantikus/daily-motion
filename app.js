@@ -6,7 +6,7 @@ window.DailyMotionPages.home=function mountHome(){
   const ROUTINES={
     morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
-    evening:{name:'Вечер',title:'Утренняя разминка',icon:'moon',available:false}
+    evening:{name:'Вечер',title:'Вечерняя разминка',icon:'moon',available:false}
   };
   const availableRoutineKeys=Object.entries(ROUTINES).filter(([,routine])=>routine.available).map(([key])=>key);
   const routineIcons={
@@ -51,7 +51,7 @@ window.DailyMotionPages.home=function mountHome(){
         button.classList.add('is-unavailable');
         button.innerHTML=`
           <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
-          <span class="routine-copy"><strong>${routine.name}</strong><small>Комплекс в разработке</small></span>
+          <span class="routine-copy"><strong>${routine.name}</strong><small>Пока недоступно</small></span>
           <span class="routine-status">Скоро</span>`;
       }else{
         const progress=exerciseCount(key);
@@ -69,12 +69,20 @@ window.DailyMotionPages.home=function mountHome(){
     });
   };
 
+  const streakLabel=count=>{
+    const value=Math.max(0,Math.floor(Number(count)||0));
+    const mod100=value%100;
+    const mod10=value%10;
+    const unit=mod100>=11&&mod100<=14?'дней':mod10===1?'день':mod10>=2&&mod10<=4?'дня':'дней';
+    return `${value} ${unit}`;
+  };
+
   const renderActivity=()=>{
     days.replaceChildren();
     const currentStreak=Store.getCurrentStreak(availableRoutineKeys,365);
     $('#activityStreak').textContent=currentStreak
-      ?`Серия ${currentStreak} ${currentStreak===1?'день':'дня'}`
-      :'Серия —';
+      ?`Серия · ${streakLabel(currentStreak)}`
+      :'Серия · пока нет';
 
     let hasActivity=false;
     for(let i=6;i>=0;i--){
