@@ -4894,3 +4894,114 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   border-color:rgba(121,197,162,.11);
   background:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
 }
+
+
+/* v190 U4 — compact, calm technique accordion. Existing JS owns expansion motion. */
+.details-section{
+  gap:9px;
+}
+.details-title{
+  margin:0;
+  color:var(--text);
+  font-size:1.0625rem;
+  line-height:1.2;
+  font-weight:760;
+  letter-spacing:-.02em;
+}
+.details-stack{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+  overflow:hidden;
+  border:1px solid var(--line-soft)!important;
+  border-radius:16px!important;
+  background:var(--surface-raised)!important;
+  box-shadow:none!important;
+}
+.details-stack .detail-card,
+.details-stack .detail-card:first-child{
+  grid-column:auto!important;
+}
+.detail-card{
+  margin:0!important;
+  border:0!important;
+  border-bottom:1px solid var(--line-soft)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.detail-card:last-child{
+  border-bottom:0!important;
+}
+.detail-card__toggle{
+  min-height:50px!important;
+  padding:0 13px!important;
+  gap:10px!important;
+  color:var(--text);
+  font-size:.875rem!important;
+  line-height:1.25;
+  font-weight:650!important;
+}
+.detail-label{
+  gap:8px!important;
+}
+.detail-label .qm-icon{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px;
+  margin-left:0!important;
+  border-radius:9px!important;
+  background:var(--surface-muted)!important;
+  color:var(--muted-strong)!important;
+}
+.detail-label .qm-icon>.hi{
+  font-size:15px!important;
+}
+.detail-toggle-icon{
+  flex:0 0 auto;
+  color:var(--muted)!important;
+  font-size:16px!important;
+  opacity:.72;
+}
+.detail-card.is-open>.detail-card__heading{
+  background:rgba(47,107,85,.025)!important;
+}
+.detail-card.is-open .detail-label .qm-icon{
+  background:var(--accent-soft)!important;
+  color:var(--accent)!important;
+  transform:none!important;
+}
+.detail-card.is-open .detail-toggle-icon{
+  color:var(--accent)!important;
+  opacity:.9;
+}
+.detail-card__inner{
+  padding:10px 13px 13px!important;
+  border-top:1px solid color-mix(in srgb,var(--line-soft) 72%,transparent)!important;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  color:var(--muted-strong)!important;
+  font-size:.8125rem!important;
+  line-height:1.52!important;
+}
+.detail-card__inner ol,
+.detail-card__inner ul{
+  padding-left:19px!important;
+  gap:6px!important;
+}
+@media(max-width:390px){
+  .detail-card__toggle{
+    min-height:48px!important;
+    padding-inline:12px!important;
+  }
+  .detail-card__inner{
+    padding:9px 12px 12px!important;
+  }
+}
+:root[data-theme="dark"] .details-stack{
+  background:var(--surface-raised)!important;
+}
+:root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{
+  background:rgba(121,197,162,.035)!important;
+}
