@@ -210,6 +210,13 @@ window.DailyMotionPages.session=function mountSession(){
     return `${value} ${label}`;
   };
 
+  const formatCompletionTime=seconds=>{
+    const value=Math.max(0,Math.round(Number(seconds)||0));
+    const minutes=Math.floor(value/60);
+    const secs=value%60;
+    return `${minutes}:${String(secs).padStart(2,'0')}`;
+  };
+
   async function requestWakeLock(){
     if(!('wakeLock' in navigator))return;
     try{wakeLock=await navigator.wakeLock.request('screen');}catch{}
@@ -1052,7 +1059,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     const overlay=$('#completionOverlay');
     $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
-    $('#completionDuration').textContent=Store.formatActiveTime(routine.activeSeconds);
+    $('#completionDuration').textContent=formatCompletionTime(routine.activeSeconds);
     $('#completionCount').textContent=`${Math.min(routine.completedUntil,exercises.length)} / ${exercises.length}`;
     const currentStreak=Store.getCurrentStreak([ROUTINE_KEY]);
     const completionHighlight=$('#completionHighlight');
@@ -1441,7 +1448,7 @@ window.DailyMotionPages.session=function mountSession(){
     if(DEV_COMPLETION){
       const overlay=$('#completionOverlay');
       $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
-      $('#completionDuration').textContent=Store.formatActiveTime(Number(routine.activeSeconds)>0?routine.activeSeconds:720);
+      $('#completionDuration').textContent=formatCompletionTime(Number(routine.activeSeconds)>0?routine.activeSeconds:720);
       $('#completionCount').textContent=`${exercises.length} / ${exercises.length}`;
       const completionHighlight=$('#completionHighlight');
       completionHighlight.textContent='Новая лучшая серия — 2 дня';

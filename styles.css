@@ -4294,3 +4294,94 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   color:var(--accent);
   box-shadow:0 0 0 1px rgba(121,197,162,.045);
 }
+
+
+/* v178 completion visual balance */
+.completion-card{
+  padding-top:clamp(48px,8.5vh,78px);
+}
+.completion-check{
+  width:56px;
+  height:56px;
+  margin-bottom:12px;
+  background:color-mix(in srgb,var(--accent-soft) 86%,var(--surface));
+  box-shadow:inset 0 0 0 1px rgba(47,107,85,.13);
+}
+.completion-mark{width:35px;height:35px}
+.completion-mark__ring{opacity:.72}
+.completion-mark__check{stroke-width:2.35}
+.completion-card>.eyebrow{
+  margin-bottom:7px;
+  color:var(--muted);
+  font-size:.6875rem;
+  font-weight:760;
+  letter-spacing:.115em;
+}
+.completion-card>#completionMeta{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:.875rem;
+  line-height:1.42;
+}
+.completion-card .completion-highlight{
+  width:max-content;
+  max-width:100%;
+  min-height:26px;
+  margin-top:12px;
+  padding:4px 10px;
+  font-size:.75rem;
+  font-weight:700;
+}
+.completion-stats{
+  margin-top:16px;
+  padding:13px 10px;
+}
+.completion-stats dt{
+  font-size:.6875rem;
+}
+.completion-stats dd{
+  margin-top:4px;
+  font-size:1.45rem;
+  line-height:1;
+  font-weight:740;
+  white-space:nowrap;
+}
+.completion-effort{
+  margin-top:18px;
+}
+.completion-effort legend{
+  margin-bottom:9px;
+  font-size:.875rem;
+}
+.effort-options button{
+  border-color:var(--line-soft);
+  color:var(--muted-strong);
+  font-size:.8125rem;
+  font-weight:620;
+}
+.effort-options button[aria-pressed="true"]{
+  color:var(--accent);
+  border-color:rgba(47,107,85,.34);
+}
+.completion-effort p{
+  margin-top:7px;
+  font-size:.6875rem;
+  color:color-mix(in srgb,var(--muted) 82%,transparent);
+}
+.completion-card>.completion-button{
+  min-height:52px;
+  margin-top:16px;
+  border-radius:17px;
+}
+@media(max-height:760px){
+  .completion-card{padding-top:30px}
+  .completion-stats{margin-top:12px}
+  .completion-effort{margin-top:13px}
+}
+:root[data-theme="dark"] .completion-check{
+  background:color-mix(in srgb,var(--accent-soft) 80%,var(--surface));
+  box-shadow:inset 0 0 0 1px rgba(121,197,162,.16);
+}
+:root[data-theme="dark"] .effort-options button[aria-pressed="true"]{
+  border-color:rgba(121,197,162,.42);
+}
