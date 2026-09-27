@@ -1094,9 +1094,17 @@ window.DailyMotionPages.session=function mountSession(){
     }
   }
 
+  let routineMenuOpenTimer=null;
   $('#routineMoreButton').addEventListener('click',()=>{
     haptic('tap');
-    showRoutineSettingsDialog();
+    const button=$('#routineMoreButton');
+    if(routineMenuOpenTimer!==null)clearTimeout(routineMenuOpenTimer);
+    button.classList.add('is-launching');
+    routineMenuOpenTimer=setTimeout(()=>{
+      routineMenuOpenTimer=null;
+      button.classList.remove('is-launching');
+      showRoutineSettingsDialog();
+    },120);
   });
   $('#routineSettingsClose').addEventListener('click',()=>{
     haptic('tap');
