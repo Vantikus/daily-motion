@@ -76,7 +76,7 @@
 
   installDoubleTapGuard();
 
-  const pressMinMs=window.DailyMotionMotion?.tokens?.pressMs??105;
+  const pressMinMs=window.DailyMotionMotion?.tokens?.pressMs??125;
   const installPressFeedback=()=>{
     const selector='button:not([disabled]),a[href],summary';
     let active=null;

@@ -6,7 +6,7 @@
     exitMs:140,
     emphasisMs:280,
     staggerMs:40,
-    pressMs:105,
+    pressMs:125,
     releaseMs:175,
     stateMs:150,
     easeEnter:'cubic-bezier(.16,.82,.24,1)',
