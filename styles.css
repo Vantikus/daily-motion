@@ -4673,10 +4673,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   width:44px!important;
   height:44px!important;
   min-width:44px;
-  border:1px solid var(--line-soft)!important;
+  border:1px solid var(--line-soft);
   border-radius:14px!important;
-  background:var(--surface-raised)!important;
-  box-shadow:none!important;
+  background:var(--surface-raised);
+  box-shadow:none;
 }
 .exercise-toolbar__title{
   justify-self:start;
@@ -4741,6 +4741,6 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 :root[data-theme="dark"] .back-link--icon,
 :root[data-theme="dark"] .routine-more-button{
-  border-color:var(--line-soft)!important;
-  background:var(--surface-raised)!important;
+  border-color:var(--line-soft);
+  background:var(--surface-raised);
 }
