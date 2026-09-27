@@ -5108,3 +5108,69 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .detail-label .technique-icon--mistakes{color:#d49a7e!important;background:rgba(212,154,126,.12)!important}
 :root[data-theme="dark"] .detail-label .technique-icon--easy{color:#a8ba88!important;background:rgba(168,186,136,.12)!important}
 :root[data-theme="dark"] .detail-label .technique-icon--progress{color:#b1a5d3!important;background:rgba(177,165,211,.12)!important}
+
+
+/* v192 U4 spacing correction — keep clarity, restore breathing room. */
+.details-section{
+  gap:12px!important;
+}
+.details-title{
+  margin-bottom:1px!important;
+}
+.details-stack{
+  border-radius:18px!important;
+}
+.detail-card__toggle{
+  min-height:54px!important;
+  padding:0 13px!important;
+  gap:9px!important;
+  font-size:.84375rem!important;
+}
+.detail-label{
+  gap:9px!important;
+}
+.detail-label .qm-icon{
+  width:29px!important;
+  height:29px!important;
+  min-width:29px!important;
+  border-radius:9px!important;
+}
+.detail-label .qm-icon>.hi{
+  font-size:15px!important;
+}
+.detail-toggle-icon{
+  width:20px;
+  font-size:16px!important;
+}
+.detail-card__inner{
+  padding:12px 14px 15px!important;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  font-size:.84375rem!important;
+  line-height:1.56!important;
+}
+.detail-card__inner ol,
+.detail-card__inner ul{
+  padding-left:20px!important;
+  gap:8px!important;
+}
+@media(max-width:390px){
+  .detail-card__toggle{
+    min-height:52px!important;
+    padding-inline:11px!important;
+    gap:8px!important;
+    font-size:.8125rem!important;
+  }
+  .detail-label{
+    gap:8px!important;
+  }
+  .detail-label .qm-icon{
+    width:28px!important;
+    height:28px!important;
+    min-width:28px!important;
+  }
+  .detail-card__inner{
+    padding:11px 13px 14px!important;
+  }
+}
