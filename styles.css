@@ -4751,11 +4751,16 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 
 
-/* v186 — let workout menu tactile press read before the sheet starts. */
-.routine-more-button.is-launching{
-  background:rgba(47,107,85,.09)!important;
-  border-color:rgba(47,107,85,.22)!important;
-  color:var(--accent)!important;
-  box-shadow:inset 0 2px 6px rgba(47,107,85,.06)!important;
-  transition-duration:var(--motion-interaction-press)!important;
+
+
+/* v187 — workout menu uses the same tactile glyph press as Home icon buttons. */
+.routine-more-button>.hi{
+  transform-origin:center;
+  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out);
+}
+.routine-more-button:active>.hi,
+.routine-more-button.is-pressing>.hi{
+  transform:translateY(1px) scale(.94);
+  transition-duration:var(--motion-interaction-press);
+  transition-timing-function:var(--motion-ease-press-in);
 }
