@@ -5753,3 +5753,35 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     min-width:44px;
   }
 }
+
+
+/* v202 — regression fixes from fullscreen T1–T8. */
+.execution-countdown__value.is-launching{
+  max-width:100%;
+  font-size:clamp(2.7rem,13vw,4rem)!important;
+  line-height:.95!important;
+  letter-spacing:-.055em!important;
+  white-space:nowrap;
+}
+
+/* Session toast must never cover the sticky workout navigation. */
+.session-body .toast{
+  bottom:calc(82px + env(safe-area-inset-bottom,0px))!important;
+  max-width:min(340px,calc(100% - 32px));
+  text-align:center;
+  line-height:1.3;
+}
+@media(max-width:390px){
+  .session-body .toast{
+    bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;
+    font-size:.75rem;
+  }
+}
+
+/* Keep timer stage visually complete during countdown → timer handoff. */
+.execution-timer.is-stage-entering .execution-heading,
+.execution-timer.is-stage-entering .execution-key,
+.execution-timer.is-stage-entering .execution-timer__ring,
+.execution-timer.is-stage-entering .execution-actions{
+  visibility:visible!important;
+}

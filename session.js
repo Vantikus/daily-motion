@@ -585,7 +585,6 @@ window.DailyMotionPages.session=function mountSession(){
   function startTimerNow(){
     const timer=timerData(exercises[current]);
     if(timer.remaining<=0)timer.remaining=timer.duration;
-    showExecution('timer');
     const now=Date.now();
     if(!routine.startedAt)routine.startedAt=new Date(now).toISOString();
     timer.running=true;
@@ -593,15 +592,15 @@ window.DailyMotionPages.session=function mountSession(){
     timer.runStartedAt=now;
     timer.endAt=now+timer.remaining*1000;
     Store.save();
+    updateTimerUI();
+    showExecution('timer');
     startTicker();
     requestWakeLock();
-    updateTimerUI();
   }
 
   function startCountdown(done){
     const seconds=Number(settings.countdownSeconds)||0;
     if(seconds<=0){
-      showExecution('timer');
       sound('start');
       haptic('next');
       done();
@@ -611,7 +610,9 @@ window.DailyMotionPages.session=function mountSession(){
     cancelCountdown();
     unlockAudio();
     let remaining=seconds;
-    $('#countdownValue').textContent=String(remaining);
+    const countdownValue=$('#countdownValue');
+    countdownValue.classList.remove('is-launching');
+    countdownValue.textContent=String(remaining);
     showExecution('countdown');
     sound('tick');
 
@@ -620,19 +621,20 @@ window.DailyMotionPages.session=function mountSession(){
       if(remaining<=0){
         clearInterval(countdownTimer);
         countdownTimer=null;
-        $('#countdownValue').textContent='Старт';
-        animateCountdownValue($('#countdownValue'),{launch:true});
+        countdownValue.textContent='Старт';
+        countdownValue.classList.add('is-launching');
+        animateCountdownValue(countdownValue,{launch:true});
         sound('start');
         haptic('next');
         stageTimer=setTimeout(()=>{
           stageTimer=null;
-          showExecution('timer');
           done();
         },160);
         return;
       }
-      $('#countdownValue').textContent=String(remaining);
-      animateCountdownValue($('#countdownValue'));
+      countdownValue.classList.remove('is-launching');
+      countdownValue.textContent=String(remaining);
+      animateCountdownValue(countdownValue);
       sound('tick');
       haptic('tap');
     },1000);
