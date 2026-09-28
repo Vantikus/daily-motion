@@ -454,6 +454,7 @@ window.DailyMotionPages.session=function mountSession(){
       previous&&next&&previous!==next&&
       overlay?.classList.contains('is-visible')&&!reduceMotion
     );
+    const previousAlreadyLeaving=Boolean(previous?.classList.contains('is-finishing-early'));
 
     clearExecutionStageTransition();
     executionStage=stage;
@@ -470,21 +471,40 @@ window.DailyMotionPages.session=function mountSession(){
     Object.values(stages).forEach(node=>{
       if(node&&node!==previous&&node!==next)node.hidden=true;
     });
+
     previous.hidden=false;
-    next.hidden=false;
     previous.inert=true;
-    next.inert=false;
-    previous.classList.add('is-stage-leaving');
-    next.classList.add('is-stage-entering');
+    next.hidden=true;
+    next.inert=true;
 
     const token=stageTransitionToken;
-    afterAnimations(next,()=>{
+    const enterNext=()=>{
       if(token!==stageTransitionToken)return;
+
       previous.hidden=true;
       previous.inert=false;
       previous.classList.remove('is-stage-leaving','is-finishing-early');
-      next.classList.remove('is-stage-entering');
-    });
+
+      next.hidden=false;
+      next.inert=false;
+      next.classList.add('is-stage-entering');
+
+      requestAnimationFrame(()=>{
+        if(token!==stageTransitionToken)return;
+        afterAnimations(next,()=>{
+          if(token!==stageTransitionToken)return;
+          next.classList.remove('is-stage-entering');
+        });
+      });
+    };
+
+    if(previousAlreadyLeaving){
+      enterNext();
+      return;
+    }
+
+    previous.classList.add('is-stage-leaving');
+    afterAnimations(previous,enterNext);
   }
 
   function playEarlyTimerExit(callback){
