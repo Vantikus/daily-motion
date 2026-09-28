@@ -1,4 +1,4 @@
-const CACHE_NAME='daily-motion-v197';
+const CACHE_NAME='daily-motion-v198';
 const SWUP_VENDOR_URLS=[
   'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
   'https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js',
@@ -44,12 +44,7 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=173',
-  '/t1-v193.css?v=193',
-  '/t2-v194.css?v=194',
-  '/t3-v195.css?v=195',
-  '/t4-v196.css?v=196',
-  '/t5-v197.css?v=197',
+  '/styles.css?v=198',
   '/theme.js?v=173',
   '/program.js?v=173',
   '/state.js?v=173',
