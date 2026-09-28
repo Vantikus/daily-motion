@@ -5859,3 +5859,59 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .execution-overlay .execution-stage{
   transform-origin:50% 50%;
 }
+
+
+/* v207 — authoritative fullscreen transition layer.
+   One JS owner; no CSS stage/shell competition. */
+.execution-overlay.is-visible:not(.is-closing) .execution-shell,
+.execution-overlay.is-closing .execution-shell,
+.execution-overlay .execution-stage,
+.execution-overlay .execution-stage:not([hidden]),
+.execution-overlay .execution-stage.is-stage-entering,
+.execution-overlay .execution-stage.is-stage-leaving{
+  animation:none!important;
+}
+.execution-overlay .execution-stage[hidden]{
+  display:none!important;
+}
+.execution-overlay.is-stage-transitioning{
+  pointer-events:none;
+}
+.execution-overlay .execution-stage{
+  grid-row:2!important;
+  grid-column:1!important;
+  width:100%;
+  min-width:0;
+  transform-origin:50% 50%;
+}
+
+/* Child choreography is WAAPI-owned; pseudo blooms remain available. */
+@media(prefers-reduced-motion:no-preference){
+  .execution-overlay.is-visible[data-stage] .execution-stage :is(
+    .execution-heading,
+    .execution-key,
+    .execution-timer__ring,
+    .timer-ring__inner,
+    .execution-actions,
+    .execution-eyebrow,
+    h2,
+    .execution-countdown__value,
+    .execution-countdown__hint,
+    .execution-rest__value,
+    #restNext,
+    .execution-rest__actions,
+    .execution-text-action
+  ){
+    animation:none!important;
+  }
+}
+
+/* Never let the launch word become a giant countdown numeral. */
+.execution-countdown__value.is-launching{
+  width:auto!important;
+  max-width:90vw!important;
+  font-size:clamp(2.65rem,12vw,3.75rem)!important;
+  line-height:.96!important;
+  letter-spacing:-.05em!important;
+  white-space:nowrap!important;
+}
