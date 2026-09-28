@@ -5514,3 +5514,31 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     )!important;
   box-shadow:0 0 0 6px rgba(255,255,255,.025)!important;
 }
+
+
+/* v199 T6 — paused timer state: obvious at a glance, no new motion. */
+.execution-timer.is-paused .execution-eyebrow{
+  color:var(--muted)!important;
+}
+.execution-timer.is-paused .execution-timer__ring{
+  box-shadow:0 0 0 6px rgba(23,25,23,.035)!important;
+  filter:saturate(.62);
+}
+.execution-timer.is-paused .execution-timer__ring .timer-ring__inner strong{
+  color:var(--muted-strong)!important;
+}
+.execution-timer.is-paused .execution-timer__ring .timer-ring__inner span{
+  color:var(--accent)!important;
+  font-weight:720!important;
+  letter-spacing:.015em;
+}
+.execution-timer.is-paused .execution-primary{
+  background:var(--text)!important;
+  color:var(--surface-raised)!important;
+}
+.execution-timer.is-paused .execution-key{
+  color:var(--muted)!important;
+}
+:root[data-theme="dark"] .execution-timer.is-paused .execution-timer__ring{
+  box-shadow:0 0 0 6px rgba(255,255,255,.045)!important;
+}
