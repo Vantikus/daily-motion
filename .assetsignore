@@ -1,4 +1,4 @@
-# Daily Motion runtime assets only
+# Cloudflare Workers Static Assets
 .git/
 .github/
 .Jules/
@@ -9,21 +9,25 @@ scripts/
 test-results/
 playwright-report/
 blob-report/
-
-# Build / tooling files are not public assets
+.gitignore
 package.json
 package-lock.json
 bun.lock
 bun.lockb
 playwright.config.js
-wrangler.json
 deploy.bat
-.gitignore
-.assetsignore
-
-# Project documentation is not part of the app shell
+wrangler.json
 README.md
 DESIGN_SYSTEM.md
 LIBRARIES.md
 MOTION_ROADMAP.md
 HEROICONS-LICENSE.txt
+t1-v193.css
+t2-v194.css
+t3-v195.css
+t4-v196.css
+t5-v197.css
+.DS_Store
+Thumbs.db
+npm-debug.log*
+_verify*.png
