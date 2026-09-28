@@ -412,10 +412,24 @@ window.DailyMotionPages.session=function mountSession(){
 
   function setExecutionCopy(){
     const exercise=exercises[current];
-    $('#executionMeta').textContent=`Утро · ${current+1} из ${exercises.length}`;
+    const meta=$('#executionMeta');
+    const nextMeta=`Утро · ${current+1} из ${exercises.length}`;
+    const metaChanged=meta.textContent!==nextMeta;
+    meta.textContent=nextMeta;
     $('#executionTitle').textContent=exercise.title;
     $('#executionCountdownTitle').textContent=exercise.title;
     $('#executionKey').textContent=exercise.key;
+
+    if(metaChanged&&$('#executionOverlay')?.classList.contains('is-visible')&&!reduceExecutionMotion()){
+      meta.getAnimations?.().forEach(animation=>animation.cancel());
+      meta.animate(
+        [
+          {opacity:.42,transform:'translate3d(0,2px,0)'},
+          {opacity:1,transform:'translate3d(0,0,0)'}
+        ],
+        {duration:180,easing:'cubic-bezier(.16,.84,.22,1)'}
+      );
+    }
   }
 
   const executionStages=()=>({
@@ -480,28 +494,28 @@ window.DailyMotionPages.session=function mountSession(){
   function stageEntranceItems(stage,node){
     if(stage==='countdown'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,170,7,1],
-        [node.querySelector('h2'),15,185,9,1],
-        [node.querySelector('.execution-countdown__value'),35,220,15,.9],
-        [node.querySelector('.execution-countdown__hint'),65,175,7,1],
-        [node.querySelector('.execution-text-action'),90,165,6,1]
+        [node.querySelector('.execution-eyebrow'),0,185,8,1],
+        [node.querySelector('h2'),18,210,10,.985],
+        [node.querySelector('.execution-countdown__value'),42,285,18,.86],
+        [node.querySelector('.execution-countdown__hint'),82,190,8,1],
+        [node.querySelector('.execution-text-action'),112,180,7,1]
       ];
     }
     if(stage==='timer'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,165,6,1],
-        [node.querySelector('.execution-heading h2'),10,180,8,1],
-        [node.querySelector('.execution-key'),20,175,6,.985],
-        [node.querySelector('.execution-timer__ring'),30,235,12,.92],
-        [node.querySelector('.execution-actions'),70,185,8,1]
+        [node.querySelector('.execution-eyebrow'),0,180,7,1],
+        [node.querySelector('.execution-heading h2'),16,210,10,.985],
+        [node.querySelector('.execution-key'),34,200,8,.975],
+        [node.querySelector('.execution-timer__ring'),54,315,18,.88],
+        [node.querySelector('.execution-actions'),108,215,9,.985]
       ];
     }
     return [
-      [node.querySelector('.execution-eyebrow'),0,165,6,1],
-      [node.querySelector('h2'),10,180,8,1],
-      [node.querySelector('.execution-rest__value'),30,225,14,.91],
-      [node.querySelector('#restNext'),60,170,7,1],
-      [node.querySelector('.execution-rest__actions'),85,185,8,1]
+      [node.querySelector('.execution-eyebrow'),0,180,7,1],
+      [node.querySelector('h2'),16,205,9,.985],
+      [node.querySelector('.execution-rest__value'),42,290,18,.87],
+      [node.querySelector('#restNext'),86,190,8,1],
+      [node.querySelector('.execution-rest__actions'),112,210,9,.985]
     ];
   }
 
@@ -513,12 +527,18 @@ window.DailyMotionPages.session=function mountSession(){
 
     const root=node.animate(
       [
-        {opacity:opening?.02:.08,transform:`translate3d(0,${opening?9:6}px,0) scale(.994)`},
-        {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
+        {
+          opacity:opening?.2:.32,
+          transform:`translate3d(0,${opening?12:9}px,0) scale(.991)`
+        },
+        {
+          opacity:1,
+          transform:'translate3d(0,0,0) scale(1)'
+        }
       ],
       {
-        duration:opening?260:215,
-        easing:'cubic-bezier(.18,.78,.22,1)',
+        duration:opening?320:270,
+        easing:'cubic-bezier(.16,.84,.22,1)',
         fill:'both'
       }
     );
@@ -527,18 +547,22 @@ window.DailyMotionPages.session=function mountSession(){
       .filter(([child])=>Boolean(child))
       .map(([child,delay,duration,y,scale])=>{
         child.getAnimations?.().forEach(animation=>animation.cancel());
+        const focal=scale<.95;
         return child.animate(
-          [
-            {
-              opacity:.08,
-              transform:`translate3d(0,${y}px,0) scale(${scale})`
-            },
-            {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
-          ],
+          focal
+            ?[
+              {opacity:.22,transform:`translate3d(0,${y}px,0) scale(${scale})`},
+              {opacity:1,transform:'translate3d(0,-1px,0) scale(1.012)',offset:.78},
+              {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
+            ]
+            :[
+              {opacity:.28,transform:`translate3d(0,${y}px,0) scale(${scale})`},
+              {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
+            ],
           {
             duration,
             delay,
-            easing:'cubic-bezier(.16,.86,.22,1)',
+            easing:'cubic-bezier(.16,.88,.22,1)',
             fill:'backwards'
           }
         );
@@ -552,6 +576,7 @@ window.DailyMotionPages.session=function mountSession(){
         node.style.removeProperty('opacity');
         node.style.removeProperty('transform');
         node.style.removeProperty('will-change');
+        root.cancel();
       }
     });
   }
@@ -566,16 +591,17 @@ window.DailyMotionPages.session=function mountSession(){
     const animation=node.animate(
       [
         {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-        {opacity:0,transform:'translate3d(0,-6px,0) scale(.994)'}
+        {opacity:.42,transform:'translate3d(0,-4px,0) scale(.997)',offset:.62},
+        {opacity:0,transform:'translate3d(0,-8px,0) scale(.992)'}
       ],
       {
-        duration:95,
+        duration:125,
         easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
     );
 
-    return animation.finished.catch(()=>{});
+    return animation.finished.catch(()=>{}).then(()=>animation.cancel());
   }
 
   function setExecutionStage(stage){
@@ -660,7 +686,7 @@ window.DailyMotionPages.session=function mountSession(){
 
       const overlayAnimation=overlay.animate(
         [{opacity:0},{opacity:1}],
-        {duration:130,easing:'cubic-bezier(.2,.72,.2,1)'}
+        {duration:185,easing:'cubic-bezier(.2,.72,.2,1)'}
       );
       const top=$('.execution-top');
       top?.animate(
@@ -668,7 +694,7 @@ window.DailyMotionPages.session=function mountSession(){
           {opacity:0,transform:'translate3d(0,-5px,0)'},
           {opacity:1,transform:'translate3d(0,0,0)'}
         ],
-        {duration:190,easing:'cubic-bezier(.16,.82,.24,1)'}
+        {duration:245,easing:'cubic-bezier(.16,.84,.22,1)'}
       );
       const node=executionStages()[stage];
       animateExecutionStageIn(stage,node,{opening:true}).then(()=>{
@@ -733,7 +759,7 @@ window.DailyMotionPages.session=function mountSession(){
     const overlayAnimation=overlay.animate(
       [{opacity:1},{opacity:0}],
       {
-        duration:170,
+        duration:185,
         easing:'cubic-bezier(.4,0,.35,1)',
         fill:'both'
       }
@@ -744,7 +770,7 @@ window.DailyMotionPages.session=function mountSession(){
         {transform:'translate3d(0,-4px,0) scale(.996)'}
       ],
       {
-        duration:150,
+        duration:170,
         easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
