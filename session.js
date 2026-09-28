@@ -415,16 +415,17 @@ window.DailyMotionPages.session=function mountSession(){
     const meta=$('#executionMeta');
     const nextMeta=`Утро · ${current+1} из ${exercises.length}`;
     const metaChanged=meta.textContent!==nextMeta;
+
     meta.textContent=nextMeta;
     $('#executionTitle').textContent=exercise.title;
     $('#executionCountdownTitle').textContent=exercise.title;
     $('#executionKey').textContent=exercise.key;
 
-    if(metaChanged&&$('#executionOverlay')?.classList.contains('is-visible')&&!reduceExecutionMotion()){
+    if(metaChanged&&$('#executionOverlay')?.classList.contains('is-visible')&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
       meta.getAnimations?.().forEach(animation=>animation.cancel());
       meta.animate(
         [
-          {opacity:.42,transform:'translate3d(0,2px,0)'},
+          {opacity:.4,transform:'translate3d(0,2px,0)'},
           {opacity:1,transform:'translate3d(0,0,0)'}
         ],
         {duration:180,easing:'cubic-bezier(.16,.84,.22,1)'}
@@ -439,6 +440,25 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   const reduceExecutionMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const executionMotionAnimations=new Set();
+
+  function trackExecutionAnimation(animation){
+    if(!animation)return animation;
+    executionMotionAnimations.add(animation);
+    animation.finished.catch(()=>{}).then(()=>executionMotionAnimations.delete(animation));
+    return animation;
+  }
+
+  function cancelExecutionMotionWithin(node){
+    if(!node)return;
+    for(const animation of [...executionMotionAnimations]){
+      const target=animation.effect?.target;
+      if(target&&(target===node||node.contains(target))){
+        animation.cancel();
+        executionMotionAnimations.delete(animation);
+      }
+    }
+  }
 
   function executionFocusTarget(stage){
     return stage==='timer'
@@ -450,11 +470,12 @@ window.DailyMotionPages.session=function mountSession(){
 
   function resetExecutionStageNode(node){
     if(!node)return;
-    node.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());
+    cancelExecutionMotionWithin(node);
     node.classList.remove('is-stage-entering','is-stage-leaving','is-finishing-early');
     node.style.removeProperty('opacity');
     node.style.removeProperty('transform');
     node.style.removeProperty('will-change');
+    node.style.removeProperty('z-index');
     node.inert=false;
   }
 
@@ -494,42 +515,47 @@ window.DailyMotionPages.session=function mountSession(){
   function stageEntranceItems(stage,node){
     if(stage==='countdown'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,185,8,1],
-        [node.querySelector('h2'),18,210,10,.985],
-        [node.querySelector('.execution-countdown__value'),42,285,18,.86],
-        [node.querySelector('.execution-countdown__hint'),82,190,8,1],
-        [node.querySelector('.execution-text-action'),112,180,7,1]
+        [node.querySelector('.execution-eyebrow'),40,190,8,1],
+        [node.querySelector('h2'),52,215,10,.985],
+        [node.querySelector('.execution-countdown__value'),72,300,18,.86],
+        [node.querySelector('.execution-countdown__hint'),112,195,8,1],
+        [node.querySelector('.execution-text-action'),138,180,7,1]
       ];
     }
     if(stage==='timer'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,180,7,1],
-        [node.querySelector('.execution-heading h2'),16,210,10,.985],
-        [node.querySelector('.execution-key'),34,200,8,.975],
-        [node.querySelector('.execution-timer__ring'),54,315,18,.88],
-        [node.querySelector('.execution-actions'),108,215,9,.985]
+        [node.querySelector('.execution-eyebrow'),40,185,7,1],
+        [node.querySelector('.execution-heading h2'),52,215,10,.985],
+        [node.querySelector('.execution-key'),68,205,8,.975],
+        [node.querySelector('.execution-timer__ring'),82,325,18,.88],
+        [node.querySelector('.execution-actions'),132,220,9,.985]
       ];
     }
     return [
-      [node.querySelector('.execution-eyebrow'),0,180,7,1],
-      [node.querySelector('h2'),16,205,9,.985],
-      [node.querySelector('.execution-rest__value'),42,290,18,.87],
-      [node.querySelector('#restNext'),86,190,8,1],
-      [node.querySelector('.execution-rest__actions'),112,210,9,.985]
+      [node.querySelector('.execution-eyebrow'),40,185,7,1],
+      [node.querySelector('h2'),52,210,9,.985],
+      [node.querySelector('.execution-rest__value'),76,300,18,.87],
+      [node.querySelector('#restNext'),116,195,8,1],
+      [node.querySelector('.execution-rest__actions'),140,215,9,.985]
     ];
   }
 
   function animateExecutionStageIn(stage,node,{opening=false}={}){
     if(!node||reduceExecutionMotion())return Promise.resolve();
 
-    resetExecutionStageNode(node);
+    cancelExecutionMotionWithin(node);
     node.style.willChange='opacity, transform';
 
-    const root=node.animate(
+    const root=trackExecutionAnimation(node.animate(
       [
         {
-          opacity:opening?.2:.32,
+          opacity:opening?.18:.06,
           transform:`translate3d(0,${opening?12:9}px,0) scale(.991)`
+        },
+        {
+          opacity:opening?.58:.44,
+          transform:'translate3d(0,3px,0) scale(.997)',
+          offset:.46
         },
         {
           opacity:1,
@@ -537,35 +563,35 @@ window.DailyMotionPages.session=function mountSession(){
         }
       ],
       {
-        duration:opening?320:270,
+        duration:opening?330:285,
         easing:'cubic-bezier(.16,.84,.22,1)',
         fill:'both'
       }
-    );
+    ));
 
     const childAnimations=stageEntranceItems(stage,node)
       .filter(([child])=>Boolean(child))
       .map(([child,delay,duration,y,scale])=>{
-        child.getAnimations?.().forEach(animation=>animation.cancel());
+        cancelExecutionMotionWithin(child);
         const focal=scale<.95;
-        return child.animate(
+        return trackExecutionAnimation(child.animate(
           focal
             ?[
-              {opacity:.22,transform:`translate3d(0,${y}px,0) scale(${scale})`},
-              {opacity:1,transform:'translate3d(0,-1px,0) scale(1.012)',offset:.78},
+              {opacity:.16,transform:`translate3d(0,${y}px,0) scale(${scale})`},
+              {opacity:1,transform:'translate3d(0,-1px,0) scale(1.012)',offset:.8},
               {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
             ]
             :[
-              {opacity:.28,transform:`translate3d(0,${y}px,0) scale(${scale})`},
+              {opacity:.22,transform:`translate3d(0,${y}px,0) scale(${scale})`},
               {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
             ],
           {
             duration,
-            delay,
+            delay:opening?Math.max(0,delay-20):delay,
             easing:'cubic-bezier(.16,.88,.22,1)',
             fill:'backwards'
           }
-        );
+        ));
       });
 
     return Promise.allSettled([
@@ -573,35 +599,36 @@ window.DailyMotionPages.session=function mountSession(){
       ...childAnimations.map(animation=>animation.finished)
     ]).then(()=>{
       if(root.playState!=='idle'){
-        node.style.removeProperty('opacity');
-        node.style.removeProperty('transform');
-        node.style.removeProperty('will-change');
         root.cancel();
+        executionMotionAnimations.delete(root);
       }
+      node.style.removeProperty('opacity');
+      node.style.removeProperty('transform');
+      node.style.removeProperty('will-change');
     });
   }
 
   function animateExecutionStageOut(node){
     if(!node||reduceExecutionMotion())return Promise.resolve();
 
-    node.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());
+    cancelExecutionMotionWithin(node);
     node.inert=true;
     node.style.willChange='opacity, transform';
 
-    const animation=node.animate(
+    const animation=trackExecutionAnimation(node.animate(
       [
         {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-        {opacity:.42,transform:'translate3d(0,-4px,0) scale(.997)',offset:.62},
+        {opacity:.08,transform:'translate3d(0,-4px,0) scale(.997)',offset:.48},
         {opacity:0,transform:'translate3d(0,-8px,0) scale(.992)'}
       ],
       {
-        duration:125,
+        duration:145,
         easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
-    );
+    ));
 
-    return animation.finished.catch(()=>{}).then(()=>animation.cancel());
+    return animation.finished.catch(()=>{});
   }
 
   function setExecutionStage(stage){
@@ -621,46 +648,55 @@ window.DailyMotionPages.session=function mountSession(){
     const token=++stageTransitionToken;
     overlay.classList.add('is-stage-transitioning');
 
-    // Keep the old stage/meta intact until it is fully gone.
     Object.values(stages).forEach(node=>{
       if(node&&node!==previous&&node!==next){
         resetExecutionStageNode(node);
         node.hidden=true;
       }
     });
+
     resetExecutionStageNode(previous);
     resetExecutionStageNode(next);
+
+    executionStage=stage;
+    setExecutionCopy();
+    overlay.dataset.stage=stage;
+
     previous.hidden=false;
     previous.inert=true;
-    next.hidden=true;
-    next.inert=true;
+    previous.classList.add('is-stage-leaving');
+    previous.style.zIndex='1';
 
-    return animateExecutionStageOut(previous).then(()=>{
+    next.hidden=false;
+    next.inert=false;
+    next.classList.add('is-stage-entering');
+    next.style.zIndex='2';
+
+    const outgoing=animateExecutionStageOut(previous);
+    const incoming=animateExecutionStageIn(stage,next);
+
+    return Promise.allSettled([outgoing,incoming]).then(()=>{
       if(token!==stageTransitionToken||destroyed)return;
 
       resetExecutionStageNode(previous);
       previous.hidden=true;
-      previous.inert=false;
-
-      // Only now switch copy/meta/data-stage. No mixed frames.
-      executionStage=stage;
-      setExecutionCopy();
-      overlay.dataset.stage=stage;
 
       resetExecutionStageNode(next);
       next.hidden=false;
       next.inert=false;
 
-      return animateExecutionStageIn(stage,next);
-    }).then(()=>{
-      if(token!==stageTransitionToken||destroyed)return;
       overlay.classList.remove('is-stage-transitioning');
       requestAnimationFrame(()=>executionFocusTarget(stage)?.focus({preventScroll:true}));
     });
   }
 
   function playEarlyTimerExit(callback){
-    // One owner for transitions: the normal timer -> rest/close handoff.
+    const card=$('#timerCard');
+    if(!card||executionStage!=='timer'){
+      callback();
+      return;
+    }
+    card.classList.add('is-finishing-early');
     callback();
   }
 
@@ -684,18 +720,20 @@ window.DailyMotionPages.session=function mountSession(){
         return;
       }
 
-      const overlayAnimation=overlay.animate(
+      const overlayAnimation=trackExecutionAnimation(overlay.animate(
         [{opacity:0},{opacity:1}],
         {duration:185,easing:'cubic-bezier(.2,.72,.2,1)'}
-      );
+      ));
       const top=$('.execution-top');
-      top?.animate(
-        [
-          {opacity:0,transform:'translate3d(0,-5px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ],
-        {duration:245,easing:'cubic-bezier(.16,.84,.22,1)'}
-      );
+      if(top){
+        trackExecutionAnimation(top.animate(
+          [
+            {opacity:0,transform:'translate3d(0,-6px,0)'},
+            {opacity:1,transform:'translate3d(0,0,0)'}
+          ],
+          {duration:245,easing:'cubic-bezier(.16,.84,.22,1)'}
+        ));
+      }
       const node=executionStages()[stage];
       animateExecutionStageIn(stage,node,{opening:true}).then(()=>{
         requestAnimationFrame(()=>executionFocusTarget(stage)?.focus({preventScroll:true}));
@@ -756,25 +794,25 @@ window.DailyMotionPages.session=function mountSession(){
 
     overlay.classList.add('is-closing');
     const shell=$('.execution-shell');
-    const overlayAnimation=overlay.animate(
+    const overlayAnimation=trackExecutionAnimation(overlay.animate(
       [{opacity:1},{opacity:0}],
       {
         duration:185,
         easing:'cubic-bezier(.4,0,.35,1)',
         fill:'both'
       }
-    );
-    const shellAnimation=shell?.animate?.(
+    ));
+    const shellAnimation=shell?trackExecutionAnimation(shell.animate(
       [
         {transform:'translate3d(0,0,0) scale(1)'},
-        {transform:'translate3d(0,-4px,0) scale(.996)'}
+        {transform:'translate3d(0,-5px,0) scale(.996)'}
       ],
       {
         duration:170,
         easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
-    );
+    )):null;
 
     Promise.allSettled([
       overlayAnimation.finished,

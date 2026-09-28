@@ -5816,8 +5816,8 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   min-width:0;
 }
 
-/* v209 — authoritative fullscreen motion + regression layer.
-   Stage visibility and choreography are owned only by session.js (WAAPI). */
+/* Fullscreen execution motion — single runtime owner.
+   CSS owns geometry and state feedback; session.js owns stage choreography. */
 .execution-overlay.is-visible:not(.is-closing) .execution-shell,
 .execution-overlay.is-closing .execution-shell,
 .execution-overlay.is-visible .execution-top,
@@ -5844,7 +5844,9 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   transform-origin:50% 50%;
 }
 
-/* Disable only legacy entrance choreography. Runtime state animations stay available. */
+.execution-overlay .execution-stage.is-stage-leaving{z-index:1}
+.execution-overlay .execution-stage.is-stage-entering{z-index:2}
+
 @media(prefers-reduced-motion:no-preference){
   .execution-overlay.is-visible[data-stage] .execution-stage :is(
     .execution-heading,
@@ -5863,13 +5865,19 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     animation:none!important;
   }
 
-  /* Preserve the timer's meaningful final-seconds feedback. */
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring:not(.is-final-three){
+    animation:none!important;
+  }
+
   .execution-overlay .timer-ring.is-final-three{
     animation:timerUrgencyPulse 720ms cubic-bezier(.2,.72,.24,1) infinite alternate!important;
   }
+
+  .execution-overlay.is-stage-transitioning .execution-timer.is-stage-entering::before{
+    animation-delay:70ms!important;
+  }
 }
 
-/* "Старт" is a word, never a 9rem countdown numeral. */
 .execution-countdown__value.is-launching{
   width:auto!important;
   max-width:90vw!important;
@@ -5877,18 +5885,4 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   line-height:.96!important;
   letter-spacing:-.05em!important;
   white-space:nowrap!important;
-}
-
-/* Keep session feedback above the sticky navigation. */
-.session-body .toast{
-  bottom:calc(82px + env(safe-area-inset-bottom,0px))!important;
-  max-width:min(340px,calc(100% - 32px));
-  text-align:center;
-  line-height:1.3;
-}
-@media(max-width:390px){
-  .session-body .toast{
-    bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;
-    font-size:.75rem;
-  }
 }

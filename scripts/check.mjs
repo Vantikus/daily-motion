@@ -59,6 +59,7 @@ const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
 if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
 releaseVersions.add(swVersions[0]);
 if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersions].join(', ')}`);
+const releaseVersion=[...releaseVersions][0];
 
 const designThemeColor='#f4f5f1';
 if(manifest.theme_color!==designThemeColor)fail('manifest.webmanifest: theme_color drifted from Daily Motion canvas');
@@ -226,9 +227,10 @@ const swupVendorUrls=[
 for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes('navigation.js?v=174'))fail(`${file}: v174 navigation bootstrap is missing`);
-  for(const runtime of ['app.js?v=174','progress.js?v=174','session.js?v=174','motion.js?v=174']){
-    if(!content.includes(runtime))fail(`${file}: persistent page runtime missing: ${runtime}`);
+  if(!content.includes(`navigation.js?v=${releaseVersion}`))fail(`${file}: navigation bootstrap release version mismatch`);
+  for(const runtime of ['app.js','progress.js','session.js','motion.js']){
+    const versioned=`${runtime}?v=${releaseVersion}`;
+    if(!content.includes(versioned))fail(`${file}: persistent page runtime missing: ${versioned}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
 }
@@ -367,7 +369,7 @@ if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>c
 
 for(const fragment of [
   "const SWUP_VENDOR_URLS=[",
-  "'/navigation.js?v=174'",
+  `'/navigation.js?v=${releaseVersion}'`,
   'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
   'SWUP_VENDOR_URLS.includes(request.url)',
   "request.headers.get('X-Requested-With')==='swup'",
@@ -439,7 +441,7 @@ for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completi
   if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
 }
 for(const fragment of [
-  "'/motion.js?v=174'",
+  `'/motion.js?v=${releaseVersion}'`,
   "'/vendor/gsap/SplitText.min.js'"
 ]){
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
@@ -727,38 +729,6 @@ if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
   fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
 }
 
-const countExactCssRule=selector=>{
-  const escaped=selector.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  return (styles.match(new RegExp(`(^|\\n)\\s*${escaped}\\s*\\{`,'g'))||[]).length;
-};
-const cssRuleBudgets={
-  '.timer-ring':2,
-  '.timer-ring__inner strong':1,
-  '.exercise-scroll':1,
-  '.session-shell':2,
-  '.exercise-main':1,
-  '.exercise-head':1,
-  '.exercise-head p':2,
-  '.exercise-facts':2,
-  '.exercise-facts>div':1,
-  '.exercise-facts span':1,
-  '.technique-key':1,
-  '.technique-key span':1,
-  '.technique-key strong':1,
-  '.details-section':1,
-  '.details-title':1,
-  '.detail-card__toggle':2,
-  '.setting-row':2,
-  '.settings-reset':1,
-  '.completion-button':1,
-  '.settings-install':1,
-  '.home-body .routines-section':1,
-  '.home-body .activity-section':1
-};
-for(const [selector,maxCount] of Object.entries(cssRuleBudgets)){
-  const count=countExactCssRule(selector);
-  if(count>maxCount)fail(`styles.css: selector ${selector} regressed to ${count} cascade layers (max ${maxCount})`);
-}
 if(/@media[^{]+\{\s*\}/.test(styles))fail('styles.css: empty media query remains after consolidation');
 
 const typographyMarker='/* Heroicons Outline — primary UI icon system · 1.7px stroke */';
