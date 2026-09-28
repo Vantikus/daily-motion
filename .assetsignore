@@ -1,0 +1,35 @@
+# Daily Motion — files that must never be published as Worker static assets
+.git/
+.github/
+.Jules/
+.wrangler/
+node_modules/
+
+tests/
+test-results/
+playwright-report/
+blob-report/
+scripts/
+
+README.md
+DESIGN_SYSTEM.md
+LIBRARIES.md
+MOTION_ROADMAP.md
+HEROICONS-LICENSE.txt
+playwright.config.js
+deploy.bat
+package.json
+package-lock.json
+bun.lock
+bun.lockb
+
+# Obsolete temporary UI override files; T1–T5 are consolidated in styles.css.
+t1-v193.css
+t2-v194.css
+t3-v195.css
+t4-v196.css
+t5-v197.css
+
+.DS_Store
+Thumbs.db
+_verify*.png
