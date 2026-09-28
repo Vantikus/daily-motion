@@ -548,7 +548,7 @@ test('technique accordion keeps at most one section expanded',async({page})=>{
 });
 
 
-test('timer and rest stages overlap during the crossfade',async({page})=>{
+test('finish-early hands timer to rest without exposing two full stages',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('dailyMotionState.v3',JSON.stringify({
       version:3,
@@ -561,28 +561,72 @@ test('timer and rest stages overlap during the crossfade',async({page})=>{
   await page.locator('#nextButton').click();
   await expect(page.locator('#timerCard')).toBeVisible();
 
-  await page.evaluate(()=>{
-    const timer=document.querySelector('#timerCard');
-    const rest=document.querySelector('#executionRestStage');
-    window.__stageCrossfade=[];
-    const capture=()=>window.__stageCrossfade.push({
-      timerLeaving:timer.classList.contains('is-stage-leaving'),
-      restEntering:rest.classList.contains('is-stage-entering'),
-      timerHidden:timer.hidden,
-      restHidden:rest.hidden
-    });
-    new MutationObserver(capture).observe(timer,{attributes:true,attributeFilter:['class','hidden']});
-    new MutationObserver(capture).observe(rest,{attributes:true,attributeFilter:['class','hidden']});
-    capture();
-  });
-
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','rest');
   await expect(page.locator('#executionRestStage')).toBeVisible();
+  await expect(page.locator('#timerCard')).toBeHidden();
 
-  const samples=await page.evaluate(()=>window.__stageCrossfade);
-  expect(samples.some(item=>item.timerLeaving&&item.restEntering&&!item.timerHidden&&!item.restHidden)).toBe(true);
-  await expect(page.locator('#timerCard')).toBeHidden({timeout:1000});
+  await page.waitForTimeout(320);
+  const visibleStages=await page.locator('.execution-stage').evaluateAll(nodes=>
+    nodes.filter(node=>!node.hidden&&getComputedStyle(node).display!=='none').map(node=>node.id)
+  );
+  expect(visibleStages).toEqual(['executionRestStage']);
+});
+
+
+test('rest skip hands through countdown before starting the next timer',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:3,restSeconds:15,sound:false,autoNext:true,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{}
+    }));
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').click();
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','countdown');
+  await expect(page.locator('#executionCountdownStage')).toBeVisible();
+  await expect(page.locator('#timerCard')).toBeHidden();
+
+  await expect(page.locator('#timerCard')).toBeVisible({timeout:4500});
+  await page.locator('#executionFinishEarly').evaluate(button=>button.click());
+  await expect(page.locator('#executionRestStage')).toBeVisible();
+  await page.locator('#restSkip').evaluate(button=>button.click());
+
+  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','countdown');
+  await expect(page.locator('#executionCountdownStage')).toBeVisible();
+  await expect(page.locator('#executionRestStage')).toBeHidden();
+  await expect(page.locator('#timerCard')).toBeHidden();
+
+  await expect(page.locator('#timerCard')).toBeVisible({timeout:4500});
+  await expect(page.locator('#executionCountdownStage')).toBeHidden();
+  await expect(page.locator('#timerState')).toHaveText('Идёт');
+});
+
+
+test('finish-early ignores a simultaneous close until the rest handoff is stable',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({
+      version:3,
+      settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext:true,theme:'system'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},
+      days:{}
+    }));
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  await page.locator('#nextButton').click();
+  await expect(page.locator('#timerCard')).toBeVisible();
+
+  await page.locator('#executionFinishEarly').evaluate(button=>button.click());
+  await page.waitForTimeout(35);
+  await page.locator('#executionClose').evaluate(button=>button.click());
+
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','rest');
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#executionRestStage')).toBeVisible();
+  await expect(page.locator('#timerCard')).toBeHidden();
 });
 
 

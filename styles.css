@@ -1409,10 +1409,6 @@ a[href],
     animation:qmFadeDown 260ms var(--ease) both;
   }
 
-  .execution-stage:not([hidden]){
-    animation:qmStageIn 300ms cubic-bezier(.18,.78,.22,1) both;
-  }
-
   .exercise-main.enter-forward .exercise-facts,
   .exercise-main.enter-back .exercise-facts{
     animation:fadeUp 260ms 45ms var(--ease) both;
@@ -1486,9 +1482,6 @@ a[href],
 @media(prefers-reduced-motion:no-preference){
   .settings-overlay.is-visible .settings-sheet{
     animation:qmSheetInSoft 440ms cubic-bezier(.16,.82,.24,1) both;
-  }
-  .execution-stage:not([hidden]){
-    animation:qmStageInSoft 380ms cubic-bezier(.18,.74,.22,1) both;
   }
   .execution-overlay.is-visible .execution-top{
     animation:qmFadeDownSoft 320ms cubic-bezier(.2,.7,.25,1) both;
@@ -2717,7 +2710,6 @@ a[href] *,
   .exercise-main.enter-back :is(.exercise-head,.exercise-facts,.technique-key,.details-section){
     animation:qmDirectionalSwap var(--qm-content) var(--ease) both!important;
   }
-  .execution-stage:not([hidden]){animation:qmStageQuiet var(--qm-stage) var(--ease) both!important}
   .step-indicator.is-updating{animation:none!important}
 }
 @keyframes qmDirectionalSwap{from{opacity:.6;transform:translateX(var(--qm-direction))}to{opacity:1;transform:none}}
@@ -3385,20 +3377,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 .execution-stage.is-stage-leaving{
   pointer-events:none;
-  animation:executionStageOut 115ms cubic-bezier(.4,0,1,1) both!important;
 }
-.execution-stage.is-stage-entering{
-  animation:executionStageIn 165ms 10ms cubic-bezier(.16,.82,.24,1) both!important;
-}
-@keyframes executionStageOut{
-  from{opacity:1;transform:translateY(0)}
-  to{opacity:0;transform:translateY(-6px)}
-}
-@keyframes executionStageIn{
-  from{opacity:0;transform:translateY(8px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
 .execution-rest__actions{
   width:min(360px,100%);
   margin-top:18px;
@@ -3413,9 +3392,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 @media(prefers-reduced-motion:reduce){
   html:active-view-transition-type(theme)::view-transition-old(root),
-  html:active-view-transition-type(theme)::view-transition-new(root),
-  .execution-stage.is-stage-leaving,
-  .execution-stage.is-stage-entering{
+  html:active-view-transition-type(theme)::view-transition-new(root){
     animation:none!important;
   }
 }
@@ -3504,7 +3481,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 /* v157 page navigation motion is owned by Swup JS Plugin + GSAP. */
 
-/* v158 timer entrance choreography — calm focus reveal, no overshoot. */
+/* v211 timer surface — stage choreography is owned exclusively by session.js / WAAPI. */
 .execution-timer{
   position:relative;
   isolation:isolate;
@@ -3526,59 +3503,16 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     color-mix(in srgb,var(--accent) 7%,transparent) 34%,
     transparent 72%);
 }
-
-@media(prefers-reduced-motion:no-preference){
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
-    animation:qmTimerFocusBloom 420ms 5ms cubic-bezier(.16,.86,.22,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
-    animation:qmTimerHeadingIn 230ms 0ms cubic-bezier(.16,.86,.22,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-key{
-    animation:qmTimerKeyIn 210ms 28ms cubic-bezier(.16,.86,.22,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
-    animation:qmTimerRingIn 340ms 22ms cubic-bezier(.16,.92,.2,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsIn 210ms 72ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
-    animation:qmTimerActionsIn 250ms 92ms cubic-bezier(.16,.86,.22,1) both;
-  }
-}
-
-@keyframes qmTimerFocusBloom{
-  0%{opacity:0;transform:translate3d(-50%,-47%,0) scale(.78)}
-  52%{opacity:.38}
-  100%{opacity:.13;transform:translate3d(-50%,-47%,0) scale(1.04)}
-}
-@keyframes qmTimerHeadingIn{
-  from{opacity:0;transform:translate3d(0,7px,0)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmTimerKeyIn{
-  from{opacity:0;transform:translate3d(0,5px,0) scale(.985)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmTimerRingIn{
-  from{opacity:0;transform:translate3d(0,11px,0) scale(.91)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmTimerDigitsIn{
-  from{opacity:0;transform:scale(.955)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmTimerActionsIn{
-  from{opacity:0;transform:translate3d(0,9px,0)}
-  to{opacity:1;transform:none}
+.execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
+  opacity:.13;
+  transform:translate3d(-50%,-47%,0) scale(1.04);
 }
 
 @media(prefers-reduced-motion:reduce){
   .execution-timer::before{display:none!important}
 }
 
-/* v159 countdown + early timer exit choreography. */
+/* v211 countdown surface — motion is owned exclusively by session.js / WAAPI. */
 .execution-countdown{
   position:relative;
   isolation:isolate;
@@ -3600,80 +3534,9 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     color-mix(in srgb,var(--accent) 5%,transparent) 38%,
     transparent 72%);
 }
-
-@media(prefers-reduced-motion:no-preference){
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
-    animation:qmCountdownBloomIn 720ms 20ms cubic-bezier(.16,.82,.24,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow{
-    animation:qmCountdownTextIn 320ms 10ms cubic-bezier(.16,.82,.24,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2{
-    animation:qmCountdownTextIn 360ms 45ms cubic-bezier(.16,.82,.24,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value{
-    animation:qmCountdownValueIn 500ms 85ms cubic-bezier(.16,.9,.22,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint{
-    animation:qmCountdownTextIn 360ms 150ms cubic-bezier(.16,.82,.24,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action{
-    animation:qmCountdownTextIn 360ms 190ms cubic-bezier(.16,.82,.24,1) both;
-  }
-
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions{
-    animation:qmTimerActionsOut 95ms cubic-bezier(.4,0,1,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner{
-    animation:qmTimerDigitsOut 105ms 0ms cubic-bezier(.4,0,1,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring{
-    animation:qmTimerRingOut 175ms 10ms cubic-bezier(.4,0,.35,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key{
-    animation:qmTimerCopyOut 105ms 18ms cubic-bezier(.4,0,1,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
-    animation:qmTimerCopyOut 115ms 28ms cubic-bezier(.4,0,1,1) both;
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
-    animation:qmTimerBloomOut 180ms cubic-bezier(.4,0,.35,1) both;
-  }
-}
-
-@keyframes qmCountdownBloomIn{
-  0%{opacity:0;transform:translate3d(-50%,-50%,0) scale(.7)}
-  58%{opacity:.34}
-  100%{opacity:.12;transform:translate3d(-50%,-50%,0) scale(1.08)}
-}
-@keyframes qmCountdownTextIn{
-  from{opacity:0;transform:translate3d(0,8px,0)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmCountdownValueIn{
-  from{opacity:0;transform:translate3d(0,16px,0) scale(.82)}
-  72%{opacity:1;transform:translate3d(0,-1px,0) scale(1.035)}
-  to{opacity:1;transform:none}
-}
-@keyframes qmTimerActionsOut{
-  from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,7px,0)}
-}
-@keyframes qmTimerDigitsOut{
-  from{opacity:1;transform:none}
-  to{opacity:0;transform:scale(.95)}
-}
-@keyframes qmTimerRingOut{
-  from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,-6px,0) scale(.9)}
-}
-@keyframes qmTimerCopyOut{
-  from{opacity:1;transform:none}
-  to{opacity:0;transform:translate3d(0,-5px,0)}
-}
-@keyframes qmTimerBloomOut{
-  from{opacity:.16;transform:translate3d(-50%,-47%,0) scale(1.08)}
-  to{opacity:0;transform:translate3d(-50%,-47%,0) scale(1.12)}
+.execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
+  opacity:.12;
+  transform:translate3d(-50%,-50%,0) scale(1.08);
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -3857,93 +3720,6 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     animation:none!important;
   }
 
-  .execution-stage.is-stage-leaving{
-    animation-duration:120ms!important;
-    animation-timing-function:var(--motion-ease-exit)!important;
-  }
-  .execution-stage.is-stage-entering{
-    animation-duration:180ms!important;
-    animation-delay:0ms!important;
-    animation-timing-function:var(--motion-ease-enter)!important;
-  }
-
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
-    animation-duration:360ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
-    animation-duration:200ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-key{
-    animation-duration:190ms;
-    animation-delay:24ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
-    animation-duration:300ms;
-    animation-delay:18ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-    animation-duration:200ms;
-    animation-delay:62ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
-    animation-duration:220ms;
-    animation-delay:82ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
-    animation-duration:420ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow{
-    animation-duration:200ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2{
-    animation-duration:220ms;
-    animation-delay:30ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value{
-    animation-duration:300ms;
-    animation-delay:60ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint{
-    animation-duration:220ms;
-    animation-delay:100ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action{
-    animation-duration:220ms;
-    animation-delay:130ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
-    animation-duration:120ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-exit);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
-    animation-duration:160ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-exit);
-  }
-
   .completion-overlay.is-visible .completion-check{
     animation-duration:440ms;
     animation-delay:80ms;
@@ -3999,93 +3775,6 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     animation:dmExerciseSwap 215ms 50ms var(--motion-ease-enter) both!important;
   }
 
-  .execution-stage.is-stage-leaving{
-    animation-duration:100ms!important;
-    animation-delay:0ms!important;
-    animation-timing-function:var(--motion-ease-exit)!important;
-  }
-  .execution-stage.is-stage-entering{
-    animation-duration:160ms!important;
-    animation-delay:0ms!important;
-    animation-timing-function:var(--motion-ease-enter)!important;
-  }
-
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before{
-    animation-duration:300ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-heading{
-    animation-duration:180ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-key{
-    animation-duration:180ms;
-    animation-delay:20ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring{
-    animation-duration:250ms;
-    animation-delay:18ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-    animation-duration:170ms;
-    animation-delay:50ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-actions{
-    animation-duration:185ms;
-    animation-delay:68ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before{
-    animation-duration:300ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow{
-    animation-duration:175ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2{
-    animation-duration:190ms;
-    animation-delay:18ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value{
-    animation-duration:235ms;
-    animation-delay:38ms;
-    animation-timing-function:var(--motion-ease-emphasized);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint{
-    animation-duration:180ms;
-    animation-delay:68ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action{
-    animation-duration:180ms;
-    animation-delay:88ms;
-    animation-timing-function:var(--motion-ease-enter);
-  }
-
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-actions,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring .timer-ring__inner,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-key,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-heading{
-    animation-duration:105ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-exit);
-  }
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early .execution-timer__ring,
-  .execution-overlay.is-visible[data-stage="timer"] .execution-timer.is-finishing-early::before{
-    animation-duration:140ms;
-    animation-delay:0ms;
-    animation-timing-function:var(--motion-ease-exit);
-  }
 }
 
 @keyframes dmExerciseSwap{
@@ -5755,8 +5444,8 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 
 
-/* v207 — clean fullscreen stabilization.
-   Base motion/layout restored to v201; only targeted runtime fixes live below. */
+/* v211 — fullscreen stabilization support.
+   Stage choreography lives in session.js / WAAPI; CSS here only preserves geometry and status fixes. */
 
 /* Countdown launch word is text, never a giant numeral. */
 .execution-countdown__value.is-launching{
@@ -5768,11 +5457,6 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   white-space:nowrap!important;
 }
 
-/* Timer digits stay visible from the first timer frame; the ring still keeps its old entrance. */
-.execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner{
-  animation-delay:0ms!important;
-  opacity:1;
-}
 
 /* Session status must never cover the sticky workout navigation. */
 .session-body .toast{

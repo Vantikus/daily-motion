@@ -447,35 +447,36 @@ for(const fragment of [
   if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
 }
 
+// Fullscreen execution transitions are owned by session.js/WAAPI only.
 for(const fragment of [
-  '/* v158 timer entrance choreography',
-  '.execution-overlay.is-visible[data-stage=\"timer\"] .execution-timer__ring',
-  'animation:qmTimerRingIn 340ms 22ms',
-  'animation:qmTimerDigitsIn 210ms 72ms',
-  'animation:qmTimerActionsIn 250ms 92ms',
-  '@keyframes qmTimerFocusBloom',
-  '@keyframes qmTimerRingIn',
-  '@keyframes qmTimerDigitsIn'
-]){
-  if(!styles.includes(fragment))fail(`styles.css: v158 timer entrance motion missing: ${fragment}`);
-}
-
-for(const fragment of [
-  '/* v159 countdown + early timer exit choreography',
-  'animation:qmCountdownValueIn 500ms 85ms',
-  '@keyframes qmCountdownBloomIn',
-  '@keyframes qmTimerRingOut',
-  '.execution-timer.is-finishing-early .execution-actions'
-]){
-  if(!styles.includes(fragment))fail(`styles.css: v159 countdown/exit motion missing: ${fragment}`);
-}
-for(const fragment of [
-  'const animateCountdownValue=',
+  'function animateExecutionNode(node,keyframes,options)',
+  'function playExecutionStageContent(stage,node',
+  'function setExecutionStage(stage,{animate=true}={})',
+  "previous.classList.add('is-stage-leaving')",
+  "next.classList.add('is-stage-entering')",
   'function playEarlyTimerExit(callback)',
   "card.classList.add('is-finishing-early')",
   'playEarlyTimerExit(()=>{'
 ]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: v159 countdown/exit choreography missing: ${fragment}`);
+  if(!sessionRuntime.includes(fragment))fail(`session.js: unified fullscreen motion missing: ${fragment}`);
+}
+for(const obsolete of [
+  'animation:qmTimerRingIn 340ms 22ms',
+  'animation:qmTimerDigitsIn 210ms 72ms',
+  'animation:qmTimerActionsIn 250ms 92ms',
+  'animation:qmCountdownValueIn 500ms 85ms',
+  'animation:qmTimerActionsOut 95ms',
+  'animation:executionStageOut 115ms',
+  'animation:executionStageIn 165ms'
+]){
+  if(styles.includes(obsolete))fail(`styles.css: competing fullscreen CSS animation returned: ${obsolete}`);
+}
+for(const fragment of [
+  '.execution-overlay.is-visible[data-stage=\"timer\"] .execution-timer::before',
+  '.execution-overlay.is-visible[data-stage=\"countdown\"] .execution-countdown::before',
+  '.execution-stage.is-stage-leaving{\n  pointer-events:none;'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: fullscreen stabilization contract missing: ${fragment}`);
 }
 
 for(const fragment of [
