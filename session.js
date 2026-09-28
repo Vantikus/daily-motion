@@ -412,25 +412,10 @@ window.DailyMotionPages.session=function mountSession(){
 
   function setExecutionCopy(){
     const exercise=exercises[current];
-    const meta=$('#executionMeta');
-    const nextMeta=`Утро · ${current+1} из ${exercises.length}`;
-    const metaChanged=meta.textContent!==nextMeta;
-
-    meta.textContent=nextMeta;
+    $('#executionMeta').textContent=`Утро · ${current+1} из ${exercises.length}`;
     $('#executionTitle').textContent=exercise.title;
     $('#executionCountdownTitle').textContent=exercise.title;
     $('#executionKey').textContent=exercise.key;
-
-    if(metaChanged&&$('#executionOverlay')?.classList.contains('is-visible')&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-      meta.getAnimations?.().forEach(animation=>animation.cancel());
-      meta.animate(
-        [
-          {opacity:.4,transform:'translate3d(0,2px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ],
-        {duration:180,easing:'cubic-bezier(.16,.84,.22,1)'}
-      );
-    }
   }
 
   const executionStages=()=>({
@@ -439,51 +424,13 @@ window.DailyMotionPages.session=function mountSession(){
     rest:$('#executionRestStage')
   });
 
-  const reduceExecutionMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const executionMotionAnimations=new Set();
-
-  function trackExecutionAnimation(animation){
-    if(!animation)return animation;
-    executionMotionAnimations.add(animation);
-    animation.finished.catch(()=>{}).then(()=>executionMotionAnimations.delete(animation));
-    return animation;
-  }
-
-  function cancelExecutionMotionWithin(node){
-    if(!node)return;
-    for(const animation of [...executionMotionAnimations]){
-      const target=animation.effect?.target;
-      if(target&&(target===node||node.contains(target))){
-        animation.cancel();
-        executionMotionAnimations.delete(animation);
-      }
-    }
-  }
-
-  function executionFocusTarget(stage){
-    return stage==='timer'
-      ?$('#timerToggle')
-      :stage==='rest'
-        ?$('#restSkip')
-        :$('#countdownCancel');
-  }
-
-  function resetExecutionStageNode(node){
-    if(!node)return;
-    cancelExecutionMotionWithin(node);
-    node.classList.remove('is-stage-entering','is-stage-leaving','is-finishing-early');
-    node.style.removeProperty('opacity');
-    node.style.removeProperty('transform');
-    node.style.removeProperty('will-change');
-    node.style.removeProperty('z-index');
-    node.inert=false;
-  }
-
   function clearExecutionStageTransition(){
     stageTransitionToken++;
-    const overlay=$('#executionOverlay');
-    overlay?.classList.remove('is-stage-transitioning');
-    Object.values(executionStages()).forEach(resetExecutionStageNode);
+    Object.values(executionStages()).forEach(node=>{
+      if(!node)return;
+      node.classList.remove('is-stage-entering','is-stage-leaving');
+      node.inert=false;
+    });
   }
 
   function afterAnimations(node,callback,{subtree=false}={}){
@@ -497,255 +444,77 @@ window.DailyMotionPages.session=function mountSession(){
     });
   }
 
-  function primeExecutionStage(stage){
-    const stages=executionStages();
-    const overlay=$('#executionOverlay');
-    executionStage=stage;
-    setExecutionCopy();
-    if(overlay)overlay.dataset.stage=stage;
-
-    Object.entries(stages).forEach(([name,node])=>{
-      if(!node)return;
-      resetExecutionStageNode(node);
-      node.hidden=name!==stage;
-      node.inert=name!==stage;
-    });
-  }
-
-  function stageEntranceItems(stage,node){
-    if(stage==='countdown'){
-      return [
-        [node.querySelector('.execution-eyebrow'),40,190,8,1],
-        [node.querySelector('h2'),52,215,10,.985],
-        [node.querySelector('.execution-countdown__value'),72,300,18,.86],
-        [node.querySelector('.execution-countdown__hint'),112,195,8,1],
-        [node.querySelector('.execution-text-action'),138,180,7,1]
-      ];
-    }
-    if(stage==='timer'){
-      return [
-        [node.querySelector('.execution-eyebrow'),40,185,7,1],
-        [node.querySelector('.execution-heading h2'),52,215,10,.985],
-        [node.querySelector('.execution-key'),68,205,8,.975],
-        [node.querySelector('.execution-timer__ring'),82,325,18,.88],
-        [node.querySelector('.execution-actions'),132,220,9,.985]
-      ];
-    }
-    return [
-      [node.querySelector('.execution-eyebrow'),40,185,7,1],
-      [node.querySelector('h2'),52,210,9,.985],
-      [node.querySelector('.execution-rest__value'),76,300,18,.87],
-      [node.querySelector('#restNext'),116,195,8,1],
-      [node.querySelector('.execution-rest__actions'),140,215,9,.985]
-    ];
-  }
-
-  function animateExecutionStageIn(stage,node,{opening=false}={}){
-    if(!node||reduceExecutionMotion())return Promise.resolve();
-
-    cancelExecutionMotionWithin(node);
-    node.style.willChange='opacity, transform';
-
-    const root=trackExecutionAnimation(node.animate(
-      [
-        {
-          opacity:opening?.18:.06,
-          transform:`translate3d(0,${opening?12:9}px,0) scale(.991)`
-        },
-        {
-          opacity:opening?.58:.44,
-          transform:'translate3d(0,3px,0) scale(.997)',
-          offset:.46
-        },
-        {
-          opacity:1,
-          transform:'translate3d(0,0,0) scale(1)'
-        }
-      ],
-      {
-        duration:opening?330:285,
-        easing:'cubic-bezier(.16,.84,.22,1)',
-        fill:'both'
-      }
-    ));
-
-    const childAnimations=stageEntranceItems(stage,node)
-      .filter(([child])=>Boolean(child))
-      .map(([child,delay,duration,y,scale])=>{
-        cancelExecutionMotionWithin(child);
-        const focal=scale<.95;
-        return trackExecutionAnimation(child.animate(
-          focal
-            ?[
-              {opacity:.16,transform:`translate3d(0,${y}px,0) scale(${scale})`},
-              {opacity:1,transform:'translate3d(0,-1px,0) scale(1.012)',offset:.8},
-              {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
-            ]
-            :[
-              {opacity:.22,transform:`translate3d(0,${y}px,0) scale(${scale})`},
-              {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
-            ],
-          {
-            duration,
-            delay:opening?Math.max(0,delay-20):delay,
-            easing:'cubic-bezier(.16,.88,.22,1)',
-            fill:'backwards'
-          }
-        ));
-      });
-
-    return Promise.allSettled([
-      root.finished,
-      ...childAnimations.map(animation=>animation.finished)
-    ]).then(()=>{
-      if(root.playState!=='idle'){
-        root.cancel();
-        executionMotionAnimations.delete(root);
-      }
-      node.style.removeProperty('opacity');
-      node.style.removeProperty('transform');
-      node.style.removeProperty('will-change');
-    });
-  }
-
-  function animateExecutionStageOut(node){
-    if(!node||reduceExecutionMotion())return Promise.resolve();
-
-    cancelExecutionMotionWithin(node);
-    node.inert=true;
-    node.style.willChange='opacity, transform';
-
-    const animation=trackExecutionAnimation(node.animate(
-      [
-        {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-        {opacity:.08,transform:'translate3d(0,-4px,0) scale(.997)',offset:.48},
-        {opacity:0,transform:'translate3d(0,-8px,0) scale(.992)'}
-      ],
-      {
-        duration:145,
-        easing:'cubic-bezier(.4,0,1,1)',
-        fill:'both'
-      }
-    ));
-
-    return animation.finished.catch(()=>{});
-  }
-
   function setExecutionStage(stage){
     const stages=executionStages();
     const next=stages[stage];
     const previous=stages[executionStage];
     const overlay=$('#executionOverlay');
-    const isVisible=Boolean(overlay?.classList.contains('is-visible'));
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canAnimate=Boolean(
+      previous&&next&&previous!==next&&
+      overlay?.classList.contains('is-visible')&&!reduceMotion
+    );
 
-    if(!next)return Promise.resolve();
-
-    if(!isVisible||!previous||previous===next||reduceExecutionMotion()){
-      primeExecutionStage(stage);
-      return Promise.resolve();
-    }
-
-    const token=++stageTransitionToken;
-    overlay.classList.add('is-stage-transitioning');
-
-    Object.values(stages).forEach(node=>{
-      if(node&&node!==previous&&node!==next){
-        resetExecutionStageNode(node);
-        node.hidden=true;
-      }
-    });
-
-    resetExecutionStageNode(previous);
-    resetExecutionStageNode(next);
-
+    clearExecutionStageTransition();
     executionStage=stage;
     setExecutionCopy();
-    overlay.dataset.stage=stage;
+    if(overlay)overlay.dataset.stage=stage;
 
+    if(!canAnimate){
+      Object.entries(stages).forEach(([name,node])=>{
+        if(node)node.hidden=name!==stage;
+      });
+      return;
+    }
+
+    Object.values(stages).forEach(node=>{
+      if(node&&node!==previous&&node!==next)node.hidden=true;
+    });
     previous.hidden=false;
-    previous.inert=true;
-    previous.classList.add('is-stage-leaving');
-    previous.style.zIndex='1';
-
     next.hidden=false;
+    previous.inert=true;
     next.inert=false;
+    previous.classList.add('is-stage-leaving');
     next.classList.add('is-stage-entering');
-    next.style.zIndex='2';
 
-    const outgoing=animateExecutionStageOut(previous);
-    const incoming=animateExecutionStageIn(stage,next);
-
-    return Promise.allSettled([outgoing,incoming]).then(()=>{
-      if(token!==stageTransitionToken||destroyed)return;
-
-      resetExecutionStageNode(previous);
+    const token=stageTransitionToken;
+    afterAnimations(next,()=>{
+      if(token!==stageTransitionToken)return;
       previous.hidden=true;
-
-      resetExecutionStageNode(next);
-      next.hidden=false;
-      next.inert=false;
-
-      overlay.classList.remove('is-stage-transitioning');
-      requestAnimationFrame(()=>executionFocusTarget(stage)?.focus({preventScroll:true}));
+      previous.inert=false;
+      previous.classList.remove('is-stage-leaving','is-finishing-early');
+      next.classList.remove('is-stage-entering');
     });
   }
 
   function playEarlyTimerExit(callback){
     const card=$('#timerCard');
-    if(!card||executionStage!=='timer'){
-      callback();
-      return;
-    }
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!card||executionStage!=='timer'||reduceMotion){callback();return;}
+
+    card.getAnimations?.({subtree:true}).forEach(animation=>animation.cancel());
+    card.inert=true;
     card.classList.add('is-finishing-early');
-    callback();
+    afterAnimations(card,callback,{subtree:true});
   }
 
   function showExecution(stage){
     const overlay=$('#executionOverlay');
     if(!overlay)return;
     executionHideToken++;
-    overlay.classList.remove('is-handoff','is-closing','is-surface-fade','is-stage-transitioning');
-
-    const wasVisible=overlay.classList.contains('is-visible');
-    if(!wasVisible){
-      modalReturnFocus=document.activeElement;
-      primeExecutionStage(stage);
-      overlay.classList.add('is-visible');
-      overlay.setAttribute('aria-hidden','false');
-      syncModalState();
-      emitReloadSafetyChange();
-
-      if(reduceExecutionMotion()){
-        requestAnimationFrame(()=>executionFocusTarget(stage)?.focus({preventScroll:true}));
-        return;
-      }
-
-      const overlayAnimation=trackExecutionAnimation(overlay.animate(
-        [{opacity:0},{opacity:1}],
-        {duration:185,easing:'cubic-bezier(.2,.72,.2,1)'}
-      ));
-      const top=$('.execution-top');
-      if(top){
-        trackExecutionAnimation(top.animate(
-          [
-            {opacity:0,transform:'translate3d(0,-6px,0)'},
-            {opacity:1,transform:'translate3d(0,0,0)'}
-          ],
-          {duration:245,easing:'cubic-bezier(.16,.84,.22,1)'}
-        ));
-      }
-      const node=executionStages()[stage];
-      animateExecutionStageIn(stage,node,{opening:true}).then(()=>{
-        requestAnimationFrame(()=>executionFocusTarget(stage)?.focus({preventScroll:true}));
-      });
-      overlayAnimation.finished.catch(()=>{});
-      return;
-    }
-
+    overlay.classList.remove('is-handoff','is-closing','is-surface-fade');
+    if(!overlay.classList.contains('is-visible'))modalReturnFocus=document.activeElement;
+    setExecutionStage(stage);
+    overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
     emitReloadSafetyChange();
-    setExecutionStage(stage);
+    const focusTarget=stage==='timer'
+      ?$('#timerToggle')
+      :stage==='rest'
+        ?$('#restSkip')
+        :$('#countdownCancel');
+    requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
   }
 
   function hideExecution(handoff=null,{afterHidden=null}={}){
@@ -755,9 +524,9 @@ window.DailyMotionPages.session=function mountSession(){
       clearTimeout(stageTimer);
       stageTimer=null;
     }
-
     clearExecutionStageTransition();
 
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hasHandoff=typeof handoff==='function'&&overlay.classList.contains('is-visible');
     const token=++executionHideToken;
 
@@ -773,8 +542,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     const finish=()=>{
       if(token!==executionHideToken)return;
-      overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade','is-stage-transitioning');
-      overlay.style.removeProperty('opacity');
+      overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade');
       afterHidden?.();
       const timerCard=$('#timerCard');
       timerCard?.classList.remove('is-finishing-early');
@@ -787,41 +555,16 @@ window.DailyMotionPages.session=function mountSession(){
       }
     };
 
-    if(reduceExecutionMotion()||!overlay.classList.contains('is-visible')){
+    if(reduceMotion||!overlay.classList.contains('is-visible')){
       finish();
       return;
     }
 
     overlay.classList.add('is-closing');
-    const shell=$('.execution-shell');
-    const overlayAnimation=trackExecutionAnimation(overlay.animate(
-      [{opacity:1},{opacity:0}],
-      {
-        duration:185,
-        easing:'cubic-bezier(.4,0,.35,1)',
-        fill:'both'
-      }
-    ));
-    const shellAnimation=shell?trackExecutionAnimation(shell.animate(
-      [
-        {transform:'translate3d(0,0,0) scale(1)'},
-        {transform:'translate3d(0,-5px,0) scale(.996)'}
-      ],
-      {
-        duration:170,
-        easing:'cubic-bezier(.4,0,1,1)',
-        fill:'both'
-      }
-    )):null;
-
-    Promise.allSettled([
-      overlayAnimation.finished,
-      shellAnimation?.finished||Promise.resolve()
-    ]).then(()=>{
+    afterAnimations($('.execution-shell'),()=>{
       if(token!==executionHideToken)return;
-      finish();
-      overlayAnimation.cancel();
-      shellAnimation?.cancel?.();
+      overlay.classList.add('is-surface-fade');
+      afterAnimations(overlay,finish);
     });
   }
 
@@ -893,7 +636,7 @@ window.DailyMotionPages.session=function mountSession(){
         stageTimer=setTimeout(()=>{
           stageTimer=null;
           done();
-        },185);
+        },160);
         return;
       }
       countdownValue.classList.remove('is-launching');
