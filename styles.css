@@ -5815,3 +5815,40 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   width:100%;
   min-width:0;
 }
+
+
+/* v205 — fullscreen stage motion is owned exclusively by session.js (WAAPI). */
+.execution-overlay .execution-stage,
+.execution-overlay .execution-stage:not([hidden]),
+.execution-overlay .execution-stage.is-stage-entering,
+.execution-overlay .execution-stage.is-stage-leaving{
+  animation:none!important;
+}
+.execution-overlay .execution-stage[hidden]{
+  display:none!important;
+}
+.execution-overlay .execution-stage{
+  grid-row:2!important;
+  grid-column:1!important;
+  width:100%;
+  min-width:0;
+}
+
+/* Inner content must not run a second entrance animation during stage swaps. */
+@media(prefers-reduced-motion:no-preference){
+  .execution-overlay.is-visible[data-stage] .execution-stage :is(
+    .execution-heading,
+    .execution-key,
+    .execution-timer__ring,
+    .timer-ring__inner,
+    .execution-actions,
+    .execution-eyebrow,
+    h2,
+    .execution-countdown__value,
+    .execution-countdown__hint,
+    .execution-rest__value,
+    .execution-rest__actions
+  ){
+    animation:none!important;
+  }
+}

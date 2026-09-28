@@ -424,13 +424,19 @@ window.DailyMotionPages.session=function mountSession(){
     rest:$('#executionRestStage')
   });
 
+  function resetExecutionStageNode(node){
+    if(!node)return;
+    node.getAnimations?.().forEach(animation=>animation.cancel());
+    node.classList.remove('is-stage-entering','is-stage-leaving');
+    node.style.removeProperty('opacity');
+    node.style.removeProperty('transform');
+    node.style.removeProperty('will-change');
+    node.inert=false;
+  }
+
   function clearExecutionStageTransition(){
     stageTransitionToken++;
-    Object.values(executionStages()).forEach(node=>{
-      if(!node)return;
-      node.classList.remove('is-stage-entering','is-stage-leaving');
-      node.inert=false;
-    });
+    Object.values(executionStages()).forEach(resetExecutionStageNode);
   }
 
   function afterAnimations(node,callback,{subtree=false}={}){
@@ -444,67 +450,92 @@ window.DailyMotionPages.session=function mountSession(){
     });
   }
 
+  function animateExecutionStageIn(node,{opening=false}={}){
+    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    node.getAnimations?.().forEach(animation=>animation.cancel());
+    node.style.willChange='opacity, transform';
+    const animation=node.animate(
+      [
+        {opacity:opening?.01:.12,transform:`translate3d(0,${opening?8:6}px,0)`},
+        {opacity:1,transform:'translate3d(0,0,0)'}
+      ],
+      {
+        duration:opening?230:190,
+        easing:MotionTokens.easeEnter,
+        fill:'both'
+      }
+    );
+    animation.finished.catch(()=>{}).then(()=>{
+      if(animation.playState!=='idle'){
+        node.style.removeProperty('opacity');
+        node.style.removeProperty('transform');
+        node.style.removeProperty('will-change');
+      }
+    });
+  }
+
   function setExecutionStage(stage){
     const stages=executionStages();
     const next=stages[stage];
     const previous=stages[executionStage];
     const overlay=$('#executionOverlay');
     const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const canAnimate=Boolean(
-      previous&&next&&previous!==next&&
-      overlay?.classList.contains('is-visible')&&!reduceMotion
-    );
-    const previousAlreadyLeaving=Boolean(previous?.classList.contains('is-finishing-early'));
+    const wasVisible=Boolean(overlay?.classList.contains('is-visible'));
+    const canAnimate=Boolean(previous&&next&&previous!==next&&wasVisible&&!reduceMotion);
 
-    clearExecutionStageTransition();
+    stageTransitionToken++;
+    const token=stageTransitionToken;
+
+    Object.values(stages).forEach(node=>{
+      if(node&&node!==previous&&node!==next){
+        resetExecutionStageNode(node);
+        node.hidden=true;
+      }
+    });
+
     executionStage=stage;
     setExecutionCopy();
     if(overlay)overlay.dataset.stage=stage;
 
     if(!canAnimate){
       Object.entries(stages).forEach(([name,node])=>{
-        if(node)node.hidden=name!==stage;
+        if(!node)return;
+        resetExecutionStageNode(node);
+        node.hidden=name!==stage;
       });
       return;
     }
 
-    Object.values(stages).forEach(node=>{
-      if(node&&node!==previous&&node!==next)node.hidden=true;
-    });
-
+    resetExecutionStageNode(previous);
+    resetExecutionStageNode(next);
     previous.hidden=false;
-    previous.inert=true;
     next.hidden=true;
-    next.inert=true;
+    previous.inert=true;
 
-    const token=stageTransitionToken;
-    const enterNext=()=>{
-      if(token!==stageTransitionToken)return;
+    previous.style.willChange='opacity, transform';
+    const out=previous.animate(
+      [
+        {opacity:1,transform:'translate3d(0,0,0)'},
+        {opacity:0,transform:'translate3d(0,-4px,0)'}
+      ],
+      {
+        duration:115,
+        easing:MotionTokens.easeExit,
+        fill:'both'
+      }
+    );
 
+    out.finished.catch(()=>{}).then(()=>{
+      if(token!==stageTransitionToken||destroyed)return;
+      resetExecutionStageNode(previous);
       previous.hidden=true;
       previous.inert=false;
-      previous.classList.remove('is-stage-leaving','is-finishing-early');
 
+      resetExecutionStageNode(next);
       next.hidden=false;
       next.inert=false;
-      next.classList.add('is-stage-entering');
-
-      requestAnimationFrame(()=>{
-        if(token!==stageTransitionToken)return;
-        afterAnimations(next,()=>{
-          if(token!==stageTransitionToken)return;
-          next.classList.remove('is-stage-entering');
-        });
-      });
-    };
-
-    if(previousAlreadyLeaving){
-      enterNext();
-      return;
-    }
-
-    previous.classList.add('is-stage-leaving');
-    afterAnimations(previous,enterNext);
+      animateExecutionStageIn(next);
+    });
   }
 
   function playEarlyTimerExit(callback){
@@ -523,12 +554,17 @@ window.DailyMotionPages.session=function mountSession(){
     if(!overlay)return;
     executionHideToken++;
     overlay.classList.remove('is-handoff','is-closing','is-surface-fade');
-    if(!overlay.classList.contains('is-visible'))modalReturnFocus=document.activeElement;
+    const wasVisible=overlay.classList.contains('is-visible');
+    if(!wasVisible)modalReturnFocus=document.activeElement;
     setExecutionStage(stage);
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
     syncModalState();
     emitReloadSafetyChange();
+    if(!wasVisible){
+      const node=executionStages()[stage];
+      requestAnimationFrame(()=>animateExecutionStageIn(node,{opening:true}));
+    }
     const focusTarget=stage==='timer'
       ?$('#timerToggle')
       :stage==='rest'
@@ -580,11 +616,18 @@ window.DailyMotionPages.session=function mountSession(){
       return;
     }
 
-    overlay.classList.add('is-closing');
-    afterAnimations($('.execution-shell'),()=>{
+    const shell=$('.execution-shell');
+    const closeAnimation=shell?.animate?.(
+      [
+        {opacity:1,transform:'translate3d(0,0,0)'},
+        {opacity:0,transform:'translate3d(0,-4px,0)'}
+      ],
+      {duration:140,easing:MotionTokens.easeExit,fill:'both'}
+    );
+    if(!closeAnimation){finish();return;}
+    closeAnimation.finished.catch(()=>{}).then(()=>{
       if(token!==executionHideToken)return;
-      overlay.classList.add('is-surface-fade');
-      afterAnimations(overlay,finish);
+      finish();
     });
   }
 
