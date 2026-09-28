@@ -1,0 +1,35 @@
+name: Export chat handoff archive
+
+on:
+  push:
+    branches:
+      - chat-handoff-v206
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact production source
+        uses: actions/checkout@v4
+        with:
+          ref: 424e34ae8140ae6d025fbc15a470b950201736b6
+
+      - name: Create source archive
+        run: |
+          zip -r daily-motion-v206.zip . \
+            -x ".git/*" \
+               "node_modules/*" \
+               "test-results/*" \
+               "playwright-report/*" \
+               "blob-report/*"
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-motion-v206
+          path: daily-motion-v206.zip
+          if-no-files-found: error
+          retention-days: 7
