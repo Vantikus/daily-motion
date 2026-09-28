@@ -5470,3 +5470,47 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:rgba(197,141,130,.09)!important;
   color:#d9aaa1!important;
 }
+
+
+/* v199 T6 — pause state: instantly readable without changing timer logic. */
+.execution-timer.is-paused .execution-eyebrow{
+  color:var(--muted)!important;
+}
+.execution-timer.is-paused .execution-key{
+  color:var(--muted)!important;
+  opacity:.82;
+}
+.execution-timer.is-paused .execution-timer__ring{
+  background:
+    conic-gradient(
+      rgba(23,25,23,.24) calc(var(--timer-progress)*1%),
+      rgba(23,25,23,.075) 0
+    )!important;
+  box-shadow:0 0 0 6px rgba(23,25,23,.025)!important;
+}
+.execution-timer.is-paused .execution-timer__ring .timer-ring__inner strong{
+  color:var(--text)!important;
+}
+.execution-timer.is-paused .execution-timer__ring .timer-ring__inner span{
+  color:var(--accent)!important;
+  font-weight:760!important;
+  letter-spacing:.015em;
+}
+.execution-timer.is-paused .execution-primary{
+  background:var(--text)!important;
+  color:#fff!important;
+}
+.execution-timer.is-paused .execution-adjustments{
+  opacity:.82;
+}
+.execution-timer.is-paused .execution-secondary{
+  opacity:.76;
+}
+:root[data-theme="dark"] .execution-timer.is-paused .execution-timer__ring{
+  background:
+    conic-gradient(
+      rgba(230,235,231,.30) calc(var(--timer-progress)*1%),
+      rgba(230,235,231,.085) 0
+    )!important;
+  box-shadow:0 0 0 6px rgba(255,255,255,.025)!important;
+}
