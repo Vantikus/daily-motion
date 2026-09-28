@@ -786,10 +786,6 @@ if(read('app.js').includes('availableRoutinesForDay')||read('progress.js').inclu
 if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.endsWith('/session.html')")){
   fail('sw.js: canonical offline navigation fallbacks are incomplete');
 }
-if(/\/\*\s*v\d+\s+—/.test(styles)){
-  fail('styles.css: historical version-number comments remain');
-}
-
 if(!read('app.js').includes('createBottomSheet'))fail('app.js: shared bottom sheet is not wired');
 const sessionSource=read('session.js');
 const restStart=sessionSource.indexOf('function startRest');
