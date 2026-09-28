@@ -5805,3 +5805,65 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   letter-spacing:-.05em!important;
   white-space:nowrap!important;
 }
+
+
+/* v204 — single-owner fullscreen stage transitions.
+   Remove legacy/redundant stage and child reveals that caused flicker/jumps. */
+@media(prefers-reduced-motion:no-preference){
+  .execution-overlay .execution-stage:not([hidden]){
+    animation:none!important;
+  }
+
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown::before,
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-eyebrow,
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>h2,
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__value,
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown__hint,
+  .execution-overlay.is-visible[data-stage="countdown"] .execution-countdown>.execution-text-action,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer::before,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-heading,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-key,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner,
+  .execution-overlay.is-visible[data-stage="timer"] .execution-actions,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest::before,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest>.execution-eyebrow,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest>h2,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest__value,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest p,
+  .execution-overlay.is-visible[data-stage="rest"] .execution-rest__actions{
+    animation:none!important;
+    opacity:1!important;
+    transform:none!important;
+  }
+
+  .execution-overlay .execution-stage.is-stage-leaving{
+    animation:dmStageOut 105ms cubic-bezier(.4,0,1,1) both!important;
+    pointer-events:none;
+    z-index:1;
+  }
+
+  .execution-overlay .execution-stage.is-stage-entering{
+    animation:dmStageIn 155ms 20ms cubic-bezier(.16,.82,.24,1) both!important;
+    z-index:2;
+  }
+}
+
+@keyframes dmStageOut{
+  from{opacity:1;transform:translate3d(0,0,0)}
+  to{opacity:0;transform:translate3d(0,-3px,0)}
+}
+@keyframes dmStageIn{
+  from{opacity:0;transform:translate3d(0,4px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+
+/* While two stages overlap, keep the shell geometry fixed. */
+.execution-stage.is-stage-entering,
+.execution-stage.is-stage-leaving{
+  grid-row:2!important;
+  grid-column:1!important;
+  width:100%;
+  min-width:0;
+  align-self:stretch;
+}
