@@ -480,28 +480,28 @@ window.DailyMotionPages.session=function mountSession(){
   function stageEntranceItems(stage,node){
     if(stage==='countdown'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,200,7,1],
-        [node.querySelector('h2'),24,220,9,1],
-        [node.querySelector('.execution-countdown__value'),54,275,15,.9],
-        [node.querySelector('.execution-countdown__hint'),96,210,7,1],
-        [node.querySelector('.execution-text-action'),124,200,6,1]
+        [node.querySelector('.execution-eyebrow'),0,170,7,1],
+        [node.querySelector('h2'),15,185,9,1],
+        [node.querySelector('.execution-countdown__value'),35,220,15,.9],
+        [node.querySelector('.execution-countdown__hint'),65,175,7,1],
+        [node.querySelector('.execution-text-action'),90,165,6,1]
       ];
     }
     if(stage==='timer'){
       return [
-        [node.querySelector('.execution-eyebrow'),0,190,6,1],
-        [node.querySelector('.execution-heading h2'),12,215,8,1],
-        [node.querySelector('.execution-key'),32,210,6,.985],
-        [node.querySelector('.execution-timer__ring'),42,285,12,.92],
-        [node.querySelector('.execution-actions'),88,225,8,1]
+        [node.querySelector('.execution-eyebrow'),0,165,6,1],
+        [node.querySelector('.execution-heading h2'),10,180,8,1],
+        [node.querySelector('.execution-key'),20,175,6,.985],
+        [node.querySelector('.execution-timer__ring'),30,235,12,.92],
+        [node.querySelector('.execution-actions'),70,185,8,1]
       ];
     }
     return [
-      [node.querySelector('.execution-eyebrow'),0,190,6,1],
-      [node.querySelector('h2'),16,210,8,1],
-      [node.querySelector('.execution-rest__value'),46,270,14,.91],
-      [node.querySelector('#restNext'),88,205,7,1],
-      [node.querySelector('.execution-rest__actions'),116,220,8,1]
+      [node.querySelector('.execution-eyebrow'),0,165,6,1],
+      [node.querySelector('h2'),10,180,8,1],
+      [node.querySelector('.execution-rest__value'),30,225,14,.91],
+      [node.querySelector('#restNext'),60,170,7,1],
+      [node.querySelector('.execution-rest__actions'),85,185,8,1]
     ];
   }
 
@@ -517,7 +517,7 @@ window.DailyMotionPages.session=function mountSession(){
         {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
       ],
       {
-        duration:opening?300:250,
+        duration:opening?260:215,
         easing:'cubic-bezier(.18,.78,.22,1)',
         fill:'both'
       }
@@ -569,7 +569,7 @@ window.DailyMotionPages.session=function mountSession(){
         {opacity:0,transform:'translate3d(0,-6px,0) scale(.994)'}
       ],
       {
-        duration:120,
+        duration:95,
         easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
@@ -668,7 +668,7 @@ window.DailyMotionPages.session=function mountSession(){
           {opacity:0,transform:'translate3d(0,-5px,0)'},
           {opacity:1,transform:'translate3d(0,0,0)'}
         ],
-        {duration:210,easing:'cubic-bezier(.16,.82,.24,1)'}
+        {duration:190,easing:'cubic-bezier(.16,.82,.24,1)'}
       );
       const node=executionStages()[stage];
       animateExecutionStageIn(stage,node,{opening:true}).then(()=>{

@@ -5915,3 +5915,9 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   letter-spacing:-.05em!important;
   white-space:nowrap!important;
 }
+
+
+/* v208 — final fullscreen motion audit. */
+.execution-overlay.is-visible .execution-top{
+  animation:none!important;
+}
