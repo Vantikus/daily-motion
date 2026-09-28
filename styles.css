@@ -5852,3 +5852,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
     animation:none!important;
   }
 }
+
+
+/* v206 — restore the stronger pre-v204 fullscreen motion feel.
+   JS still owns stage switching, so old overlap bugs stay fixed. */
+.execution-overlay .execution-stage{
+  transform-origin:50% 50%;
+}

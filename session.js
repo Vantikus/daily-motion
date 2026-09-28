@@ -454,17 +454,52 @@ window.DailyMotionPages.session=function mountSession(){
     if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.getAnimations?.().forEach(animation=>animation.cancel());
     node.style.willChange='opacity, transform';
+
     const animation=node.animate(
       [
-        {opacity:opening?.01:.12,transform:`translate3d(0,${opening?8:6}px,0)`},
-        {opacity:1,transform:'translate3d(0,0,0)'}
+        {
+          opacity:opening?.01:.08,
+          transform:`translate3d(0,${opening?12:10}px,0) scale(.988)`
+        },
+        {
+          opacity:1,
+          transform:'translate3d(0,0,0) scale(1)'
+        }
       ],
       {
-        duration:opening?230:190,
-        easing:MotionTokens.easeEnter,
+        duration:opening?330:285,
+        easing:'cubic-bezier(.18,.78,.22,1)',
         fill:'both'
       }
     );
+
+    const heading=node.querySelector?.('.execution-heading, .execution-eyebrow');
+    const key=node.querySelector?.('.execution-key, h2');
+    const ring=node.querySelector?.('.execution-timer__ring, .execution-countdown__value, .execution-rest__value');
+    const actions=node.querySelector?.('.execution-actions, .execution-rest__actions, .execution-text-action');
+
+    [
+      [heading,0,220,7],
+      [key,28,230,8],
+      [ring,58,285,10],
+      [actions,92,230,8]
+    ].forEach(([child,delay,duration,y])=>{
+      if(!child)return;
+      child.getAnimations?.().forEach(a=>a.cancel());
+      child.animate(
+        [
+          {opacity:.18,transform:`translate3d(0,${y}px,0)`},
+          {opacity:1,transform:'translate3d(0,0,0)'}
+        ],
+        {
+          duration,
+          delay,
+          easing:'cubic-bezier(.18,.78,.22,1)',
+          fill:'backwards'
+        }
+      );
+    });
+
     animation.finished.catch(()=>{}).then(()=>{
       if(animation.playState!=='idle'){
         node.style.removeProperty('opacity');
@@ -515,12 +550,12 @@ window.DailyMotionPages.session=function mountSession(){
     previous.style.willChange='opacity, transform';
     const out=previous.animate(
       [
-        {opacity:1,transform:'translate3d(0,0,0)'},
-        {opacity:0,transform:'translate3d(0,-4px,0)'}
+        {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
+        {opacity:0,transform:'translate3d(0,-7px,0) scale(.994)'}
       ],
       {
-        duration:115,
-        easing:MotionTokens.easeExit,
+        duration:145,
+        easing:'cubic-bezier(.4,0,1,1)',
         fill:'both'
       }
     );
@@ -622,7 +657,7 @@ window.DailyMotionPages.session=function mountSession(){
         {opacity:1,transform:'translate3d(0,0,0)'},
         {opacity:0,transform:'translate3d(0,-4px,0)'}
       ],
-      {duration:140,easing:MotionTokens.easeExit,fill:'both'}
+      {duration:180,easing:'cubic-bezier(.4,0,1,1)',fill:'both'}
     );
     if(!closeAnimation){finish();return;}
     closeAnimation.finished.catch(()=>{}).then(()=>{
