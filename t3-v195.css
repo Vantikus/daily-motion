@@ -1,0 +1,81 @@
+/* T3 — primary timer hierarchy only. Logic and motion untouched. */
+.execution-timer{
+  justify-content:center!important;
+}
+.execution-timer .execution-heading{
+  width:min(390px,100%);
+}
+.execution-timer .execution-eyebrow{
+  color:var(--muted)!important;
+  font-size:.6875rem!important;
+  font-weight:700!important;
+  letter-spacing:.075em!important;
+}
+.execution-timer .execution-heading>h2{
+  max-width:16ch!important;
+  margin-top:7px!important;
+  color:var(--text);
+  font-size:clamp(1.65rem,7vw,2rem)!important;
+  line-height:1.04!important;
+  font-weight:760!important;
+  letter-spacing:-.045em!important;
+}
+.execution-key{
+  max-width:330px!important;
+  margin-top:10px!important;
+  padding:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--muted-strong)!important;
+  font-size:.75rem!important;
+  line-height:1.45!important;
+  font-weight:560!important;
+}
+.execution-overlay .execution-timer__ring{
+  width:clamp(220px,59vw,258px)!important;
+  margin:24px 0 20px!important;
+  box-shadow:none;
+}
+.execution-timer.is-running .execution-timer__ring{
+  box-shadow:0 0 0 6px rgba(47,107,85,.045)!important;
+}
+.execution-overlay .execution-timer__ring:after{
+  inset:11px!important;
+}
+.execution-overlay .execution-timer__ring .timer-ring__inner{
+  gap:3px!important;
+}
+.execution-overlay .execution-timer__ring .timer-ring__inner strong{
+  color:var(--text);
+  font-size:clamp(3.15rem,13.5vw,3.9rem)!important;
+  line-height:.94!important;
+  font-weight:740!important;
+  letter-spacing:-.065em!important;
+}
+.execution-overlay .execution-timer__ring .timer-ring__inner span{
+  color:var(--muted)!important;
+  font-size:.6875rem!important;
+  font-weight:560;
+}
+.execution-timer .execution-actions{
+  width:min(360px,100%)!important;
+}
+.execution-timer .execution-primary{
+  min-height:52px!important;
+  border-radius:16px!important;
+  font-size:.9375rem!important;
+  font-weight:780!important;
+}
+@media(max-height:700px){
+  .execution-timer .execution-heading>h2{
+    font-size:1.5rem!important;
+  }
+  .execution-key{
+    margin-top:7px!important;
+    font-size:.71875rem!important;
+  }
+  .execution-overlay .execution-timer__ring{
+    width:min(45vh,210px)!important;
+    margin:16px 0!important;
+  }
+}
