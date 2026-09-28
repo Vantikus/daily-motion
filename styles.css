@@ -5785,3 +5785,23 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .execution-timer.is-stage-entering .execution-actions{
   visibility:visible!important;
 }
+
+
+/* v203 — hard regression fixes after full video review. */
+/* Timer digits are content, not a second-stage reveal. */
+.execution-overlay.is-visible[data-stage="timer"] .execution-timer__ring .timer-ring__inner,
+.execution-timer.is-stage-entering .execution-timer__ring .timer-ring__inner{
+  animation:none!important;
+  opacity:1!important;
+  transform:none!important;
+}
+
+/* "Старт" is a word, never inherit the giant countdown numeral scale. */
+.execution-countdown__value.is-launching{
+  width:auto!important;
+  max-width:90vw!important;
+  font-size:clamp(2.6rem,12vw,3.8rem)!important;
+  line-height:1!important;
+  letter-spacing:-.05em!important;
+  white-space:nowrap!important;
+}

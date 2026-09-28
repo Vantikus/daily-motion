@@ -63,7 +63,14 @@ window.DailyMotionPages.session=function mountSession(){
   let settings=Store.getSettings();
   routine.step=Math.max(0,Math.min(Number(routine.step)||0,exercises.length-1));
 
-  if(new URLSearchParams(location.search).get('resume')==='1'&&!routine.completed){
+  let resumeRequested=new URLSearchParams(location.search).get('resume')==='1';
+  try{
+    const queuedRoutine=sessionStorage.getItem('dm-resume-routine');
+    if(queuedRoutine===ROUTINE_KEY)resumeRequested=true;
+    if(queuedRoutine!==null)sessionStorage.removeItem('dm-resume-routine');
+  }catch{}
+
+  if(resumeRequested&&!routine.completed){
     routine.step=Math.min(exercises.length-1,Math.max(routine.step,routine.completedUntil||0));
   }
 

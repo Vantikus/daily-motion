@@ -22,7 +22,10 @@ window.DailyMotionPages.home=function mountHome(){
     if(options.replace)location.replace(href);
     else location.assign(href);
   };
-  const go=key=>navigate(`session.html?routine=${key}&resume=1`,{animation:'workout'});
+  const go=key=>{
+    try{sessionStorage.setItem('dm-resume-routine',key);}catch{}
+    navigate(`session.html?routine=${key}&resume=1`,{animation:'workout'});
+  };
   const formatDate=()=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
 
   const list=$('#routineGrid');
