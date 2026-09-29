@@ -204,8 +204,6 @@
       return false;
     }
 
-    window.DailyMotionSwup=swup;
-
     window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{
       const url=new URL(href,location.href);
       if(url.origin!==location.origin){location.assign(url.href);return;}

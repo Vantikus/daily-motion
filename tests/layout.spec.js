@@ -220,13 +220,15 @@ test('progress entry keeps a rounded press surface',async({page,browserName})=>{
 
   const history=page.locator('.activity-card__head .text-link');
   await history.dispatchEvent('pointerdown',{pointerType:'touch',button:0});
+  await expect(history).toHaveClass(/is-pressing/);
+  await expect.poll(()=>history.evaluate(el=>getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
   const historyPress=await history.evaluate(el=>{
     const style=getComputedStyle(el);
-    return {radius:style.borderRadius,background:style.backgroundColor,minHeight:style.minHeight};
+    return {radius:style.borderRadius,minHeight:style.minHeight};
   });
   expect(historyPress.radius).toBe('12px');
   expect(historyPress.minHeight).toBe('44px');
-  expect(historyPress.background).not.toBe('rgba(0, 0, 0, 0)');
+  await history.dispatchEvent('pointerup',{pointerType:'touch',button:0});
 });
 
 test('R1 shared layout rhythm stays consistent across pages',async({page,browserName})=>{
