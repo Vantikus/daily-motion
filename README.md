@@ -1,124 +1,96 @@
 # Daily Motion
 
-Личное mobile-first приложение ежедневной разминки на чистых HTML / CSS / JavaScript.
+Daily Motion — mobile-first PWA для ежедневной полнотелой разминки. Production остаётся статическим: чистые HTML/CSS/JavaScript, без React, backend и runtime npm.
 
-## Source of truth
+## Текущий продукт
 
-- GitHub: `Vantikus/daily-motion`
-- рабочая ветка: `main`
-- перед любой серией изменений сначала читать актуальный `main`
-- после проверки commit/push сразу в `main`
-- Cloudflare автоматически разворачивает `main`
+- полностью доступен утренний комплекс из 9 упражнений;
+- День и Вечер видимы, но пока недоступны;
+- основной flow: Home → упражнение → countdown → fullscreen timer → rest → следующее упражнение → completion;
+- состояние, прогресс, настройки и история хранятся локально;
+- PWA работает офлайн после первого успешного открытия;
+- интерфейс и motion оптимизированы под iPhone/Safari/PWA.
 
-## Стек
+## Runtime
 
-- HTML
-- CSS
-- JavaScript
-- runtime без React / npm / backend / БД; dev-проверки используют Node/Playwright и не участвуют в deploy
-- `localStorage` для состояния
-- PWA + service worker
-- Cloudflare deployment
+- `index.html` + `app.js` — Home;
+- `session.html` + `session.js` — workout state, timer/countdown/rest, persistence и completion;
+- `session-view.js` — presentation упражнения, accordion, step indicator и next-button state;
+- `progress.html` + `progress.js` — история, статистика, import/export;
+- `state.js` — единая модель localStorage, статистика и миграции;
+- `ui.js` — общие UI-примитивы;
+- `motion.js` — GSAP motion, press feedback и bottom-sheet engine;
+- `navigation.js` — Swup lifecycle/navigation;
+- `audio.js` — lazy audio runtime;
+- `theme.js` — system/light/dark theme;
+- `pwa.js` + `sw.js` — install/update/offline lifecycle;
+- `program.js` — состав упражнений.
 
-## Структура
+Swup меняет только `#swup`, поэтому page runtimes загружаются во всех HTML shell и самостоятельно mount/unmount нужную страницу.
 
-- `index.html` + `app.js` — главный экран Today
-- `session.html` + `session.js` — workout player
-- `program.js` — единый состав упражнений для плеера и продолжения с главной
-- `progress.html` + `progress.js` — история, статистика и backup
-- `state.js` — единая модель состояния, настройки и миграция старой v1-модели
-- `theme.js` — раннее применение системной, светлой или тёмной темы без вспышки при загрузке
-- `audio.js` — звуковые сигналы и разблокировка аудио-сессии для mobile/PWA
-- `pwa.js` — install/update/offline UI
-- `sw.js` — offline app-shell
-- `styles.css` — общая mobile-first визуальная система
-- `manifest.webmanifest` + `icons/` — PWA metadata
-- `_headers` — Cloudflare cache/service-worker headers
-- `LIBRARIES.md` — реестр runtime-библиотек/плагинов, владельцы ответственности, кандидаты и правила подключения
-- `MOTION_ROADMAP.md` — точечный план GSAP motion layer: что применять сейчас, что откладывать и где не использовать плагины
+## Frozen contracts
 
-## Политика зависимостей
+Без отдельной задачи не менять:
 
-Новые runtime-библиотеки не подключаются «для красоты» или заранее. У каждой зависимости должен быть один конкретный владелец ответственности, pinned-версия, понятный iOS/PWA fallback и план self-host под `/vendor/`. Актуальные решения и кандидаты зафиксированы в `LIBRARIES.md`.
+- FLOW assets и форму логотипа;
+- Heroicons Outline: локальные SVG, stroke-width 1.7px;
+- тексты, порядок и длительности упражнений;
+- localStorage/progress semantics;
+- mobile bottom-sheet drag/snap/dismiss physics;
+- iOS safe-area/PWA поведение;
+- День/Вечер не превращать в доступные комплексы;
+- fullscreen timer/rest state machine не смешивать с CSS-анимациями.
 
-## Текущее состояние
+## Motion ownership
 
-Visual baseline: `Quiet Motion` — спокойный app-like интерфейс с одной главной Today surface, компактным списком комплексов и более цельным workout player без лишней card-density. Техника остаётся на странице упражнения, таймер открывается в fullscreen.
+- GSAP Core — page/completion/sheet motion и press feedback;
+- WAAPI — локальные workout/content transitions, где это остаётся единственным владельцем;
+- CSS — статические состояния, urgency pulse и простые transitions;
+- View Transition API — только смена темы.
 
+Один interaction не должен иметь двух независимых motion-owner.
 
-Главная построена вокруг сценария `Начать / Продолжить`. Есть точное продолжение с сохранённого упражнения, результат дня и серия. Все комплексы видны сразу.
+## Зависимости
 
-Workout player сохраняет текущий шаг и таймеры внутри конкретного дня. Работают pause/resume/reset, ±10 сек, countdown, отдых между упражнениями, Wake Lock, доступный браузеру vibration feedback, звуковые сигналы, auto-next, accordion-подсказки и восстановление после повторного открытия. При смене версии программы незавершённый несовместимый прогресс безопасно сбрасывается, завершённая история сохраняется.
+Production:
+- GSAP 3.15.0 — локально;
+- Swup 4.10.0 и используемые Swup plugins — pinned runtime;
+- Heroicons Outline — локально.
 
-Завершение показывает фактическое время в движении (без пауз и отдыха) и число упражнений. Необязательная оценка нагрузки сохраняется в истории и в backup. Автоматического редиректа нет.
+Development only:
+- Playwright 1.63.0;
+- Wrangler 4.143.0;
+- Node 22.16.0 в CI.
 
-Экран `Прогресс` содержит календарь за 28 дней, текущую и лучшую серию, количество завершённых комплексов, суммарное время и импорт/экспорт локальных данных.
-
-PWA умеет работать офлайн после первого успешного открытия, показывает доступное обновление, использует safe-area для iPhone и предлагает ручную установку через «На экран Домой» на iOS.
-
-В настройках доступно оформление «Система / Светлая / Тёмная». Выбор сохраняется вместе с остальными локальными настройками и действует на всех экранах; системный режим реагирует на изменение темы устройства.
+Подробнее: `LIBRARIES.md`.
 
 ## Проверки
 
-- `npm run check` — синтаксис, DOM-якоря, PWA-версии и отсутствие удалённого кода целей
-- `npm run test:e2e` — smoke, полный workout flow, offline regression и motion-regression в Chromium/WebKit
-- CI фиксирует Node 22.16.0 и Playwright 1.63.0
-- production deploy остаётся статическим и не требует npm/build-step
+```bash
+npm run check
+npm run test:e2e
+```
 
-## Важное ограничение
+`npm run check` проверяет только статическую целостность: синтаксис, release/cache version, обязательные assets/DOM anchors, PWA shell, Heroicons и критические архитектурные запреты.
 
-Сейчас полностью собран только утренний комплекс. День и вечер остаются отдельными фрагментами и не считаются готовой частью продукта.
+Поведение проверяет Playwright:
+- `state.spec.js`;
+- `pwa.spec.js`;
+- `navigation.spec.js`;
+- `session-flow.spec.js`;
+- `settings.spec.js`;
+- `accessibility.spec.js`;
+- `layout.spec.js`;
+- `motion.spec.js`;
+- `visual.spec.js`.
 
-## Правило дальнейшей работы
+## Документы
 
-Считать этот README и актуальный `main` единственным рабочим контекстом проекта. Старые варианты, промежуточные версии и прежние решения не использовать, если пользователь отдельно к ним не вернётся.
+- `DESIGN_SYSTEM.md` — только действующие UI/architecture contracts;
+- `LIBRARIES.md` — только реально используемые зависимости;
+- `MOTION_ROADMAP.md` — текущий motion ownership и правила будущих изменений;
+- `CHANGELOG.md` — история ключевых прошлых релизов.
 
+## Deploy
 
-
-### v161 · Completion Motion M1
-
-Completion переведён с набора CSS entrance-keyframes на один GSAP timeline. `DrawSVGPlugin 3.15.0` прорисовывает отдельную inline SVG success-mark, `SplitText 3.15.0` анимирует только слова заголовка «Утро готово». Плагины self-hosted в `/vendor/gsap/`, прогреваются при mount Session и не являются обязательными для запуска приложения. При ошибке загрузки остаётся полноценный GSAP Core/static fallback; `prefers-reduced-motion` получает сразу конечное состояние.
-
-
-### v162 · Motion timing patch
-
-Галочка завершения теперь гарантированно прорисовывается даже если дополнительный SVG-плагин ещё не успел загрузиться. Появление и угасание fullscreen-таймера ускорены и сделаны более собранными, без изменения логики тренировки.
-
-
-### v163 · Completion check fix
-
-Галка завершения теперь скрыта до первого кадра анимации: сначала явно прорисовывается круг, затем сама галочка. Конфликтующая старая анимация удалена.
-
-
-### v165 · Галка завершения
-
-Прорисовка круга и галочки теперь запускается напрямую при появлении экрана завершения и не зависит от дополнительного motion-плагина: сначала появляется знак, затем рисуется круг, затем галочка.
-
-
-### v166 · Усиленный момент завершения
-
-Экран завершения получил более выраженный момент успеха: знак стал крупнее, круг и галочка читаются заметнее, добавлен короткий мягкий импульс, а текст появляется после акцента, а не одновременно с ним.
-
-
-### v167 · Компактнее знак завершения
-
-Знак завершения уменьшен до более аккуратного масштаба. Прорисовка круга, галочки и мягкий импульс сохранены, но сам акцент больше не перетягивает на себя весь экран.
-
-
-### v168 · Единая motion-система
-
-Анимации приведены к одному ритму: одинаковая логика входа/выхода, более согласованные timer/countdown/completion, быстрее и ровнее press-feedback, единый темп появления контента. Bottom-sheet physics не менялась. Также исправлен общий motion-слой: sheet-анимации и completion больше не перезаписывают друг друга. Неиспользуемый DrawSVG удалён; для заголовка завершения остаётся только SplitText.
-
-### v169 · Motion Foundation M1
-
-Press-feedback собран в один механизм: быстрый контакт, мягкое короткое возвращение и одинаковый ритм у CTA, карточек, иконок, secondary/text-действий, switches и segmented-controls. Крупные поверхности больше не сжимаются, destructive-действия сохраняют свой цвет. Bottom-sheet physics, countdown/timer и workout-логика не менялись.
-
-
-### v170 · Motion M2 — navigation + content
-
-Page transitions now share one directional fade/settle language without whole-page scaling. Swup owns page movement; Home/Progress no longer replay a second page-level reveal after navigation. Technique accordions use one WAAPI owner with a softer open and faster close. Toast/PWA feedback uses one transition system instead of competing keyframes and transitions.
-
-
-### v212 · Dependency + CSS cleanup
-
-`SplitText` и старый completion burst удалены из runtime: завершение полностью принадлежит `motion.js` + GSAP Core и inline SVG mark. CSS очищен от перекрытых исторических деклараций, пустых правил и неиспользуемых keyframes без изменения workout-state, таймеров, localStorage, FLOW/Heroicons или bottom-sheet physics. Static regression checks обновлены так, чтобы проверять актуальные инварианты, а не старые строки реализации.
+Рабочая ветка — `main`. Cloudflare автоматически разворачивает `main`. Production не требует build-step.

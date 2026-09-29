@@ -6,56 +6,68 @@ import { spawnSync } from 'node:child_process';
 const root=join(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
+const requireFile=path=>{if(!existsSync(join(root,path)))fail(`Missing required file: ${path}`);};
 
-const syntaxFiles=[
-  'app.js','audio.js','motion.js','ui.js','session-view.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
-  'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
+const runtimeFiles=[
+  'app.js','audio.js','motion.js','ui.js','session-view.js','navigation.js',
+  'program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js'
 ];
+const behaviorSpecs=[
+  'tests/state.spec.js',
+  'tests/pwa.spec.js',
+  'tests/navigation.spec.js',
+  'tests/session-flow.spec.js',
+  'tests/settings.spec.js',
+  'tests/accessibility.spec.js',
+  'tests/layout.spec.js',
+  'tests/motion.spec.js',
+  'tests/visual.spec.js'
+];
+const syntaxFiles=[...runtimeFiles,'playwright.config.js',...behaviorSpecs];
 
 for(const file of syntaxFiles){
+  requireFile(file);
   const result=spawnSync(process.execPath,['--check',join(root,file)],{encoding:'utf8'});
   if(result.status!==0)fail(`Syntax check failed for ${file}:\n${result.stderr||result.stdout}`);
 }
+if(existsSync(join(root,'tests/smoke.spec.js')))fail('tests/smoke.spec.js must remain split by responsibility');
 
 const htmlFiles=['index.html','session.html','progress.html'];
 const html=Object.fromEntries(htmlFiles.map(file=>[file,read(file)]));
-const sw=read('sw.js');
 const styles=read('styles.css');
-const readme=read('README.md');
-const designSystem=read('DESIGN_SYSTEM.md');
-const pwa=read('pwa.js');
-const motion=read('motion.js');
-const ui=read('ui.js');
-const sessionView=read('session-view.js');
-const navigation=read('navigation.js');
-const appRuntime=read('app.js');
-const progressRuntime=read('progress.js');
-const sessionRuntime=read('session.js');
-const heroicons=read('heroicons.css');
+const sw=read('sw.js');
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const packageJson=JSON.parse(read('package.json'));
 const ci=read('.github/workflows/ci.yml');
-const visualSpec=read('tests/visual.spec.js');
+const app=read('app.js');
+const progress=read('progress.js');
+const session=read('session.js');
+const sessionView=read('session-view.js');
+const state=read('state.js');
+const ui=read('ui.js');
+const motion=read('motion.js');
+const pwa=read('pwa.js');
+const navigation=read('navigation.js');
+const theme=read('theme.js');
+const heroicons=read('heroicons.css');
 
-if(packageJson.devDependencies?.['@playwright/test']!=='1.63.0'){
-  fail('package.json: Playwright must be pinned exactly to 1.63.0');
-}
-if(!ci.includes('node-version: 22.16.0')){
-  fail('ci.yml: Node runtime must stay pinned to 22.16.0');
-}
-if(!ci.includes('npm install --no-audit --no-fund --package-lock=false')){
-  fail('ci.yml: deterministic test-tooling install command is missing');
-}
+if(packageJson.devDependencies?.['@playwright/test']!=='1.63.0')fail('package.json: Playwright must stay pinned to 1.63.0');
+if(packageJson.devDependencies?.wrangler!=='4.143.0')fail('package.json: Wrangler must stay pinned to 4.143.0');
+if(!ci.includes('node-version: 22.16.0'))fail('ci.yml: Node runtime must stay pinned to 22.16.0');
+if(!ci.includes('npm install --no-audit --no-fund --package-lock=false'))fail('ci.yml: deterministic tooling install is missing');
+if(!ci.includes('npm run check')||!ci.includes('npm run test:e2e'))fail('ci.yml: static and browser regression stages are required');
+if(!ci.includes('actions/upload-artifact@v4'))fail('ci.yml: failed browser artifacts must be uploaded');
 
 const releaseVersions=new Set();
 for(const [file,content] of Object.entries(html)){
   const versions=[...content.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
-  if(!versions.length)fail(`${file}: no versioned assets found`);
-  if(new Set(versions).size!==1)fail(`${file}: mixed asset versions: ${[...new Set(versions)].join(', ')}`);
-  releaseVersions.add(versions[0]);
+  if(!versions.length)fail(`${file}: no versioned runtime assets`);
+  const unique=[...new Set(versions)];
+  if(unique.length!==1)fail(`${file}: mixed runtime versions ${unique.join(', ')}`);
+  releaseVersions.add(unique[0]);
 }
 const cacheMatch=sw.match(/const CACHE_NAME='daily-motion-v(\d+)'/);
-if(!cacheMatch)fail('sw.js: CACHE_NAME version not found');
+if(!cacheMatch)fail('sw.js: CACHE_NAME version missing');
 releaseVersions.add(cacheMatch[1]);
 const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
 if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
@@ -64,165 +76,42 @@ if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersion
 const releaseVersion=[...releaseVersions][0];
 
 const designThemeColor='#f4f5f1';
-if(manifest.theme_color!==designThemeColor)fail('manifest.webmanifest: theme_color drifted from Daily Motion canvas');
-if(manifest.background_color!==designThemeColor)fail('manifest.webmanifest: background_color drifted from Daily Motion canvas');
-if(manifest.background_color!==manifest.theme_color)fail('manifest.webmanifest: background/theme colors must stay synchronized');
+if(manifest.theme_color!==designThemeColor||manifest.background_color!==designThemeColor){
+  fail('manifest.webmanifest: canvas/theme colors drifted');
+}
 for(const [file,content] of Object.entries(html)){
-  const themeMatch=content.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/i);
-  if(!themeMatch)fail(`${file}: theme-color meta is missing`);
-  if(themeMatch[1].toLowerCase()!==designThemeColor)fail(`${file}: theme-color drifted from Daily Motion canvas`);
-}
-for(const token of [
-  '--bg:#f4f5f1;',
-  '--surface:#fff;',
-  '--surface-muted:#edf1ec;',
-  '--text:#171917;',
-  '--muted:#687169;',
-  '--muted-strong:#535c54;',
-  '--line:rgba(23,25,23,.09);',
-  '--accent:#2f6b55;',
-  '--accent-soft:#dfece5;'
-]){
-  if(!styles.includes(token))fail(`styles.css: P0 design-system token drifted: ${token}`);
-}
-if(!designSystem.includes('# Daily Motion Design System v1')||!designSystem.includes('P0 baseline contract')){
-  fail('DESIGN_SYSTEM.md: P0 design-system contract is missing');
-}
-if(styles.includes('#8a918b'))fail('styles.css: low-contrast calendar microcopy returned');
-if(styles.includes('#9b6b68'))fail('styles.css: low-contrast reset microcopy returned');
-
-
-for(const token of [
-  '--space-1:4px;',
-  '--space-2:8px;',
-  '--space-3:12px;',
-  '--space-4:16px;',
-  '--space-5:20px;',
-  '--space-6:24px;',
-  '--space-8:32px;',
-  '--space-10:40px;',
-  '--space-12:48px;',
-  '--layout-max:760px;',
-  '--layout-inline-space:40px;',
-  '--radius-control:14px;',
-  '--radius-card:18px;',
-  '--radius-hero:24px;',
-  '--radius-sheet:26px;',
-  '--control-touch:44px;',
-  '--control-primary:52px;',
-  '--control-nav:54px;',
-  '--settings-row-h:68px;'
-]){
-  if(!styles.includes(token))fail(`styles.css: R1 layout token drifted: ${token}`);
-}
-if(!styles.includes('@media(max-width:520px){:root{--layout-inline-space:32px}}')){
-  fail('styles.css: R1 mobile 16px gutter contract is missing');
-}
-if(!styles.includes('.session-shell{width:min(var(--layout-max),calc(100% - var(--layout-inline-space)))')){
-  fail('styles.css: session shell is not wired to shared layout gutter');
-}
-if(styles.includes('.session-shell{width:calc(100% - 24px)')){
-  fail('styles.css: legacy 12px workout gutter returned');
-}
-if(!styles.includes('min-height:var(--component-row-h)')){
-  fail('styles.css: shared settings row height is not wired through the R2 component token');
-}
-for(const fragment of [
-  '.details-stack{',
-  'grid-template-columns:1fr!important;',
-  'border:1px solid var(--line-soft)!important;',
-  'border-radius:18px!important;'
-]){
-  if(!styles.includes(fragment))fail(`styles.css: technique grouped-list contract missing: ${fragment}`);
-}
-if(!designSystem.includes('## R1 — layout and spacing normalization')){
-  fail('DESIGN_SYSTEM.md: R1 layout contract is missing');
+  const themeMeta=content.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/i);
+  if(!themeMeta||themeMeta[1].toLowerCase()!==designThemeColor)fail(`${file}: theme-color meta drifted`);
+  if(!content.includes('id="swup"')||!content.includes('class="transition-page"'))fail(`${file}: Swup container contract missing`);
+  for(const runtime of ['navigation.js','motion.js','ui.js','session-view.js','app.js','progress.js','session.js']){
+    if(!content.includes(`${runtime}?v=${releaseVersion}`))fail(`${file}: persistent runtime missing ${runtime}`);
+  }
+  if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking remote runtime tag returned`);
 }
 
-
-for(const token of [
-  '--component-hit:var(--control-touch);',
-  '--component-secondary-h:var(--control-secondary);',
-  '--component-primary-h:var(--control-primary);',
-  '--component-row-h:var(--settings-row-h);',
-  '--switch-off:#7f8981;',
-  '--focus-color:var(--accent);',
-  '--motion-press-in:120ms;',
-  '--motion-fast:140ms;',
-  '--motion-base:220ms;',
-  '--motion-content:220ms;',
-  '--motion-stage:220ms;',
-  '--motion-sheet-close:300ms;',
-  '--motion-slow:320ms;',
-  '--motion-sheet-open:380ms;'
-]){
-  if(!styles.includes(token))fail(`styles.css: R2 component/motion token drifted: ${token}`);
+const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
+for(const size of ['192x192','512x512']){
+  if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(size)))fail(`manifest.webmanifest: missing ${size} icon`);
 }
-if(!styles.includes('.settings-sheet__handle,.routine-settings-sheet__handle{width:96px;min-height:var(--component-hit)}')){
-  fail('styles.css: sheet drag target must remain 44px through the R2 component token');
-}
-if(!styles.includes('background:var(--switch-off)')){
-  fail('styles.css: switch off-state contrast token is not wired');
-}
-for(const fragment of [
-  'openDuration:.38',
-  'closeDuration:.30',
-  'dismissRatio:.28',
-  'dismissMin:110',
-  'dismissMax:190',
-  'flingMinY:52',
-  'flingVelocity:700',
-  'flingProjection:.12'
-]){
-  if(!motion.includes(fragment))fail(`motion.js: bottom-sheet motion constant changed or disappeared: ${fragment}`);
-}
-if(!motion.includes('createBottomSheet')||!motion.includes('sheetMotion:SHEET_MOTION')){
-  fail('motion.js: shared bottom-sheet motion contract is not exposed');
-}
-for(const forbidden of ['createBottomSheet','SHEET_MOTION','installPressFeedback','installDoubleTapGuard']){
-  if(pwa.includes(forbidden))fail(`pwa.js: motion ownership leaked back into PWA runtime: ${forbidden}`);
-}
-for(const token of [
-  "createHash('sha256')",
-  "page.screenshot({",
-  "home:'fc60ec1d43714af6a126fb3dde193e99120c094c8d273ea10977380b5fef713e'",
-  "workout:'c78ca777a88d4913f9ce6cc2280eeab284fdfe284d972550e05077667634f6cb'",
-  "progress:'e561b3a1148ada4355c874d2490aac3554d6bb28bd513b39a6c08544f0adc89c'"
-]){
-  if(!visualSpec.includes(token))fail(`tests/visual.spec.js: R2 visual baseline contract missing ${token}`);
-}
-if(!ci.includes('actions/upload-artifact@v4')){
-  fail('ci.yml: browser regression artifacts must be uploaded on failure');
-}
-if(!designSystem.includes('## R2 — component contracts and regression hardening')){
-  fail('DESIGN_SYSTEM.md: R2 component hardening contract is missing');
+for(const icon of manifestIcons){
+  const src=String(icon?.src||'');
+  if(src.startsWith('/')&&!existsSync(join(root,src.slice(1))))fail(`manifest.webmanifest: missing icon ${src}`);
 }
 
-
-for(const token of [
-  '--surface-raised:#fff;',
-  '--surface-soft:#f8faf7;',
-  '--line-soft:rgba(23,25,23,.065);',
-  '--line-strong:rgba(23,25,23,.12);',
-  '--accent-wash:#e7f0ea;',
-  '--shadow-card:0 1px 2px rgba(23,25,23,.025),0 10px 28px rgba(37,49,41,.045);',
-  '--shadow-hero:0 1px 2px rgba(23,25,23,.025),0 18px 42px rgba(37,49,41,.065);',
-  '--shadow-sheet:0 -20px 64px rgba(27,37,30,.16);'
-]){
-  if(!styles.includes(token))fail(`styles.css: R3 polish token drifted: ${token}`);
+const shellMatch=sw.match(/const APP_SHELL=\[(.*?)\];/s);
+if(!shellMatch)fail('sw.js: APP_SHELL missing');
+for(const match of shellMatch[1].matchAll(/'([^']+)'/g)){
+  const url=match[1];
+  if(url==='/')continue;
+  const relative=url.split('?')[0].replace(/^\//,'');
+  if(relative&&!existsSync(join(root,relative)))fail(`sw.js: APP_SHELL points to missing file ${url}`);
 }
-for(const fragment of [
-  'box-shadow:var(--shadow-card);',
-  'box-shadow:var(--shadow-sheet);',
-  'background:var(--accent-wash);',
-  'background:var(--surface-soft);'
-]){
-  if(!styles.includes(fragment))fail(`styles.css: R3 visual hierarchy contract missing: ${fragment}`);
+for(const runtime of ['navigation.js','motion.js','ui.js','session-view.js','app.js','progress.js','session.js']){
+  if(!sw.includes(`'/${runtime}?v=${releaseVersion}'`))fail(`sw.js: persistent runtime not cached ${runtime}`);
 }
-if(!designSystem.includes('## R3 — visual hierarchy and surface polish')){
-  fail('DESIGN_SYSTEM.md: R3 visual polish contract is missing');
+if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.endsWith('/session.html')")){
+  fail('sw.js: canonical offline navigation fallback missing');
 }
-
 
 const swupVendorUrls=[
   'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
@@ -233,230 +122,73 @@ const swupVendorUrls=[
   'https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js',
   'https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js'
 ];
-for(const [file,content] of Object.entries(html)){
-  if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
-  if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
-  if(!content.includes(`navigation.js?v=${releaseVersion}`))fail(`${file}: navigation bootstrap release version mismatch`);
-  for(const runtime of ['app.js','progress.js','session.js','session-view.js','motion.js']){
-    const versioned=`${runtime}?v=${releaseVersion}`;
-    if(!content.includes(versioned))fail(`${file}: persistent page runtime missing: ${versioned}`);
-  }
-  if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking Swup CDN tags must not return`);
-}
 for(const url of swupVendorUrls){
-  if(!navigation.includes(`'${url}'`))fail(`navigation.js: pinned Swup runtime missing: ${url}`);
+  if(!navigation.includes(`'${url}'`))fail(`navigation.js: pinned Swup runtime missing ${url}`);
+  if(!sw.includes(`'${url}'`))fail(`sw.js: Swup runtime not cached ${url}`);
 }
-
-for(const fragment of [
-  "containers:['#swup']",
-  'animationSelector:false',
-  'animateHistoryBrowsing:true',
-  'cache:true',
-  'native:false',
-  'timeout:8000',
-  'const SWUP_RUNTIME=[',
-  'const loadRuntimeScript=',
-  'const ensureSwup=',
-  'await Promise.all(SWUP_RUNTIME.map(loadRuntimeScript))',
-  "window.addEventListener('online',()=>{if(!swup)ensureSwup();},{passive:true})",
+for(const token of [
   'new window.SwupPreloadPlugin({throttle:3})',
   'new window.SwupHeadPlugin()',
   'new window.SwupBodyClassPlugin()',
   'new window.SwupA11yPlugin(',
   'new window.SwupJsPlugin({animations:pageAnimations})',
   'new window.SwupScrollPlugin({animateScroll:false})',
-  'respectReducedMotion:true',
   "swup.hooks.before('content:replace'",
   "swup.hooks.on('content:replace'",
-  "swup.hooks.on('fetch:error'",
   "swup.hooks.on('page:view'",
-  'preloadLikelyRoutes',
-  "swup.preload('/session.html?routine=morning&resume=1')",
-  'window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{',
-  "window.DailyMotionBack=(fallback='index.html')=>{"
+  'window.DailyMotionNavigate=',
+  'window.DailyMotionBack='
 ]){
-  if(!navigation.includes(fragment))fail(`navigation.js: v168 Swup plugin contract missing: ${fragment}`);
+  if(!navigation.includes(token))fail(`navigation.js: navigation ownership missing ${token}`);
+}
+for(const forbidden of ['DOMParser','syncBodyAndHead','SwupScriptsPlugin','SwupParallelPlugin','SwupFragmentPlugin']){
+  if(navigation.includes(forbidden))fail(`navigation.js: obsolete navigation implementation returned ${forbidden}`);
 }
 
-for(const forbidden of [
-  'preloadHoveredLinks:true',
-  'preloadVisibleLinks:false',
-  'preloadInitialPage:true',
-  'awaitAssets:true',
-  'persistAssets:true',
-  'headingSelector:',
-  'doScrollingRightAway:',
-  'shouldResetScrollPosition:'
-]){
-  if(navigation.includes(forbidden))fail(`navigation.js: redundant Swup option returned: ${forbidden}`);
+for(const [source,label,page] of [[app,'app.js','home'],[progress,'progress.js','progress'],[session,'session.js','session']]){
+  if(!source.includes(`window.DailyMotionPages.${page}=function`))fail(`${label}: managed page mount missing`);
 }
-const fallbackBackBlock=navigation.match(/const fallbackBack=.*?\n  };/s)?.[0]||'';
-if(fallbackBackBlock.includes('history.state')||fallbackBackBlock.includes('history.back()')){
-  fail('navigation.js: native fallback back must not depend on stale Swup history state');
+for(const token of ['lifecycle.abort();','cancelCountdown();','cancelRest();','stopTicker();','sessionView.destroy();','routineSettingsMotion?.destroy?.();']){
+  if(!session.includes(token))fail(`session.js: cleanup contract missing ${token}`);
 }
 
-for(const animation of ['workout','progress','back-home','completion-home']){
-  if(!navigation.includes(`to:'${animation}'`))fail(`navigation.js: route animation missing: ${animation}`);
+for(const token of ['createToast','syncPressed','trapFocus','createConfirmFlow','bindSettingsControls']){
+  if(!ui.includes(token))fail(`ui.js: shared UI primitive missing ${token}`);
 }
-if(!appRuntime.includes("animation:'workout'"))fail('app.js: workout navigation must request workout motion');
-if(!appRuntime.includes("animation:'progress'"))fail('app.js: progress navigation must request progress motion');
-if(!sessionRuntime.includes("animation:'completion-home'"))fail('session.js: completion navigation must request completion-home motion');
-if(!html['index.html'].includes('data-swup-animation="progress" data-swup-preload')){
-  fail('index.html: Progress link must be preloaded and use progress motion');
-}
-for(const file of ['progress.html','session.html']){
-  if(!html[file].includes('data-nav-back data-swup-animation="back-home" data-swup-preload')){
-    fail(`${file}: back navigation must restore history with preload metadata`);
+for(const source of [app,session]){
+  for(const duplicate of ['function syncThemeControl','function syncTimingControl','const focusable=[...']){
+    if(source.includes(duplicate))fail(`Shared UI logic duplicated: ${duplicate}`);
   }
 }
-
-for(const forbidden of [
-  'const SWUP_URL=',
-  "script.addEventListener('load',installSwup",
-  'syncBodyAndHead',
-  'DOMParser',
-  'SwupScriptsPlugin',
-  'SwupParallelPlugin',
-  'SwupFragmentPlugin'
-]){
-  if(navigation.includes(forbidden))fail(`navigation.js: obsolete/unneeded Swup runtime returned: ${forbidden}`);
+if(!app.includes('UI.bindSettingsControls')||!session.includes('UI.bindSettingsControls'))fail('Home/Session settings must use ui.js');
+for(const stale of ['canInstall:','isStandalone,','update:()=>registration']){
+  if(pwa.includes(stale))fail(`pwa.js: unused public API returned ${stale}`);
 }
-for(const content of Object.values(html)){
-  for(const forbidden of ['scripts-plugin','parallel-plugin','fragment-plugin']){
-    if(content.includes(forbidden))fail(`HTML: unneeded Swup plugin loaded: ${forbidden}`);
-  }
+for(const forbidden of ['createBottomSheet','SHEET_MOTION','installPressFeedback','installDoubleTapGuard','DailyMotionMotion']){
+  if(pwa.includes(forbidden))fail(`pwa.js: motion responsibility leaked into PWA runtime ${forbidden}`);
 }
 
-if(!styles.includes('#swup{')||!styles.includes('transform:none;')){
-  fail('styles.css: Swup container base contract is missing');
-}
-for(const fragment of ['.session-body>#swup{','.session-body>#swup>.exercise-app{','.session-body>#swup>.ios-safe-zone-bar{']){
-  if(!styles.includes(fragment))fail(`styles.css: Session Swup wrapper layout missing: ${fragment}`);
-}
-for(const forbidden of [
-  'html.is-changing #swup.transition-page',
-  'html.is-animating #swup.transition-page',
-  '.dm-page-orb{',
-  '.dm-page-curtain{',
-  '@view-transition{',
-  'types:forward;',
-  ':active-view-transition-type(forward)',
-  ':active-view-transition-type(back)',
-  'qmPageTransitionOut',
-  'qmPageTransitionIn'
+for(const token of [
+  'openDuration:.38','closeDuration:.30','dismissRatio:.28','dismissMin:110',
+  'dismissMax:190','flingMinY:52','flingVelocity:700','flingProjection:.12'
 ]){
-  if(styles.includes(forbidden))fail(`styles.css: obsolete page motion returned: ${forbidden}`);
+  if(!motion.includes(token))fail(`motion.js: frozen bottom-sheet physics changed ${token}`);
 }
-for(const forbidden of [
-  'PAGE_TRANSITION_KEY',
-  "window.addEventListener('pageswap'",
-  'window.DailyMotionNavigate=navigatePage;',
-  'window.DailyMotionBack=navigateBack;'
-]){
-  if(pwa.includes(forbidden))fail(`pwa.js: obsolete pre-Swup navigation runtime returned: ${forbidden}`);
+if(!motion.includes('createBottomSheet')||!motion.includes('sheetMotion:SHEET_MOTION'))fail('motion.js: bottom-sheet owner missing');
+if(!motion.includes('playCompletion')||!motion.includes('cleanupSessionMotion'))fail('motion.js: completion owner missing');
+if(existsSync(join(root,'vendor/gsap/SplitText.min.js'))||existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js'))){
+  fail('Removed GSAP plugins must not return');
 }
+if(/SplitText|DrawSVGPlugin/.test(motion)||/SplitText|DrawSVGPlugin/.test(sw))fail('Removed GSAP plugin runtime reference returned');
 
-for(const [source,label,page] of [
-  [appRuntime,'app.js','home'],
-  [progressRuntime,'progress.js','progress'],
-  [sessionRuntime,'session.js','session']
-]){
-  if(!source.includes(`window.DailyMotionPages.${page}=function`))fail(`${label}: managed page mount is missing`);
-}
-for(const fragment of [
-  'lifecycle.abort();',
-  'routineSettingsMotion?.destroy?.();',
-  'cancelCountdown();',
-  'cancelRest();',
-  'stopTicker();'
-]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: managed workout cleanup missing: ${fragment}`);
-}
-if(!motion.includes('const destroy=()=>{')||!motion.includes('return {open,close:()=>close(0,false),destroy,')){
-  fail('motion.js: bottom-sheet destroy lifecycle is missing');
-}
-
-for(const fragment of [
-  "const SWUP_VENDOR_URLS=[",
-  `'/navigation.js?v=${releaseVersion}'`,
-  'Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)))',
-  'SWUP_VENDOR_URLS.includes(request.url)',
-  "request.headers.get('X-Requested-With')==='swup'",
-  'const swupNavigation=async request=>'
-]){
-  if(!sw.includes(fragment))fail(`sw.js: v174 Swup offline/runtime cache contract missing: ${fragment}`);
-}
-for(const url of swupVendorUrls){
-  if(!sw.includes(`'${url}'`))fail(`sw.js: vendor URL is not cached: ${url}`);
-}
-if(!designSystem.includes('## v157 — Swup plugin architecture')){
-  fail('DESIGN_SYSTEM.md: v157 Swup ownership contract is missing');
-}
-if(!designSystem.includes('## v160 — Swup resilience pass')){
-  fail('DESIGN_SYSTEM.md: v160 Swup resilience contract is missing');
-}
-if(!designSystem.includes('## v161 — Completion Motion M1')){
-  fail('DESIGN_SYSTEM.md: v161 Completion Motion M1 contract is missing');
-}
-if(!designSystem.includes('## v162 — Motion timing patch')){
-  fail('DESIGN_SYSTEM.md: v162 motion timing contract is missing');
-}
-if(!designSystem.includes('## v163 — Completion check visibility fix')){
-  fail('DESIGN_SYSTEM.md: v163 completion check contract is missing');
-}
-
-if(existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: unused SplitText plugin should not ship in v216');
-if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v216');
-for(const fragment of [
-  'playCompletion',
-  'cleanupSessionMotion',
-  'strokeDasharray:126',
-  'strokeDasharray:28',
-]){
-  if(!motion.includes(fragment))fail(`motion.js: completion motion contract missing: ${fragment}`);
-}
-for(const fragment of [
-  'Motion?.playCompletion?.(overlay);',
-  'Motion?.cleanupSessionMotion?.();'
-]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: completion motion boundary missing: ${fragment}`);
-}
-if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check')){
-  fail('session.html: inline completion mark is missing');
-}
-if(html['session.html'].includes('completion-burst'))fail('session.html: dead completion burst returned');
-if(motion.includes('SplitText')||sessionRuntime.includes('ensureCompletionPlugins')||sw.includes('SplitText'))fail('v212: dead SplitText runtime returned');
-for(const obsolete of [
-  'completionMarkPop','completionRingDraw','completionCheckDraw',
-  'completionSuccessSettle','completionSuccessHalo','completionSuccessHaloOuter',
-  'completionMarkPopStrong','completionRingDrawStrong','completionCheckDrawStrong',
-  'completionBurst','completionContentIn'
-]){
-  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: dead completion keyframe returned: ${obsolete}`);
-}
-if(styles.includes('.completion-burst'))fail('styles.css: dead completion burst styles returned');
-for(const fragment of ['/* v168 unified motion system','--motion-enter:220ms','--motion-exit:140ms','--motion-ease-enter:','--motion-ease-exit:']){
-  if(!styles.includes(fragment))fail(`styles.css: v168 unified motion contract missing: ${fragment}`);
-}
-for(const fragment of ['tokens:MOTION_TOKENS','...(window.DailyMotionMotion||{})']){
-  if(!motion.includes(fragment))fail(`motion.js: shared motion namespace missing: ${fragment}`);
-}
-if(pwa.includes('DailyMotionMotion'))fail('pwa.js: motion namespace must not be owned by PWA runtime');
-if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v212: unused DrawSVG runtime returned');
-if(!sw.includes(`'/motion.js?v=${releaseVersion}'`))fail('sw.js: motion runtime missing from offline shell');
-
-// Fullscreen execution transitions are owned by session.js/WAAPI only.
-for(const fragment of [
+for(const token of [
   'function animateExecutionNode(node,keyframes,options)',
   'function playExecutionStageContent(stage,node',
   'function setExecutionStage(stage,{animate=true}={})',
-  "previous.classList.add('is-stage-leaving')",
-  "next.classList.add('is-stage-entering')",
   'function playEarlyTimerExit(callback)',
-  "card.classList.add('is-finishing-early')",
-  'playEarlyTimerExit(()=>{'
+  "card.classList.add('is-finishing-early')"
 ]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: unified fullscreen motion missing: ${fragment}`);
+  if(!session.includes(token))fail(`session.js: fullscreen execution owner missing ${token}`);
 }
 for(const obsolete of [
   'animation:qmTimerRingIn 340ms 22ms',
@@ -467,119 +199,68 @@ for(const obsolete of [
   'animation:executionStageOut 115ms',
   'animation:executionStageIn 165ms'
 ]){
-  if(styles.includes(obsolete))fail(`styles.css: competing fullscreen CSS animation returned: ${obsolete}`);
+  if(styles.includes(obsolete))fail(`styles.css: competing fullscreen animation returned ${obsolete}`);
 }
-for(const fragment of [
-  '.execution-overlay.is-visible[data-stage=\"timer\"] .execution-timer::before',
-  '.execution-overlay.is-visible[data-stage=\"countdown\"] .execution-countdown::before',
-  '.execution-stage.is-stage-leaving{\n  pointer-events:none;'
+
+for(const token of [
+  'window.DailyMotionSessionView=Object.freeze({create})',
+  'const animateDetailState=',
+  'const renderExercise=',
+  'const renderStepSegments=',
+  'const updateNextButton='
 ]){
-  if(!styles.includes(fragment))fail(`styles.css: fullscreen stabilization contract missing: ${fragment}`);
+  if(!sessionView.includes(token))fail(`session-view.js: presentation contract missing ${token}`);
 }
-
-for(const fragment of [
-  "types:['theme']",
-  ':active-view-transition-type(theme)',
-  'mix-blend-mode:normal;'
+for(const token of [
+  'const SessionView=window.DailyMotionSessionView',
+  'const sessionView=SessionView.create({',
+  'sessionView.renderExercise(exercise)',
+  'sessionView.updateNextButton()',
+  'sessionView.renderStepSegments()',
+  'sessionView.resetDetails()',
+  'sessionView.destroy()'
 ]){
-  const source=fragment.includes('types:')?read('theme.js'):styles;
-  if(!source.includes(fragment))fail(`theme transition contract missing: ${fragment}`);
+  if(!session.includes(token))fail(`session.js: session-view wiring missing ${token}`);
+}
+for(const obsolete of ['DEV_COMPLETION','dm-dev-completion','SessionRuntime','function renderVisual','function animateDetailState','function updateNextButton','function renderStepSegments']){
+  if(session.includes(obsolete))fail(`session.js: obsolete responsibility returned ${obsolete}`);
 }
 
-if(html['index.html'].includes('>Начать тренировку</button>')){
-  fail('index.html: initial CTA copy must match runtime copy');
-}
-for(const fragment of [
-  'const renderProgress=()=>{',
-  'window.DailyMotionPages.progress=function mountProgress()'
+for(const token of [
+  'getRoutineEntries','getRoutineActiveSeconds','hasCompletedRoutine','hasRoutineActivity',
+  'getCurrentStreak','getBestStreak','getCompletedRoutineCount','getTotalActiveSeconds','ensureProgramVersion'
 ]){
-  if(!progressRuntime.includes(fragment))fail(`progress.js: managed progress lifecycle missing: ${fragment}`);
+  if(!state.includes(token))fail(`state.js: shared state API missing ${token}`);
 }
-for(const fragment of [
-  "document.documentElement.classList.add('session-ready')",
-  "overlay.classList.add('is-handoff')",
-  "overlay.classList.add('is-content-swap')",
-  'function afterAnimations(node,callback,{subtree=false}={})'
+if(app.includes('availableRoutinesForDay')||progress.includes('timerElapsedSeconds'))fail('State/statistics logic duplicated outside state.js');
+if(!session.includes('Store.ensureProgramVersion'))fail('session.js: program-version migration not wired');
+
+const restStart=session.indexOf('function startRest');
+const restEnd=session.indexOf('function onTimerFinished',restStart);
+const restBlock=restStart>=0&&restEnd>restStart?session.slice(restStart,restEnd):'';
+if(!restBlock.includes('releaseWakeLock();'))fail('session.js: natural rest completion must release wake lock');
+
+if(!html['session.html'].includes('class="completion-mark"')||
+   !html['session.html'].includes('completion-mark__ring')||
+   !html['session.html'].includes('completion-mark__check')){
+  fail('session.html: inline completion mark missing');
+}
+if(html['session.html'].includes('completion-burst')||styles.includes('.completion-burst'))fail('Dead completion burst returned');
+
+for(const [file,sources] of [
+  ['index.html',[app]],
+  ['session.html',[session,sessionView]],
+  ['progress.html',[progress]]
 ]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: P1 workout motion contract missing: ${fragment}`);
-}
-for(const forbidden of [
-  'stageTransitionTimer',
-  'setTimeout(finish,230)',
-  "setTimeout(()=>overlay.classList.remove('is-content-swap'),260)"
-]){
-  if(sessionRuntime.includes(forbidden))fail(`session.js: timer-driven motion returned: ${forbidden}`);
-}
-if(styles.includes('.completion-overlay.is-exiting')){
-  fail('styles.css: obsolete completion exit layer returned');
-}
-
-const manifestIcons=Array.isArray(manifest.icons)?manifest.icons:[];
-for(const requiredSize of ['192x192','512x512']){
-  if(!manifestIcons.some(icon=>String(icon?.sizes||'').split(/\s+/).includes(requiredSize))){
-    fail(`manifest.webmanifest: missing ${requiredSize} install icon`);
-  }
-}
-for(const icon of manifestIcons){
-  const src=String(icon?.src||'');
-  if(!src.startsWith('/'))continue;
-  const relative=src.replace(/^\//,'');
-  if(!existsSync(join(root,relative)))fail(`manifest.webmanifest: missing icon file ${src}`);
-}
-
-const shellMatch=sw.match(/const APP_SHELL=\[(.*?)\];/s);
-if(!shellMatch)fail('sw.js: APP_SHELL not found');
-for(const match of shellMatch[1].matchAll(/'([^']+)'/g)){
-  const url=match[1];
-  if(url==='/')continue;
-  const relative=url.split('?')[0].replace(/^\//,'');
-  if(!existsSync(join(root,relative)))fail(`APP_SHELL points to missing file: ${url}`);
-}
-
-const forbidden=[
-  /weekly-goal/i,
-  /weeklyGoal/,
-  /home-goal/i,
-  /goalSelect/,
-  /getWeeklyProgress/,
-  /Личная цель/i,
-  /Цель недели/i,
-  /Недельная цель/i,
-  /personal goals/i
-];
-const goalSources={
-  'index.html':html['index.html'],
-  'app.js':read('app.js'),
-  'progress.html':html['progress.html'],
-  'progress.js':read('progress.js'),
-  'session.html':html['session.html'],
-  'session.js':read('session.js'),
-  'state.js':read('state.js'),
-  'styles.css':styles,
-  'README.md':readme
-};
-for(const [file,content] of Object.entries(goalSources)){
-  for(const pattern of forbidden){
-    if(pattern.test(content))fail(`${file}: removed personal-goal code still matches ${pattern}`);
-  }
-}
-
-const pageScripts=[
-  ['index.html','app.js'],
-  ['session.html','session.js'],
-  ['progress.html','progress.js']
-];
-for(const [htmlFile,jsFile] of pageScripts){
-  const markup=html[htmlFile];
-  const js=read(jsFile);
-  const ids=new Set([
-    ...[...js.matchAll(/\$\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1]),
-    ...[...js.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(match=>match[1]),
-    ...[...js.matchAll(/querySelector\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1])
-  ]);
-  for(const id of ids){
-    if(!markup.includes(`id="${id}"`)&&!markup.includes(`id='${id}'`)){
-      fail(`${jsFile}: DOM id #${id} is missing from ${htmlFile}`);
+  const markup=html[file];
+  for(const source of sources){
+    const ids=new Set([
+      ...[...source.matchAll(/\$\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1]),
+      ...[...source.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map(match=>match[1]),
+      ...[...source.matchAll(/querySelector\(['"]#([^'"]+)['"]\)/g)].map(match=>match[1])
+    ]);
+    for(const id of ids){
+      if(!markup.includes(`id="${id}"`)&&!markup.includes(`id='${id}'`))fail(`${file}: runtime references missing DOM id #${id}`);
     }
   }
 }
@@ -593,259 +274,41 @@ for(const [file,content] of Object.entries(html)){
   }
 }
 
-
-const heroiconSources={
-  ...html,
-  'app.js':read('app.js'),
-  'session.js':read('session.js'),
-  'progress.js':read('progress.js')
-};
+const iconSources={...html,'app.js':app,'session.js':session,'session-view.js':sessionView,'progress.js':progress};
 const usedHeroicons=new Set();
-for(const content of Object.values(heroiconSources)){
+for(const content of Object.values(iconSources)){
   for(const match of content.matchAll(/\bhi-([a-z0-9-]+)/g))usedHeroicons.add(match[1]);
 }
 for(const name of usedHeroicons){
   const token=`.hi-${name}{--hi-mask:url("vendor/heroicons/${name}.svg")}`;
-  if(!heroicons.includes(token))fail(`heroicons.css: Heroicon mapping missing ${name}`);
+  if(!heroicons.includes(token))fail(`heroicons.css: mapping missing ${name}`);
   const svg=read(`vendor/heroicons/${name}.svg`);
-  if(!svg.includes('stroke-width="1.7"'))fail(`vendor/heroicons/${name}.svg: expected 1.7px stroke`);
+  if(!svg.includes('stroke-width="1.7"'))fail(`vendor/heroicons/${name}.svg: stroke-width must stay 1.7`);
 }
-for(const [file,content] of Object.entries({...html,'app.js':read('app.js')})){
-  if(/class=["'][^"']*\bph\b/.test(content))fail(`${file}: Phosphor class remains after Heroicons migration`);
-  if(/phosphor\.css/i.test(content))fail(`${file}: Phosphor stylesheet remains after Heroicons migration`);
+for(const [file,content] of Object.entries({...html,'app.js':app})){
+  if(/class=["'][^"']*\bph\b/.test(content)||/phosphor\.css/i.test(content))fail(`${file}: Phosphor must not return`);
 }
 for(const file of htmlFiles){
-  const allowed=file==='session.html'
-    ?html[file].replace(/<svg class="completion-mark"[\s\S]*?<\/svg>/i,'')
-    :html[file];
-  if(/<svg\b/i.test(allowed))fail(`${file}: inline SVG UI icons remain after Heroicons migration`);
+  const allowed=file==='session.html'?html[file].replace(/<svg class="completion-mark"[\s\S]*?<\/svg>/i,''):html[file];
+  if(/<svg\b/i.test(allowed))fail(`${file}: inline SVG UI icon returned`);
 }
-if(/<svg\b/i.test(read('app.js')))fail('app.js: inline SVG routine icons remain after Heroicons migration');
+if(/<svg\b/i.test(app))fail('app.js: inline SVG routine icon returned');
 
-const retiredCssClasses=[
-  "activity-card__actions",
-  "activity-day__bar",
-  "activity-streak",
-  "catalog-chevron",
-  "completion-week",
-  "execution-check",
-  "execution-done",
-  "flow-cancel",
-  "flow-card",
-  "flow-overlay",
-  "flow-skip",
-  "flow-value",
-  "flow-value--rest",
-  "is-morphing",
-  "notice-card",
-  "progress-hero",
-  "qm-icon--warn",
-  "routine-catalog",
-  "routine-icon",
-  "qm-svg",
-  "routine-reset-actions",
-  "routine-reset-button",
-  "routine-reset-cancel",
-  "routine-reset-confirm",
-  "routine-reset-entry",
-  "routine-reset-overlay",
-  "routine-reset-view",
-  "routine-reset-sheet",
-  "routine-reset-sheet__handle",
-  "summary-strip",
-  "timer-actions",
-  "timer-adjustments",
-  "timer-card",
-  "timer-card__head",
-  "timer-card__status",
-  "timer-grid",
-  "timer-kicker",
-  "timer-primary",
-  "timer-reset-link",
-  "timer-state-row",
-  "today-card__percent",
-  "visual-placeholder__icon",
-  "visual-placeholder__inner"
+const forbiddenGoals=[
+  /weekly-goal/i,/weeklyGoal/,/home-goal/i,/goalSelect/,/getWeeklyProgress/,
+  /Личная цель/i,/Цель недели/i,/Недельная цель/i,/personal goals/i
 ];
-for(const className of retiredCssClasses){
-  if(styles.includes(`.${className}`))fail(`styles.css: retired selector still present: .${className}`);
-}
-for(const marker of ['/* v75 —','/* v76 —','/* v77 —','/* v78 —']){
-  if(styles.includes(marker))fail(`styles.css: historical sheet layer still present: ${marker}`);
-}
-if(!styles.includes('/* Bottom sheets — GSAP owns transform and backdrop motion */')){
-  fail('styles.css: consolidated bottom-sheet layer is missing');
-}
-if(!styles.includes('/* P2 desktop Home — one authoritative layout layer. */')){
-  fail('styles.css: consolidated P2 desktop Home layout is missing');
-}
-if(!styles.includes('/* P3 micro-polish — desktop timing controls stay native on touch/mobile. */')){
-  fail('styles.css: P3 desktop timing control layer is missing');
-}
-for(const retiredTimerMotion of ['timerBreath','timerEnding','timerFinalThree']){
-  if(styles.includes(retiredTimerMotion))fail(`styles.css: retired timer transform motion returned: ${retiredTimerMotion}`);
-}
-if(!styles.includes('timerUrgencyPulse'))fail('styles.css: geometry-safe timer urgency motion is missing');
-
-for(const retiredHomeLayout of [
-  'grid-column:span 7;padding:26px',
-  'grid-column:1 / 8;grid-row:1 / span 2',
-  '"routines activity"'
-]){
-  if(styles.includes(retiredHomeLayout))fail(`styles.css: retired desktop Home layout returned: ${retiredHomeLayout}`);
-}
-if(!styles.includes('.home-body .home-activity-summary')){
-  fail('styles.css: activity streak summary styling is missing');
-}
-if(!styles.includes('--muted-strong:#535c54;')){
-  fail('styles.css: accessible microcopy color token is missing');
-}
-if(!styles.includes('outline:2px solid var(--focus-color);')||!styles.includes('box-shadow:0 0 0 4px var(--focus-halo);')){
-  fail('styles.css: semantic high-contrast focus-visible contract is missing');
-}
-if(/outline:\s*3px solid rgba\(47,107,85,\.18\)/.test(styles)){
-  fail('styles.css: obsolete low-contrast focus ring remains');
-}
-for(const [file,id] of [
-  ['index.html','countdownSettingDesktop'],
-  ['index.html','restSettingDesktop'],
-  ['session.html','workoutCountdownSettingDesktop'],
-  ['session.html','workoutRestSettingDesktop']
-]){
-  if(!html[file].includes(`id="${id}"`))fail(`${file}: P3 desktop timing control missing ${id}`);
-}
-
-const techniqueMarkup=html['session.html'];
-const techniqueHeadingCount=(techniqueMarkup.match(/<h3 class="detail-card__heading">/g)||[]).length;
-if(techniqueHeadingCount!==6)fail(`session.html: expected 6 semantic technique headings, found ${techniqueHeadingCount}`);
-for(const id of ['detail-how','detail-breathing','detail-feel','detail-mistakes','detail-easy','detail-progression']){
-  if(!techniqueMarkup.includes(`id="${id}-toggle"`))fail(`session.html: missing accordion toggle id for ${id}`);
-  if(!techniqueMarkup.includes(`id="${id}" role="region" aria-labelledby="${id}-toggle"`)){
-    fail(`session.html: missing labelled accordion region for ${id}`);
-  }
-}
-if(/<button\b[^>]*>(?:(?!<\/button>)[\s\S])*<h[1-6]\b/i.test(techniqueMarkup)){
-  fail('session.html: headings must wrap accordion buttons, not be nested inside buttons');
-}
-
-if(/@media[^{]+\{\s*\}/.test(styles))fail('styles.css: empty media query remains after consolidation');
-
-const typographyMarker='/* Heroicons Outline — primary UI icon system · 1.7px stroke */';
-const typographyMarkerIndex=styles.indexOf(typographyMarker);
-if(typographyMarkerIndex<0)fail('styles.css: Heroicons boundary marker is missing');
-const textStyles=styles.slice(0,typographyMarkerIndex);
-for(const [token,value] of Object.entries({
-  '--font-size-xs':'.75rem',
-  '--font-size-sm':'.8125rem',
-  '--font-size-md':'.875rem',
-  '--font-size-body':'.9375rem',
-  '--font-size-base':'1rem'
+for(const [file,content] of Object.entries({
+  ...html,'app.js':app,'progress.js':progress,'session.js':session,'state.js':state,'styles.css':styles,'README.md':read('README.md')
 })){
-  if(!textStyles.includes(`${token}:${value};`))fail(`styles.css: typography token ${token} must remain ${value}`);
-}
-if(!textStyles.includes('font-size:var(--font-size-base);'))fail('styles.css: body typography base token is not wired');
-if(/font-size\s*:\s*[0-9.]+px/.test(textStyles))fail('styles.css: user-facing text layer contains fixed px font-size');
-if(/font-size\s*:\s*(?:10|11|11\.5|12\.5)px/.test(styles))fail('styles.css: legacy micro-font px size returned');
-if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog')){
-  fail('index.html: complexes must remain immediately visible, not inside a disclosure');
-}
-
-const motionContract=[
-  "phase='closed'",
-  "phase='opening'",
-  "phase='open'",
-  "phase='dragging'",
-  "phase='settling'",
-  "phase='closing'",
-  "sheetHeight*SHEET_MOTION.dismissRatio",
-  "y>=SHEET_MOTION.flingMinY&&velocity>SHEET_MOTION.flingVelocity",
-  "prefers-reduced-motion: reduce",
-  "Cubic Hermite",
-  "Critically damped return"
-];
-for(const token of motionContract){
-  if(!motion.includes(token))fail(`motion.js: motion contract token missing: ${token}`);
-}
-
-for(const token of [
-  'createToast',
-  'syncPressed',
-  'trapFocus',
-  'createConfirmFlow',
-  'bindSettingsControls'
-]){
-  if(!ui.includes(token))fail(`ui.js: shared UI primitive missing ${token}`);
-}
-for(const source of [appRuntime,sessionRuntime]){
-  for(const duplicate of ['function syncThemeControl','function syncTimingControl','const focusable=[...']){
-    if(source.includes(duplicate))fail(`shared UI logic was re-duplicated: ${duplicate}`);
+  for(const pattern of forbiddenGoals){
+    if(pattern.test(content))fail(`${file}: removed personal-goal code returned ${pattern}`);
   }
 }
-if(!appRuntime.includes('UI.bindSettingsControls')||!sessionRuntime.includes('UI.bindSettingsControls')){
-  fail('shared settings binding is not wired on Home and Session');
-}
-for(const staleApi of ['canInstall:','isStandalone,','update:()=>registration']){
-  if(pwa.includes(staleApi))fail(`pwa.js: unused public API returned: ${staleApi}`);
-}
-for(const file of htmlFiles){
-  if(!html[file].includes('<script src="ui.js?v='))fail(`${file}: shared ui.js runtime is missing`);
-}
-if(!sw.includes("'/ui.js?v="))fail('sw.js: shared ui.js is missing from app shell');
 
-for(const token of [
-  'window.DailyMotionSessionView=Object.freeze({create})',
-  'const animateDetailState=',
-  'const renderExercise=',
-  'const renderStepSegments=',
-  'const updateNextButton='
-]){
-  if(!sessionView.includes(token))fail(`session-view.js: extracted session view contract missing ${token}`);
+if(!theme.includes("types:['theme']")||!styles.includes(':active-view-transition-type(theme)')){
+  fail('Theme View Transition ownership missing');
 }
-for(const token of [
-  'const SessionView=window.DailyMotionSessionView',
-  'const sessionView=SessionView.create({',
-  'sessionView.renderExercise(exercise)',
-  'sessionView.updateNextButton()',
-  'sessionView.renderStepSegments()',
-  'sessionView.resetDetails()',
-  'sessionView.destroy()'
-]){
-  if(!sessionRuntime.includes(token))fail(`session.js: session view wiring missing ${token}`);
-}
-for(const obsolete of ['DEV_COMPLETION','dm-dev-completion','SessionRuntime','function renderVisual','function animateDetailState','function updateNextButton','function renderStepSegments']){
-  if(sessionRuntime.includes(obsolete))fail(`session.js: obsolete session responsibility returned ${obsolete}`);
-}
-if(!sw.includes("'/session-view.js?v="))fail('sw.js: session-view.js missing from app shell');
+if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog'))fail('Home complexes must remain immediately visible');
 
-for(const token of [
-  'getRoutineEntries',
-  'getRoutineActiveSeconds',
-  'hasCompletedRoutine',
-  'hasRoutineActivity',
-  'getCurrentStreak',
-  'getBestStreak',
-  'getCompletedRoutineCount',
-  'getTotalActiveSeconds'
-]){
-  if(!read('state.js').includes(token))fail(`state.js: shared activity API missing ${token}`);
-}
-if(read('app.js').includes('availableRoutinesForDay')||read('progress.js').includes('timerElapsedSeconds')){
-  fail('activity/statistics logic was re-duplicated outside state.js');
-}
-if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.endsWith('/session.html')")){
-  fail('sw.js: canonical offline navigation fallbacks are incomplete');
-}
-if(!read('app.js').includes('createBottomSheet'))fail('app.js: shared bottom sheet is not wired');
-const sessionSource=read('session.js');
-const restStart=sessionSource.indexOf('function startRest');
-const restEnd=sessionSource.indexOf('function onTimerFinished',restStart);
-const restBlock=restStart>=0&&restEnd>restStart?sessionSource.slice(restStart,restEnd):'';
-if(!restBlock.includes('releaseWakeLock();'))fail('session.js: natural rest completion must release wake lock');
-
-if(!read('state.js').includes('ensureProgramVersion'))fail('state.js: safe program-version migration is missing');
-if(!read('session.js').includes('Store.ensureProgramVersion'))fail('session.js: safe program-version migration is not wired');
-
-if(!read('session.js').includes('createBottomSheet'))fail('session.js: shared bottom sheet is not wired');
-if(read('progress.js').includes('createBottomSheet'))fail('progress.js: bottom sheet should not be used on progress page');
-
-console.log(`Daily Motion checks passed · release v${[...releaseVersions][0]}`);
+console.log(`Daily Motion checks passed · release v${releaseVersion}`);
