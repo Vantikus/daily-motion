@@ -371,8 +371,8 @@ for(const fragment of [
 ]){
   if(!sessionRuntime.includes(fragment))fail(`session.js: managed workout cleanup missing: ${fragment}`);
 }
-if(!pwa.includes('const destroy=()=>{')||!pwa.includes('return {open,close:()=>close(0,false),destroy,')){
-  fail('pwa.js: bottom-sheet destroy lifecycle is missing');
+if(!motion.includes('const destroy=()=>{')||!motion.includes('return {open,close:()=>close(0,false),destroy,')){
+  fail('motion.js: bottom-sheet destroy lifecycle is missing');
 }
 
 for(const fragment of [
@@ -440,7 +440,7 @@ for(const fragment of ['/* v168 unified motion system','--motion-enter:220ms','-
 for(const fragment of ['tokens:MOTION_TOKENS','...(window.DailyMotionMotion||{})']){
   if(!motion.includes(fragment))fail(`motion.js: shared motion namespace missing: ${fragment}`);
 }
-if(!pwa.includes('...(window.DailyMotionMotion||{})'))fail('pwa.js: must preserve shared motion namespace');
+if(pwa.includes('DailyMotionMotion'))fail('pwa.js: motion namespace must not be owned by PWA runtime');
 if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v212: unused DrawSVG runtime returned');
 if(!sw.includes(`'/motion.js?v=${releaseVersion}'`))fail('sw.js: motion runtime missing from offline shell');
 
@@ -782,6 +782,9 @@ for(const source of [appRuntime,sessionRuntime]){
 }
 if(!appRuntime.includes('UI.bindSettingsControls')||!sessionRuntime.includes('UI.bindSettingsControls')){
   fail('shared settings binding is not wired on Home and Session');
+}
+for(const staleApi of ['canInstall:','isStandalone,','update:()=>registration']){
+  if(pwa.includes(staleApi))fail(`pwa.js: unused public API returned: ${staleApi}`);
 }
 for(const file of htmlFiles){
   if(!html[file].includes('<script src="ui.js?v='))fail(`${file}: shared ui.js runtime is missing`);
