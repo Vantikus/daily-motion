@@ -312,12 +312,12 @@ if(!theme.includes("types:['theme']")||!styles.includes(':active-view-transition
 }
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog'))fail('Home complexes must remain immediately visible');
 
-for(const legacy of [
+for(const protectedFlowAsset of [
   'icons/daily-motion-flow.svg',
   'icons/flow-app-v3.svg',
   'icons/flow-symbol-v3.svg'
 ]){
-  if(existsSync(join(root,legacy)))fail(`Legacy pre-v97 FLOW asset returned: ${legacy}`);
+  requireFile(protectedFlowAsset);
 }
 
 for(const deadCss of [

@@ -107,7 +107,7 @@ Static `check.mjs` защищает структуру и frozen architecture. �
 
 ## Final audit contract
 
-- В production не хранить unreferenced pre-v97 FLOW variants; утверждённые v97 assets остаются неизменяемыми.
+- FLOW assets не удалять и не перерисовывать как orphan cleanup: даже неиспользуемые фирменные SVG считаются защищёнными assets; активные app/favicon assets остаются v97.
 - Public `window.DailyMotion*` API содержит только реальные межмодульные зависимости. Internal helpers не экспортируются ради тестов.
 - CSS custom properties, selectors и keyframes без runtime/markup consumer удаляются только после reference audit.
 - Static checks запрещают возвращение доказанно мёртвых assets/tokens; поведенческие контракты остаются в Playwright.

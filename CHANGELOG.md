@@ -1,8 +1,13 @@
 # Daily Motion — Changelog
 
+## v220
+- восстановлены три защищённых FLOW SVG, ошибочно классифицированные как orphan assets;
+- WebKit long-drag regression стабилизирован без изменения bottom-sheet physics;
+- финальный stage 8 acceptance подтверждает production-механику отдельным повторным CI.
+
 ## v219
 - финальный dependency/orphan/runtime/style audit;
-- удалены неиспользуемые pre-v97 FLOW SVG, мёртвые CSS tokens/classes/keyframes;
+- удалены доказанно мёртвые CSS tokens/classes/keyframes; фирменные FLOW SVG сохранены как protected assets;
 - сокращён публичный `DailyMotion*` API до реально используемых межмодульных контрактов;
 - полный acceptance regression закрепляет итоговую оптимизированную архитектуру.
 
