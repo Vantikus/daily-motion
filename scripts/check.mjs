@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const root=join(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFileSync(join(root,path),'utf8');
@@ -31,6 +32,7 @@ for(const file of syntaxFiles){
   if(result.status!==0)fail(`Syntax check failed for ${file}:\n${result.stderr||result.stdout}`);
 }
 if(existsSync(join(root,'tests/smoke.spec.js')))fail('tests/smoke.spec.js must remain split by responsibility');
+if(existsSync(join(root,'DAILY_MOTION_HANDOFF_STAGE8.md')))fail('Stage 8 handoff file must not ship in the final source');
 
 const htmlFiles=['index.html','session.html','progress.html'];
 const html=Object.fromEntries(htmlFiles.map(file=>[file,read(file)]));
@@ -312,13 +314,18 @@ if(!theme.includes("types:['theme']")||!styles.includes(':active-view-transition
 }
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog'))fail('Home complexes must remain immediately visible');
 
-for(const protectedFlowAsset of [
-  'icons/daily-motion-flow.svg',
-  'icons/flow-app-v3.svg',
-  'icons/flow-symbol-v3.svg'
-]){
-  requireFile(protectedFlowAsset);
+const frozenFlowAssets={
+  'icons/daily-motion-flow.svg':'322c0d32f6986a04bbac71e3868723a21ea21ad4448f98c31204b1da9c58affe',
+  'icons/flow-app-v3.svg':'3f26d21d17684f52dd2782270db0e1a651e8b17792235713eca7cb4f82eb3c69',
+  'icons/flow-symbol-v3.svg':'b1236b907634dc7ddd887a4433c3172cea21af09cfcd4839a1623385c96edb7e'
+};
+for(const [asset,expectedHash] of Object.entries(frozenFlowAssets)){
+  requireFile(asset);
+  const actualHash=createHash('sha256').update(readFileSync(join(root,asset))).digest('hex');
+  if(actualHash!==expectedHash)fail(`Frozen FLOW asset changed: ${asset}`);
 }
+if(navigation.includes('window.DailyMotionSwup'))fail('navigation.js: unused DailyMotionSwup global returned');
+if(state.includes('const setProgramVersion='))fail('state.js: unused setProgramVersion helper returned');
 
 for(const deadCss of [
   '--space-8','--space-10','--space-12','--layout-wide','--radius-hero','--radius-pill',
