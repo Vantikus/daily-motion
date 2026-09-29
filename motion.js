@@ -489,7 +489,6 @@
     prepareCompletion,
     playCompletion,
     cleanupSessionMotion,
-    createBottomSheet,
-    sheetMotion:SHEET_MOTION
+    createBottomSheet
   };
 })();

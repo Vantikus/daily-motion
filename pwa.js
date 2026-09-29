@@ -176,10 +176,9 @@
     }
   };
 
-  window.DailyMotionPWA={
+  window.DailyMotionPWA=Object.freeze({
     getInstallMode,
-    install,
-    isUpdateSafe:isReloadSafe
-  };
+    install
+  });
 })();
 

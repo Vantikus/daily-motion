@@ -103,3 +103,11 @@ Authoritative ownership:
 ## Regression contract
 
 Static `check.mjs` защищает структуру и frozen architecture. Поведение, accessibility, layout, motion и visual baseline проверяются Playwright.
+
+
+## Final audit contract
+
+- В production не хранить unreferenced pre-v97 FLOW variants; утверждённые v97 assets остаются неизменяемыми.
+- Public `window.DailyMotion*` API содержит только реальные межмодульные зависимости. Internal helpers не экспортируются ради тестов.
+- CSS custom properties, selectors и keyframes без runtime/markup consumer удаляются только после reference audit.
+- Static checks запрещают возвращение доказанно мёртвых assets/tokens; поведенческие контракты остаются в Playwright.

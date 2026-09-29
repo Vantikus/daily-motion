@@ -321,7 +321,7 @@
   },60000);
 
   window.DailyMotionState={
-    KEY,ROUTINE_KEYS,todayKey,EFFORT_LABELS,formatActiveTime,
+    todayKey,EFFORT_LABELS,formatActiveTime,
     getRoutineEntries,
     getRoutineActiveSeconds,
     hasCompletedRoutine,
@@ -336,8 +336,6 @@
     getTimer,
     getSettings,
     updateSettings,
-    getProgramVersion,
-    setProgramVersion,
     ensureProgramVersion,
     exportState,
     importState,

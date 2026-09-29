@@ -1,5 +1,11 @@
 # Daily Motion — Changelog
 
+## v219
+- финальный dependency/orphan/runtime/style audit;
+- удалены неиспользуемые pre-v97 FLOW SVG, мёртвые CSS tokens/classes/keyframes;
+- сокращён публичный `DailyMotion*` API до реально используемых межмодульных контрактов;
+- полный acceptance regression закрепляет итоговую оптимизированную архитектуру.
+
 Здесь хранится история ключевых архитектурных и motion-релизов. Текущие правила находятся в README, DESIGN_SYSTEM, LIBRARIES и MOTION_ROADMAP.
 
 ## v218

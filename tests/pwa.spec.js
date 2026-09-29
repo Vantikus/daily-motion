@@ -74,7 +74,7 @@ test('PWA update waits until an in-progress workout is safe',async({page})=>{
   await expect(page.locator('.pwa-banner')).toBeVisible();
   await expect(page.locator('.pwa-banner__text')).toHaveText('Обновление готово — обновить можно после тренировки');
   await expect(page.locator('.pwa-banner__action')).toBeHidden();
-  expect(await page.evaluate(()=>DailyMotionPWA.isUpdateSafe())).toBe(false);
+  expect(await page.evaluate(()=>window.DailyMotionReloadGuard?.isSafe?.())).toBe(false);
   expect(await page.evaluate(()=>window.__swMessages)).toEqual([]);
 
   await page.evaluate(()=>{
@@ -84,7 +84,7 @@ test('PWA update waits until an in-progress workout is safe',async({page})=>{
 
   await expect(page.locator('.pwa-banner__action')).toBeVisible();
   await expect(page.locator('.pwa-banner__action')).toHaveText('Обновить');
-  expect(await page.evaluate(()=>DailyMotionPWA.isUpdateSafe())).toBe(true);
+  expect(await page.evaluate(()=>window.DailyMotionReloadGuard?.isSafe?.())).toBe(true);
 
   await page.locator('.pwa-banner__action').click();
   expect(await page.evaluate(()=>window.__swMessages)).toEqual([{type:'SKIP_WAITING'}]);

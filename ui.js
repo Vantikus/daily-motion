@@ -158,7 +158,6 @@
   };
 
   window.DailyMotionUI=Object.freeze({
-    syncPressed,
     createToast,
     trapFocus,
     createConfirmFlow,

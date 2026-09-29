@@ -247,13 +247,6 @@
     api[kind] = () => play(kind);
   });
 
-  api.test = async () => {
-    const ready = await unlock();
-    if (!ready) return false;
-    play('confirm');
-    return true;
-  };
-
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && (media || context)) setPlaybackSession();
   });

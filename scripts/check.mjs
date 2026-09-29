@@ -152,7 +152,7 @@ for(const token of ['lifecycle.abort();','cancelCountdown();','cancelRest();','s
   if(!session.includes(token))fail(`session.js: cleanup contract missing ${token}`);
 }
 
-for(const token of ['createToast','syncPressed','trapFocus','createConfirmFlow','bindSettingsControls']){
+for(const token of ['createToast','trapFocus','createConfirmFlow','bindSettingsControls']){
   if(!ui.includes(token))fail(`ui.js: shared UI primitive missing ${token}`);
 }
 for(const source of [app,session]){
@@ -174,7 +174,8 @@ for(const token of [
 ]){
   if(!motion.includes(token))fail(`motion.js: frozen bottom-sheet physics changed ${token}`);
 }
-if(!motion.includes('createBottomSheet')||!motion.includes('sheetMotion:SHEET_MOTION'))fail('motion.js: bottom-sheet owner missing');
+if(!motion.includes('createBottomSheet'))fail('motion.js: bottom-sheet owner missing');
+if(motion.includes('sheetMotion:SHEET_MOTION'))fail('motion.js: internal sheet constants leaked into public API');
 if(!motion.includes('playCompletion')||!motion.includes('cleanupSessionMotion'))fail('motion.js: completion owner missing');
 if(existsSync(join(root,'vendor/gsap/SplitText.min.js'))||existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js'))){
   fail('Removed GSAP plugins must not return');
@@ -310,5 +311,43 @@ if(!theme.includes("types:['theme']")||!styles.includes(':active-view-transition
   fail('Theme View Transition ownership missing');
 }
 if(html['index.html'].includes('<details')||html['index.html'].includes('routineCatalog'))fail('Home complexes must remain immediately visible');
+
+for(const legacy of [
+  'icons/daily-motion-flow.svg',
+  'icons/flow-app-v3.svg',
+  'icons/flow-symbol-v3.svg'
+]){
+  if(existsSync(join(root,legacy)))fail(`Legacy pre-v97 FLOW asset returned: ${legacy}`);
+}
+
+for(const deadCss of [
+  '--space-8','--space-10','--space-12','--layout-wide','--radius-hero','--radius-pill',
+  '--component-control-radius','--line-strong','--motion-press-in','--motion-micro','--motion-emphasis',
+  '--motion-sheet-close','--motion-sheet-open','--motion-ease-emphasized','--r-sm',
+  '--qm-section-gap','--qm-control-h','--qm-stage',
+  'completion-title-word','dev-completion-link',
+  'buttonMorph','qmStageIn','qmStageInSoft','qmDetailReveal','qmGlyphSettle','qmToastSettle','qmStageQuiet'
+]){
+  if(styles.includes(deadCss))fail(`styles.css: audited dead token returned ${deadCss}`);
+}
+
+for(const forbidden of [
+  'KEY,ROUTINE_KEYS',
+  'getProgramVersion,',
+  'setProgramVersion,'
+]){
+  const apiBlock=state.match(/window\.DailyMotionState=\{([\s\S]*?)\};/)?.[1]||'';
+  if(apiBlock.includes(forbidden))fail(`state.js: internal API leaked globally ${forbidden}`);
+}
+if(ui.match(/window\.DailyMotionUI=Object\.freeze\(\{([\s\S]*?)\}\);/)?.[1]?.includes('syncPressed')){
+  fail('ui.js: internal syncPressed leaked globally');
+}
+if(/window\.DailyMotionTheme=.*(?:PREFERENCES|normalize|readPreference|resolve)/s.test(theme)){
+  fail('theme.js: internal theme helpers leaked globally');
+}
+if(pwa.match(/window\.DailyMotionPWA=Object\.freeze\(\{([\s\S]*?)\}\);/)?.[1]?.includes('isUpdateSafe')){
+  fail('pwa.js: internal reload-safety helper leaked globally');
+}
+if(read('audio.js').includes('api.test'))fail('audio.js: debug test API returned');
 
 console.log(`Daily Motion checks passed · release v${releaseVersion}`);

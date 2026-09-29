@@ -105,7 +105,7 @@ test('external state changes defer reload until workout becomes safe',async({pag
   await page.goto('/session.html?routine=morning&resume=1',{waitUntil:'domcontentloaded'});
 
   await page.evaluate(()=>{
-    const key=DailyMotionState.KEY;
+    const key='dailyMotionState.v3';
     const external=JSON.parse(localStorage.getItem(key));
     external.settings.theme='dark';
     const next=JSON.stringify(external);
@@ -115,7 +115,7 @@ test('external state changes defer reload until workout becomes safe',async({pag
 
   await page.waitForTimeout(150);
   expect(await page.evaluate(()=>Number(sessionStorage.getItem('dailyMotionStorageBoots')))).toBe(1);
-  expect(await page.evaluate(()=>DailyMotionPWA.isUpdateSafe())).toBe(false);
+  expect(await page.evaluate(()=>window.DailyMotionReloadGuard?.isSafe?.())).toBe(false);
 
   const reloadFinished=page.waitForEvent('load');
   await page.evaluate(()=>{

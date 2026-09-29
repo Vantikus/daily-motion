@@ -84,6 +84,6 @@
   if(typeof media.addEventListener==='function')media.addEventListener('change',handleSystemChange);
   else media.addListener(handleSystemChange);
 
-  window.DailyMotionTheme={PREFERENCES,normalize,readPreference,resolve,apply,applyAnimated};
+  window.DailyMotionTheme=Object.freeze({apply,applyAnimated});
   apply();
 })();
