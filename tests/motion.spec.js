@@ -129,3 +129,23 @@ test('audio synthesis stays lazy until first audio use',async({page,browserName}
   const afterSecond=await page.evaluate(()=>window.__dmAudioBtoaCalls);
   expect(afterSecond).toBe(afterFirst);
 });
+
+
+test('session presentation is owned by the extracted view runtime',async({page})=>{
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+  const ownership=await page.evaluate(()=>({
+    create:typeof DailyMotionSessionView?.create,
+    page:typeof DailyMotionPages?.session,
+    completionHidden:document.querySelector('#completionOverlay')?.getAttribute('aria-hidden'),
+    openDetails:document.querySelectorAll('.detail-card.is-open').length
+  }));
+  expect(ownership.create).toBe('function');
+  expect(ownership.page).toBe('function');
+  expect(ownership.completionHidden).toBe('true');
+  expect(ownership.openDetails).toBe(1);
+
+  const toggles=page.locator('.detail-card__toggle');
+  await toggles.nth(1).click();
+  await expect(toggles.nth(1)).toHaveAttribute('aria-expanded','true');
+  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','false');
+});

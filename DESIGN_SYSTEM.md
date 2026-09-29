@@ -372,3 +372,13 @@ The later approved Home/Workout polish passes supersede older generic geometry w
 - Repeated unlocks reuse the same generated media and must not regenerate WAV data.
 - The shared page runtimes remain eagerly available because Swup replaces `#swup` without executing a second page's body scripts; removing `app.js`, `progress.js` or `session.js` from individual HTML shells would break SPA remounts.
 - Swup runtime loading remains immediate after the first page mount so an early navigation keeps the current smooth transition behavior. This is intentionally not traded for a slightly lighter first idle window.
+
+
+## v217 — session ownership cleanup
+
+- `session.js` owns workout state, timer/countdown/rest orchestration, persistence, completion and modal lifecycle.
+- `session-view.js` owns exercise presentation only: visual phases, technique accordion motion, step indicator rendering, exercise copy, directional exercise reveal and the primary next-button label/state.
+- The fullscreen execution transition engine remains inside `session.js`; stage ownership and timer/rest timing are intentionally unchanged.
+- The hidden `dev=completion` / `dm-dev-completion` branch was removed because it had no production or regression consumer and duplicated completion state handling.
+- Session page teardown must destroy the extracted view controller before the Swup container is discarded.
+- Because Swup does not execute body scripts from the destination document, `session-view.js` is loaded in every HTML shell and cached by the Service Worker alongside the other persistent page runtimes.

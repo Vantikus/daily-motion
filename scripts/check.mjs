@@ -8,7 +8,7 @@ const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
-  'app.js','audio.js','motion.js','ui.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
+  'app.js','audio.js','motion.js','ui.js','session-view.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -26,6 +26,7 @@ const designSystem=read('DESIGN_SYSTEM.md');
 const pwa=read('pwa.js');
 const motion=read('motion.js');
 const ui=read('ui.js');
+const sessionView=read('session-view.js');
 const navigation=read('navigation.js');
 const appRuntime=read('app.js');
 const progressRuntime=read('progress.js');
@@ -236,7 +237,7 @@ for(const [file,content] of Object.entries(html)){
   if(!content.includes('id="swup"'))fail(`${file}: Swup container is missing`);
   if(!content.includes('class="transition-page"'))fail(`${file}: Swup transition container class is missing`);
   if(!content.includes(`navigation.js?v=${releaseVersion}`))fail(`${file}: navigation bootstrap release version mismatch`);
-  for(const runtime of ['app.js','progress.js','session.js','motion.js']){
+  for(const runtime of ['app.js','progress.js','session.js','session-view.js','motion.js']){
     const versioned=`${runtime}?v=${releaseVersion}`;
     if(!content.includes(versioned))fail(`${file}: persistent page runtime missing: ${versioned}`);
   }
@@ -790,6 +791,31 @@ for(const file of htmlFiles){
   if(!html[file].includes('<script src="ui.js?v='))fail(`${file}: shared ui.js runtime is missing`);
 }
 if(!sw.includes("'/ui.js?v="))fail('sw.js: shared ui.js is missing from app shell');
+
+for(const token of [
+  'window.DailyMotionSessionView=Object.freeze({create})',
+  'const animateDetailState=',
+  'const renderExercise=',
+  'const renderStepSegments=',
+  'const updateNextButton='
+]){
+  if(!sessionView.includes(token))fail(`session-view.js: extracted session view contract missing ${token}`);
+}
+for(const token of [
+  'const SessionView=window.DailyMotionSessionView',
+  'const sessionView=SessionView.create({',
+  'sessionView.renderExercise(exercise)',
+  'sessionView.updateNextButton()',
+  'sessionView.renderStepSegments()',
+  'sessionView.resetDetails()',
+  'sessionView.destroy()'
+]){
+  if(!sessionRuntime.includes(token))fail(`session.js: session view wiring missing ${token}`);
+}
+for(const obsolete of ['DEV_COMPLETION','dm-dev-completion','SessionRuntime','function renderVisual','function animateDetailState','function updateNextButton','function renderStepSegments']){
+  if(sessionRuntime.includes(obsolete))fail(`session.js: obsolete session responsibility returned ${obsolete}`);
+}
+if(!sw.includes("'/session-view.js?v="))fail('sw.js: session-view.js missing from app shell');
 
 for(const token of [
   'getRoutineEntries',

@@ -1,16 +1,13 @@
 window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.session=function mountSession(){
   const ROUTINE_KEY=new URLSearchParams(location.search).get('routine')||'morning';
-  let storedDevCompletion=false;
-  try{
-    storedDevCompletion=sessionStorage.getItem('dm-dev-completion')==='1';
-    if(storedDevCompletion)sessionStorage.removeItem('dm-dev-completion');
-  }catch{}
-  const DEV_COMPLETION=new URLSearchParams(location.search).get('dev')==='completion'||storedDevCompletion;
   const exercises=window.DailyMotionProgram.morning;
-  return (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
   const UI=window.DailyMotionUI;
+  const SessionView=window.DailyMotionSessionView;
+  if(!SessionView)throw new Error('Daily Motion session view runtime is missing');
+
+  // Lifecycle / shared session state.
   const lifecycle=new AbortController();
   const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
   let destroyed=false;
@@ -100,6 +97,7 @@ window.DailyMotionPages.session=function mountSession(){
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
 
+  // Reload safety / modal ownership.
   const hasWorkoutActivity=()=>{
     const timerActivity=Object.values(routine.timers||{}).some(timer=>
       Boolean(timer?.running)||
@@ -188,6 +186,16 @@ window.DailyMotionPages.session=function mountSession(){
   };
 
   const timerData=exercise=>Store.getTimer(ROUTINE_KEY,exercise.id,exercise.seconds);
+  const sessionView=SessionView.create({
+    exercises,
+    routine,
+    getCurrent:()=>current,
+    getTimer:()=>timerData(exercises[current]),
+    motionTokens:MotionTokens,
+    haptic,
+    signal:lifecycle.signal
+  });
+
   const accountTimerRun=(timer,stop=true)=>{
     if(!timer?.running)return;
     const now=Date.now();
@@ -247,6 +255,7 @@ window.DailyMotionPages.session=function mountSession(){
     document.body.classList.toggle('modal-open',hasModal);
   }
 
+  // Workout settings sheet.
   const workoutSettingsBinding=UI.bindSettingsControls({
     store:Store,
     audio:Audio,
@@ -360,6 +369,7 @@ window.DailyMotionPages.session=function mountSession(){
     toast('Прогресс тренировки сброшен');
   }
 
+  // Fullscreen execution stage choreography.
   function setExecutionCopy(){
     const exercise=exercises[current];
     $('#executionMeta').textContent=`Утро · ${current+1} из ${exercises.length}`;
@@ -696,6 +706,7 @@ window.DailyMotionPages.session=function mountSession(){
     });
   }
 
+  // Countdown / rest orchestration.
   function cancelCountdown(){
     if(countdownTimer!==null){
       clearInterval(countdownTimer);
@@ -858,7 +869,7 @@ window.DailyMotionPages.session=function mountSession(){
       return;
     }
 
-    updateNextButton();
+    sessionView.updateNextButton();
 
     if(settings.autoNext){
       startRest(advanceExercise);
@@ -868,6 +879,7 @@ window.DailyMotionPages.session=function mountSession(){
     hideExecution();
   }
 
+  // Timer state and persistence.
   function updateTimerUI(){
     const exercise=exercises[current];
     const timer=timerData(exercise);
@@ -916,7 +928,7 @@ window.DailyMotionPages.session=function mountSession(){
     $('#timerRing').classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
     $('#timerRing').classList.toggle('is-final-three',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=3));
     $('#timerCard').classList.toggle('is-running',timer.running);
-    updateNextButton();
+    sessionView.updateNextButton();
 
     if(justFinished)onTimerFinished();
   }
@@ -945,228 +957,17 @@ window.DailyMotionPages.session=function mountSession(){
     Store.save();
   }
 
-  function renderVisual(exercise){
-    const box=$('#exerciseVisual');
-    if(Array.isArray(exercise.visuals)&&exercise.visuals.length){
-      box.hidden=false;
-      box.classList.add('has-visuals');
-      box.innerHTML=`<div class="visual-phases" style="--phase-count:${Math.min(exercise.visuals.length,3)}">${exercise.visuals.map((src,index)=>`<figure class="visual-phase"><img src="${src}" alt="${exercise.title}, фаза ${index+1}" loading="eager" decoding="async"></figure>`).join('')}</div>`;
-      return;
-    }
-    box.hidden=true;
-    box.classList.remove('has-visuals','visual-placeholder');
-    box.innerHTML='';
-  }
-
-  const detailAnimations=new WeakMap();
-
-  function setDetailState(card,open){
-    detailAnimations.get(card)?.forEach?.(animation=>animation.cancel());
-    detailAnimations.delete(card);
-
-    const toggle=card.querySelector('.detail-card__toggle');
-    const panel=card.querySelector('.detail-card__panel');
-    const inner=card.querySelector('.detail-card__inner');
-
-    card.classList.toggle('is-open',open);
-    if(panel){panel.inert=!open;panel.setAttribute('aria-hidden',String(!open));}
-    if(toggle)toggle.setAttribute('aria-expanded',String(open));
-    if(panel){
-      panel.style.height=open?'auto':'0px';
-      panel.style.opacity=open?'1':'0';
-    }
-    if(inner){
-      inner.style.opacity=open?'1':'0';
-      inner.style.transform=open?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
-    }
-  }
-
-  function animateDetailState(card,open){
-    const toggle=card.querySelector('.detail-card__toggle');
-    const panel=card.querySelector('.detail-card__panel');
-    const inner=card.querySelector('.detail-card__inner');
-    if(!panel||!inner){
-      setDetailState(card,open);
-      return;
-    }
-
-    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const previous=detailAnimations.get(card)||[];
-    const currentHeight=panel.getBoundingClientRect().height;
-    previous.forEach(animation=>animation.cancel());
-
-    panel.style.height=`${currentHeight}px`;
-    panel.style.opacity=currentHeight>0?'1':'0';
-    inner.style.opacity=currentHeight>0?'1':'0';
-    inner.style.transform=currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
-
-    card.classList.toggle('is-open',open);
-    toggle?.setAttribute('aria-expanded',String(open));
-    panel.inert=!open;
-    panel.setAttribute('aria-hidden',String(!open));
-
-    const targetHeight=open?inner.scrollHeight:0;
-    if(reduceMotion){
-      setDetailState(card,open);
-      return;
-    }
-
-    const panelAnimation=panel.animate(
-      [
-        {height:`${currentHeight}px`,opacity:currentHeight>0?1:.25},
-        {height:`${targetHeight}px`,opacity:open?1:.2}
-      ],
-      {
-        duration:open?270:190,
-        easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
-        fill:'forwards'
-      }
-    );
-
-    const innerAnimation=inner.animate(
-      open
-        ?[
-          {opacity:currentHeight>0?1:0,transform:currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-3px,0)'},
-          {opacity:1,transform:'translate3d(0,0,0)'}
-        ]
-        :[
-          {opacity:1,transform:'translate3d(0,0,0)'},
-          {opacity:0,transform:'translate3d(0,-2px,0)'}
-        ],
-      {
-        duration:open?190:110,
-        delay:open?35:0,
-        easing:open?MotionTokens.easeEnter:MotionTokens.easeExit,
-        fill:'forwards'
-      }
-    );
-
-    const animations=[panelAnimation,innerAnimation];
-    detailAnimations.set(card,animations);
-
-    let finished=false;
-    const finish=()=>{
-      if(finished||detailAnimations.get(card)!==animations)return;
-      finished=true;
-      animations.forEach(animation=>animation.cancel());
-      detailAnimations.delete(card);
-
-      if(open){
-        card.classList.add('is-open');
-        panel.style.height='auto';
-        panel.style.opacity='1';
-        inner.style.opacity='1';
-        inner.style.transform='translate3d(0,0,0)';
-      }else{
-        card.classList.remove('is-open');
-        panel.style.height='0px';
-        panel.style.opacity='0';
-        inner.style.opacity='0';
-        inner.style.transform='translate3d(0,-2px,0)';
-      }
-    };
-
-    panelAnimation.addEventListener('finish',finish,{once:true});
-    setTimeout(finish,(open?270:190)+70);
-  }
-
-  document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
-    toggle.addEventListener('click',()=>{
-      const card=toggle.closest('.detail-card');
-      const willOpen=!card.classList.contains('is-open');
-      if(willOpen){
-        document.querySelectorAll('.detail-card.is-open').forEach(other=>{
-          if(other!==card)animateDetailState(other,false);
-        });
-      }
-      animateDetailState(card,willOpen);
-      if(willOpen){
-        const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        setTimeout(()=>toggle.scrollIntoView({
-          block:'nearest',
-          behavior:reduceMotion?'auto':'smooth'
-        }),110);
-      }
-      haptic('tap');
-    });
-  });
-
-
-  function renderStepSegments(){
-    const done=routine.completed?exercises.length:Math.min(routine.completedUntil||0,exercises.length);
-    const segments=$('#stepSegments');
-    segments.style.setProperty('--step-count',String(exercises.length));
-    if(segments.children.length!==exercises.length){
-      segments.innerHTML=exercises.map(()=>'<i></i>').join('');
-    }
-    [...segments.children].forEach((segment,index)=>{
-      segment.classList.toggle('is-done',index<done);
-      segment.classList.toggle('is-current',index===current&&!routine.completed);
-    });
-  }
-
-  function animateExercise(direction='forward'){
-    const card=$('.exercise-main');
-    card.classList.remove('enter-forward','enter-back');
-    void card.offsetWidth;
-    card.classList.add(direction==='back'?'enter-back':'enter-forward');
-    const badge=$('#headerProgress');
-    badge.classList.remove('is-updating');
-    void badge.offsetWidth;
-    badge.classList.add('is-updating');
-  }
-
-  function updateNextButton(){
-    const button=$('#nextButton');
-    const timer=timerData(exercises[current]);
-    const isDone=routine.completed||Number(routine.completedUntil||0)>current||timer.remaining===0;
-    const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
-
-    if(routine.completed){
-      button.textContent='Комплекс завершён';
-      button.disabled=true;
-      button.classList.remove('is-finish');
-      return;
-    }
-
-    button.disabled=false;
-    if(isDone){
-      const isFinish=current===exercises.length-1;
-      button.textContent=isFinish?'Завершить комплекс':'Следующее упражнение';
-      button.classList.toggle('is-finish',isFinish);
-      return;
-    }
-
-    button.classList.remove('is-finish');
-    button.textContent=timer.running?'Открыть таймер':hasProgress?'Продолжить':'Начать упражнение';
-  }
-
+  // Exercise state -> extracted session view.
   function render(direction='forward',scrollMode='smooth'){
     stopTicker();
     routine.step=current;
     Store.save();
 
     const exercise=exercises[current];
-    document.title=`${exercise.title} — Daily Motion`;
-    renderVisual(exercise);
-    $('#exerciseTitle').textContent=exercise.title;
-    $('#exerciseGoal').textContent=exercise.goal;
-    $('#exerciseVolume').textContent=exercise.volume;
-    $('#exerciseTime').textContent=exercise.time;
-    $('#keyText').textContent=exercise.key;
-    $('#howToList').innerHTML=exercise.how.map(item=>`<li>${item}</li>`).join('');
-    $('#breathingText').textContent=exercise.breathing;
-    $('#feelText').textContent=exercise.feel;
-    $('#mistakesList').innerHTML=exercise.mistakes.map(item=>`<li>${item}</li>`).join('');
-    $('#easyText').textContent=exercise.easy;
-    $('#progressionText').textContent=exercise.progression;
-    $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
-    $('#navStepLabel').textContent=`Упражнение ${current+1} из ${exercises.length}`;
-    $('#prevButton').disabled=current===0;
-
-    updateNextButton();
-    renderStepSegments();
-    document.querySelectorAll('.detail-card').forEach((card,index)=>setDetailState(card,index===0));
+    sessionView.renderExercise(exercise);
+    sessionView.updateNextButton();
+    sessionView.renderStepSegments();
+    sessionView.resetDetails();
     updateTimerUI();
 
     const timer=timerData(exercise);
@@ -1175,10 +976,11 @@ window.DailyMotionPages.session=function mountSession(){
       requestWakeLock();
     }
 
-    if(direction)animateExercise(direction);
+    if(direction)sessionView.animateExercise(direction);
     requestAnimationFrame(()=>$('#exerciseScroll').scrollTo({top:0,behavior:scrollMode}));
   }
 
+  // Completion flow.
   function finishRoutine(fromExecution=false){
     pauseCurrentTimer();
     cancelCountdown();
@@ -1190,7 +992,7 @@ window.DailyMotionPages.session=function mountSession(){
     routine.step=exercises.length-1;
     routine.completedAt=routine.completedAt||new Date().toISOString();
     Store.save();
-    renderStepSegments();
+    sessionView.renderStepSegments();
     sound('complete');
     haptic('success');
 
@@ -1231,6 +1033,7 @@ window.DailyMotionPages.session=function mountSession(){
     }
   }
 
+  // Interaction wiring.
   $('#routineMoreButton').addEventListener('click',()=>{
     haptic('tap');
     showRoutineSettingsDialog();
@@ -1472,21 +1275,14 @@ window.DailyMotionPages.session=function mountSession(){
     haptic('soft');
     hideExecution(finish||null);
   });
-  let devEffort=null;
   function syncEffortButtons(){
-    const selectedEffort=DEV_COMPLETION?devEffort:routine.effort;
     document.querySelectorAll('[data-effort]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.effort===selectedEffort));
+      button.setAttribute('aria-pressed',String(button.dataset.effort===routine.effort));
     });
-    $('#effortStatus').textContent=selectedEffort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
+    $('#effortStatus').textContent=routine.effort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
   }
   document.querySelectorAll('[data-effort]').forEach(button=>{
     button.addEventListener('click',()=>{
-      if(DEV_COMPLETION){
-        devEffort=devEffort===button.dataset.effort?null:button.dataset.effort;
-        syncEffortButtons();
-        return;
-      }
       routine.effort=routine.effort===button.dataset.effort?null:button.dataset.effort;
       Store.save();
       syncEffortButtons();
@@ -1516,6 +1312,7 @@ window.DailyMotionPages.session=function mountSession(){
     }
   });
 
+  // Lifecycle persistence / teardown.
   const persist=()=>{
     const timer=timerData(exercises[current]);
     if(timer.running)accountTimerRun(timer,false);
@@ -1531,29 +1328,6 @@ window.DailyMotionPages.session=function mountSession(){
     if(destroyed)return;
     document.documentElement.classList.add('session-ready');
     finishPageLoader();
-
-    if(DEV_COMPLETION){
-      const overlay=$('#completionOverlay');
-      $('#completionMeta').textContent='Разминка завершена. Пусть день начнётся с движения.';
-      $('#completionDuration').textContent=formatCompletionTime(Number(routine.activeSeconds)>0?routine.activeSeconds:720);
-      $('#completionCount').textContent=`${exercises.length} / ${exercises.length}`;
-      const completionHighlight=$('#completionHighlight');
-      completionHighlight.textContent='Новая лучшая серия — 2 дня';
-      completionHighlight.hidden=false;
-      syncEffortButtons();
-      modalReturnFocus=document.activeElement;
-      Motion?.prepareCompletion?.(overlay);
-      overlay.classList.remove('is-handoff');
-      overlay.classList.add('is-visible');
-      overlay.setAttribute('aria-hidden','false');
-      syncModalState();
-      emitReloadSafetyChange();
-      requestAnimationFrame(()=>{
-        Motion?.playCompletion?.(overlay);
-        $('#completionTitle').focus({preventScroll:true});
-      });
-      return;
-    }
 
     if(programVersionState.reset)toast('Комплекс обновлён — текущий прогресс начат заново');
     else if(routine.completed)toast('Комплекс уже завершён сегодня');
@@ -1574,6 +1348,7 @@ window.DailyMotionPages.session=function mountSession(){
     restFinish=null;
     stageTransitionToken++;
     executionHideToken++;
+    sessionView.destroy();
     routineSettingsMotion?.destroy?.();
     Motion?.cleanupSessionMotion?.();
     document.querySelector('#swup')?.getAnimations?.({subtree:true})?.forEach(animation=>animation.cancel());
@@ -1583,5 +1358,4 @@ window.DailyMotionPages.session=function mountSession(){
     document.body.classList.remove('modal-open');
     document.documentElement.classList.remove('session-ready');
   };
-})(exercises,ROUTINE_KEY);
 };
