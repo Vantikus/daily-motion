@@ -317,7 +317,7 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Standard content/page entrance: ~220ms; standard exit: ~140ms; emphasis: ~280ms.
 - Timer, countdown, exercise content swaps, accordions, toast and press feedback use the same timing/easing family.
 - Bottom-sheet drag/snap/dismiss physics remain numerically unchanged.
-- Completion success mark stays native CSS; SplitText remains optional for the completion title.
+- Completion is owned by `motion.js` + GSAP Core; the inline SVG mark is animated directly and no optional GSAP plugin is loaded.
 - DrawSVG is removed from runtime because it no longer owns any visible motion.
 
 ## v169 — Motion Foundation M1
@@ -339,3 +339,11 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - Technique accordion height and inner-content reveal are owned by `session.js` WAAPI only.
 - Accordion open is softer/longer than close; inner content follows the container by a short delay.
 - Toast and PWA banner use transition-only feedback with fast exit and softer enter.
+
+
+## v212 — cleanup contract
+
+- Completion has one motion owner: `motion.js` + GSAP Core.
+- SplitText and the historical burst layer are not part of runtime or offline shell.
+- CSS cleanup may remove declarations only when a later rule with the same selector/context already owns that exact property; workout geometry and state semantics must remain unchanged.
+- FLOW assets, Heroicons geometry/stroke, localStorage schema and bottom-sheet physics remain frozen.

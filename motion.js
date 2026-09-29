@@ -14,78 +14,16 @@
     easeExit:'cubic-bezier(.4,0,1,1)',
     easeEmphasized:'cubic-bezier(.16,1,.3,1)'
   });
-  const COMPLETION_PLUGINS=[
-    ['SplitText','/vendor/gsap/SplitText.min.js']
-  ];
-  let completionPluginsPromise=null;
   let completionTimeline=null;
   let completionContext=null;
-  let completionSplit=null;
 
   const reducedMotion=()=>reducedQuery.matches;
-
-  const registerCompletionPlugins=()=>{
-    if(!window.gsap||!window.SplitText)return false;
-    try{
-      window.gsap.registerPlugin(window.SplitText);
-      return true;
-    }catch(error){
-      console.warn('[Daily Motion] completion motion plugins could not register',error);
-      return false;
-    }
-  };
-
-  const loadPlugin=([globalName,src])=>{
-    if(window[globalName])return Promise.resolve(true);
-    const existing=document.querySelector(`script[data-dm-motion-plugin="${globalName}"]`);
-    if(existing){
-      return new Promise(resolve=>{
-        if(window[globalName]){resolve(true);return;}
-        existing.addEventListener('load',()=>resolve(Boolean(window[globalName])),{once:true});
-        existing.addEventListener('error',()=>resolve(false),{once:true});
-      });
-    }
-    return new Promise(resolve=>{
-      const script=document.createElement('script');
-      const timeout=setTimeout(()=>{
-        script.remove();
-        resolve(false);
-      },5000);
-      const finish=ok=>{
-        clearTimeout(timeout);
-        script.onload=null;
-        script.onerror=null;
-        resolve(ok);
-      };
-      script.src=src;
-      script.async=true;
-      script.dataset.dmMotionPlugin=globalName;
-      script.onload=()=>finish(Boolean(window[globalName]));
-      script.onerror=()=>finish(false);
-      document.head.appendChild(script);
-    });
-  };
-
-  const ensureCompletionPlugins=()=>{
-    if(reducedMotion())return Promise.resolve(false);
-    if(registerCompletionPlugins())return Promise.resolve(true);
-    if(completionPluginsPromise)return completionPluginsPromise;
-    completionPluginsPromise=Promise.all(COMPLETION_PLUGINS.map(loadPlugin))
-      .then(results=>results.every(Boolean)&&registerCompletionPlugins())
-      .catch(error=>{
-        console.warn('[Daily Motion] enhanced completion motion unavailable',error);
-        return false;
-      })
-      .finally(()=>{completionPluginsPromise=null;});
-    return completionPluginsPromise;
-  };
 
   const completionNodes=root=>({
     card:root?.querySelector('.completion-card'),
     mark:root?.querySelector('.completion-check'),
     ring:root?.querySelector('.completion-mark__ring'),
     check:root?.querySelector('.completion-mark__check'),
-    burst:[...(root?.querySelectorAll('.completion-burst i')||[])],
     eyebrow:root?.querySelector('.completion-card>.eyebrow'),
     title:root?.querySelector('#completionTitle'),
     meta:root?.querySelector('#completionMeta'),
@@ -97,7 +35,7 @@
 
   const clearCompletionInlineState=root=>{
     const nodes=completionNodes(root);
-    const all=[nodes.card,nodes.mark,...nodes.burst,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean);
+    const all=[nodes.card,nodes.mark,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean);
     if(window.gsap&&all.length)window.gsap.set(all,{clearProps:'opacity,transform,visibility,willChange,boxShadow'});
     [nodes.ring,nodes.check].filter(Boolean).forEach(node=>{
       node.style.removeProperty('stroke-dasharray');
@@ -109,8 +47,6 @@
   const cleanupCompletion=(root=document.querySelector('#completionOverlay'))=>{
     completionTimeline?.kill?.();
     completionTimeline=null;
-    completionSplit?.revert?.();
-    completionSplit=null;
     completionContext?.revert?.();
     completionContext=null;
     clearCompletionInlineState(root);
@@ -182,7 +118,6 @@
     ...(window.DailyMotionMotion||{}),
     tokens:MOTION_TOKENS,
     reducedMotion,
-    ensureCompletionPlugins,
     prepareCompletion,
     playCompletion,
     cleanupSessionMotion

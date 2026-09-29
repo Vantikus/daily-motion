@@ -117,3 +117,8 @@ Press-feedback собран в один механизм: быстрый кон�
 ### v170 · Motion M2 — navigation + content
 
 Page transitions now share one directional fade/settle language without whole-page scaling. Swup owns page movement; Home/Progress no longer replay a second page-level reveal after navigation. Technique accordions use one WAAPI owner with a softer open and faster close. Toast/PWA feedback uses one transition system instead of competing keyframes and transitions.
+
+
+### v212 · Dependency + CSS cleanup
+
+`SplitText` и старый completion burst удалены из runtime: завершение полностью принадлежит `motion.js` + GSAP Core и inline SVG mark. CSS очищен от перекрытых исторических деклараций, пустых правил и неиспользуемых keyframes без изменения workout-state, таймеров, localStorage, FLOW/Heroicons или bottom-sheet physics. Static regression checks обновлены так, чтобы проверять актуальные инварианты, а не старые строки реализации.

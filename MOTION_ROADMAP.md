@@ -430,7 +430,7 @@ The first implementation should therefore be **Completion Motion M1**, not a bro
 
 ## v168 — Unification pass
 
-The current motion language is intentionally narrow: quick ~140ms exits, ~220ms content/page entrances and ~280ms emphasis. Timer, countdown, exercise swaps, accordion content, toast and press feedback follow the same family. Bottom-sheet physics remain isolated and unchanged. DrawSVG is no longer shipped because native CSS owns the completion stroke; SplitText remains optional for the completion title.
+The current motion language is intentionally narrow: quick ~140ms exits, ~220ms content/page entrances and ~280ms emphasis. Timer, countdown, exercise swaps, accordion content, toast and press feedback follow the same family. Bottom-sheet physics remain isolated and unchanged. DrawSVG and SplitText are no longer shipped; completion uses GSAP Core with the inline SVG mark and no optional plugin.
 
 ## v169 — Motion Foundation M1
 
@@ -440,3 +440,8 @@ Interaction feedback now uses one authoritative timing family: 105ms contact, 17
 ## v170 — M2 navigation + content
 
 Cross-page motion is now scale-free and directional, with Swup/GSAP as the sole page owner. Duplicate Home/Progress page reveals are removed. Accordion motion has a single WAAPI owner and asymmetric open/close timing. Toast and PWA banner no longer combine transitions with keyframe animation.
+
+
+## v212 — Completion dependency cleanup
+
+Completion no longer loads an optional GSAP plugin. `motion.js` owns the full completion timeline with GSAP Core; the inline SVG ring/check is animated directly. SplitText, its lazy loader and its Service Worker entry are removed.

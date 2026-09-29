@@ -337,11 +337,9 @@ GSAP, Swup Core, Preload, Head, Body Class, A11y, JS, Scroll, Heroicons, localSt
 
 ### Best next candidates
 
-1. **SplitText** — selective title/completion choreography.
-2. **Flip** — only when a real shared-element/layout transition appears.
-3. **web-vitals** — once real telemetry storage is defined.
-4. **Flip** — when a real layout-state transition appears.
-5. **idb-keyval** — when persistence actually outgrows localStorage.
+1. **Flip** — only when a real shared-element/layout transition appears.
+2. **web-vitals** — once real telemetry storage is defined.
+3. **idb-keyval** — when persistence actually outgrows localStorage.
 
 ### Conditional
 
@@ -356,14 +354,21 @@ Hammer.js, Animate.css, Workbox, Howler.js, ScrollSmoother, Swup Scripts, Parall
 
 - `GSAP 3.15.0` remains the core motion engine.
 - DrawSVG was retired in v168 after the completion mark moved to deterministic native CSS stroke animation.
-- `SplitText 3.15.0` is vendored at `/vendor/gsap/SplitText.min.js` and is used only for word-level completion-title reveal.
+- `SplitText 3.15.0` was used in the historical v161 experiment and is removed from the shipped runtime in v212.
 - `motion.js` is the plugin-aware motion boundary. Session state/timers/localStorage remain in `session.js`.
-- Both plugins load lazily from same-origin local files when Session mounts and are precached by the Service Worker for offline completion.
+- Current completion uses GSAP Core only; no completion plugin is loaded or precached.
 - Plugin failure is non-blocking: completion falls back to a GSAP Core/static settled state.
 
 
 ## v168 — Runtime simplification
 
 - `DrawSVGPlugin` is removed from the shipped runtime because no current UI needs it.
-- `SplitText` remains the only optional GSAP plugin currently used.
+- No optional GSAP plugin is currently shipped; completion uses GSAP Core + inline SVG.
 - `window.DailyMotionMotion` is a shared namespace; `motion.js` and `pwa.js` extend it instead of overwriting each other.
+
+
+## v212 — Dependency cleanup
+
+- `SplitText` is removed from `/vendor`, `motion.js`, Session warm-up and the Service Worker shell.
+- Completion has one runtime owner: `motion.js` using GSAP Core and the native inline SVG mark.
+- DrawSVG and SplitText are both absent from production dependencies.

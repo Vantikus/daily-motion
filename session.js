@@ -96,7 +96,6 @@ window.DailyMotionPages.session=function mountSession(){
     easeStandard:'cubic-bezier(.2,.72,.2,1)',
     easeExit:'cubic-bezier(.4,0,1,1)'
   };
-  Motion?.ensureCompletionPlugins?.();
   const exerciseApp=$('.exercise-app');
   let modalReturnFocus=null;
 

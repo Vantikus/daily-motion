@@ -9,7 +9,6 @@ const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
   'app.js','audio.js','motion.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
-  'vendor/gsap/SplitText.min.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -125,8 +124,13 @@ if(styles.includes('.session-shell{width:calc(100% - 24px)')){
 if(!styles.includes('min-height:var(--component-row-h)')){
   fail('styles.css: shared settings row height is not wired through the R2 component token');
 }
-if(!styles.includes('.details-stack{display:grid;grid-template-columns:1fr!important;gap:0;border:1px solid var(--line-soft);border-radius:var(--radius-card)')){
-  fail('styles.css: technique grouped-list radius/polish contract is not wired');
+for(const fragment of [
+  '.details-stack{',
+  'grid-template-columns:1fr!important;',
+  'border:1px solid var(--line-soft)!important;',
+  'border-radius:18px!important;'
+]){
+  if(!styles.includes(fragment))fail(`styles.css: technique grouped-list contract missing: ${fragment}`);
 }
 if(!designSystem.includes('## R1 — layout and spacing normalization')){
   fail('DESIGN_SYSTEM.md: R1 layout contract is missing');
@@ -202,7 +206,6 @@ for(const token of [
   if(!styles.includes(token))fail(`styles.css: R3 polish token drifted: ${token}`);
 }
 for(const fragment of [
-  'box-shadow:var(--shadow-hero);',
   'box-shadow:var(--shadow-card);',
   'box-shadow:var(--shadow-sheet);',
   'background:var(--accent-wash);',
@@ -397,55 +400,45 @@ if(!designSystem.includes('## v163 — Completion check visibility fix')){
 }
 
 const motion=read('motion.js');
-if(!existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: local SplitText plugin missing');
-if(!read('vendor/gsap/SplitText.min.js').includes('SplitText 3.15.0'))fail('Motion: SplitText version drifted');
-if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v168');
+if(existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: unused SplitText plugin should not ship in v212');
+if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v212');
 for(const fragment of [
-  "['SplitText','/vendor/gsap/SplitText.min.js']",
-  'ensureCompletionPlugins',
   'playCompletion',
   'cleanupSessionMotion',
+  'strokeDasharray:126',
+  'strokeDasharray:28',
 ]){
-  if(!motion.includes(fragment))fail(`motion.js: M1 contract missing: ${fragment}`);
+  if(!motion.includes(fragment))fail(`motion.js: completion motion contract missing: ${fragment}`);
 }
 for(const fragment of [
-  'Motion?.ensureCompletionPlugins?.();',
   'Motion?.playCompletion?.(overlay);',
   'Motion?.cleanupSessionMotion?.();'
 ]){
-  if(!sessionRuntime.includes(fragment))fail(`session.js: M1 motion boundary missing: ${fragment}`);
+  if(!sessionRuntime.includes(fragment))fail(`session.js: completion motion boundary missing: ${fragment}`);
 }
 if(!html['session.html'].includes('class="completion-mark"')||!html['session.html'].includes('completion-mark__ring')||!html['session.html'].includes('completion-mark__check')){
-  fail('session.html: M1 inline completion mark is missing');
+  fail('session.html: inline completion mark is missing');
 }
-for(const fragment of ['completionMarkPop','completionRingDraw','completionCheckDraw','stroke-dasharray:126','stroke-dasharray:28']){
-  if(!styles.includes(fragment))fail(`styles.css: v165 completion mark contract missing: ${fragment}`);
+if(html['session.html'].includes('completion-burst'))fail('session.html: dead completion burst returned');
+if(motion.includes('SplitText')||sessionRuntime.includes('ensureCompletionPlugins')||sw.includes('SplitText'))fail('v212: dead SplitText runtime returned');
+for(const obsolete of [
+  'completionMarkPop','completionRingDraw','completionCheckDraw',
+  'completionSuccessSettle','completionSuccessHalo','completionSuccessHaloOuter',
+  'completionMarkPopStrong','completionRingDrawStrong','completionCheckDrawStrong',
+  'completionBurst','completionContentIn'
+]){
+  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: dead completion keyframe returned: ${obsolete}`);
 }
-for(const fragment of ['completionSuccessSettle','completionSuccessHalo','completionSuccessHaloOuter','completionMarkPopStrong','completionRingDrawStrong','completionCheckDrawStrong']){
-  if(!styles.includes(fragment))fail(`styles.css: v166 completion emphasis missing: ${fragment}`);
-}
+if(styles.includes('.completion-burst'))fail('styles.css: dead completion burst styles returned');
 for(const fragment of ['/* v168 unified motion system','--motion-enter:220ms','--motion-exit:140ms','--motion-ease-enter:','--motion-ease-exit:']){
   if(!styles.includes(fragment))fail(`styles.css: v168 unified motion contract missing: ${fragment}`);
 }
 for(const fragment of ['tokens:MOTION_TOKENS','...(window.DailyMotionMotion||{})']){
-  if(!motion.includes(fragment))fail(`motion.js: v168 shared motion namespace missing: ${fragment}`);
+  if(!motion.includes(fragment))fail(`motion.js: shared motion namespace missing: ${fragment}`);
 }
-if(!pwa.includes('...(window.DailyMotionMotion||{})'))fail('pwa.js: v168 must preserve shared motion namespace');
-if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v168: unused DrawSVG runtime returned');
-if(html['session.html'].includes('completion-check" aria-hidden="true"><span class="completion-burst')&&html['session.html'].includes('completion-burst</span><i class="hi hi-check-circle'))fail('session.html: old masked completion Heroicon returned');
-
-for(const obsolete of ['qmCheckIn','qmCheckInSoft','qmCheckSoft']){
-  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: legacy completion-check animation returned: ${obsolete}`);
-}
-for(const obsolete of ['completionCheckSettle','completionHaloPrimary','completionHaloSecondary','completionIconSweep','completionBurst','completionContentIn']){
-  if(styles.includes(`@keyframes ${obsolete}`))fail(`styles.css: replaced M1 completion keyframe returned: ${obsolete}`);
-}
-for(const fragment of [
-  `'/motion.js?v=${releaseVersion}'`,
-  "'/vendor/gsap/SplitText.min.js'"
-]){
-  if(!sw.includes(fragment))fail(`sw.js: M1 offline asset missing: ${fragment}`);
-}
+if(!pwa.includes('...(window.DailyMotionMotion||{})'))fail('pwa.js: must preserve shared motion namespace');
+if(motion.includes('DrawSVGPlugin')||sw.includes('DrawSVGPlugin'))fail('v212: unused DrawSVG runtime returned');
+if(!sw.includes(`'/motion.js?v=${releaseVersion}'`))fail('sw.js: motion runtime missing from offline shell');
 
 // Fullscreen execution transitions are owned by session.js/WAAPI only.
 for(const fragment of [
