@@ -8,7 +8,7 @@ const read=path=>readFileSync(join(root,path),'utf8');
 const fail=message=>{throw new Error(message);};
 
 const syntaxFiles=[
-  'app.js','audio.js','motion.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
+  'app.js','audio.js','motion.js','ui.js','navigation.js','program.js','progress.js','pwa.js','session.js','state.js','sw.js','theme.js',
   'playwright.config.js','tests/smoke.spec.js','tests/motion.spec.js','tests/visual.spec.js'
 ];
 
@@ -24,6 +24,8 @@ const styles=read('styles.css');
 const readme=read('README.md');
 const designSystem=read('DESIGN_SYSTEM.md');
 const pwa=read('pwa.js');
+const motion=read('motion.js');
+const ui=read('ui.js');
 const navigation=read('navigation.js');
 const appRuntime=read('app.js');
 const progressRuntime=read('progress.js');
@@ -171,10 +173,13 @@ for(const fragment of [
   'flingVelocity:700',
   'flingProjection:.12'
 ]){
-  if(!pwa.includes(fragment))fail(`pwa.js: bottom-sheet motion constant changed or disappeared: ${fragment}`);
+  if(!motion.includes(fragment))fail(`motion.js: bottom-sheet motion constant changed or disappeared: ${fragment}`);
 }
-if(!pwa.includes('...(window.DailyMotionMotion||{})')||!pwa.includes('createBottomSheet')||!pwa.includes('sheetMotion:SHEET_MOTION')){
-  fail('pwa.js: shared bottom-sheet motion contract is not exposed');
+if(!motion.includes('createBottomSheet')||!motion.includes('sheetMotion:SHEET_MOTION')){
+  fail('motion.js: shared bottom-sheet motion contract is not exposed');
+}
+for(const forbidden of ['createBottomSheet','SHEET_MOTION','installPressFeedback','installDoubleTapGuard']){
+  if(pwa.includes(forbidden))fail(`pwa.js: motion ownership leaked back into PWA runtime: ${forbidden}`);
 }
 for(const token of [
   "createHash('sha256')",
@@ -759,8 +764,30 @@ const motionContract=[
   "Critically damped return"
 ];
 for(const token of motionContract){
-  if(!pwa.includes(token))fail(`pwa.js: motion contract token missing: ${token}`);
+  if(!motion.includes(token))fail(`motion.js: motion contract token missing: ${token}`);
 }
+
+for(const token of [
+  'createToast',
+  'syncPressed',
+  'trapFocus',
+  'createConfirmFlow',
+  'bindSettingsControls'
+]){
+  if(!ui.includes(token))fail(`ui.js: shared UI primitive missing ${token}`);
+}
+for(const source of [appRuntime,sessionRuntime]){
+  for(const duplicate of ['function syncThemeControl','function syncTimingControl','const focusable=[...']){
+    if(source.includes(duplicate))fail(`shared UI logic was re-duplicated: ${duplicate}`);
+  }
+}
+if(!appRuntime.includes('UI.bindSettingsControls')||!sessionRuntime.includes('UI.bindSettingsControls')){
+  fail('shared settings binding is not wired on Home and Session');
+}
+for(const file of htmlFiles){
+  if(!html[file].includes('<script src="ui.js?v='))fail(`${file}: shared ui.js runtime is missing`);
+}
+if(!sw.includes("'/ui.js?v="))fail('sw.js: shared ui.js is missing from app shell');
 
 for(const token of [
   'getRoutineEntries',

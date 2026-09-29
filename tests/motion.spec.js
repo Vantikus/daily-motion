@@ -81,3 +81,24 @@ test('reduced motion settles immediately without transient state',async({page})=
   await page.locator('#settingsClose').click();
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:500});
 });
+
+
+test('shared UI and motion ownership stay centralized',async({page})=>{
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const ownership=await page.evaluate(()=>({
+    ui:[
+      typeof DailyMotionUI?.createToast,
+      typeof DailyMotionUI?.syncPressed,
+      typeof DailyMotionUI?.trapFocus,
+      typeof DailyMotionUI?.createConfirmFlow,
+      typeof DailyMotionUI?.bindSettingsControls
+    ],
+    sheet:typeof DailyMotionMotion?.createBottomSheet,
+    sheetMotion:DailyMotionMotion?.sheetMotion?.dismissRatio,
+    pwaKeys:Object.keys(DailyMotionPWA||{}).sort()
+  }));
+  expect(ownership.ui).toEqual(['function','function','function','function','function']);
+  expect(ownership.sheet).toBe('function');
+  expect(ownership.sheetMotion).toBe(.28);
+  expect(ownership.pwaKeys).toEqual(['getInstallMode','install','isUpdateSafe']);
+});

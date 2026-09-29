@@ -1,6 +1,7 @@
 window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.home=function mountHome(){
   const Store=window.DailyMotionState;
+  const UI=window.DailyMotionUI;
   const lifecycle=new AbortController();
   const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
   const ROUTINES={
@@ -151,13 +152,8 @@ window.DailyMotionPages.home=function mountHome(){
 
   const refreshHomeAfterReset=()=>renderHomeState();
 
-  const toast=message=>{
-    const node=$('#toast');
-    node.textContent=message;
-    node.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer=setTimeout(()=>node.classList.remove('show'),1600);
-  };
+  const toastController=UI.createToast($('#toast'),{duration:1600});
+  const toast=toastController.show;
 
   const settingsOverlay=$('#settingsOverlay');
   const settingsBtn=$('#settingsBtn');
@@ -175,28 +171,23 @@ window.DailyMotionPages.home=function mountHome(){
   let settingsReturnFocus=null;
   let settings=Store.getSettings();
 
-  const syncThemeControl=(root,value)=>{
-    root?.querySelectorAll('[data-theme-value]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.themeValue===value));
-    });
-  };
-  const syncTimingControl=(root,value)=>{
-    root?.querySelectorAll('[data-value]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.value===String(value)));
-    });
-  };
-  const syncSettings=()=>{
-    settings=Store.getSettings();
-    $('#soundSetting').checked=settings.sound;
-    $('#autoNextSetting').checked=settings.autoNext;
-    $('#countdownSetting').value=String(settings.countdownSeconds);
-    $('#restSetting').value=String(settings.restSeconds);
-    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
-    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
-    syncThemeControl($('#themeSetting'),settings.theme);
-  };
-
-  const focusableInSettings=()=>[...settingsOverlay.querySelectorAll('button:not([hidden]),input:not([disabled]),select:not([disabled]),[href]')].filter(node=>node.offsetParent!==null&&!node.closest('[inert]')&&getComputedStyle(node).visibility!=='hidden');
+  const settingsBinding=UI.bindSettingsControls({
+    store:Store,
+    audio:Audio,
+    theme:window.DailyMotionTheme,
+    signal:lifecycle.signal,
+    elements:{
+      sound:$('#soundSetting'),
+      autoNext:$('#autoNextSetting'),
+      countdown:$('#countdownSetting'),
+      rest:$('#restSetting'),
+      countdownButtons:$('#countdownSettingDesktop'),
+      restButtons:$('#restSettingDesktop'),
+      themeButtons:$('#themeSetting')
+    },
+    onChange:value=>{settings=value;}
+  });
+  const syncSettings=()=>settingsBinding?.sync?.();
   const hideInstallGuide=(restoreFocus=false)=>{
     if(!iosInstallGuide)return;
     iosInstallGuide.hidden=true;
@@ -210,53 +201,17 @@ window.DailyMotionPages.home=function mountHome(){
     if(mode!=='ios-manual')hideInstallGuide(false);
   };
 
-  let resetStateTimer=null;
-  let resetFocusTimer=null;
   let refreshAfterSettingsClose=false;
   let resetInFlight=false;
   let resetCloseTimer=null;
-  const clearResetTimers=()=>{
-    if(resetStateTimer!==null){
-      clearTimeout(resetStateTimer);
-      resetStateTimer=null;
-    }
-    if(resetFocusTimer!==null){
-      clearTimeout(resetFocusTimer);
-      resetFocusTimer=null;
-    }
-  };
-  const applyResetConfirmState=(confirming,focusTarget=null)=>{
-    resetTodayBlock.classList.toggle('is-confirming',confirming);
-    resetTodayConfirm.setAttribute('aria-hidden',confirming?'false':'true');
-    resetTodayConfirm.inert=!confirming;
-    resetTodayBtn.inert=confirming;
-    if(focusTarget){
-      resetFocusTimer=setTimeout(()=>{
-        resetFocusTimer=null;
-        focusTarget.focus({preventScroll:true});
-      },300);
-    }
-  };
-  const hideResetConfirm=(restoreFocus=false,delay=0)=>{
-    clearResetTimers();
-    const apply=()=>applyResetConfirmState(false,restoreFocus?resetTodayBtn:null);
-    if(delay){
-      resetStateTimer=setTimeout(()=>{
-        resetStateTimer=null;
-        apply();
-      },delay);
-      return;
-    }
-    apply();
-  };
-  const showResetConfirm=()=>{
-    if(resetTodayBlock.classList.contains('is-confirming')||resetStateTimer!==null)return;
-    clearResetTimers();
-    resetStateTimer=setTimeout(()=>{
-      resetStateTimer=null;
-      applyResetConfirmState(true,resetConfirmBtn);
-    },70);
-  };
+  const resetConfirmFlow=UI.createConfirmFlow({
+    block:resetTodayBlock,
+    panel:resetTodayConfirm,
+    trigger:resetTodayBtn,
+    accept:resetConfirmBtn
+  });
+  const hideResetConfirm=(restoreFocus=false,delay=0)=>resetConfirmFlow.hide(restoreFocus,delay);
+  const showResetConfirm=()=>resetConfirmFlow.show();
 
   const finishSettingsClose=()=>{
     const shouldRefresh=refreshAfterSettingsClose;
@@ -335,58 +290,7 @@ window.DailyMotionPages.home=function mountHome(){
       closeSettings();
       return;
     }
-    if(event.key!=='Tab')return;
-    const focusable=focusableInSettings();
-    if(!focusable.length)return;
-    const first=focusable[0];
-    const last=focusable[focusable.length-1];
-    if(event.shiftKey&&document.activeElement===first){
-      event.preventDefault();
-      last.focus();
-    }else if(!event.shiftKey&&document.activeElement===last){
-      event.preventDefault();
-      first.focus();
-    }
-  });
-
-  $('#soundSetting').addEventListener('change',async event=>{
-    settings=Store.updateSettings({sound:event.target.checked});
-    if(settings.sound){
-      const ready=await Audio?.unlock?.();
-      if(ready)Audio?.confirm?.();
-    }
-  });
-  $('#autoNextSetting').addEventListener('change',event=>{settings=Store.updateSettings({autoNext:event.target.checked});});
-  $('#countdownSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});
-    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
-  });
-  $('#restSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({restSeconds:Number(event.target.value)});
-    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
-  });
-  $('#countdownSettingDesktop').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-value]');
-    if(!button)return;
-    settings=Store.updateSettings({countdownSeconds:Number(button.dataset.value)});
-    $('#countdownSetting').value=String(settings.countdownSeconds);
-    syncTimingControl($('#countdownSettingDesktop'),settings.countdownSeconds);
-  });
-  $('#restSettingDesktop').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-value]');
-    if(!button)return;
-    settings=Store.updateSettings({restSeconds:Number(button.dataset.value)});
-    $('#restSetting').value=String(settings.restSeconds);
-    syncTimingControl($('#restSettingDesktop'),settings.restSeconds);
-  });
-  $('#themeSetting').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-theme-value]');
-    if(!button)return;
-    const theme=button.dataset.themeValue;
-    if(settings.theme===theme)return;
-    settings=Store.updateSettings({theme});
-    syncThemeControl($('#themeSetting'),settings.theme);
-    window.DailyMotionTheme?.applyAnimated?.(settings.theme);
+    UI.trapFocus(event,settingsOverlay,{wrapUnknown:false});
   });
 
   installAppBtn.onclick=async()=>{
@@ -421,9 +325,9 @@ window.DailyMotionPages.home=function mountHome(){
   return ()=>{
     lifecycle.abort();
     settingsMotion?.destroy?.();
-    clearResetTimers();
+    resetConfirmFlow.destroy();
     if(resetCloseTimer!==null)clearTimeout(resetCloseTimer);
-    clearTimeout(toast.timer);
+    toastController.destroy();
     document.body.classList.remove('settings-open','modal-open');
     const shell=document.querySelector('.app-shell');
     if(shell)shell.inert=false;

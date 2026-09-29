@@ -10,6 +10,7 @@ window.DailyMotionPages.session=function mountSession(){
   const exercises=window.DailyMotionProgram.morning;
   return (function SessionRuntime(exercises,ROUTINE_KEY){
   const Store=window.DailyMotionState;
+  const UI=window.DailyMotionUI;
   const lifecycle=new AbortController();
   const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
   let destroyed=false;
@@ -127,13 +128,8 @@ window.DailyMotionPages.session=function mountSession(){
   const emitReloadSafetyChange=()=>window.dispatchEvent(new CustomEvent('daily-motion-reload-safety-change'));
   window.DailyMotionReloadGuard={isSafe:isReloadSafe};
 
-  const toast=message=>{
-    const node=$('#toast');
-    node.textContent=message;
-    node.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer=setTimeout(()=>node.classList.remove('show'),1700);
-  };
+  const toastController=UI.createToast($('#toast'),{duration:1700});
+  const toast=toastController.show;
 
   const haptic=(kind='tap')=>{
     if(!navigator.vibrate)return;
@@ -251,83 +247,38 @@ window.DailyMotionPages.session=function mountSession(){
     document.body.classList.toggle('modal-open',hasModal);
   }
 
-  function syncThemeControl(root,value){
-    root?.querySelectorAll('[data-theme-value]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.themeValue===value));
-    });
-  }
-
-  function syncTimingControl(root,value){
-    root?.querySelectorAll('[data-value]').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.value===String(value)));
-    });
-  }
-
-  function syncWorkoutSettingsControls(){
-    settings=Store.getSettings();
-    $('#workoutSoundSetting').checked=Boolean(settings.sound);
-    $('#workoutAutoNextSetting').checked=Boolean(settings.autoNext);
-    $('#workoutCountdownSetting').value=String(settings.countdownSeconds);
-    $('#workoutRestSetting').value=String(settings.restSeconds);
-    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
-    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
-    syncThemeControl($('#workoutThemeSetting'),settings.theme);
-  }
+  const workoutSettingsBinding=UI.bindSettingsControls({
+    store:Store,
+    audio:Audio,
+    theme:window.DailyMotionTheme,
+    signal:lifecycle.signal,
+    elements:{
+      sound:$('#workoutSoundSetting'),
+      autoNext:$('#workoutAutoNextSetting'),
+      countdown:$('#workoutCountdownSetting'),
+      rest:$('#workoutRestSetting'),
+      countdownButtons:$('#workoutCountdownSettingDesktop'),
+      restButtons:$('#workoutRestSettingDesktop'),
+      themeButtons:$('#workoutThemeSetting')
+    },
+    onChange:value=>{settings=value;}
+  });
+  const syncWorkoutSettingsControls=()=>workoutSettingsBinding?.sync?.();
 
   const routineResetBlock=$('#routineResetBlock');
   const routineResetBtn=$('#routineResetBtn');
   const routineResetConfirm=$('#routineResetConfirm');
   const routineResetCancel=$('#routineResetCancel');
   const routineResetAccept=$('#routineResetAccept');
-  let routineResetStateTimer=null;
-  let routineResetFocusTimer=null;
   let routineResetInFlight=false;
-
-  function clearRoutineResetTimers(){
-    if(routineResetStateTimer!==null){
-      clearTimeout(routineResetStateTimer);
-      routineResetStateTimer=null;
-    }
-    if(routineResetFocusTimer!==null){
-      clearTimeout(routineResetFocusTimer);
-      routineResetFocusTimer=null;
-    }
-  }
-
-  function applyRoutineResetState(confirming,focusTarget=null){
-    routineResetBlock.classList.toggle('is-confirming',confirming);
-    routineResetConfirm.setAttribute('aria-hidden',confirming?'false':'true');
-    routineResetConfirm.inert=!confirming;
-    routineResetBtn.inert=confirming;
-    if(focusTarget){
-      routineResetFocusTimer=setTimeout(()=>{
-        routineResetFocusTimer=null;
-        focusTarget.focus({preventScroll:true});
-      },300);
-    }
-  }
-
-  function hideRoutineResetConfirm(restoreFocus=false,delay=0){
-    clearRoutineResetTimers();
-    const apply=()=>applyRoutineResetState(false,restoreFocus?routineResetBtn:null);
-    if(delay){
-      routineResetStateTimer=setTimeout(()=>{
-        routineResetStateTimer=null;
-        apply();
-      },delay);
-      return;
-    }
-    apply();
-  }
-
-  function showRoutineResetConfirm(){
-    if(routineResetBlock.classList.contains('is-confirming')||routineResetStateTimer!==null)return;
-    clearRoutineResetTimers();
-    routineResetStateTimer=setTimeout(()=>{
-      routineResetStateTimer=null;
-      applyRoutineResetState(true,routineResetAccept);
-    },70);
-  }
+  const routineResetConfirmFlow=UI.createConfirmFlow({
+    block:routineResetBlock,
+    panel:routineResetConfirm,
+    trigger:routineResetBtn,
+    accept:routineResetAccept
+  });
+  const hideRoutineResetConfirm=(restoreFocus=false,delay=0)=>routineResetConfirmFlow.hide(restoreFocus,delay);
+  const showRoutineResetConfirm=()=>routineResetConfirmFlow.show();
 
   function finishRoutineSettingsClose(){
     const overlay=$('#routineSettingsOverlay');
@@ -1275,47 +1226,7 @@ window.DailyMotionPages.session=function mountSession(){
     haptic('tap');
     hideRoutineSettingsDialog();
   });
-  $('#workoutSoundSetting').addEventListener('change',async event=>{
-    settings=Store.updateSettings({sound:event.target.checked});
-    if(settings.sound){
-      const ready=await Audio?.unlock?.();
-      if(ready)Audio?.confirm?.();
-    }
-  });
-  $('#workoutAutoNextSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({autoNext:event.target.checked});
-  });
-  $('#workoutCountdownSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({countdownSeconds:Number(event.target.value)});
-    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
-  });
-  $('#workoutRestSetting').addEventListener('change',event=>{
-    settings=Store.updateSettings({restSeconds:Number(event.target.value)});
-    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
-  });
-  $('#workoutCountdownSettingDesktop').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-value]');
-    if(!button)return;
-    settings=Store.updateSettings({countdownSeconds:Number(button.dataset.value)});
-    $('#workoutCountdownSetting').value=String(settings.countdownSeconds);
-    syncTimingControl($('#workoutCountdownSettingDesktop'),settings.countdownSeconds);
-  });
-  $('#workoutRestSettingDesktop').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-value]');
-    if(!button)return;
-    settings=Store.updateSettings({restSeconds:Number(button.dataset.value)});
-    $('#workoutRestSetting').value=String(settings.restSeconds);
-    syncTimingControl($('#workoutRestSettingDesktop'),settings.restSeconds);
-  });
-  $('#workoutThemeSetting').addEventListener('click',event=>{
-    const button=event.target.closest?.('[data-theme-value]');
-    if(!button)return;
-    const theme=button.dataset.themeValue;
-    if(settings.theme===theme)return;
-    settings=Store.updateSettings({theme});
-    syncThemeControl($('#workoutThemeSetting'),settings.theme);
-    window.DailyMotionTheme?.applyAnimated?.(settings.theme);
-  });
+
   routineResetBtn.addEventListener('click',()=>{
     haptic('tap');
     showRoutineResetConfirm();
@@ -1458,7 +1369,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     if(event.key==='Escape'){
       if($('#routineSettingsOverlay').classList.contains('is-visible')){
-        if(routineResetBlock.classList.contains('is-confirming')){
+        if(routineResetConfirmFlow.isConfirming()){
           hideRoutineResetConfirm(true,70);
         }else{
           hideRoutineSettingsDialog();
@@ -1471,18 +1382,7 @@ window.DailyMotionPages.session=function mountSession(){
       return;
     }
 
-    if(event.key!=='Tab')return;
-    const focusable=[...modal.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled])')].filter(node=>node.offsetParent!==null&&!node.closest('[inert]')&&getComputedStyle(node).visibility!=='hidden');
-    if(!focusable.length)return;
-    const first=focusable[0];
-    const last=focusable[focusable.length-1];
-    if(event.shiftKey&&(document.activeElement===first||!focusable.includes(document.activeElement))){
-      event.preventDefault();
-      last.focus();
-    }else if(!event.shiftKey&&(document.activeElement===last||!focusable.includes(document.activeElement))){
-      event.preventDefault();
-      first.focus();
-    }
+    UI.trapFocus(event,modal);
   });
 
   $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10);});
@@ -1649,7 +1549,7 @@ window.DailyMotionPages.session=function mountSession(){
     lifecycle.abort();
     if(pageLoaderRevealTimer!==null)clearTimeout(pageLoaderRevealTimer);
     if(stageTimer!==null)clearTimeout(stageTimer);
-    clearRoutineResetTimers();
+    routineResetConfirmFlow.destroy();
     cancelCountdown();
     cancelRest();
     stopTicker();
@@ -1659,7 +1559,7 @@ window.DailyMotionPages.session=function mountSession(){
     routineSettingsMotion?.destroy?.();
     Motion?.cleanupSessionMotion?.();
     document.querySelector('#swup')?.getAnimations?.({subtree:true})?.forEach(animation=>animation.cancel());
-    clearTimeout(toast.timer);
+    toastController.destroy();
     releaseWakeLock();
     if(window.DailyMotionReloadGuard?.isSafe===isReloadSafe)delete window.DailyMotionReloadGuard;
     document.body.classList.remove('modal-open');
