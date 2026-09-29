@@ -404,8 +404,8 @@ if(!designSystem.includes('## v163 — Completion check visibility fix')){
   fail('DESIGN_SYSTEM.md: v163 completion check contract is missing');
 }
 
-if(existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: unused SplitText plugin should not ship in v215');
-if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v215');
+if(existsSync(join(root,'vendor/gsap/SplitText.min.js')))fail('Motion: unused SplitText plugin should not ship in v216');
+if(existsSync(join(root,'vendor/gsap/DrawSVGPlugin.min.js')))fail('Motion: unused DrawSVG plugin should not ship in v216');
 for(const fragment of [
   'playCompletion',
   'cleanupSessionMotion',

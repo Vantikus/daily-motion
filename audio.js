@@ -1,6 +1,7 @@
 (() => {
   let context = null;
   let mediaPrimed = false;
+  let media = null;
 
   const setPlaybackSession = () => {
     try {
@@ -35,7 +36,8 @@
     } catch {}
   };
 
-  // Генератор 16-битных PCM WAV на лету с антиклиппингом
+  // Генератор 16-битных PCM WAV на лету с антиклиппингом.
+  // Он вызывается лениво при первом реальном обращении к аудио.
   const makeWav = parts => {
     const sampleRate = 22050;
     const samples = [];
@@ -64,12 +66,11 @@
 
         let val = 0;
         if (harmonics) {
-          // Обертоны для эффекта колокола/гонга
           harmonics.forEach(h => {
             const hDecay = Math.exp(-(h.decay || 2.0) * t);
             val += Math.sin(2 * Math.PI * (frequency * h.mult) * t) * (h.weight || 0.3) * hDecay;
           });
-          val = Math.tanh(val); // Мягкий лимитер от перегруза
+          val = Math.tanh(val);
         } else {
           val = Math.sin(2 * Math.PI * frequency * t);
         }
@@ -110,39 +111,36 @@
     return 'data:audio/wav;base64,' + btoa(binary);
   };
 
-  // Набор откалиброванных звуковых сигналов
-  const sources = {
-    prime: makeWav([{ frequency: 330, duration: 0.03, volume: 0.005, release: 0.025 }]),
-    tick: makeWav([{ frequency: 440, duration: 0.07, volume: 0.045, attack: 0.01, release: 0.05 }]),
-    warning10: makeWav([{ frequency: 330, duration: 0.12, volume: 0.045, attack: 0.015, release: 0.09 }]),
-    warning5: makeWav([
+  // Описания сигналов лёгкие; тяжёлые WAV/data URI создаются только после первого unlock/play.
+  const soundSpecs = {
+    prime: [{ frequency: 330, duration: 0.03, volume: 0.005, release: 0.025 }],
+    tick: [{ frequency: 440, duration: 0.07, volume: 0.045, attack: 0.01, release: 0.05 }],
+    warning10: [{ frequency: 330, duration: 0.12, volume: 0.045, attack: 0.015, release: 0.09 }],
+    warning5: [
       { frequency: 392, duration: 0.08, volume: 0.048, gap: 0.03, attack: 0.015, release: 0.06 },
       { frequency: 523.25, duration: 0.14, volume: 0.055, attack: 0.018, release: 0.10 }
-    ]),
-    endingTick: makeWav([{ frequency: 440, duration: 0.06, volume: 0.05, attack: 0.01, release: 0.045 }]),
-    // Четкий двухтональный старт
-    start: makeWav([
+    ],
+    endingTick: [{ frequency: 440, duration: 0.06, volume: 0.05, attack: 0.01, release: 0.045 }],
+    start: [
       { frequency: 587.33, duration: 0.09, volume: 0.055, gap: 0.03, attack: 0.015, release: 0.065 },
       { frequency: 880, duration: 0.18, volume: 0.07, attack: 0.018, release: 0.14 }
-    ]),
-    pause: makeWav([
+    ],
+    pause: [
       { frequency: 440, duration: 0.08, volume: 0.045, gap: 0.03, attack: 0.015, release: 0.055 },
       { frequency: 330, duration: 0.12, volume: 0.04, attack: 0.018, release: 0.09 }
-    ]),
-    resume: makeWav([
+    ],
+    resume: [
       { frequency: 392, duration: 0.08, volume: 0.045, gap: 0.03, attack: 0.015, release: 0.055 },
       { frequency: 523.25, duration: 0.13, volume: 0.055, attack: 0.018, release: 0.09 }
-    ]),
-    ready: makeWav([{ frequency: 523.25, duration: 0.14, volume: 0.055, attack: 0.018, release: 0.1 }]),
-    // Завершение раунда / смена упражнения
-    finish: makeWav([
+    ],
+    ready: [{ frequency: 523.25, duration: 0.14, volume: 0.055, attack: 0.018, release: 0.1 }],
+    finish: [
       { frequency: 523.25, duration: 0.09, volume: 0.05, gap: 0.035, attack: 0.015, release: 0.065 },
       { frequency: 659.25, duration: 0.20, volume: 0.065, attack: 0.018, release: 0.15 }
-    ]),
-    // Финальный гонг всей тренировки с обертонами и глубоким затуханием
-    complete: makeWav([
+    ],
+    complete: [
       {
-        frequency: 220, // Базовая нота A3
+        frequency: 220,
         duration: 2.2,
         volume: 0.08,
         attack: 0.015,
@@ -154,24 +152,34 @@
           { mult: 3.0, weight: 0.1, decay: 3.0 }
         ]
       }
-    ]),
-    confirm: makeWav([{ frequency: 523.25, duration: 0.11, volume: 0.045, attack: 0.015, release: 0.08 }])
+    ],
+    confirm: [{ frequency: 523.25, duration: 0.11, volume: 0.045, attack: 0.015, release: 0.08 }]
   };
 
-  const players = Object.fromEntries(
-    Object.entries(sources)
-      .filter(([name]) => name !== 'prime')
-      .map(([name, src]) => [name, new Audio(src)])
-  );
+  const soundKinds = Object.keys(soundSpecs).filter(name => name !== 'prime');
 
-  Object.values(players).forEach(player => {
-    player.preload = 'auto';
-    player.volume = 0.7;
-  });
+  const ensureMedia = () => {
+    if (media) return media;
 
-  const primePlayer = new Audio(sources.prime);
-  primePlayer.preload = 'auto';
-  primePlayer.volume = 0.01;
+    const sources = Object.fromEntries(
+      Object.entries(soundSpecs).map(([name, parts]) => [name, makeWav(parts)])
+    );
+    const players = Object.fromEntries(
+      soundKinds.map(name => [name, new Audio(sources[name])])
+    );
+
+    Object.values(players).forEach(player => {
+      player.preload = 'auto';
+      player.volume = 0.7;
+    });
+
+    const primePlayer = new Audio(sources.prime);
+    primePlayer.preload = 'auto';
+    primePlayer.volume = 0.01;
+
+    media = { players, primePlayer };
+    return media;
+  };
 
   const getContext = () => {
     try {
@@ -188,6 +196,9 @@
 
   const unlock = async () => {
     setPlaybackSession();
+
+    // Важно: создаём media синхронно до первого await, пока сохраняется user activation на iOS.
+    const { primePlayer } = ensureMedia();
 
     let mediaReady = mediaPrimed;
     if (!mediaPrimed) {
@@ -220,21 +231,19 @@
     setPlaybackSession();
     triggerVibrate(kind);
 
-    const player = players[kind];
+    const player = ensureMedia().players[kind];
     if (!player) return;
 
     try {
       player.pause();
       player.currentTime = 0;
       const result = player.play();
-      if (result && typeof result.catch === 'function') {
-        result.catch(() => {});
-      }
+      if (result && typeof result.catch === 'function') result.catch(() => {});
     } catch {}
   };
 
   const api = { unlock };
-  Object.keys(players).forEach(kind => {
+  soundKinds.forEach(kind => {
     api[kind] = () => play(kind);
   });
 
@@ -246,9 +255,8 @@
   };
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') setPlaybackSession();
+    if (document.visibilityState === 'visible' && (media || context)) setPlaybackSession();
   });
 
-  setPlaybackSession();
   window.DailyMotionAudio = api;
 })();

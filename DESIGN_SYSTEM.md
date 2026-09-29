@@ -363,3 +363,12 @@ The later approved Home/Workout polish passes supersede older generic geometry w
 - `pwa.js` owns install/update/offline behavior only; it must not re-acquire sheet or press-motion responsibilities.
 - `finish early` invalidates pending timer entrance choreography before beginning its exit, so a late entrance frame cannot compete with the exit/handoff.
 - Browser regression tests pin this current approved UI rather than the superseded v105/R1 pixel values.
+
+
+## v216 — runtime performance contract
+
+- Audio synthesis is lazy. Loading Home, Progress or Session must not build PCM WAV data or create media players.
+- The first real audio interaction performs the existing media unlock and builds the same calibrated sound set synchronously before the first await, preserving iOS user activation.
+- Repeated unlocks reuse the same generated media and must not regenerate WAV data.
+- The shared page runtimes remain eagerly available because Swup replaces `#swup` without executing a second page's body scripts; removing `app.js`, `progress.js` or `session.js` from individual HTML shells would break SPA remounts.
+- Swup runtime loading remains immediate after the first page mount so an early navigation keeps the current smooth transition behavior. This is intentionally not traded for a slightly lighter first idle window.

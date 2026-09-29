@@ -102,3 +102,30 @@ test('shared UI and motion ownership stay centralized',async({page})=>{
   expect(ownership.sheetMotion).toBe(.28);
   expect(ownership.pwaKeys).toEqual(['getInstallMode','install','isUpdateSafe']);
 });
+
+
+test('audio synthesis stays lazy until first audio use',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','lazy audio lifecycle is verified once in Chromium');
+  await page.addInitScript(()=>{
+    const nativeBtoa=window.btoa.bind(window);
+    window.__dmAudioBtoaCalls=0;
+    window.btoa=value=>{
+      window.__dmAudioBtoaCalls++;
+      return nativeBtoa(value);
+    };
+  });
+
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>typeof DailyMotionAudio?.unlock)).toBe('function');
+
+  const before=await page.evaluate(()=>window.__dmAudioBtoaCalls);
+  expect(before).toBe(0);
+
+  await page.evaluate(()=>DailyMotionAudio.unlock());
+  const afterFirst=await page.evaluate(()=>window.__dmAudioBtoaCalls);
+  expect(afterFirst).toBeGreaterThan(0);
+
+  await page.evaluate(()=>DailyMotionAudio.unlock());
+  const afterSecond=await page.evaluate(()=>window.__dmAudioBtoaCalls);
+  expect(afterSecond).toBe(afterFirst);
+});
