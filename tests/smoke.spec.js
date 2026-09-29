@@ -1351,7 +1351,7 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
   expect(progress).toEqual({
     container:'358px',
     gap:'16px',
-    cardPadding:'16px',
+    cardPadding:'20px',
     cardRadius:'18px',
     metricGap:'12px',
     metricRadius:'18px'

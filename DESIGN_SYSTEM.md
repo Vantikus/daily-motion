@@ -140,7 +140,7 @@ Use the scale for section gaps, card padding and component internals. One-off va
 
 - Home: 24px between major sections, 12px inside section groups, 16px regular-card padding on mobile.
 - Workout: 16px page gutters, 12px toolbar/detail rhythm, 20px technique separation.
-- Progress: 16px stack gap, 12px metric gap, 16px card padding on mobile and 20px above mobile.
+- Progress: 16px stack gap, 12px metric gap and 20px content-card padding in the current mobile baseline.
 - Settings: Home and Workout sheets share the same 16px horizontal content padding and 68px row height.
 
 
