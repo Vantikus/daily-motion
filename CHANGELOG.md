@@ -1,14 +1,16 @@
 # Daily Motion — Changelog
 
 ## v220
-- восстановлены три защищённых FLOW SVG, ошибочно классифицированные как orphan assets;
-- WebKit long-drag regression стабилизирован без изменения bottom-sheet physics;
-- финальный stage 8 acceptance подтверждает production-механику отдельным повторным CI.
+- Stage 8 завершён: финальный dependency/orphan/runtime audit без изменения workout-flow и sheet physics;
+- восстановлены точные frozen FLOW SVG и добавлена hash-защита от случайного удаления/перерисовки;
+- удалены доказанно мёртвые `setProgramVersion`, `DailyMotionSwup` и transfer handoff;
+- WebKit long-drag regression переведён на прямой touch PointerEvent contract вместо нестабильной mouse-emulation;
+- добавлен отдельный regression legacy v1 → v3 timer migration.
 
 ## v219
 - финальный dependency/orphan/runtime/style audit;
-- удалены доказанно мёртвые CSS tokens/classes/keyframes; фирменные FLOW SVG сохранены как protected assets;
-- сокращён публичный `DailyMotion*` API до реально используемых межмодульных контрактов;
+- восстановлены и hash-защищены frozen FLOW SVG; удалены только доказанно мёртвые CSS tokens/classes/keyframes;
+- сокращён публичный `DailyMotion*` API до реально используемых межмодульных контрактов; удалены мёртвые `DailyMotionSwup` и `setProgramVersion`;
 - полный acceptance regression закрепляет итоговую оптимизированную архитектуру.
 
 Здесь хранится история ключевых архитектурных и motion-релизов. Текущие правила находятся в README, DESIGN_SYSTEM, LIBRARIES и MOTION_ROADMAP.
