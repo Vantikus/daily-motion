@@ -156,6 +156,7 @@
     let motion=null;
     let pageLock=null;
     let desktopCloseListener=null;
+    let closeFallbackTimer=null;
     const isDesktop=()=>desktopModal.matches;
 
     const measure=()=>{
@@ -177,6 +178,12 @@
       Object.assign(document.body.style,saved.styles);
       window.scrollTo({left:saved.x,top:saved.y,behavior:'instant'});
     };
+    const clearCloseFallback=()=>{
+      if(closeFallbackTimer!==null){
+        clearTimeout(closeFallbackTimer);
+        closeFallbackTimer=null;
+      }
+    };
     const kill=()=>{
       motion?.kill();
       motion=null;
@@ -196,6 +203,8 @@
       sheet.classList.remove('is-dragging');
     };
     const finishClosed=()=>{
+      if(phase==='closed')return;
+      clearCloseFallback();
       motion=null;
       if(desktopCloseListener){
         overlay.removeEventListener('transitionend',desktopCloseListener);
@@ -212,6 +221,7 @@
       onClosed?.();
     };
     const finishOpen=()=>{
+      clearCloseFallback();
       motion=null;
       clearGesture();
       overlay.classList.remove('is-moving','is-settling','is-dismissing');
@@ -228,6 +238,7 @@
     const open=()=>{
       if(phase==='open'||phase==='opening')return;
       const wasClosed=phase==='closed';
+      clearCloseFallback();
       kill();
       clearGesture();
       phase='opening';
@@ -267,6 +278,9 @@
           };
           overlay.addEventListener('transitionend',desktopCloseListener);
           overlay.classList.remove('is-visible');
+          closeFallbackTimer=setTimeout(()=>{
+            if(phase==='closing')finishClosed();
+          },520);
         }
         return;
       }
@@ -279,6 +293,9 @@
       const slope=clamp(velocity*duration/remaining,0,3);
       const ease=fromGesture?t=>(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t:SHEET_MOTION.closeEase;
       moveTo(travel,duration,ease,finishClosed);
+      closeFallbackTimer=setTimeout(()=>{
+        if(phase==='closing')finishClosed();
+      },Math.ceil(duration*1000)+180);
     };
     const snapOpen=velocity=>{
       if(phase!=='dragging')return;
@@ -351,6 +368,7 @@
     });
     const destroy=()=>{
       lifecycle.abort();
+      clearCloseFallback();
       kill();
       if(desktopCloseListener){
         overlay.removeEventListener('transitionend',desktopCloseListener);

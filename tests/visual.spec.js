@@ -9,9 +9,9 @@ const baseState={
 };
 
 const visualHashes=Object.freeze({
-  home:'02021377ce78e9dc3dec40a453f1ceb20bfcbbd7384ccb7641ce2e4300731099',
-  workout:'7225427ba9d598af0b726c28a4333cd52a52e66357d9c5e33ba62a543029bf71',
-  progress:'08a6f3343021f986158eb43a1e2c737031fd96bf6f20d62e0825da61a1ce9d5e'
+  home:'fc60ec1d43714af6a126fb3dde193e99120c094c8d273ea10977380b5fef713e',
+  workout:'c78ca777a88d4913f9ce6cc2280eeab284fdfe284d972550e05077667634f6cb',
+  progress:'e561b3a1148ada4355c874d2490aac3554d6bb28bd513b39a6c08544f0adc89c'
 });
 
 const prepare=async page=>{

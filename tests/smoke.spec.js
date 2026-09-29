@@ -858,13 +858,13 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
     };
   });
 
-  expect(layout.timerWidth).toBe('223.2px');
+  expect(layout.timerWidth).toBe('220px');
   expect(layout.shellWidth).toBe('328px');
   expect(layout.mainPadding).toBe('0px');
   expect(layout.mainBorder).toBe('0px');
-  expect(layout.headGap).toBe('8px');
-  expect(layout.factsGap).toBe('20px');
-  expect(layout.techniqueMargin).toBe('20px');
+  expect(layout.headGap).toBe('6px');
+  expect(layout.factsGap).toBe('16px');
+  expect(layout.techniqueMargin).toBe('18px');
 });
 
 
@@ -1037,7 +1037,7 @@ test('typography tokens scale readable text without horizontal overflow',async({
     facts:getComputedStyle(document.querySelector('.exercise-facts span')).fontSize,
     description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize
   }));
-  expect(base).toEqual({eyebrow:'12px',facts:'12px',description:'13px'});
+  expect(base).toEqual({eyebrow:'11px',facts:'11px',description:'13px'});
 
   await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
   const scaled=await page.evaluate(()=>({
@@ -1046,7 +1046,7 @@ test('typography tokens scale readable text without horizontal overflow',async({
     description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize,
     overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth
   }));
-  expect(scaled).toEqual({eyebrow:'15px',facts:'15px',description:'16.25px',overflow:false});
+  expect(scaled).toEqual({eyebrow:'13.75px',facts:'13.75px',description:'16.25px',overflow:false});
 
   for(const url of ['/index.html','/progress.html']){
     await page.goto(url,{waitUntil:'domcontentloaded'});
@@ -1090,8 +1090,8 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
     muted:'#687169',
     accent:'#2f6b55',
     settings:['44px','44px'],
-    routineListRadius:'18px',
-    routineMinHeight:'74px'
+    routineListRadius:'16px',
+    routineMinHeight:'68px'
   });
 
   await page.locator('#settingsBtn').click();
@@ -1301,9 +1301,9 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
   }));
   expect(home).toEqual({
     container:'358px',
-    heroPadding:'20px',
-    activityPadding:'16px',
-    routineRadius:'18px',
+    heroPadding:'19px',
+    activityPadding:'15px',
+    routineRadius:'16px',
     touch:'44px'
   });
 
@@ -1325,8 +1325,8 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
   }));
   expect(workout).toEqual({
     shell:'358px',
-    techniqueRadius:'18px',
-    detailGroupRadius:'18px',
+    techniqueRadius:'16px',
+    detailGroupRadius:'16px',
     detailRowRadius:'0px',
     nav:'54px',
     executionPadding:'16px'
@@ -1394,8 +1394,8 @@ test('R2 component targets and switch contrast stay accessible',async({page,brow
     adjustment:[...document.querySelectorAll('.execution-adjustments button')].map(el=>getComputedStyle(el).minHeight)
   }));
   expect(execution.close).toBe('44px');
-  expect(execution.secondary.every(value=>value==='44px')).toBe(true);
-  expect(execution.adjustment.every(value=>value==='48px')).toBe(true);
+  expect(execution.secondary.every(value=>value==='40px')).toBe(true);
+  expect(execution.adjustment.every(value=>value==='43px')).toBe(true);
 });
 
 test('R2 text reflows at 150 and 200 percent without horizontal overflow',async({page,browserName})=>{
@@ -1453,8 +1453,8 @@ test('R3 visual hierarchy stays coherent across pages',async({page,browserName})
     activityShadow:getComputedStyle(document.querySelector('.home-body .activity-card')).boxShadow
   }));
   expect(home.heroShadow).not.toBe('none');
-  expect(home.routinesShadow).not.toBe('none');
-  expect(home.activityShadow).not.toBe('none');
+  expect(home.routinesShadow).toBe('none');
+  expect(home.activityShadow).toBe('none');
 
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#pageLoader')).toHaveAttribute('aria-hidden','true',{timeout:1000});
@@ -1466,7 +1466,7 @@ test('R3 visual hierarchy stays coherent across pages',async({page,browserName})
   }));
   expect(workout.navBg).toBe('rgb(255, 255, 255)');
   expect(workout.keyBg).toBe('rgb(231, 240, 234)');
-  expect(workout.groupShadow).not.toBe('none');
+  expect(workout.groupShadow).toBe('none');
 
   await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
   const progress=await page.evaluate(()=>({

@@ -553,7 +553,7 @@ window.DailyMotionPages.session=function mountSession(){
       return;
     }
 
-    cancelExecutionStageAnimations();
+    clearExecutionStageTransition();
     card.getAnimations?.({subtree:true}).forEach(animation=>{
       try{animation.cancel();}catch{}
     });

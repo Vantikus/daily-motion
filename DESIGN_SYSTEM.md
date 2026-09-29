@@ -57,8 +57,8 @@ These values are regression contracts, not a command to normalize unrelated comp
 | Component | Contract |
 | --- | --- |
 | Home settings control | 44×44px |
-| Home routine list radius | 18px |
-| Home routine row min-height | 74px |
+| Home routine list radius | 16px |
+| Home routine row min-height | 68px |
 | Session shell | viewport minus 24px at ≤390px |
 | Technique accordion row | min-height 56px |
 | Workout bottom-nav control | height 54px |
@@ -347,3 +347,19 @@ R3 is the final visual consistency pass. It does not change page structure, work
 - SplitText and the historical burst layer are not part of runtime or offline shell.
 - CSS cleanup may remove declarations only when a later rule with the same selector/context already owns that exact property; workout geometry and state semantics must remain unchanged.
 - FLOW assets, Heroicons geometry/stroke, localStorage schema and bottom-sheet physics remain frozen.
+
+
+## v213 — current compact UI + architecture ownership
+
+The later approved Home/Workout polish passes supersede older generic geometry where they intentionally made the interface quieter and denser:
+
+- Home routine group radius is 16px and routine rows are 68px minimum.
+- At the 390px mobile contract, Home hero padding is 19px and Activity padding is 15px.
+- Workout technique key and grouped accordion radius are 16px; the compact mobile facts gap is 16px and technique separation is 18px.
+- Fullscreen execution keeps the approved compact mobile controls: secondary actions 40px minimum and timer adjustment segments 43px at the ≤390px breakpoint. The 44px close control remains unchanged.
+- Home Today remains the dominant elevated surface. Routine groups, Activity and the technique accordion intentionally stay flatter (`box-shadow: none`) so elevation does not compete with the primary surface.
+- `ui.js` owns shared UI primitives used by Home and Session: toast lifecycle, segmented settings sync, focus trapping and reset-confirm choreography.
+- `motion.js` owns bottom-sheet gesture/press motion. Its drag ratio, velocity thresholds, open/close durations and snap physics remain numerically unchanged.
+- `pwa.js` owns install/update/offline behavior only; it must not re-acquire sheet or press-motion responsibilities.
+- `finish early` invalidates pending timer entrance choreography before beginning its exit, so a late entrance frame cannot compete with the exit/handoff.
+- Browser regression tests pin this current approved UI rather than the superseded v105/R1 pixel values.
