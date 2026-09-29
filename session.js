@@ -1279,7 +1279,9 @@ window.DailyMotionPages.session=function mountSession(){
     document.querySelectorAll('[data-effort]').forEach(button=>{
       button.setAttribute('aria-pressed',String(button.dataset.effort===routine.effort));
     });
-    $('#effortStatus').textContent=routine.effort?'Сохранено в истории. Можно изменить.':'Необязательно · только для вас';
+    $('#effortStatus').textContent=routine.effort
+      ?Store.getPersistenceStatus().ok?'Сохранено в истории. Можно изменить.':'Не удалось сохранить оценку. Можно попробовать ещё раз.'
+      :'Необязательно · только для вас';
   }
   document.querySelectorAll('[data-effort]').forEach(button=>{
     button.addEventListener('click',()=>{

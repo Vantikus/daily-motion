@@ -130,7 +130,10 @@ window.DailyMotionPages.home=function mountHome(){
       ?`${next.total} упражнений · ${Store.formatActiveTime(nextState.activeSeconds)} в движении`
       :isResuming?`Упражнение ${resumeIndex+1} из ${next.total} · ${resumeExercise.title}`
       :`${next.minutes} · ${next.total} упражнений`;
-    $('#heroNote').textContent=allDone?'На сегодня готово. Результат сохранён.':isResuming?'Таймер и прогресс сохранены.':'';
+    const saved=Store.getPersistenceStatus().ok;
+    $('#heroNote').textContent=allDone
+      ?saved?'На сегодня готово. Результат сохранён.':'На сегодня готово. Не удалось сохранить результат.'
+      :isResuming?saved?'Таймер и прогресс сохранены.':'Не удалось сохранить изменения.':'';
     $('#heroNote').hidden=!allDone&&!isResuming;
     $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
     $('#continueBtn').onclick=()=>allDone?navigate('progress.html',{animation:'progress'}):go(nextKey);
@@ -333,4 +336,3 @@ window.DailyMotionPages.home=function mountHome(){
     if(shell)shell.inert=false;
   };
 };
-

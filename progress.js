@@ -12,13 +12,8 @@ window.DailyMotionPages.progress=function mountProgress(){
   const dateFromKey=key=>new Date(`${key}T12:00:00`);
   const formatDate=date=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',weekday:'short'}).format(date);
 
-  const toast=message=>{
-    const node=$('#toast');
-    node.textContent=message;
-    node.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer=setTimeout(()=>node.classList.remove('show'),1800);
-  };
+  const toastController=window.DailyMotionUI.createToast($('#toast'),{duration:1800});
+  const toast=toastController.show;
 
   const calendar=$('#historyCalendar');
   const history=$('#historyList');
@@ -98,7 +93,7 @@ window.DailyMotionPages.progress=function mountProgress(){
     link.click();
     link.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-    toast('Резервная копия подготовлена');
+    toast('Резервная копия подготовлена',{storageIndependent:true});
   });
 
   const importInput=$('#importDataInput');
@@ -126,6 +121,6 @@ window.DailyMotionPages.progress=function mountProgress(){
   document.documentElement.classList.add('app-ready');
 
   return ()=>{
-    clearTimeout(toast.timer);
+    toastController.destroy();
   };
 };
