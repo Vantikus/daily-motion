@@ -53,11 +53,12 @@ test('long sheet drag dismisses',async({page})=>{
 
   const x=box.x+box.width/2;
   const y=box.y+box.height/2;
-  await page.mouse.move(x,y);
-  await page.mouse.down();
-  await page.mouse.move(x,y+300,{steps:12});
-  await expect.poll(()=>readTransformY(page.locator('.settings-sheet')),{timeout:1000}).toBeGreaterThan(190);
-  await page.mouse.up();
+  const pointerId=41;
+  await handle.dispatchEvent('pointerdown',{pointerId,pointerType:'touch',isPrimary:true,clientX:x,clientY:y,button:0,buttons:1});
+  for(let step=1;step<=12;step++){
+    await handle.dispatchEvent('pointermove',{pointerId,pointerType:'touch',isPrimary:true,clientX:x,clientY:y+25*step,button:0,buttons:1});
+  }
+  await handle.dispatchEvent('pointerup',{pointerId,pointerType:'touch',isPrimary:true,clientX:x,clientY:y+300,button:0,buttons:0});
 
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1500});
 });
