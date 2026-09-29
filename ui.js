@@ -9,10 +9,12 @@
   };
 
   const createToast=(node,{duration=1600}={})=>{
+    const storageMessage='Не удалось сохранить изменения. Сделайте резервную копию прогресса.';
     let timer=null;
-    const show=message=>{
+    const show=(message,{storageIndependent=false}={})=>{
       if(!node)return;
-      node.textContent=message;
+      node.textContent=!storageIndependent&&window.DailyMotionState?.getPersistenceStatus?.().ok===false
+        ?storageMessage:message;
       node.classList.add('show');
       if(timer!==null)clearTimeout(timer);
       timer=setTimeout(()=>{
@@ -20,7 +22,13 @@
         node.classList.remove('show');
       },duration);
     };
+    const onStorageStatus=event=>{
+      if(event.detail?.ok===false)show(storageMessage);
+    };
+    window.addEventListener('daily-motion-storage-status-change',onStorageStatus);
+    if(window.DailyMotionState?.getPersistenceStatus?.().ok===false)show(storageMessage);
     const destroy=()=>{
+      window.removeEventListener('daily-motion-storage-status-change',onStorageStatus);
       if(timer!==null)clearTimeout(timer);
       timer=null;
       node?.classList.remove('show');
