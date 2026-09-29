@@ -227,12 +227,6 @@
     return state.settings;
   };
   const getProgramVersion=routineKey=>state.programVersions?.[routineKey]||null;
-  const setProgramVersion=(routineKey,version)=>{
-    if(!state.programVersions||typeof state.programVersions!=='object')state.programVersions={};
-    state.programVersions[routineKey]=String(version);
-    save();
-    return state.programVersions[routineKey];
-  };
   const ensureProgramVersion=(routineKey,version,date=todayKey())=>{
     const nextVersion=String(version);
     const previous=getProgramVersion(routineKey);
