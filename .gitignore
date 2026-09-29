@@ -6,5 +6,4 @@ blob-report/
 .DS_Store
 Thumbs.db
 npm-debug.log*
-package-lock.json
 _verify*.png

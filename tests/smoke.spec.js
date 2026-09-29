@@ -258,8 +258,9 @@ test('completion celebration reports a real streak without changing workout stat
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#nextButton').evaluate(button=>button.click());
   await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
-  await expect(page.locator('.completion-burst i')).toHaveCount(8);
-  await expect(page.locator('.completion-check .hi-check-circle')).toBeVisible();
+  await expect(page.locator('.completion-mark')).toBeVisible();
+  await expect(page.locator('.completion-mark__ring')).toBeVisible();
+  await expect(page.locator('.completion-mark__check')).toBeVisible();
   await expect(page.locator('#completionHighlight')).toHaveText('Новая лучшая серия — 2 дня');
 
   const routine=await page.evaluate(()=>DailyMotionState.getRoutine('morning'));
@@ -316,33 +317,48 @@ test('completion motion is choreographed and respects reduced motion',async({pag
   });
 
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>Boolean(window.SplitText));
   const motion=await page.evaluate(async()=>{
     document.querySelector('#nextButton').click();
     await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+    const ring=document.querySelector('.completion-mark__ring');
+    const check=document.querySelector('.completion-mark__check');
+    const title=document.querySelector('#completionTitle');
     return {
       ariaHidden:document.querySelector('#completionOverlay').getAttribute('aria-hidden'),
-      plugins:Boolean(window.SplitText),
+      gsap:Boolean(window.gsap),
+      owner:typeof window.DailyMotionMotion?.playCompletion==='function',
       checkAnimation:getComputedStyle(document.querySelector('.completion-check')).animationName,
-      ringAnimation:getComputedStyle(document.querySelector('.completion-mark__ring')).animationName,
-      checkDrawAnimation:getComputedStyle(document.querySelector('.completion-mark__check')).animationName,
-      splitWords:document.querySelectorAll('#completionTitle .completion-title-word').length
+      ringAnimation:getComputedStyle(ring).animationName,
+      checkDrawAnimation:getComputedStyle(check).animationName,
+      ringInline:ring.style.strokeDasharray,
+      checkInline:check.style.strokeDasharray,
+      titleInline:title.getAttribute('style')||''
     };
   });
   expect(motion.ariaHidden).toBe('false');
-  expect(motion.plugins).toBe(true);
-  expect(motion.checkAnimation).toContain('completionSuccessSettle');
-  expect(motion.ringAnimation).toContain('completionRingDrawStrong');
-  expect(motion.checkDrawAnimation).toContain('completionCheckDrawStrong');
-  expect(motion.splitWords).toBeGreaterThan(1);
+  expect(motion.gsap).toBe(true);
+  expect(motion.owner).toBe(true);
+  expect(motion.checkAnimation).toBe('none');
+  expect(motion.ringAnimation).toBe('none');
+  expect(motion.checkDrawAnimation).toBe('none');
+  expect(motion.ringInline).not.toBe('');
+  expect(motion.checkInline).not.toBe('');
+  expect(motion.titleInline).toContain('opacity');
+
+  await page.waitForTimeout(900);
+  await expect(page.locator('#completionTitle')).toBeVisible();
+  await expect(page.locator('.completion-mark__ring')).toBeVisible();
+  await expect(page.locator('.completion-mark__check')).toBeVisible();
 
   await page.emulateMedia({reducedMotion:'reduce'});
   const reduced=await page.evaluate(()=>({
-    burst:getComputedStyle(document.querySelector('.completion-burst i')).display,
-    check:getComputedStyle(document.querySelector('.completion-check')).animationName
+    check:getComputedStyle(document.querySelector('.completion-check')).animationName,
+    ringOffset:getComputedStyle(document.querySelector('.completion-mark__ring')).strokeDashoffset,
+    checkOffset:getComputedStyle(document.querySelector('.completion-mark__check')).strokeDashoffset
   }));
-  expect(reduced.burst).toBe('none');
   expect(reduced.check).toBe('none');
+  expect(reduced.ringOffset).toBe('0px');
+  expect(reduced.checkOffset).toBe('0px');
 });
 
 test('PWA update waits until an in-progress workout is safe',async({page})=>{

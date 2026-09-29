@@ -1,7 +1,6 @@
 # Cloudflare Workers Static Assets
 .git/
 .github/
-.Jules/
 .wrangler/
 node_modules/
 tests/
@@ -15,7 +14,6 @@ package-lock.json
 bun.lock
 bun.lockb
 playwright.config.js
-deploy.bat
 wrangler.json
 README.md
 DESIGN_SYSTEM.md
