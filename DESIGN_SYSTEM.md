@@ -60,7 +60,7 @@ These values are regression contracts, not a command to normalize unrelated comp
 | Home routine list radius | 16px |
 | Home routine row min-height | 68px |
 | Session shell | viewport minus 24px at ≤390px |
-| Technique accordion row | min-height 56px |
+| Technique accordion row | min-height 52px |
 | Workout bottom-nav control | height 54px |
 | Progress main card radius | 18px |
 | Settings sheet | radius 26px |
@@ -355,8 +355,8 @@ The later approved Home/Workout polish passes supersede older generic geometry w
 
 - Home routine group radius is 16px and routine rows are 68px minimum.
 - At the 390px mobile contract, Home hero padding is 19px and Activity padding is 15px.
-- Workout technique key and grouped accordion radius are 16px; the compact mobile facts gap is 16px and technique separation is 18px.
-- Fullscreen execution keeps the approved compact mobile controls: secondary actions 40px minimum and timer adjustment segments 43px at the ≤390px breakpoint. The 44px close control remains unchanged.
+- Workout technique key radius is 16px and the grouped accordion radius is 18px; the compact mobile facts gap is 16px and technique separation is 18px.
+- Fullscreen execution keeps 14px side padding at the 390px contract and the approved compact mobile controls: secondary actions 40px minimum and timer adjustment segments 43px at the ≤390px breakpoint. The 44px close control remains unchanged.
 - Home Today remains the dominant elevated surface. Routine groups, Activity and the technique accordion intentionally stay flatter (`box-shadow: none`) so elevation does not compete with the primary surface.
 - `ui.js` owns shared UI primitives used by Home and Session: toast lifecycle, segmented settings sync, focus trapping and reset-confirm choreography.
 - `motion.js` owns bottom-sheet gesture/press motion. Its drag ratio, velocity thresholds, open/close durations and snap physics remain numerically unchanged.

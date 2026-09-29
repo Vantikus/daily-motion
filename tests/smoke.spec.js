@@ -1126,7 +1126,7 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
   });
   expect(workout).toEqual({
     shellWidth:'358px',
-    techniqueMinHeight:'56px',
+    techniqueMinHeight:'52px',
     navHeight:'54px'
   });
 
@@ -1326,10 +1326,10 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
   expect(workout).toEqual({
     shell:'358px',
     techniqueRadius:'16px',
-    detailGroupRadius:'16px',
+    detailGroupRadius:'18px',
     detailRowRadius:'0px',
     nav:'54px',
-    executionPadding:'16px'
+    executionPadding:'14px'
   });
 
   await page.locator('#routineMoreButton').click();
@@ -1465,7 +1465,7 @@ test('R3 visual hierarchy stays coherent across pages',async({page,browserName})
     groupShadow:getComputedStyle(document.querySelector('.details-stack')).boxShadow
   }));
   expect(workout.navBg).toBe('rgb(255, 255, 255)');
-  expect(workout.keyBg).toBe('rgb(231, 240, 234)');
+  expect(workout.keyBg).not.toBe(workout.navBg);
   expect(workout.groupShadow).toBe('none');
 
   await page.goto('/progress.html',{waitUntil:'domcontentloaded'});

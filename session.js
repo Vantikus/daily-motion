@@ -599,6 +599,12 @@ window.DailyMotionPages.session=function mountSession(){
   function showExecution(stage){
     const overlay=$('#executionOverlay');
     if(!overlay)return;
+    if(stage==='timer'){
+      const timerCard=$('#timerCard');
+      timerCard?.classList.remove('is-finishing-early');
+      timerCard?.style.removeProperty('opacity');
+      if(timerCard)timerCard.inert=false;
+    }
     const wasVisible=overlay.classList.contains('is-visible');
     executionHideToken++;
     overlay.classList.remove('is-handoff','is-closing','is-surface-fade');
