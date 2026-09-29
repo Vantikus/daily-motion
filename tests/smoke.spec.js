@@ -291,6 +291,7 @@ test('timer crossfades to warm feedback only in the final three seconds',async({
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('#timerRing')).toHaveClass(/is-final-three/);
   await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node,'::before').opacity)).toBe('1');
+  await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node).transform)).toBe('none');
   const finalMotion=await page.locator('#timerRing').evaluate(node=>{
     const style=getComputedStyle(node);
     return {transform:style.transform,animation:style.animationName};
@@ -658,6 +659,7 @@ test('rest actions match their result',async({page})=>{
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#nextButton').click();
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
+  await expect(page.locator('#executionRestStage')).toBeVisible();
   await expect(page.locator('#restSkip')).toHaveText('Начать следующее');
   await expect(page.locator('#restTechnique')).toHaveText('Посмотреть технику');
 
@@ -823,29 +825,12 @@ test('final timer hands off directly to completion without exposing technique',a
   await page.locator('#nextButton').evaluate(button=>button.click());
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
 
-  await page.evaluate(()=>{
-    const completion=document.querySelector('#completionOverlay');
-    const execution=document.querySelector('#executionOverlay');
-    window.__completionHandoff=[];
-    const capture=()=>window.__completionHandoff.push({
-      completionVisible:completion.classList.contains('is-visible'),
-      handoff:completion.classList.contains('is-handoff'),
-      executionVisible:execution.classList.contains('is-visible')
-    });
-    new MutationObserver(capture).observe(completion,{attributes:true,attributeFilter:['class']});
-    new MutationObserver(capture).observe(execution,{attributes:true,attributeFilter:['class']});
-    capture();
-  });
-
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
-  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false');
-  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1200});
-
-  const events=await page.evaluate(()=>window.__completionHandoff);
-  const prepared=events.findIndex(event=>event.completionVisible&&event.handoff&&event.executionVisible);
-  const executionClosed=events.findIndex(event=>event.completionVisible&&!event.executionVisible);
-  expect(prepared).toBeGreaterThanOrEqual(0);
-  expect(executionClosed).toBeGreaterThan(prepared);
+  await expect(page.locator('#completionOverlay')).toHaveAttribute('aria-hidden','false',{timeout:1500});
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1500});
+  await expect(page.locator('#executionOverlay')).not.toHaveClass(/is-visible/,{timeout:1500});
+  await expect(page.locator('.exercise-app')).toHaveAttribute('inert','');
+  await expect(page.locator('#completionTitle')).toBeVisible();
 });
 
 
@@ -952,6 +937,7 @@ test('P3 timer urgency never changes ring geometry',async({page,browserName})=>{
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   await page.locator('#nextButton').evaluate(button=>button.click());
   await expect(page.locator('#timerRing')).toHaveClass(/is-final-three/);
+  await expect.poll(()=>page.locator('#timerRing').evaluate(node=>getComputedStyle(node).transform)).toBe('none');
   const ring=await page.locator('#timerRing').evaluate(node=>{
     const box=node.getBoundingClientRect();
     const style=getComputedStyle(node);

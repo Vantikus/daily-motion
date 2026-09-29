@@ -570,7 +570,15 @@ window.DailyMotionPages.session=function mountSession(){
       {duration:135,easing:MotionTokens.easeExit,fill:'forwards'}
     );
 
-    exit.finished.then(()=>{
+    let settled=false;
+    let fallbackTimer=null;
+    const completeExit=()=>{
+      if(settled)return;
+      settled=true;
+      if(fallbackTimer!==null){
+        clearTimeout(fallbackTimer);
+        fallbackTimer=null;
+      }
       if(destroyed||token!==stageTransitionToken||executionStage!=='timer'){
         try{exit.cancel();}catch{}
         card.inert=false;
@@ -581,7 +589,11 @@ window.DailyMotionPages.session=function mountSession(){
       try{exit.cancel();}catch{}
       callback();
       card.style.removeProperty('opacity');
-    },()=>{});
+    };
+    exit.finished.then(completeExit,completeExit);
+    // WebKit/CI can leave a cancelled WAAPI .finished promise unsettled.
+    // This fallback is after the visual exit window and only completes the same state handoff.
+    fallbackTimer=setTimeout(completeExit,Math.max(220,MotionTokens.exitMs+80));
   }
 
   function showExecution(stage){
