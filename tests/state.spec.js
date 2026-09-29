@@ -34,6 +34,28 @@ test('state normalization and statistics stay centralized',async({page})=>{
   expect(stats.exported).not.toContain('weeklyGoalDays');
 });
 
+test('legacy v1 state migrates timers into the current routine',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.removeItem('dailyMotionState.v3');
+    localStorage.removeItem('dailyMotionState.v2');
+    localStorage.setItem('dailyMotionState.v1',JSON.stringify({
+      settings:{countdownSeconds:5,restSeconds:30,sound:false,autoNext:true},
+      timers:{morning:{'cat-cow':{duration:40,remaining:17,running:false,paused:true}}}
+    }));
+  });
+  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+
+  const migrated=await page.evaluate(()=>({
+    version:DailyMotionState.getState().version,
+    settings:DailyMotionState.getSettings(),
+    timer:DailyMotionState.getRoutine('morning').timers['cat-cow']
+  }));
+
+  expect(migrated.version).toBe(3);
+  expect(migrated.settings).toMatchObject({countdownSeconds:5,restSeconds:30,sound:false,autoNext:true});
+  expect(migrated.timer).toMatchObject({duration:40,remaining:17,running:false,paused:true});
+});
+
 test('program version change safely resets only in-progress workout',async({page})=>{
   await page.addInitScript(()=>{
     const date=new Date();
