@@ -1,6 +1,6 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, relative } from 'node:path';
-import { test, expect } from './helpers/runtime.js';
+import { readFile } from 'node:fs/promises';
+import { relative } from 'node:path';
+import { test, expect, expectSwup } from './helpers/runtime.js';
 
 const capture=process.env.DM_CAPTURE_BASELINES==='1';
 if(capture&&!process.env.DM_BASELINE_URL)throw new Error('Baseline capture requires an explicit reference server');
@@ -32,6 +32,8 @@ for(const scenario of cases){
     },scenario);
     const path=scenario.page==='home'?'/index.html':scenario.page==='progress'?'/progress.html':'/session.html?routine=morning';
     await page.goto(new URL(path,capture?process.env.DM_BASELINE_URL:baseURL).href,{waitUntil:'domcontentloaded'});
+    await expectSwup(page);
+    await page.evaluate(()=>document.fonts.ready);
     await page.clock.runFor(32);
     // Behavior specs cover hit testing and gestures. Visual fixtures invoke
     // the controls directly, so a frozen clock cannot race a compositor hit test.
@@ -56,19 +58,19 @@ for(const scenario of cases){
     if(scenario.state==='settings')await expect(page.locator('.settings-sheet h2')).toHaveCSS('opacity','1');
     if(scenario.state==='rest')await expect(page.locator('#restValue')).toHaveText('15');
     if(scenario.state==='completion')await expect(page.locator('#completionTitle')).toBeVisible();
-    await page.evaluate(()=>document.querySelector('#toast')?.classList.remove('show'));
-    const image=await page.screenshot({fullPage:true,animations:'disabled',caret:'hide',scale:'css'});
+    await page.evaluate(()=>{
+      document.querySelector('#toast')?.classList.remove('show');
+      document.activeElement?.blur?.();
+    });
     const name=`${scenario.name}.png`;
+    await expect(page).toHaveScreenshot(name,{fullPage:true,animations:'disabled',caret:'hide',scale:'css',maxDiffPixels:0});
     if(capture){
       const path=testInfo.snapshotPath(name);
-      await mkdir(dirname(path),{recursive:true});
-      await writeFile(path,image);
+      const image=await readFile(path);
       const file=relative(process.cwd(),path);
       const content=image.toString('base64');
       console.log('DM_BASELINE_META '+JSON.stringify({path:file,length:content.length}));
       for(let offset=0;offset<content.length;offset+=4000)console.log('DM_BASELINE_DATA '+JSON.stringify({path:file,index:offset/4000,data:content.slice(offset,offset+4000)}));
-    }else{
-      expect(image).toMatchSnapshot(name,{maxDiffPixels:0});
     }
   });
 }
