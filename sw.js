@@ -1,19 +1,19 @@
-const CACHE_NAME='daily-motion-v222';
+const CACHE_NAME='daily-motion-v223';
 const SWUP_VENDOR_URLS=[
-  'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
-  'https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js',
-  'https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js',
-  'https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js',
-  'https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js',
-  'https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js',
-  'https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js'
+  '/vendor/swup/swup-4.10.0.js',
+  '/vendor/swup/preload-3.2.12.js',
+  '/vendor/swup/head-2.3.1.js',
+  '/vendor/swup/body-class-3.3.0.js',
+  '/vendor/swup/a11y-5.2.1.js',
+  '/vendor/swup/js-3.2.0.js',
+  '/vendor/swup/scroll-4.0.0.js'
 ];
 const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
   '/progress.html',
-  '/heroicons.css?v=222',
+  '/heroicons.css?v=223',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -44,20 +44,20 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=222',
-  '/theme.js?v=222',
-  '/program.js?v=222',
-  '/state.js?v=222',
-  '/audio.js?v=222',
-  '/gsap.min.js?v=222',
-  '/motion.js?v=222',
-  '/ui.js?v=222',
-  '/session-view.js?v=222',
-  '/pwa.js?v=222',
-  '/app.js?v=222',
-  '/session.js?v=222',
-  '/progress.js?v=222',
-  '/navigation.js?v=222',
+  '/styles.css?v=223',
+  '/theme.js?v=223',
+  '/program.js?v=223',
+  '/state.js?v=223',
+  '/audio.js?v=223',
+  '/gsap.min.js?v=223',
+  '/motion.js?v=223',
+  '/ui.js?v=223',
+  '/session-view.js?v=223',
+  '/pwa.js?v=223',
+  '/app.js?v=223',
+  '/session.js?v=223',
+  '/progress.js?v=223',
+  '/navigation.js?v=223',
   '/manifest.webmanifest',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
@@ -68,8 +68,7 @@ const APP_SHELL=[
 self.addEventListener('install',event=>{
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache=>{
-      await cache.addAll(APP_SHELL);
-      await Promise.allSettled(SWUP_VENDOR_URLS.map(url=>cache.add(url)));
+      await cache.addAll([...APP_SHELL,...SWUP_VENDOR_URLS]);
     })
   );
 });
@@ -133,10 +132,6 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
-  if(SWUP_VENDOR_URLS.includes(request.url)){
-    event.respondWith(cacheStatic(request).catch(()=>fetch(request)));
-    return;
-  }
   if(url.origin!==self.location.origin)return;
 
   if(request.headers.get('X-Requested-With')==='swup'){

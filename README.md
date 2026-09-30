@@ -61,7 +61,7 @@ Swup меняет только `#swup`, поэтому page runtimes загру�
 
 Production:
 - GSAP 3.15.0 — локально;
-- Swup 4.10.0 и используемые Swup plugins — pinned runtime;
+- Swup 4.10.0 и используемые Swup plugins — локальные закреплённые файлы;
 - Heroicons Outline — локально.
 
 Development only:
@@ -93,10 +93,9 @@ npm run test:e2e
 - `visual-matrix.spec.js` — PNG-эталоны Chromium/WebKit для тем, размеров экрана и основных состояний;
 - `lifecycle.spec.js` — повторные переходы, отмена async work, Wake Lock и частота обновления таймера.
 
-В тестах реальные pinned Swup UMD packages обслуживаются из devDependencies.
-Это проверяет настоящую навигацию независимо от доступности CDN. Production
-по-прежнему использует существующий pinned runtime. Тестовый HTTP server также
-позволяет проверять обновление настоящего Service Worker через waiting/activation.
+Тесты используют те же локальные Swup-файлы, что и приложение. Тестовый HTTP
+server позволяет проверять обновление настоящего Service Worker через
+waiting/activation. Для передачи работы сначала читать HANDOFF.md.
 
 ## Документы
 

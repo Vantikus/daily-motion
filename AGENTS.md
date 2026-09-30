@@ -1,6 +1,8 @@
 # Daily Motion: instructions for code changes
 
-Use the latest `Vantikus/daily-motion/main` as the starting point. Read README.md,
+Use only the latest ZIP supplied by the user. Do not read, download or compare
+GitHub code; use GitHub only for final publication. The user has authorized automatic
+publication after required checks; do not ask for confirmation again. Read HANDOFF.md, README.md,
 CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
 
 ## Product contracts
@@ -17,7 +19,7 @@ CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
 - `session.js`: workout state, countdown/timer/rest, persistence and completion.
 - `session-view.js`: exercise presentation and next-button state.
 - `ui.js`: shared UI primitives and page lifecycle cancellation.
-- `navigation.js`: Swup mount/unmount and page transitions.
+- `navigation.js`: Swup mount/unmount, native page snapshots and GSAP fallback.
 - `motion.js`: GSAP sheets, press feedback and completion motion.
 - `pwa.js` / `sw.js`: installation, update safety and offline shell.
 - `state.js`: data normalization, statistics and migrations.
@@ -39,4 +41,5 @@ change and visual/state coverage demonstrate that moving a rule is safe.
 
 Keep HTML asset versions and the service-worker cache version synchronized.
 Validate on a branch before merging into main; Cloudflare deploys main.
-Report behavior changes, checks, byte/file deltas and any unresolved limitation.
+Explain visible changes, how to check them, and unresolved limitations in plain language.
+Do not show code, logs or commits unless requested. Keep HANDOFF.md current.

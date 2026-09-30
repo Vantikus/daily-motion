@@ -4863,3 +4863,38 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   width:100%;
   min-width:0;
 }
+
+/* Page snapshots: one continuous transition; theme snapshots keep their owner. */
+html.dm-page-transition #swup{view-transition-name:daily-motion-page}
+html.dm-page-transition::view-transition-old(root),
+html.dm-page-transition::view-transition-new(root){animation:none}
+html.dm-page-transition::view-transition-group(daily-motion-page){animation-duration:240ms}
+html.dm-page-transition::view-transition-image-pair(daily-motion-page){isolation:isolate}
+html.dm-page-transition::view-transition-old(daily-motion-page){
+  animation:dmPageOut 240ms cubic-bezier(.2,.72,.2,1) both;
+  mix-blend-mode:normal;
+}
+html.dm-page-transition::view-transition-new(daily-motion-page){
+  animation:dmPageIn 240ms cubic-bezier(.16,.82,.24,1) both;
+  mix-blend-mode:normal;
+}
+html.dm-page-transition.dm-page-back::view-transition-old(daily-motion-page){animation-name:dmPageBackOut}
+html.dm-page-transition.dm-page-back::view-transition-new(daily-motion-page){animation-name:dmPageBackIn}
+html.dm-page-transition .exercise-main.enter-forward .exercise-head,
+html.dm-page-transition .exercise-main.enter-back .exercise-head,
+html.dm-page-transition .exercise-main.enter-forward .exercise-facts,
+html.dm-page-transition .exercise-main.enter-back .exercise-facts,
+html.dm-page-transition .exercise-main.enter-forward .technique-key,
+html.dm-page-transition .exercise-main.enter-back .technique-key,
+html.dm-page-transition .exercise-main.enter-forward .details-section,
+html.dm-page-transition .exercise-main.enter-back .details-section,
+html.dm-page-transition .exercise-main .exercise-visual{animation:none!important}
+@keyframes dmPageOut{to{opacity:0;transform:translateX(-8px)}}
+@keyframes dmPageIn{from{opacity:0;transform:translateX(12px)}}
+@keyframes dmPageBackOut{to{opacity:0;transform:translateX(8px)}}
+@keyframes dmPageBackIn{from{opacity:0;transform:translateX(-12px)}}
+@media(prefers-reduced-motion:reduce){
+  html.dm-page-transition::view-transition-group(daily-motion-page),
+  html.dm-page-transition::view-transition-old(daily-motion-page),
+  html.dm-page-transition::view-transition-new(daily-motion-page){animation:none!important}
+}

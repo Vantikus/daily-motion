@@ -5,13 +5,13 @@
 | Dependency | Version | Delivery | Owner |
 | --- | --- | --- | --- |
 | GSAP Core | 3.15.0 | local `gsap.min.js` | UI/page/completion/sheet motion |
-| Swup Core | 4.10.0 | pinned remote runtime + Service Worker cache | navigation/history/cache |
-| Swup Preload | 3.2.12 | pinned remote runtime + Service Worker cache | route preload |
-| Swup Head | 2.3.1 | pinned remote runtime + Service Worker cache | head/meta synchronization |
-| Swup Body Class | 3.3.0 | pinned remote runtime + Service Worker cache | body class synchronization |
-| Swup A11y | 5.2.1 | pinned remote runtime + Service Worker cache | navigation accessibility |
-| Swup JS | 3.2.0 | pinned remote runtime + Service Worker cache | page animation integration |
-| Swup Scroll | 4.0.0 | pinned remote runtime + Service Worker cache | scroll restoration |
+| Swup Core | 4.10.0 | local versioned files + Service Worker cache | navigation/history/cache |
+| Swup Preload | 3.2.12 | local versioned files + Service Worker cache | route preload |
+| Swup Head | 2.3.1 | local versioned files + Service Worker cache | head/meta synchronization |
+| Swup Body Class | 3.3.0 | local versioned files + Service Worker cache | body class synchronization |
+| Swup A11y | 5.2.1 | local versioned files + Service Worker cache | navigation accessibility |
+| Swup JS | 3.2.0 | local versioned files + Service Worker cache | page animation integration |
+| Swup Scroll | 4.0.0 | local versioned files + Service Worker cache | scroll restoration |
 | Heroicons Outline | local snapshot | local `vendor/heroicons/` | UI icons |
 
 Native platform dependencies:

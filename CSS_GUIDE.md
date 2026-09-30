@@ -32,5 +32,5 @@ and skipped uncertain dynamic-value fallbacks. No rule was reordered. Some
 important declarations remain because they describe explicit fullscreen and
 responsive states; removing them needs a separate cascade change and coverage.
 
-Motion ownership remains in JS: Swup/GSAP for page transitions, GSAP for sheets,
+Motion ownership remains in JS: Swup/native snapshots with GSAP fallback for page transitions, GSAP for sheets,
 session.js/WAAPI for fullscreen stage handoffs. CSS describes their stable states.
