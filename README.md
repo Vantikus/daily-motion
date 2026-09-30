@@ -111,3 +111,4 @@ npm run test:e2e
 ## Deploy
 
 Рабочая ветка — `main`. Cloudflare автоматически разворачивает `main`. Production не требует build-step.
+Тесты, PNG-эталоны, документация и инструменты разработки исключены из публичных assets.

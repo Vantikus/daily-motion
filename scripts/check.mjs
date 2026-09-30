@@ -54,6 +54,10 @@ const pwa=read('pwa.js');
 const navigation=read('navigation.js');
 const theme=read('theme.js');
 const heroicons=read('heroicons.css');
+const assetsIgnore=read('.assetsignore');
+for(const pattern of ['node_modules/','tests/','scripts/','*.md','package*.json','playwright.config.js','wrangler.json']){
+  if(!assetsIgnore.split(/\r?\n/).includes(pattern))fail(`.assetsignore: development asset exclusion missing ${pattern}`);
+}
 
 if(packageJson.devDependencies?.['@playwright/test']!=='1.63.0')fail('package.json: Playwright must stay pinned to 1.63.0');
 if(packageJson.devDependencies?.wrangler!=='4.143.0')fail('package.json: Wrangler must stay pinned to 4.143.0');

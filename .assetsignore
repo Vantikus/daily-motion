@@ -25,3 +25,8 @@ HEROICONS-LICENSE.txt
 Thumbs.db
 npm-debug.log*
 _verify*.png
+
+# Future project guides are development documentation.
+*.md
+package*.json
+.assetsignore

@@ -33,15 +33,29 @@ for(const scenario of cases){
     const path=scenario.page==='home'?'/index.html':scenario.page==='progress'?'/progress.html':'/session.html?routine=morning';
     await page.goto(new URL(path,capture?process.env.DM_BASELINE_URL:baseURL).href,{waitUntil:'domcontentloaded'});
     await page.clock.runFor(32);
-    if(scenario.state==='settings')await page.locator('#settingsBtn').click({force:true});
+    // Behavior specs cover hit testing and gestures. Visual fixtures invoke
+    // the controls directly, so a frozen clock cannot race a compositor hit test.
+    if(scenario.state==='settings')await page.locator('#settingsBtn').evaluate(button=>button.click());
     if(['paused','rest','completion'].includes(scenario.state)){
-      await page.locator('#nextButton').click({force:true});
+      await page.locator('#nextButton').evaluate(button=>button.click());
       if(scenario.state==='paused'){
         await expect(page.locator('#timerToggle')).toHaveText('Пауза');
-        await page.locator('#timerToggle').click({force:true});
+        await page.locator('#timerToggle').evaluate(button=>button.click());
+        await expect(page.locator('#timerToggle')).toHaveText('Продолжить');
       }
     }
     await page.clock.runFor(500);
+    await page.evaluate(()=>{
+      for(const animation of document.getAnimations()){
+        if(animation.effect?.getComputedTiming().iterations!==Infinity){
+          try{animation.finish();}catch{}
+        }
+      }
+    });
+    await page.clock.runFor(64);
+    if(scenario.state==='settings')await expect(page.locator('.settings-sheet h2')).toHaveCSS('opacity','1');
+    if(scenario.state==='rest')await expect(page.locator('#restValue')).toHaveText('15');
+    if(scenario.state==='completion')await expect(page.locator('#completionTitle')).toBeVisible();
     await page.evaluate(()=>document.querySelector('#toast')?.classList.remove('show'));
     const image=await page.screenshot({fullPage:true,animations:'disabled',caret:'hide',scale:'css'});
     const name=`${scenario.name}.png`;

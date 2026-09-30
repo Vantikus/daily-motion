@@ -187,8 +187,8 @@ test('a real waiting worker activates only after the workout becomes safe',async
     window.dispatchEvent(new CustomEvent('daily-motion-reload-safety-change'));
   });
   await expect(page.locator('.pwa-banner__action')).toBeVisible();
-  await page.locator('.pwa-banner__action').click();
-  await expect.poll(()=>page.evaluate(()=>Number(sessionStorage.getItem('dm-test-worker-boots')))).toBe(2);
+  await Promise.all([page.waitForEvent('load'),page.locator('.pwa-banner__action').click()]);
+  expect(await page.evaluate(()=>Number(sessionStorage.getItem('dm-test-worker-boots')))).toBe(2);
   await expect.poll(()=>page.evaluate(()=>navigator.serviceWorker.controller.scriptURL)).toContain('build=two');
   expect(await page.evaluate(()=>DailyMotionState.getCompletedRoutineCount(['morning']))).toBe(1);
   await expect.poll(()=>page.evaluate(async()=>await caches.keys())).not.toContain('daily-motion-test-one');
