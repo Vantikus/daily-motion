@@ -255,7 +255,10 @@ test('rest skip hands through countdown before starting the next timer',async({p
   await expect(page.locator('#countdownValue')).toHaveText('2');
   await page.clock.runFor(1000);
   await expect(page.locator('#countdownValue')).toHaveText('1');
-  await page.clock.runFor(1121);
+  await page.clock.runFor(1000);
+  await expect(page.locator('#countdownValue')).toHaveText('Старт');
+  // The launch label is held for 160ms before handing off to the timer.
+  await page.clock.runFor(200);
   await expect(page.locator('#timerCard')).toBeVisible();
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#executionRestStage')).toBeVisible();
@@ -267,7 +270,7 @@ test('rest skip hands through countdown before starting the next timer',async({p
   await expect(page.locator('#executionRestStage')).toBeHidden();
   await expect(page.locator('#timerCard')).toBeHidden();
 
-  await page.clock.runFor(3121);
+  await page.clock.runFor(3200);
   await expect(page.locator('#timerCard')).toBeVisible();
   await expect(page.locator('#executionCountdownStage')).toBeHidden();
   await expect(page.locator('#timerState')).toHaveText('Идёт');

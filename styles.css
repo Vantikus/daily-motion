@@ -370,7 +370,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
   .progress-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* Quiet Motion — Home redesign */
+/* Home surfaces and layout */
 .home-body{background:var(--bg)}
 .home-body .container{width:min(var(--layout-max),calc(100% - var(--layout-inline-space)))}
 .home-body .topbar>div{min-width:0}
@@ -428,7 +428,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 
 }
 
-/* Quiet Motion — Workout redesign */
+/* Exercise surfaces and layout */
 
 .exercise-main{background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;overflow:visible;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .back-link--icon{width:var(--control-touch);height:var(--control-touch);border-radius:var(--radius-control);box-shadow:none}
@@ -1289,7 +1289,7 @@ a[href],
   68%{opacity:1;transform:scale(1.035)}
 }
 
-/* M1 — unified interaction motion: fast contact, soft release, stable footprints */
+/* Shared interaction motion: fast contact, soft release, stable footprints */
 button,
 button *,
 a[href],
@@ -2192,7 +2192,7 @@ a[href] *,
   border-color:rgba(47,107,85,.18)!important;
 }
 
-/* Exercise details — session.js owns explicit height interpolation. */
+/* Exercise details — session-view.js owns explicit height interpolation. */
 .details-section,
 .details-stack,
 .detail-card{
@@ -3046,9 +3046,9 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .completion-overlay .completion-card{transition:none!important}
 }
 
-/* v157 page navigation motion is owned by Swup JS Plugin + GSAP. */
+/* page navigation motion is owned by Swup JS Plugin + GSAP. */
 
-/* v211 timer surface — stage choreography is owned exclusively by session.js / WAAPI. */
+/* timer surface — stage choreography is owned exclusively by session.js / WAAPI. */
 .execution-timer{
   position:relative;
   isolation:isolate;
@@ -3079,7 +3079,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .execution-timer::before{display:none!important}
 }
 
-/* v211 countdown surface — motion is owned exclusively by session.js / WAAPI. */
+/* countdown surface — motion is owned exclusively by session.js / WAAPI. */
 .execution-countdown{
   position:relative;
   isolation:isolate;
@@ -3110,7 +3110,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .execution-countdown::before{display:none!important}
 }
 
-/* v165 completion success mark — native, deterministic, no plugin dependency */
+/* completion success mark — native, deterministic, no plugin dependency */
 .completion-mark{
 
   opacity:0;
@@ -3140,7 +3140,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .completion-mark__ring,.completion-mark__check{animation:none!important;stroke-dashoffset:0;}
 }
 
-/* v166 completion success emphasis */
+/* completion success emphasis */
 .completion-check{
 
   background:rgba(47,107,85,.09);
@@ -3197,7 +3197,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .completion-mark__ring,.completion-mark__check{stroke-dashoffset:0;}
 }
 
-/* v168 unified motion system — one rhythm across Daily Motion */
+/* unified motion system — one rhythm across Daily Motion */
 @media(prefers-reduced-motion:no-preference){
   .app-ready .today-card,
   .app-ready .progress-page{
@@ -3256,7 +3256,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* v171 M3 — workout choreography: one fast, directional motion language. */
+/* workout choreography: one fast, directional motion language. */
 .exercise-main.enter-forward{--dm-exercise-shift:8px}
 .exercise-main.enter-back{--dm-exercise-shift:-8px}
 
@@ -3467,7 +3467,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   box-shadow:0 0 0 1px rgba(121,197,162,.045);
 }
 
-/* v178 completion visual balance */
+/* completion visual balance */
 .completion-card{
   padding-top:clamp(48px,8.5vh,78px);
 }
@@ -3557,7 +3557,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   border-color:rgba(121,197,162,.42);
 }
 
-/* v180 — Home UI/UX hierarchy pass. Motion intentionally unchanged. */
+/* Home UI/UX hierarchy pass. Motion intentionally unchanged. */
 .home-body .topbar{
   align-items:center;
   padding-top:14px;
@@ -3804,7 +3804,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:color-mix(in srgb,var(--surface-raised) 92%,var(--bg));
 }
 
-/* v181 quick fix — safety note is quiet footer copy, not an alert. */
+/* quick fix — safety note is quiet footer copy, not an alert. */
 .home-body .safety-note{
   margin:0;
   padding:12px 2px 0;
@@ -3817,7 +3817,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   letter-spacing:0;
 }
 
-/* v182 U1 — exercise top navigation + progress hierarchy only. */
+/* exercise top navigation + progress hierarchy only. */
 .exercise-toolbar{
   grid-template-columns:44px minmax(0,1fr) auto 44px!important;
   align-items:center;
@@ -3901,7 +3901,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:var(--surface-raised);
 }
 
-/* v187 — workout menu uses the same tactile glyph press as Home icon buttons. */
+/* workout menu uses the same tactile glyph press as Home icon buttons. */
 .routine-more-button>.hi{
   transform-origin:center;
   transition:transform var(--motion-interaction-release) var(--motion-ease-press-out);
@@ -3913,7 +3913,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   transition-timing-function:var(--motion-ease-press-in);
 }
 
-/* v188 U2 — exercise title, goal and compact facts hierarchy only. */
+/* exercise title, goal and compact facts hierarchy only. */
 .exercise-head{
   gap:6px;
   margin:0;
@@ -3995,7 +3995,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* v189 U3 — emphasize the key cue without turning it into another heavy card. */
+/* emphasize the key cue without turning it into another heavy card. */
 .technique-key{
   margin:0 0 20px;
   padding:13px 14px 14px;
@@ -4039,7 +4039,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .technique-key{
   border-color:rgba(121,197,162,.11);
   background:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
-}/* v190 U4 — compact, calm technique accordion. Existing JS owns expansion motion. */
+}/* compact, calm technique accordion. Existing JS owns expansion motion. */
 .details-title{
   margin:0;
   color:var(--text);
@@ -4126,7 +4126,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:rgba(121,197,162,.035)!important;
 }
 
-/* v191 U4 correction — single-line labels + readable semantic technique colors. */
+/* correction — single-line labels + readable semantic technique colors. */
 .detail-card__toggle{
 
   font-weight:650!important;
@@ -4209,7 +4209,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .detail-label .technique-icon--easy{color:#a8ba88!important;background:rgba(168,186,136,.12)!important}
 :root[data-theme="dark"] .detail-label .technique-icon--progress{color:#b1a5d3!important;background:rgba(177,165,211,.12)!important}
 
-/* v192 U4 spacing correction — keep clarity, restore breathing room. */
+/* spacing correction — keep clarity, restore breathing room. */
 .details-section{
   gap:12px!important;
 }
@@ -4274,7 +4274,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* v198 — consolidated fullscreen execution refinements T1–T5. */
+/* consolidated fullscreen execution refinements T1–T5. */
 /* T1 — fullscreen execution shell hierarchy only. */
 .execution-overlay{
   padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 14px)!important;
@@ -4563,7 +4563,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .execution-secondary button:last-child.is-pressing{
   background:rgba(197,141,130,.09)!important;
   color:#d9aaa1!important;
-}/* v199 T6 — pause state: instantly readable without changing timer logic. */
+}/* pause state: instantly readable without changing timer logic. */
 .execution-timer.is-paused .execution-key{
 
   opacity:.82;
@@ -4598,7 +4598,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 }
 
-/* v199 T6 — paused timer state: obvious at a glance, no new motion. */
+/* paused timer state: obvious at a glance, no new motion. */
 .execution-timer.is-paused .execution-eyebrow{
   color:var(--muted)!important;
 }
@@ -4625,7 +4625,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   box-shadow:0 0 0 6px rgba(255,255,255,.045)!important;
 }
 
-/* v200 T7 — rest state hierarchy only. */
+/* rest state hierarchy only. */
 .execution-rest{
   justify-content:center!important;
 }
@@ -4694,7 +4694,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* v201 T8 — final responsive fullscreen polish. */
+/* final responsive fullscreen polish. */
 @media(max-height:760px){
   .execution-stage{
     justify-content:center!important;
@@ -4834,7 +4834,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* v211 — fullscreen stabilization support.
+/* fullscreen stabilization support.
    Stage choreography lives in session.js / WAAPI; CSS here only preserves geometry and status fixes. */
 
 /* Countdown launch word is text, never a giant numeral. */
