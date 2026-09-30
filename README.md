@@ -19,6 +19,7 @@ Daily Motion — mobile-first PWA для ежедневной полнотело
 - `progress.html` + `progress.js` — история, статистика, import/export;
 - `state.js` — единая модель localStorage, статистика и миграции;
 - `ui.js` — общие UI-примитивы;
+- `UI.createLifecycle()` — общая отмена page listeners, отложенных задач и кадров при unmount;
 - `motion.js` — GSAP motion, press feedback и bottom-sheet engine;
 - `navigation.js` — Swup lifecycle/navigation;
 - `audio.js` — lazy audio runtime;
@@ -89,6 +90,13 @@ npm run test:e2e
 - `layout.spec.js`;
 - `motion.spec.js`;
 - `visual.spec.js`.
+- `visual-matrix.spec.js` — PNG-эталоны Chromium/WebKit для тем, размеров экрана и основных состояний;
+- `lifecycle.spec.js` — повторные переходы, отмена async work, Wake Lock и частота обновления таймера.
+
+В тестах реальные pinned Swup UMD packages обслуживаются из devDependencies.
+Это проверяет настоящую навигацию независимо от доступности CDN. Production
+по-прежнему использует существующий pinned runtime. Тестовый HTTP server также
+позволяет проверять обновление настоящего Service Worker через waiting/activation.
 
 ## Документы
 
@@ -96,7 +104,11 @@ npm run test:e2e
 - `LIBRARIES.md` — только реально используемые зависимости;
 - `MOTION_ROADMAP.md` — текущий motion ownership и правила будущих изменений;
 - `CHANGELOG.md` — история ключевых прошлых релизов.
+- `AGENTS.md` — ограничения и инструкции для работы с кодом;
+- `CSS_GUIDE.md` — карта стилей и правила изменения каскада;
+- `WORKING_WITH_GPT.md` — шаблоны задач и промптов.
 
 ## Deploy
 
 Рабочая ветка — `main`. Cloudflare автоматически разворачивает `main`. Production не требует build-step.
+Тесты, PNG-эталоны, документация и инструменты разработки исключены из публичных assets.

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, expectSwup } from './helpers/runtime.js';
 
 const pages=[
   {name:'home',url:'/index.html',anchor:'#todayCard'},
@@ -38,6 +38,8 @@ test('fast workout boot does not flash the page loader',async({page})=>{
 
 test('Swup lifecycle remounts Home and Progress with fresh local state',async({page})=>{
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await expectSwup(page);
+  const token=await page.evaluate(()=>window.__navigationToken=crypto.randomUUID());
   await expect(page.locator('#todayStatus')).toHaveText('Сегодня');
   await page.evaluate(()=>{
     const routine=DailyMotionState.getRoutine('morning');
@@ -52,17 +54,31 @@ test('Swup lifecycle remounts Home and Progress with fresh local state',async({p
   await expect(page).toHaveURL(/\/progress\.html$/);
   await expect(page.locator('#completedSessions')).toHaveText('1');
   await expect(page.locator('#historyList .history-row')).toHaveCount(1);
+  expect(await page.evaluate(()=>window.__navigationToken)).toBe(token);
 
   await page.locator('[data-nav-back]').click();
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#todayStatus')).toHaveText('Готово');
   await expect(page.locator('#heroProgressText')).toHaveText('9 из 9 упражнений');
+  expect(await page.evaluate(()=>window.__navigationToken)).toBe(token);
+  await page.goForward();
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  expect(await page.evaluate(()=>window.__navigationToken)).toBe(token);
 });
 
 test('Swup navigation shell is present on every page',async({page})=>{
   for(const url of ['/index.html','/progress.html','/session.html?routine=morning']){
     await page.goto(url,{waitUntil:'domcontentloaded'});
     await expect(page.locator('#swup.transition-page')).toHaveCount(1);
-    await expect.poll(()=>page.evaluate(()=>typeof DailyMotionNavigate)).toBe('function');
+    await expectSwup(page);
   }
+});
+
+test('native navigation remains usable when the Swup runtime cannot load',async({page})=>{
+  await page.route('https://unpkg.com/**',route=>route.abort());
+  await page.goto('/index.html');
+  const token=await page.evaluate(()=>window.__fallbackToken=crypto.randomUUID());
+  await page.locator('a[href="progress.html"]').click();
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  expect(await page.evaluate(()=>window.__fallbackToken)).not.toBe(token);
 });

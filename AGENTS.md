@@ -1,0 +1,42 @@
+# Daily Motion: instructions for code changes
+
+Use the latest `Vantikus/daily-motion/main` as the starting point. Read README.md,
+CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
+
+## Product contracts
+
+- Static HTML/CSS/JavaScript PWA. No framework, backend or runtime npm dependency.
+- Morning has nine exercises. Day and Evening remain unavailable.
+- Preserve exercise copy, order, durations, FLOW v97 assets and Heroicons 1.7px.
+- Preserve localStorage v3 keys, valid history, migrations and timer accounting.
+- Preserve iOS safe areas, offline behavior and GSAP bottom-sheet physics.
+- Change visuals or these contracts only when the task explicitly requests it.
+
+## Ownership
+
+- `session.js`: workout state, countdown/timer/rest, persistence and completion.
+- `session-view.js`: exercise presentation and next-button state.
+- `ui.js`: shared UI primitives and page lifecycle cancellation.
+- `navigation.js`: Swup mount/unmount and page transitions.
+- `motion.js`: GSAP sheets, press feedback and completion motion.
+- `pwa.js` / `sw.js`: installation, update safety and offline shell.
+- `state.js`: data normalization, statistics and migrations.
+
+Use each mounted page's lifecycle for listeners and one-shot frames/timeouts.
+Check cancellation after asynchronous work. Keep the timer's endAt-based clock
+and smooth ring painting; update text and buttons only when their state changes.
+
+## Validation and release
+
+Run `npm run check` and meaningful Chromium/WebKit regressions. Navigation tests
+must prove the document survived a Swup visit. Real service-worker tests require
+Chromium; WebKit has no Playwright service-worker support.
+
+Visual references live in `tests/visual-baselines/`. Do not regenerate them merely
+to pass a test. Inspect expected/actual/diff images and change a reference only for
+an explicitly requested visual change. Preserve CSS source order unless a scoped
+change and visual/state coverage demonstrate that moving a rule is safe.
+
+Keep HTML asset versions and the service-worker cache version synchronized.
+Validate on a branch before merging into main; Cloudflare deploys main.
+Report behavior changes, checks, byte/file deltas and any unresolved limitation.

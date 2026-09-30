@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/runtime.js';
 
 test('all workout complexes are immediately visible on home',async({page})=>{
   await page.goto('/index.html',{waitUntil:'domcontentloaded'});

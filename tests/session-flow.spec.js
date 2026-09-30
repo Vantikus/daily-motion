@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, expectSwup } from './helpers/runtime.js';
 
 test('morning workout completes end-to-end and reaches history',async({page})=>{
   await page.addInitScript(()=>{
@@ -231,6 +231,10 @@ test('finish-early hands timer to rest without exposing two full stages',async({
 });
 
 test('rest skip hands through countdown before starting the next timer',async({page})=>{
+  const time=new Date('2026-09-22T08:00:00+05:00');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.clock.install({time});
+  await page.clock.pauseAt(new Date(time.getTime()+1000));
   await page.addInitScript(()=>{
     localStorage.setItem('dailyMotionState.v3',JSON.stringify({
       version:3,
@@ -240,12 +244,22 @@ test('rest skip hands through countdown before starting the next timer',async({p
     }));
   });
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.locator('#nextButton').click();
+  await expectSwup(page);
+  await page.clock.runFor(32);
+  await page.locator('#nextButton').evaluate(button=>button.click());
   await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','countdown');
   await expect(page.locator('#executionCountdownStage')).toBeVisible();
   await expect(page.locator('#timerCard')).toBeHidden();
 
-  await expect(page.locator('#timerCard')).toBeVisible({timeout:4500});
+  await page.clock.runFor(1000);
+  await expect(page.locator('#countdownValue')).toHaveText('2');
+  await page.clock.runFor(1000);
+  await expect(page.locator('#countdownValue')).toHaveText('1');
+  await page.clock.runFor(1000);
+  await expect(page.locator('#countdownValue')).toHaveText('Старт');
+  // The launch label is held for 160ms before handing off to the timer.
+  await page.clock.runFor(200);
+  await expect(page.locator('#timerCard')).toBeVisible();
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#executionRestStage')).toBeVisible();
   await page.locator('#restSkip').evaluate(button=>button.click());
@@ -256,7 +270,8 @@ test('rest skip hands through countdown before starting the next timer',async({p
   await expect(page.locator('#executionRestStage')).toBeHidden();
   await expect(page.locator('#timerCard')).toBeHidden();
 
-  await expect(page.locator('#timerCard')).toBeVisible({timeout:4500});
+  await page.clock.runFor(3200);
+  await expect(page.locator('#timerCard')).toBeVisible();
   await expect(page.locator('#executionCountdownStage')).toBeHidden();
   await expect(page.locator('#timerState')).toHaveText('Идёт');
 });

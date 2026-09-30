@@ -1,4 +1,39 @@
 (() => {
+  const createLifecycle=()=>{
+    const controller=new AbortController();
+    const timers=new Set();
+    const frames=new Set();
+    const listen=(target,type,handler,options={})=>{
+      if(!controller.signal.aborted)target?.addEventListener(type,handler,{...options,signal:controller.signal});
+    };
+    const defer=(callback,delay=0)=>{
+      if(controller.signal.aborted)return null;
+      const timer=setTimeout(()=>{
+        timers.delete(timer);
+        if(!controller.signal.aborted)callback();
+      },delay);
+      timers.add(timer);
+      return timer;
+    };
+    const cancelDeferred=timer=>{clearTimeout(timer);timers.delete(timer);};
+    const frame=callback=>{
+      if(controller.signal.aborted)return null;
+      const id=requestAnimationFrame(time=>{
+        frames.delete(id);
+        if(!controller.signal.aborted)callback(time);
+      });
+      frames.add(id);
+      return id;
+    };
+    const abort=()=>{
+      controller.abort();
+      timers.forEach(timer=>clearTimeout(timer));
+      frames.forEach(id=>cancelAnimationFrame(id));
+      timers.clear();
+      frames.clear();
+    };
+    return {signal:controller.signal,listen,defer,cancelDeferred,frame,abort};
+  };
   const focusableSelector='button:not([disabled]):not([hidden]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
   const syncPressed=(root,value,attribute='data-value')=>{
@@ -125,7 +160,7 @@
       const next=update({sound:event.target.checked});
       if(next.sound){
         const ready=await audio?.unlock?.();
-        if(ready)audio?.confirm?.();
+        if(ready&&!signal?.aborted)audio?.confirm?.();
       }
     });
     on(elements.autoNext,'change',event=>update({autoNext:event.target.checked}));
@@ -166,6 +201,7 @@
   };
 
   window.DailyMotionUI=Object.freeze({
+    createLifecycle,
     createToast,
     trapFocus,
     createConfirmFlow,

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/runtime.js';
 
 const readTransformY=async locator=>locator.evaluate(element=>{
   const value=getComputedStyle(element).transform;
@@ -93,7 +93,7 @@ test('shared UI and motion ownership stay centralized',async({page})=>{
     pwa:Object.keys(DailyMotionPWA||{}).sort(),
     theme:Object.keys(DailyMotionTheme||{}).sort()
   }));
-  expect(ownership.ui).toEqual(['bindSettingsControls','createConfirmFlow','createToast','trapFocus']);
+  expect(ownership.ui).toEqual(['bindSettingsControls','createConfirmFlow','createLifecycle','createToast','trapFocus']);
   expect(ownership.motion).toEqual(['cleanupSessionMotion','createBottomSheet','playCompletion','prepareCompletion','reducedMotion','tokens']);
   expect(ownership.pwa).toEqual(['getInstallMode','install']);
   expect(ownership.theme).toEqual(['apply','applyAnimated']);

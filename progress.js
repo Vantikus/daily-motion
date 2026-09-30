@@ -1,6 +1,9 @@
 window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.progress=function mountProgress(){
   const Store=window.DailyMotionState;
+  const lifecycle=window.DailyMotionUI.createLifecycle();
+  const {listen}=lifecycle;
+  const exportURLs=new Set();
   const $=selector=>document.querySelector(selector);
   const ROUTINES={morning:{name:'Утро',total:window.DailyMotionProgram.morning.length}};
   const routineKeys=Object.keys(ROUTINES);
@@ -83,22 +86,23 @@ window.DailyMotionPages.progress=function mountProgress(){
 
   renderProgress();
 
-  $('#exportDataBtn').addEventListener('click',()=>{
+  listen($('#exportDataBtn'),'click',()=>{
     const blob=new Blob([Store.exportState()],{type:'application/json;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
+    exportURLs.add(url);
     link.href=url;
     link.download=`daily-motion-backup-${Store.todayKey()}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    lifecycle.defer(()=>{URL.revokeObjectURL(url);exportURLs.delete(url);},1000);
     toast('Резервная копия подготовлена',{storageIndependent:true});
   });
 
   const importInput=$('#importDataInput');
-  $('#importDataBtn').addEventListener('click',()=>importInput.click());
-  importInput.addEventListener('change',async()=>{
+  listen($('#importDataBtn'),'click',()=>importInput.click());
+  listen(importInput,'change',async()=>{
     const file=importInput.files?.[0];
     if(!file)return;
     const approved=confirm('Импорт полностью заменит текущий прогресс и настройки. Продолжить?');
@@ -107,7 +111,9 @@ window.DailyMotionPages.progress=function mountProgress(){
       return;
     }
     try{
-      Store.importState(await file.text());
+      const input=await file.text();
+      if(lifecycle.signal.aborted)return;
+      Store.importState(input);
       window.DailyMotionTheme?.apply?.();
       renderProgress();
       importInput.value='';
@@ -121,6 +127,9 @@ window.DailyMotionPages.progress=function mountProgress(){
   document.documentElement.classList.add('app-ready');
 
   return ()=>{
+    lifecycle.abort();
+    exportURLs.forEach(url=>URL.revokeObjectURL(url));
+    exportURLs.clear();
     toastController.destroy();
   };
 };
