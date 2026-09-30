@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  snapshotPathTemplate: '{testDir}/visual-baselines/{projectName}/{arg}{ext}',
   fullyParallel: false,
   workers: 1,
   timeout: 30_000,
@@ -12,9 +13,9 @@ export default defineConfig({
     video: 'retain-on-failure'
   },
   webServer: {
-    command: 'python3 -m http.server 4173 --bind 127.0.0.1',
+    command: 'node scripts/test-server.mjs',
     url: 'http://127.0.0.1:4173/index.html',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 15_000
   },
   projects: [

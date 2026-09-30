@@ -196,31 +196,34 @@
       badge.classList.add('is-updating');
     };
 
-    const updateNextButton=()=>{
+    const nextButton=$('#nextButton');
+    let lastNextButtonState=null;
+    const paintNextButton=(text,disabled=false,finish=false)=>{
+      const state=[text,disabled,finish].join(':');
+      if(state===lastNextButtonState)return;
+      lastNextButtonState=state;
+      nextButton.textContent=text;
+      nextButton.disabled=disabled;
+      nextButton.classList.toggle('is-finish',finish);
+    };
+    const updateNextButton=(timer=getTimer())=>{
       const current=getCurrent();
-      const button=$('#nextButton');
-      if(!button)return;
-      const timer=getTimer();
+      if(!nextButton)return;
       const isDone=routine.completed||Number(routine.completedUntil||0)>current||timer.remaining===0;
       const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
 
       if(routine.completed){
-        button.textContent='Комплекс завершён';
-        button.disabled=true;
-        button.classList.remove('is-finish');
+        paintNextButton('Комплекс завершён',true);
         return;
       }
 
-      button.disabled=false;
       if(isDone){
         const isFinish=current===exercises.length-1;
-        button.textContent=isFinish?'Завершить комплекс':'Следующее упражнение';
-        button.classList.toggle('is-finish',isFinish);
+        paintNextButton(isFinish?'Завершить комплекс':'Следующее упражнение',false,isFinish);
         return;
       }
 
-      button.classList.remove('is-finish');
-      button.textContent=timer.running?'Открыть таймер':hasProgress?'Продолжить':'Начать упражнение';
+      paintNextButton(timer.running?'Открыть таймер':hasProgress?'Продолжить':'Начать упражнение');
     };
 
     const renderExercise=exercise=>{

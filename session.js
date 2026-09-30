@@ -8,12 +8,12 @@ window.DailyMotionPages.session=function mountSession(){
   if(!SessionView)throw new Error('Daily Motion session view runtime is missing');
 
   // Lifecycle / shared session state.
-  const lifecycle=new AbortController();
-  const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
+  const lifecycle=UI.createLifecycle();
+  const {listen,defer,cancelDeferred,frame}=lifecycle;
   let destroyed=false;
   const $=selector=>document.querySelector(selector);
   const pageLoader=$('#pageLoader');
-  let pageLoaderRevealTimer=setTimeout(()=>{
+  let pageLoaderRevealTimer=defer(()=>{
     pageLoaderRevealTimer=null;
     if(destroyed||!pageLoader)return;
     pageLoader.classList.add('is-visible');
@@ -21,7 +21,7 @@ window.DailyMotionPages.session=function mountSession(){
   },180);
   const finishPageLoader=()=>{
     if(pageLoaderRevealTimer!==null){
-      clearTimeout(pageLoaderRevealTimer);
+      cancelDeferred(pageLoaderRevealTimer);
       pageLoaderRevealTimer=null;
     }
     if(!pageLoader)return;
@@ -40,7 +40,7 @@ window.DailyMotionPages.session=function mountSession(){
         <p>Сейчас полностью прорабатывается основной сценарий тренировки. Состав этого комплекса будет добавлен отдельным этапом.</p>
         <a class="primary-button stage-placeholder__button" href="index.html">На главную</a>
       </div>`;
-    requestAnimationFrame(()=>{
+    frame(()=>{
       if(destroyed)return;
       document.documentElement.classList.add('session-ready');
       finishPageLoader();
@@ -48,7 +48,7 @@ window.DailyMotionPages.session=function mountSession(){
     return ()=>{
       destroyed=true;
       lifecycle.abort();
-      if(pageLoaderRevealTimer!==null)clearTimeout(pageLoaderRevealTimer);
+      if(pageLoaderRevealTimer!==null)cancelDeferred(pageLoaderRevealTimer);
       document.documentElement.classList.remove('session-ready');
       document.body.classList.remove('modal-open');
     };
@@ -76,6 +76,7 @@ window.DailyMotionPages.session=function mountSession(){
   let current=routine.step;
   let tickerFrame=null;
   let wakeLock=null;
+  let wakeLockRequest=0;
   let lastFinishState=current===exercises.length-1;
   let countdownTimer=null;
   let restTimer=null;
@@ -228,14 +229,24 @@ window.DailyMotionPages.session=function mountSession(){
   };
 
   async function requestWakeLock(){
-    if(!('wakeLock' in navigator))return;
-    try{wakeLock=await navigator.wakeLock.request('screen');}catch{}
+    if(destroyed||document.visibilityState==='hidden'||!('wakeLock' in navigator))return;
+    const request=++wakeLockRequest;
+    try{
+      const lock=await navigator.wakeLock.request('screen');
+      if(destroyed||request!==wakeLockRequest||document.visibilityState==='hidden'){
+        await lock.release();
+        return;
+      }
+      wakeLock=lock;
+    }catch{}
   }
 
   async function releaseWakeLock(){
-    if(!wakeLock)return;
-    try{await wakeLock.release();}catch{}
+    wakeLockRequest++;
+    const lock=wakeLock;
     wakeLock=null;
+    if(!lock)return;
+    try{await lock.release();}catch{}
   }
 
   function stopTicker(){
@@ -420,7 +431,7 @@ window.DailyMotionPages.session=function mountSession(){
   }
 
   function afterAnimations(node,callback,{subtree=false}={}){
-    requestAnimationFrame(()=>{
+    frame(()=>{
       if(destroyed)return;
       const animations=node?.getAnimations?.({subtree})||[];
       if(!animations.length){callback();return;}
@@ -550,7 +561,7 @@ window.DailyMotionPages.session=function mountSession(){
     );
     playExecutionStageContent(stage,next,{delay:20});
 
-    setTimeout(()=>{
+    defer(()=>{
       if(token!==stageTransitionToken)return;
       next.classList.remove('is-stage-entering');
     },220);
@@ -586,7 +597,7 @@ window.DailyMotionPages.session=function mountSession(){
       if(settled)return;
       settled=true;
       if(fallbackTimer!==null){
-        clearTimeout(fallbackTimer);
+        cancelDeferred(fallbackTimer);
         fallbackTimer=null;
       }
       if(destroyed||token!==stageTransitionToken||executionStage!=='timer'){
@@ -603,7 +614,7 @@ window.DailyMotionPages.session=function mountSession(){
     exit.finished.then(completeExit,completeExit);
     // WebKit/CI can leave a cancelled WAAPI .finished promise unsettled.
     // This fallback is after the visual exit window and only completes the same state handoff.
-    fallbackTimer=setTimeout(completeExit,Math.max(220,MotionTokens.exitMs+80));
+    fallbackTimer=defer(completeExit,Math.max(220,MotionTokens.exitMs+80));
   }
 
   function showExecution(stage){
@@ -625,7 +636,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     if(!wasVisible&&!prefersReducedMotion()){
       const token=stageTransitionToken;
-      requestAnimationFrame(()=>{
+      frame(()=>{
         if(destroyed||token!==stageTransitionToken||executionStage!==stage||!overlay.classList.contains('is-visible'))return;
         const node=executionStages()[stage];
         animateExecutionNode(
@@ -644,14 +655,14 @@ window.DailyMotionPages.session=function mountSession(){
       :stage==='rest'
         ?$('#restSkip')
         :$('#countdownCancel');
-    requestAnimationFrame(()=>focusTarget?.focus({preventScroll:true}));
+    frame(()=>focusTarget?.focus({preventScroll:true}));
   }
 
   function hideExecution(handoff=null,{afterHidden=null}={}){
     const overlay=$('#executionOverlay');
     if(!overlay){handoff?.();return;}
     if(stageTimer!==null){
-      clearTimeout(stageTimer);
+      cancelDeferred(stageTimer);
       stageTimer=null;
     }
     clearExecutionStageTransition();
@@ -713,7 +724,7 @@ window.DailyMotionPages.session=function mountSession(){
       countdownTimer=null;
     }
     if(stageTimer!==null){
-      clearTimeout(stageTimer);
+      cancelDeferred(stageTimer);
       stageTimer=null;
     }
     if(executionStage==='countdown')hideExecution();
@@ -772,7 +783,7 @@ window.DailyMotionPages.session=function mountSession(){
         animateCountdownValue(countdownValue,{launch:true});
         sound('start');
         haptic('next');
-        stageTimer=setTimeout(()=>{
+        stageTimer=defer(()=>{
           stageTimer=null;
           done();
         },160);
@@ -880,6 +891,13 @@ window.DailyMotionPages.session=function mountSession(){
   }
 
   // Timer state and persistence.
+  const timerNodes={
+    ring:$('#timerRing'),value:$('#timerValue'),label:$('#timerLabel'),
+    card:$('#timerCard'),state:$('#timerState'),toggle:$('#timerToggle')
+  };
+  let lastTimerState=null;
+  let lastTimerProgress=null;
+  const setTimerText=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
   function updateTimerUI(){
     const exercise=exercises[current];
     const timer=timerData(exercise);
@@ -916,19 +934,27 @@ window.DailyMotionPages.session=function mountSession(){
     }
 
     const progress=timer.duration>0?Math.min(100,Math.max(0,(1-preciseRemaining/timer.duration)*100)):0;
-    $('#timerRing').style.setProperty('--timer-progress',progress.toFixed(3));
-    $('#timerValue').textContent=fmt(timer.remaining);
-    const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
-    const isPaused=!timer.running&&timer.remaining>0&&hasProgress;
-    $('#timerLabel').textContent=timer.remaining===0?'готово':isPaused?'пауза':'осталось';
-    $('#timerCard').classList.toggle('is-paused',isPaused);
-    $('#timerState').textContent=timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов';
-    $('#timerToggle').textContent=timer.running?'Пауза':hasProgress?'Продолжить':'Старт';
-    $('#timerRing').classList.toggle('is-running',timer.running);
-    $('#timerRing').classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
-    $('#timerRing').classList.toggle('is-final-three',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=3));
-    $('#timerCard').classList.toggle('is-running',timer.running);
-    sessionView.updateNextButton();
+    const paintedProgress=progress.toFixed(3);
+    if(paintedProgress!==lastTimerProgress){
+      timerNodes.ring.style.setProperty('--timer-progress',paintedProgress);
+      lastTimerProgress=paintedProgress;
+    }
+    const stateKey=[exercise.id,timer.remaining,timer.duration,timer.running,timer.paused,routine.completedUntil,routine.completed].join(':');
+    if(stateKey!==lastTimerState){
+      lastTimerState=stateKey;
+      setTimerText(timerNodes.value,fmt(timer.remaining));
+      const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
+      const isPaused=!timer.running&&timer.remaining>0&&hasProgress;
+      setTimerText(timerNodes.label,timer.remaining===0?'готово':isPaused?'пауза':'осталось');
+      timerNodes.card.classList.toggle('is-paused',isPaused);
+      setTimerText(timerNodes.state,timer.running?'Идёт':timer.remaining===0?'Завершён':hasProgress?'Пауза':'Готов');
+      setTimerText(timerNodes.toggle,timer.running?'Пауза':hasProgress?'Продолжить':'Старт');
+      timerNodes.ring.classList.toggle('is-running',timer.running);
+      timerNodes.ring.classList.toggle('is-ending',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=5));
+      timerNodes.ring.classList.toggle('is-final-three',Boolean(timer.running&&preciseRemaining>0&&preciseRemaining<=3));
+      timerNodes.card.classList.toggle('is-running',timer.running);
+      sessionView.updateNextButton(timer);
+    }
 
     if(justFinished)onTimerFinished();
   }
@@ -977,7 +1003,7 @@ window.DailyMotionPages.session=function mountSession(){
     }
 
     if(direction)sessionView.animateExercise(direction);
-    requestAnimationFrame(()=>$('#exerciseScroll').scrollTo({top:0,behavior:scrollMode}));
+    frame(()=>$('#exerciseScroll').scrollTo({top:0,behavior:scrollMode}));
   }
 
   // Completion flow.
@@ -1020,7 +1046,7 @@ window.DailyMotionPages.session=function mountSession(){
       overlay.setAttribute('aria-hidden','false');
       syncModalState();
       emitReloadSafetyChange();
-      requestAnimationFrame(()=>{
+      frame(()=>{
         Motion?.playCompletion?.(overlay);
         $('#completionTitle').focus({preventScroll:true});
       });
@@ -1034,39 +1060,39 @@ window.DailyMotionPages.session=function mountSession(){
   }
 
   // Interaction wiring.
-  $('#routineMoreButton').addEventListener('click',()=>{
+  listen($('#routineMoreButton'),'click',()=>{
     haptic('tap');
     showRoutineSettingsDialog();
   });
-  $('#routineSettingsClose').addEventListener('click',()=>{
+  listen($('#routineSettingsClose'),'click',()=>{
     haptic('tap');
     hideRoutineSettingsDialog();
   });
-  $('#routineSettingsOverlay').addEventListener('click',event=>{
+  listen($('#routineSettingsOverlay'),'click',event=>{
     if(event.target!==event.currentTarget)return;
     haptic('tap');
     hideRoutineSettingsDialog();
   });
 
-  routineResetBtn.addEventListener('click',()=>{
+  listen(routineResetBtn,'click',()=>{
     haptic('tap');
     showRoutineResetConfirm();
   });
-  routineResetCancel.addEventListener('click',()=>{
+  listen(routineResetCancel,'click',()=>{
     haptic('tap');
     hideRoutineResetConfirm(true,70);
   });
-  routineResetAccept.addEventListener('click',()=>{
+  listen(routineResetAccept,'click',()=>{
     if(routineResetInFlight)return;
     routineResetInFlight=true;
     haptic('tap');
-    setTimeout(()=>{
+    defer(()=>{
       hideRoutineSettingsDialog();
       resetRoutineProgress();
     },120);
   });
 
-  $('#prevButton').addEventListener('click',()=>{
+  listen($('#prevButton'),'click',()=>{
     if(current<=0)return;
     cancelRest();
     cancelCountdown();
@@ -1077,7 +1103,7 @@ window.DailyMotionPages.session=function mountSession(){
     render('back');
   });
 
-  $('#nextButton').addEventListener('click',async()=>{
+  listen($('#nextButton'),'click',async()=>{
     const timer=timerData(exercises[current]);
     const isDone=Number(routine.completedUntil||0)>current||timer.remaining===0;
 
@@ -1093,6 +1119,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     haptic('soft');
     await unlockAudio();
+    if(destroyed)return;
 
     if(timer.running){
       showExecution('timer');
@@ -1114,9 +1141,10 @@ window.DailyMotionPages.session=function mountSession(){
     startCountdown(startTimerNow);
   });
 
-  $('#timerToggle').addEventListener('click',async()=>{
+  listen($('#timerToggle'),'click',async()=>{
     haptic('soft');
     await unlockAudio();
+    if(destroyed)return;
     const timer=timerData(exercises[current]);
 
     if(timer.running){
@@ -1139,7 +1167,7 @@ window.DailyMotionPages.session=function mountSession(){
     animateTimerState();
   });
 
-  $('#timerReset').addEventListener('click',()=>{
+  listen($('#timerReset'),'click',()=>{
     haptic('tap');
     const exercise=exercises[current];
     const timer=timerData(exercise);
@@ -1206,14 +1234,14 @@ window.DailyMotionPages.session=function mountSession(){
     UI.trapFocus(event,modal);
   });
 
-  $('#minusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(-10);});
-  $('#plusTen').addEventListener('click',()=>{haptic('tap');adjustTimer(10);});
-  $('#countdownCancel').addEventListener('click',()=>{
+  listen($('#minusTen'),'click',()=>{haptic('tap');adjustTimer(-10);});
+  listen($('#plusTen'),'click',()=>{haptic('tap');adjustTimer(10);});
+  listen($('#countdownCancel'),'click',()=>{
     cancelCountdown();
     haptic('tap');
   });
 
-  $('#executionClose').addEventListener('click',()=>{
+  listen($('#executionClose'),'click',()=>{
     if($('#timerCard')?.classList.contains('is-finishing-early'))return;
     if(executionStage==='countdown'){
       cancelCountdown();
@@ -1233,7 +1261,7 @@ window.DailyMotionPages.session=function mountSession(){
     haptic('tap');
   });
 
-  $('#executionFinishEarly').addEventListener('click',()=>{
+  listen($('#executionFinishEarly'),'click',()=>{
     const card=$('#timerCard');
     if(card?.classList.contains('is-finishing-early'))return;
 
@@ -1262,15 +1290,16 @@ window.DailyMotionPages.session=function mountSession(){
     return finish;
   };
 
-  $('#restSkip').addEventListener('click',async()=>{
+  listen($('#restSkip'),'click',async()=>{
     const finish=takeRestFinish();
     haptic('next');
     if(finish)finish();
     await unlockAudio();
+    if(destroyed)return;
     startCountdown(startTimerNow);
   });
 
-  $('#restTechnique').addEventListener('click',()=>{
+  listen($('#restTechnique'),'click',()=>{
     const finish=takeRestFinish();
     haptic('soft');
     hideExecution(finish||null);
@@ -1284,14 +1313,14 @@ window.DailyMotionPages.session=function mountSession(){
       :'Необязательно · только для вас';
   }
   document.querySelectorAll('[data-effort]').forEach(button=>{
-    button.addEventListener('click',()=>{
+    listen(button,'click',()=>{
       routine.effort=routine.effort===button.dataset.effort?null:button.dataset.effort;
       Store.save();
       syncEffortButtons();
     });
   });
 
-  $('#completionHome').addEventListener('click',()=>{
+  listen($('#completionHome'),'click',()=>{
     if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true,animation:'completion-home'});return;}
     location.replace('index.html');
   });
@@ -1305,6 +1334,7 @@ window.DailyMotionPages.session=function mountSession(){
         requestWakeLock();
       }
     }else{
+      stopTicker();
       const timer=timerData(exercises[current]);
       if(timer.running){
         accountTimerRun(timer,false);
@@ -1326,7 +1356,7 @@ window.DailyMotionPages.session=function mountSession(){
   listen(window,'beforeunload',persist);
 
   render(null,'auto');
-  requestAnimationFrame(()=>{
+  frame(()=>{
     if(destroyed)return;
     document.documentElement.classList.add('session-ready');
     finishPageLoader();
@@ -1341,8 +1371,8 @@ window.DailyMotionPages.session=function mountSession(){
     persist();
     destroyed=true;
     lifecycle.abort();
-    if(pageLoaderRevealTimer!==null)clearTimeout(pageLoaderRevealTimer);
-    if(stageTimer!==null)clearTimeout(stageTimer);
+    if(pageLoaderRevealTimer!==null)cancelDeferred(pageLoaderRevealTimer);
+    if(stageTimer!==null)cancelDeferred(stageTimer);
     routineResetConfirmFlow.destroy();
     cancelCountdown();
     cancelRest();

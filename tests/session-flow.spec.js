@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/runtime.js';
 
 test('morning workout completes end-to-end and reaches history',async({page})=>{
   await page.addInitScript(()=>{

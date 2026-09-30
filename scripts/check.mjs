@@ -15,6 +15,8 @@ const runtimeFiles=[
 ];
 const behaviorSpecs=[
   'tests/state.spec.js',
+  'tests/lifecycle.spec.js',
+  'tests/visual-matrix.spec.js',
   'tests/pwa.spec.js',
   'tests/navigation.spec.js',
   'tests/session-flow.spec.js',
@@ -24,7 +26,7 @@ const behaviorSpecs=[
   'tests/motion.spec.js',
   'tests/visual.spec.js'
 ];
-const syntaxFiles=[...runtimeFiles,'playwright.config.js',...behaviorSpecs];
+const syntaxFiles=[...runtimeFiles,'playwright.config.js','scripts/test-server.mjs','tests/helpers/runtime.js',...behaviorSpecs];
 
 for(const file of syntaxFiles){
   requireFile(file);

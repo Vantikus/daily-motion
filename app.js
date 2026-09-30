@@ -2,8 +2,8 @@ window.DailyMotionPages=window.DailyMotionPages||{};
 window.DailyMotionPages.home=function mountHome(){
   const Store=window.DailyMotionState;
   const UI=window.DailyMotionUI;
-  const lifecycle=new AbortController();
-  const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
+  const lifecycle=UI.createLifecycle();
+  const {listen,defer,cancelDeferred,frame}=lifecycle;
   const ROUTINES={
     morning:{name:'Утро',title:'Утренняя разминка',minutes:'≈ 10 мин',total:window.DailyMotionProgram.morning.length,icon:'sunrise',available:true},
     day:{name:'День',title:'Дневная разминка',icon:'sun',available:false},
@@ -15,9 +15,11 @@ window.DailyMotionPages.home=function mountHome(){
     sun:`<i class="hi hi-sun" aria-hidden="true"></i>`,
     moon:`<i class="hi hi-moon" aria-hidden="true"></i>`
   };
+  let continueAction=null;
   let today=Store.getDay();
   let state=Store.getState();
   const $=selector=>document.querySelector(selector);
+  listen($('#continueBtn'),'click',()=>continueAction?.());
   const navigate=(href,options={})=>{
     if(window.DailyMotionNavigate){window.DailyMotionNavigate(href,options);return;}
     if(options.replace)location.replace(href);
@@ -61,7 +63,7 @@ window.DailyMotionPages.home=function mountHome(){
         const progress=exerciseCount(key);
         const pct=Math.round(progress/routine.total*100);
         const status=stateItem.completed?'Готово':progress>0||stateItem.activeSeconds>0?'Продолжить':'Начать';
-        button.onclick=()=>go(key);
+        listen(button,'click',()=>go(key));
         button.innerHTML=`
           <span class="qm-icon qm-icon--accent routine-glyph">${routineIcons[routine.icon]||routineIcons.sun}</span>
           <span class="routine-copy"><strong>${routine.name}</strong><small>${routine.minutes} · ${routine.total} упражнений</small></span>
@@ -136,7 +138,7 @@ window.DailyMotionPages.home=function mountHome(){
       :isResuming?saved?'Таймер и прогресс сохранены.':'Не удалось сохранить изменения.':'';
     $('#heroNote').hidden=!allDone&&!isResuming;
     $('#continueBtn').textContent=allDone?'Посмотреть прогресс':isResuming?'Продолжить':'Начать';
-    $('#continueBtn').onclick=()=>allDone?navigate('progress.html',{animation:'progress'}):go(nextKey);
+    continueAction=()=>allDone?navigate('progress.html',{animation:'progress'}):go(nextKey);
     $('#heroProgressText').textContent=`${nextDone} из ${next.total} упражнений`;
     $('#dayProgressValue').textContent=`${nextPercent}%`;
     $('#dayProgressBar').style.width=`${nextPercent}%`;
@@ -283,9 +285,9 @@ window.DailyMotionPages.home=function mountHome(){
   };
 
 
-  settingsBtn.onclick=openSettings;
-  settingsClose.onclick=closeSettings;
-  settingsOverlay.addEventListener('click',event=>{if(event.target===settingsOverlay)closeSettings();});
+  listen(settingsBtn,'click',openSettings);
+  listen(settingsClose,'click',closeSettings);
+  listen(settingsOverlay,'click',event=>{if(event.target===settingsOverlay)closeSettings();});
   listen(document,'keydown',event=>{
     if(!settingsOverlay.classList.contains('is-visible'))return;
     if(event.key==='Escape'){
@@ -296,8 +298,9 @@ window.DailyMotionPages.home=function mountHome(){
     UI.trapFocus(event,settingsOverlay,{wrapUnknown:false});
   });
 
-  installAppBtn.onclick=async()=>{
+  listen(installAppBtn,'click',async()=>{
     const result=await PWA?.install?.();
+    if(lifecycle.signal.aborted)return;
     syncInstallButton();
     if(result?.outcome==='accepted'){
       toast('Установка началась');
@@ -305,31 +308,31 @@ window.DailyMotionPages.home=function mountHome(){
     }
     if(result?.outcome==='manual-ios'){
       iosInstallGuide.hidden=false;
-      requestAnimationFrame(()=>iosInstallGuideClose?.focus({preventScroll:true}));
+      frame(()=>iosInstallGuideClose?.focus({preventScroll:true}));
     }
-  };
-  iosInstallGuideClose?.addEventListener('click',()=>hideInstallGuide(true));
+  });
+  listen(iosInstallGuideClose,'click',()=>hideInstallGuide(true));
   listen(window,'daily-motion-install-change',syncInstallButton);
 
   syncSettings();
   syncInstallButton();
   document.documentElement.classList.add('app-ready');
 
-  resetTodayBtn.onclick=showResetConfirm;
-  resetCancelBtn.onclick=()=>hideResetConfirm(true,70);
-  resetConfirmBtn.onclick=()=>{
+  listen(resetTodayBtn,'click',showResetConfirm);
+  listen(resetCancelBtn,'click',()=>hideResetConfirm(true,70));
+  listen(resetConfirmBtn,'click',()=>{
     if(resetInFlight)return;
     resetInFlight=true;
     Store.resetToday();
     refreshAfterSettingsClose=true;
-    resetCloseTimer=setTimeout(()=>{resetCloseTimer=null;closeSettings();},120);
-  };
+    resetCloseTimer=defer(()=>{resetCloseTimer=null;closeSettings();},120);
+  });
 
   return ()=>{
     lifecycle.abort();
     settingsMotion?.destroy?.();
     resetConfirmFlow.destroy();
-    if(resetCloseTimer!==null)clearTimeout(resetCloseTimer);
+    if(resetCloseTimer!==null)cancelDeferred(resetCloseTimer);
     toastController.destroy();
     document.body.classList.remove('settings-open','modal-open');
     const shell=document.querySelector('.app-shell');

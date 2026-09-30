@@ -20,6 +20,13 @@ jobs:
         run: npm run check
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
+      - name: Capture frozen v221 visual references
+        run: |
+          git fetch --depth=1 origin bd6d12e7ceae863ed89939b4d96be6200a93e217
+          mkdir -p /tmp/dm-visual-v221
+          git archive FETCH_HEAD | tar -x -C /tmp/dm-visual-v221
+          DM_TEST_ROOT=/tmp/dm-visual-v221 DM_TEST_PORT=4174 node scripts/test-server.mjs &
+          DM_CAPTURE_BASELINES=1 DM_BASELINE_URL=http://127.0.0.1:4174 npx playwright test tests/visual-matrix.spec.js
       - name: Browser regression tests
         run: npm run test:e2e
       - name: Upload browser regression artifacts

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/runtime.js';
 
 test('technique accordion exposes semantic headings and labelled regions',async({page})=>{
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});

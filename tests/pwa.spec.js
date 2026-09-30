@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, expectSwup } from './helpers/runtime.js';
 
 test('iOS exposes manual add-to-home-screen guidance',async({page,browserName})=>{
   test.skip(browserName!=='webkit','iOS install guidance is WebKit/iPhone specific');
@@ -141,8 +141,55 @@ test('cached app shell opens progress offline',async({page,context,browserName})
   await page.evaluate(()=>navigator.serviceWorker.ready);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect.poll(()=>page.evaluate(()=>Boolean(navigator.serviceWorker.controller))).toBe(true);
-
+  await expectSwup(page);
+  const token=await page.evaluate(()=>window.__offlineToken=crypto.randomUUID());
+  const vendors=await page.evaluate(async()=>{
+    const keys=await caches.keys();
+    const cache=await caches.open(keys.find(key=>key.startsWith('daily-motion-v')));
+    return (await cache.keys()).filter(request=>request.url.startsWith('https://unpkg.com/')).length;
+  });
+  expect(vendors).toBe(7);
+  await context.unroute('https://unpkg.com/**');
   await context.setOffline(true);
-  await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
+  await page.locator('a[href="progress.html"]').click();
   await expect(page.locator('#historyCalendar')).toBeVisible();
+  expect(await page.evaluate(()=>window.__offlineToken)).toBe(token);
+  await page.locator('[data-nav-back]').click();
+  await expect(page.locator('#todayCard')).toBeVisible();
+  expect(await page.evaluate(()=>window.__offlineToken)).toBe(token);
+});
+
+test('a real waiting worker activates only after the workout becomes safe',async({page,browserName})=>{
+  test.skip(browserName!=='chromium','real service workers require Chromium');
+  await page.addInitScript(()=>{
+    const nativeRegister=navigator.serviceWorker.register.bind(navigator.serviceWorker);
+    window.__registerRealWorker=nativeRegister;
+    navigator.serviceWorker.register=()=>nativeRegister(`/__test__/sw.js?build=${sessionStorage.getItem('dm-test-worker-build')||'one'}`,{scope:'/'});
+    sessionStorage.setItem('dm-test-worker-boots',String(Number(sessionStorage.getItem('dm-test-worker-boots')||0)+1));
+    if(!localStorage.getItem('dailyMotionState.v3')){
+      const date=new Date();
+      const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      localStorage.setItem('dailyMotionState.v3',JSON.stringify({settings:{sound:false},programVersions:{morning:'morning-v3-active-2026-09-19'},days:{[key]:{routines:{morning:{activeSeconds:25,timers:{'cat-cow':{duration:40,remaining:17,paused:true}}}}},'2026-09-10':{routines:{morning:{completed:true,activeSeconds:60}}}}}));
+    }
+  });
+  await page.goto('/session.html?routine=morning',{waitUntil:'load'});
+  await page.evaluate(()=>navigator.serviceWorker.ready);
+  await expect.poll(()=>page.evaluate(()=>Boolean(navigator.serviceWorker.controller))).toBe(true);
+  await page.evaluate(async()=>{
+    sessionStorage.setItem('dm-test-worker-build','two');
+    await window.__registerRealWorker('/__test__/sw.js?build=two',{scope:'/'});
+  });
+  await expect(page.locator('.pwa-banner__text')).toHaveText('Обновление готово — обновить можно после тренировки',{timeout:15000});
+  await expect(page.locator('.pwa-banner__action')).toBeHidden();
+  expect(await page.evaluate(()=>({boots:Number(sessionStorage.getItem('dm-test-worker-boots')),seconds:DailyMotionState.getRoutine('morning').activeSeconds,controller:navigator.serviceWorker.controller.scriptURL}))).toMatchObject({boots:1,seconds:25,controller:expect.stringContaining('build=one')});
+  await page.evaluate(()=>{
+    DailyMotionState.resetRoutine('morning');
+    window.dispatchEvent(new CustomEvent('daily-motion-reload-safety-change'));
+  });
+  await expect(page.locator('.pwa-banner__action')).toBeVisible();
+  await page.locator('.pwa-banner__action').click();
+  await expect.poll(()=>page.evaluate(()=>Number(sessionStorage.getItem('dm-test-worker-boots')))).toBe(2);
+  await expect.poll(()=>page.evaluate(()=>navigator.serviceWorker.controller.scriptURL)).toContain('build=two');
+  expect(await page.evaluate(()=>DailyMotionState.getCompletedRoutineCount(['morning']))).toBe(1);
+  await expect.poll(()=>page.evaluate(async()=>await caches.keys())).not.toContain('daily-motion-test-one');
 });
