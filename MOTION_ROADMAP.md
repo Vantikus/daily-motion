@@ -6,7 +6,7 @@
 
 ### GSAP Core
 Используется для:
-- Swup page transitions;
+- Swup page transitions in browsers without native View Transitions;
 - completion timeline;
 - mobile bottom-sheet open/close/drag settling;
 - shared press feedback.
@@ -38,7 +38,10 @@ CSS не должен запускать параллельную entrance/exit 
 - reduced-motion settled states.
 
 ### Theme
-View Transition API используется только для theme switch. Это не page-navigation owner.
+View Transition API используется для theme switch и непрерывных page snapshots.
+Навигация выбирает один owner: native snapshots либо GSAP fallback.
+Page transition длится 240ms; fallback — 80ms exit + 180–200ms enter.
+Во время page snapshots внутренний reveal упражнений отключён.
 
 ## Frozen motion contracts
 

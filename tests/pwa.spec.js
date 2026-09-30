@@ -146,10 +146,9 @@ test('cached app shell opens progress offline',async({page,context,browserName})
   const vendors=await page.evaluate(async()=>{
     const keys=await caches.keys();
     const cache=await caches.open(keys.find(key=>key.startsWith('daily-motion-v')));
-    return (await cache.keys()).filter(request=>request.url.startsWith('https://unpkg.com/')).length;
+    return (await cache.keys()).filter(request=>new URL(request.url).pathname.startsWith('/vendor/swup/')).length;
   });
   expect(vendors).toBe(7);
-  await context.unroute('https://unpkg.com/**');
   await context.setOffline(true);
   await page.locator('a[href="progress.html"]').click();
   await expect(page.locator('#historyCalendar')).toBeVisible();

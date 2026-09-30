@@ -1,12 +1,12 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const motionTokens=window.DailyMotionMotion?.tokens||{};
-  const pageExit=(motionTokens.exitMs||140)/1000;
-  const pageEnter=(motionTokens.enterMs||220)/1000;
+  const pageExit=.08;
+  const pageEnter=.18;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
+  let backPending=false;
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
@@ -71,7 +71,7 @@
 
   const runTween=(phase,{from,to,duration,ease})=>{
     const container=currentContainer();
-    if(!container||!window.gsap||reducedMotion.matches)return Promise.resolve();
+    if(!container||!window.gsap||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
     window.gsap.killTweensOf(container);
     container.style.willChange='opacity, transform';
     if(phase==='in')window.gsap.set(container,from);
@@ -81,6 +81,7 @@
         duration,
         ease,
         overwrite:true,
+        onInterrupt:resolve,
         onComplete:()=>{
           if(phase==='in')window.gsap.set(container,{clearProps:'opacity,transform,willChange'});
           resolve();
@@ -128,13 +129,13 @@
   ];
 
   const SWUP_RUNTIME=[
-    ['Swup','https://unpkg.com/swup@4.10.0/dist/Swup.umd.js'],
-    ['SwupPreloadPlugin','https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js'],
-    ['SwupHeadPlugin','https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js'],
-    ['SwupBodyClassPlugin','https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js'],
-    ['SwupA11yPlugin','https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js'],
-    ['SwupJsPlugin','https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js'],
-    ['SwupScrollPlugin','https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js']
+    ['Swup','/vendor/swup/swup-4.10.0.js'],
+    ['SwupPreloadPlugin','/vendor/swup/preload-3.2.12.js'],
+    ['SwupHeadPlugin','/vendor/swup/head-2.3.1.js'],
+    ['SwupBodyClassPlugin','/vendor/swup/body-class-3.3.0.js'],
+    ['SwupA11yPlugin','/vendor/swup/a11y-5.2.1.js'],
+    ['SwupJsPlugin','/vendor/swup/js-3.2.0.js'],
+    ['SwupScrollPlugin','/vendor/swup/scroll-4.0.0.js']
   ];
   const requiredGlobals=SWUP_RUNTIME.map(([name])=>name);
   let runtimePromise=null;
@@ -180,7 +181,7 @@
         animationSelector:false,
         animateHistoryBrowsing:true,
         cache:true,
-        native:false,
+        native:true,
         timeout:8000,
         linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
         plugins:[
@@ -207,6 +208,7 @@
     window.DailyMotionNavigate=(href,{replace=false,animation}={})=>{
       const url=new URL(href,location.href);
       if(url.origin!==location.origin){location.assign(url.href);return;}
+      if(swup.navigating&&swup.visit.to.url+swup.visit.to.hash===url.pathname+url.search+url.hash)return;
       swup.navigate(url.pathname+url.search+url.hash,{
         history:replace?'replace':'push',
         animation
@@ -214,15 +216,27 @@
     };
 
     window.DailyMotionBack=(fallback='index.html')=>{
+      if(backPending)return;
       const state=history.state;
       if(state?.source==='swup'&&Number(state.index)>1){
+        backPending=true;
         history.back();
         return;
       }
       window.DailyMotionNavigate(fallback,{replace:true,animation:'back-home'});
     };
 
+    const finishTransition=()=>{
+      backPending=false;
+      document.documentElement.classList.remove('dm-page-transition','dm-page-back');
+      clearPageMotion();
+    };
+
     swup.hooks.on('visit:start',visit=>{
+      visit.animation.wait=true;
+      visit.animation.native=Boolean(document.startViewTransition)&&!reducedMotion.matches;
+      document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
+      document.documentElement.classList.toggle('dm-page-back',visit.animation.name==='back-home'||(visit.history.popstate&&visit.history.direction==='backwards'));
       if(visit.history.popstate&&visit.history.direction==='backwards'){
         visit.animation.name='back-home';
       }
@@ -236,7 +250,8 @@
     swup.hooks.before('content:replace',()=>unmountPage());
     swup.hooks.on('content:replace',()=>mountPage());
     swup.hooks.on('page:view',()=>preloadLikelyRoutes());
-    swup.hooks.on('visit:abort',()=>clearPageMotion());
+    swup.hooks.on('visit:end',finishTransition);
+    swup.hooks.on('visit:abort',finishTransition);
     swup.hooks.on('animation:skip',()=>clearPageMotion());
 
     preloadLikelyRoutes();
@@ -260,7 +275,30 @@
     return runtimePromise;
   };
 
-  window.DailyMotionNavigate=fallbackNavigate;
+  let pendingNavigation=null;
+  const navigateWhenReady=(href,options={})=>{
+    const request={href,options};
+    pendingNavigation=request;
+    return ensureSwup().then(ready=>{
+      if(pendingNavigation!==request)return;
+      pendingNavigation=null;
+      if(ready)window.DailyMotionNavigate(href,options);
+      else fallbackNavigate(href,options);
+    });
+  };
+
+  // Keep a first tap in this document while local navigation scripts finish.
+  document.addEventListener('click',event=>{
+    if(swup||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
+    if(!link||link.target&&link.target!=='_self')return;
+    const url=new URL(link.href,location.href);
+    if(url.origin!==location.origin||!/(?:index|session|progress)\.html$/.test(url.pathname))return;
+    event.preventDefault();
+    navigateWhenReady(url.pathname+url.search+url.hash);
+  },true);
+
+  window.DailyMotionNavigate=navigateWhenReady;
   window.DailyMotionBack=fallbackBack;
   installBackHandler();
   mountPage();

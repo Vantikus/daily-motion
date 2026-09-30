@@ -74,11 +74,111 @@ test('Swup navigation shell is present on every page',async({page})=>{
   }
 });
 
+test.describe('unavailable local runtime',()=>{
+  test.use({serviceWorkers:'block'});
 test('native navigation remains usable when the Swup runtime cannot load',async({page})=>{
-  await page.route('https://unpkg.com/**',route=>route.abort());
+  await page.route('**/vendor/swup/**',route=>route.abort());
   await page.goto('/index.html');
   const token=await page.evaluate(()=>window.__fallbackToken=crypto.randomUUID());
   await page.locator('a[href="progress.html"]').click();
   await expect(page.locator('#historyCalendar')).toBeVisible();
   expect(await page.evaluate(()=>window.__fallbackToken)).not.toBe(token);
+});
+});
+
+for(const native of [true,false]){
+  test(`rapid interrupted visits settle with ${native?'browser snapshots':'fallback animation'}`,async({page})=>{
+    await page.addInitScript(native=>{
+      if(!native)document.startViewTransition=undefined;
+      window.__snapshots=0;
+      if(document.startViewTransition){
+        const start=document.startViewTransition.bind(document);
+        document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
+      }
+    },native);
+    await page.goto('/index.html');
+    await expectSwup(page);
+    const token=await page.evaluate(()=>window.__rapidToken=crypto.randomUUID());
+    await page.evaluate(()=>{
+      DailyMotionNavigate('progress.html',{animation:'progress'});
+      setTimeout(()=>DailyMotionNavigate('session.html?routine=morning&resume=1',{animation:'workout'}),30);
+    });
+    await expect(page.locator('#exerciseTitle')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+    await expect(page.locator('#swup')).toHaveCSS('opacity','1');
+    expect(await page.evaluate(()=>window.__rapidToken)).toBe(token);
+    if(native&&await page.evaluate(()=>Boolean(document.startViewTransition))){
+      expect(await page.evaluate(()=>window.__snapshots)).toBeGreaterThan(0);
+    }
+    await page.evaluate(()=>{DailyMotionBack();DailyMotionBack();});
+    await expect(page).not.toHaveURL(/session\.html/);
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+    await expect(page.locator('#swup')).toHaveCSS('opacity','1');
+    expect(await page.evaluate(()=>window.__rapidToken)).toBe(token);
+  });
+}
+
+test('local navigation works when external scripts are blocked',async({page})=>{
+  await page.route('https://**',route=>route.abort());
+  await page.goto('/index.html');
+  await expectSwup(page);
+  const token=await page.evaluate(()=>window.__localToken=crypto.randomUUID());
+  await page.locator('a[href="progress.html"]').click();
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  expect(await page.evaluate(()=>window.__localToken)).toBe(token);
+});
+
+test('reduced motion skips page snapshots',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.addInitScript(()=>{
+    window.__snapshots=0;
+    if(document.startViewTransition){
+      const start=document.startViewTransition.bind(document);
+      document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
+    }
+  });
+  await page.goto('/index.html');
+  await expectSwup(page);
+  await page.locator('a[href="progress.html"]').click();
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
+});
+
+
+test('a first tap waits for local navigation instead of reloading the document',async({page})=>{
+  await page.route('**/vendor/swup/**',async route=>{
+    await new Promise(resolve=>setTimeout(resolve,350));
+    await route.continue();
+  });
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  const token=await page.evaluate(()=>window.__firstTapToken=crypto.randomUUID());
+  await page.locator('a[href="progress.html"]').evaluate(link=>link.click());
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  expect(await page.evaluate(()=>window.__firstTapToken)).toBe(token);
+});
+
+
+test('the incoming workout snapshot contains visible exercise content',async({page})=>{
+  await page.addInitScript(()=>{
+    const start=document.startViewTransition?.bind(document);
+    if(!start)return;
+    document.startViewTransition=(...args)=>{
+      const transition=start(...args);
+      transition.ready.then(()=>{
+        const title=document.querySelector('#exerciseTitle');
+        window.__incomingSnapshot={title:title?.textContent,opacity:title?getComputedStyle(title).opacity:null};
+      });
+      return transition;
+    };
+  });
+  await page.goto('/index.html');
+  test.skip(!await page.evaluate(()=>Boolean(document.startViewTransition)),'browser snapshots are unavailable');
+  await expectSwup(page);
+  await page.evaluate(()=>DailyMotionNavigate('session.html?routine=morning&resume=1',{animation:'workout'}));
+  await expect.poll(()=>page.evaluate(()=>window.__incomingSnapshot?.title)).toBeTruthy();
+  expect(await page.evaluate(()=>window.__incomingSnapshot.opacity)).toBe('1');
+  await expect(page.locator('html')).not.toHaveClass(/dm-page-transition/);
 });

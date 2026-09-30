@@ -122,15 +122,16 @@ if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.e
 }
 
 const swupVendorUrls=[
-  'https://unpkg.com/swup@4.10.0/dist/Swup.umd.js',
-  'https://unpkg.com/@swup/preload-plugin@3.2.12/dist/index.umd.js',
-  'https://unpkg.com/@swup/head-plugin@2.3.1/dist/index.umd.js',
-  'https://unpkg.com/@swup/body-class-plugin@3.3.0/dist/index.umd.js',
-  'https://unpkg.com/@swup/a11y-plugin@5.2.1/dist/index.umd.js',
-  'https://unpkg.com/@swup/js-plugin@3.2.0/dist/index.umd.js',
-  'https://unpkg.com/@swup/scroll-plugin@4.0.0/dist/index.umd.js'
+  '/vendor/swup/swup-4.10.0.js',
+  '/vendor/swup/preload-3.2.12.js',
+  '/vendor/swup/head-2.3.1.js',
+  '/vendor/swup/body-class-3.3.0.js',
+  '/vendor/swup/a11y-5.2.1.js',
+  '/vendor/swup/js-3.2.0.js',
+  '/vendor/swup/scroll-4.0.0.js'
 ];
 for(const url of swupVendorUrls){
+  if(!existsSync(join(root,url.slice(1))))fail(`Local Swup asset missing ${url}`);
   if(!navigation.includes(`'${url}'`))fail(`navigation.js: pinned Swup runtime missing ${url}`);
   if(!sw.includes(`'${url}'`))fail(`sw.js: Swup runtime not cached ${url}`);
 }
