@@ -25,6 +25,20 @@ test('iOS exposes manual add-to-home-screen guidance',async({page,browserName})=
   await expect(guide).toContainText('Открывать как веб‑приложение');
 });
 
+
+
+test('PWA update notices a worker that started installing during registration',async({page})=>{
+  await page.addInitScript(()=>{
+    const workerListeners={};
+    const worker={state:'installing',addEventListener(type,callback){(workerListeners[type]??=[]).push(callback);},postMessage(){}};
+    const registration={waiting:null,installing:worker,addEventListener(){},async update(){}};
+    const serviceWorker={controller:{},async register(){setTimeout(()=>{worker.state='installed';registration.waiting=worker;for(const callback of workerListeners.statechange||[])callback(new Event('statechange'));},50);return registration;},addEventListener(){}};
+    Object.defineProperty(navigator,'serviceWorker',{configurable:true,value:serviceWorker});
+  });
+  await page.goto('/index.html',{waitUntil:'load'});
+  await expect(page.locator('.pwa-banner__text')).toHaveText('Доступна новая версия Daily Motion');
+  await expect(page.locator('.pwa-banner__action')).toHaveText('Обновить');
+});
 test('PWA update waits until an in-progress workout is safe',async({page})=>{
   await page.addInitScript(()=>{
     const now=new Date();

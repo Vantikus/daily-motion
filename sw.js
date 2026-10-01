@@ -1,4 +1,4 @@
-const CACHE_NAME='daily-motion-v227';
+const CACHE_NAME='daily-motion-v228';
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
   '/vendor/swup/preload-3.2.12.js',
@@ -12,10 +12,10 @@ const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
-  '/v226.css?v=227',
-  '/v226.js?v=227',
+  '/v226.css?v=228',
+  '/v226.js?v=228',
   '/progress.html',
-  '/heroicons.css?v=226',
+  '/heroicons.css?v=228',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
   '/vendor/heroicons/chart-bar.svg',
@@ -46,20 +46,20 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=226',
-  '/theme.js?v=226',
-  '/program.js?v=226',
-  '/state.js?v=226',
-  '/audio.js?v=226',
-  '/gsap.min.js?v=226',
-  '/motion.js?v=226',
-  '/ui.js?v=226',
-  '/session-view.js?v=226',
-  '/pwa.js?v=226',
-  '/app.js?v=226',
-  '/session.js?v=226',
-  '/progress.js?v=226',
-  '/navigation.js?v=226',
+  '/styles.css?v=228',
+  '/theme.js?v=228',
+  '/program.js?v=228',
+  '/state.js?v=228',
+  '/audio.js?v=228',
+  '/gsap.min.js?v=228',
+  '/motion.js?v=228',
+  '/ui.js?v=228',
+  '/session-view.js?v=228',
+  '/pwa.js?v=228',
+  '/app.js?v=228',
+  '/session.js?v=228',
+  '/progress.js?v=228',
+  '/navigation.js?v=228',
   '/manifest.webmanifest',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
@@ -94,6 +94,17 @@ const cacheStatic=async request=>{
   const response=await fetch(request);
   if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
   return response;
+};
+
+const networkFreshStatic=async request=>{
+  const cache=await caches.open(CACHE_NAME);
+  try{
+    const response=await fetch(request,{cache:'no-store'});
+    if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
+    return response;
+  }catch{
+    return (await cache.match(request))||Response.error();
+  }
 };
 
 const navigationFallback=pathname=>{
@@ -143,6 +154,11 @@ self.addEventListener('fetch',event=>{
 
   if(request.mode==='navigate'){
     event.respondWith(networkNavigation(request));
+    return;
+  }
+
+  if(url.pathname==='/pwa.js'){
+    event.respondWith(networkFreshStatic(request));
     return;
   }
 

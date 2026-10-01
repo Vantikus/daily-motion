@@ -8,6 +8,7 @@
   let updateCheckTimer=null;
   let updateCheckInFlight=false;
   let banner=null;
+  const watchedWorkers=new WeakSet();
   const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
   const isIOS=()=>{
     const ua=navigator.userAgent||'';
@@ -78,16 +79,22 @@
     });
   };
 
+  const watchWorker=worker=>{
+    if(!worker||watchedWorkers.has(worker))return;
+    watchedWorkers.add(worker);
+    const sync=()=>{
+      if(worker.state!=='installed'||!navigator.serviceWorker.controller)return;
+      showUpdate(registration?.waiting||worker);
+    };
+    worker.addEventListener('statechange',sync);
+    sync();
+  };
+
   const watchRegistration=reg=>{
     registration=reg;
     if(reg.waiting&&navigator.serviceWorker.controller)showUpdate(reg.waiting);
-    reg.addEventListener('updatefound',()=>{
-      const worker=reg.installing;
-      if(!worker)return;
-      worker.addEventListener('statechange',()=>{
-        if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate(worker);
-      });
-    });
+    watchWorker(reg.installing);
+    reg.addEventListener('updatefound',()=>watchWorker(reg.installing));
   };
 
   const checkForUpdate=async()=>{
@@ -96,6 +103,7 @@
     try{
       await registration.update();
       if(registration.waiting&&navigator.serviceWorker.controller)showUpdate(registration.waiting);
+      else watchWorker(registration.installing);
     }catch{}
     finally{
       updateCheckInFlight=false;
@@ -110,7 +118,7 @@
   if('serviceWorker' in navigator){
     window.addEventListener('load',async()=>{
       try{
-        const reg=await navigator.serviceWorker.register(SW_URL);
+        const reg=await navigator.serviceWorker.register(SW_URL,{updateViaCache:'none'});
         watchRegistration(reg);
         startUpdateChecks();
         setTimeout(checkForUpdate,1200);
