@@ -205,11 +205,19 @@ test('technique accordion keeps at most one section expanded',async({page})=>{
   await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
 });
 
-test('expanded technique stays fully above workout navigation on compact screens',async({page})=>{
+test('expanded technique starts scrolling immediately and stays above workout navigation',async({page})=>{
   await page.setViewportSize({width:360,height:640});
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
 
-  await page.locator('#detail-progression-toggle').click();
+  const immediateDelta=await page.evaluate(()=>{
+    const scroll=document.querySelector('#exerciseScroll');
+    const toggle=document.querySelector('#detail-progression-toggle');
+    const before=scroll.scrollTop;
+    toggle.click();
+    return scroll.scrollTop-before;
+  });
+
+  expect(immediateDelta).toBeGreaterThan(0);
   await expect(page.locator('#detail-progression-toggle')).toHaveAttribute('aria-expanded','true');
   await expect.poll(()=>page.evaluate(()=>{
     const scroll=document.querySelector('#exerciseScroll').getBoundingClientRect();

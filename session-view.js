@@ -9,6 +9,7 @@
 
     const detailAnimations=new WeakMap();
     const detailTimers=new Set();
+    let detailScrollFrame=0;
     const on=(node,type,handler,options={})=>{
       if(!node)return;
       node.addEventListener(type,handler,signal?{...options,signal}:options);
@@ -50,29 +51,68 @@
       }
     };
 
-    const revealDetailCard=card=>{
+    const scrollDetailBy=(scroll,delta)=>{
+      if(detailScrollFrame){
+        cancelAnimationFrame(detailScrollFrame);
+        detailScrollFrame=0;
+      }
+      if(reducedMotion()){
+        scroll.scrollTop+=delta;
+        return;
+      }
+
+      const target=scroll.scrollTop+delta;
+      const immediate=Math.sign(delta)*Math.min(Math.abs(delta),Math.max(8,Math.abs(delta)*.1));
+      scroll.scrollTop+=immediate;
+      const start=scroll.scrollTop;
+      const distance=target-start;
+      if(Math.abs(distance)<=1)return;
+
+      const started=performance.now();
+      const duration=180;
+      const tick=now=>{
+        const progress=Math.min(1,(now-started)/duration);
+        const eased=1-Math.pow(1-progress,3);
+        scroll.scrollTop=start+distance*eased;
+        if(progress<1){
+          detailScrollFrame=requestAnimationFrame(tick);
+        }else{
+          detailScrollFrame=0;
+        }
+      };
+      detailScrollFrame=requestAnimationFrame(tick);
+    };
+
+    const revealDetailCard=(card,{heightDelta=0,topDelta=0,behavior}={})=>{
       const scroll=$('#exerciseScroll');
       if(!scroll||!card)return;
 
       const scrollBox=scroll.getBoundingClientRect();
       const cardBox=card.getBoundingClientRect();
+      const projectedTop=cardBox.top+topDelta;
+      const projectedHeight=Math.max(0,cardBox.height+heightDelta);
+      const projectedBottom=projectedTop+projectedHeight;
       const topGuard=12;
       const bottomGuard=16;
       const availableHeight=scrollBox.height-topGuard-bottomGuard;
       let delta=0;
 
-      if(cardBox.height<=availableHeight){
-        if(cardBox.bottom>scrollBox.bottom-bottomGuard){
-          delta=cardBox.bottom-(scrollBox.bottom-bottomGuard);
-        }else if(cardBox.top<scrollBox.top+topGuard){
-          delta=cardBox.top-(scrollBox.top+topGuard);
+      if(projectedHeight<=availableHeight){
+        if(projectedBottom>scrollBox.bottom-bottomGuard){
+          delta=projectedBottom-(scrollBox.bottom-bottomGuard);
+        }else if(projectedTop<scrollBox.top+topGuard){
+          delta=projectedTop-(scrollBox.top+topGuard);
         }
-      }else if(cardBox.top<scrollBox.top+topGuard||cardBox.bottom>scrollBox.bottom-bottomGuard){
-        delta=cardBox.top-(scrollBox.top+topGuard);
+      }else if(projectedTop<scrollBox.top+topGuard||projectedBottom>scrollBox.bottom-bottomGuard){
+        delta=projectedTop-(scrollBox.top+topGuard);
       }
 
       if(Math.abs(delta)>1){
-        scroll.scrollBy({top:delta,behavior:reducedMotion()?'auto':'smooth'});
+        if(behavior==='auto'||reducedMotion()){
+          scroll.scrollTop+=delta;
+        }else{
+          scrollDetailBy(scroll,delta);
+        }
       }
     };
 
@@ -152,7 +192,6 @@
           panel.style.opacity='1';
           inner.style.opacity='1';
           inner.style.transform='translate3d(0,0,0)';
-          revealDetailCard(card);
         }else{
           card.classList.remove('is-open');
           panel.style.height='0px';
@@ -176,6 +215,24 @@
         if(!card)return;
         const willOpen=!card.classList.contains('is-open');
         if(willOpen){
+          const panel=card.querySelector('.detail-card__panel');
+          const inner=card.querySelector('.detail-card__inner');
+          const currentHeight=panel?.getBoundingClientRect().height||0;
+          const targetHeight=inner?.scrollHeight||currentHeight;
+          let closingShift=0;
+
+          document.querySelectorAll('.detail-card.is-open').forEach(other=>{
+            if(other===card)return;
+            if(other.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING){
+              closingShift+=other.querySelector('.detail-card__panel')?.getBoundingClientRect().height||0;
+            }
+          });
+
+          revealDetailCard(card,{
+            heightDelta:targetHeight-currentHeight,
+            topDelta:-closingShift
+          });
+
           document.querySelectorAll('.detail-card.is-open').forEach(other=>{
             if(other!==card)animateDetailState(other,false);
           });
