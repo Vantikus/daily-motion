@@ -9,3 +9,12 @@
 .session-nav .nav-button{
   height:48px;
 }
+
+
+/* iPhone installed PWA: move controls lower and keep breathing room above */
+@media (display-mode: standalone) {
+  .session-nav{
+    padding-top:18px;
+    padding-bottom:max(2px, env(safe-area-inset-bottom,0px));
+  }
+}
