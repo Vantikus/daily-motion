@@ -22,19 +22,3 @@
   }
 }
 
-/* v231 — distinguish previous exercise from screen back */
-.nav-prev-icon{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:1px;
-}
-.nav-prev-icon>span{
-  width:2px;
-  height:16px;
-  border-radius:2px;
-  background:currentColor;
-}
-.nav-prev-icon>.hi{
-  font-size:1.15em;
-}
