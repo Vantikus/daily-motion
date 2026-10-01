@@ -223,7 +223,9 @@ test('expanded technique starts scrolling immediately and stays above workout na
   });
   await page.locator('#detail-progression-toggle').click();
   await expect(page.locator('#detail-progression-toggle')).toHaveAttribute('aria-expanded','true');
-  await expect.poll(()=>page.evaluate(()=>window.__techniqueScrollAt?window.__techniqueScrollAt-window.__techniqueClickAt:Infinity),{timeout:220}).toBeLessThan(220);
+  await page.waitForFunction(()=>window.__techniqueScrollAt>0,null,{polling:'raf',timeout:180});
+  const scrollDelay=await page.evaluate(()=>window.__techniqueScrollAt-window.__techniqueClickAt);
+  expect(scrollDelay).toBeLessThan(180);
   await expect.poll(()=>page.evaluate(()=>{
     const scroll=document.querySelector('#exerciseScroll').getBoundingClientRect();
     const card=document.querySelector('#detail-progression-toggle').closest('.detail-card').getBoundingClientRect();

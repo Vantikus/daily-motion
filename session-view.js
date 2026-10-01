@@ -9,6 +9,7 @@
 
     const detailAnimations=new WeakMap();
     const detailTimers=new Set();
+    let detailScrollFrame=0;
     const on=(node,type,handler,options={})=>{
       if(!node)return;
       node.addEventListener(type,handler,signal?{...options,signal}:options);
@@ -50,6 +51,38 @@
       }
     };
 
+    const scrollDetailBy=(scroll,delta)=>{
+      if(detailScrollFrame){
+        cancelAnimationFrame(detailScrollFrame);
+        detailScrollFrame=0;
+      }
+      if(reducedMotion()){
+        scroll.scrollTop+=delta;
+        return;
+      }
+
+      const target=scroll.scrollTop+delta;
+      const immediate=Math.sign(delta)*Math.min(Math.abs(delta),Math.max(8,Math.abs(delta)*.1));
+      scroll.scrollTop+=immediate;
+      const start=scroll.scrollTop;
+      const distance=target-start;
+      if(Math.abs(distance)<=1)return;
+
+      const started=performance.now();
+      const duration=180;
+      const tick=now=>{
+        const progress=Math.min(1,(now-started)/duration);
+        const eased=1-Math.pow(1-progress,3);
+        scroll.scrollTop=start+distance*eased;
+        if(progress<1){
+          detailScrollFrame=requestAnimationFrame(tick);
+        }else{
+          detailScrollFrame=0;
+        }
+      };
+      detailScrollFrame=requestAnimationFrame(tick);
+    };
+
     const revealDetailCard=(card,{heightDelta=0,topDelta=0,behavior}={})=>{
       const scroll=$('#exerciseScroll');
       if(!scroll||!card)return;
@@ -75,7 +108,11 @@
       }
 
       if(Math.abs(delta)>1){
-        scroll.scrollBy({top:delta,behavior:behavior||(reducedMotion()?'auto':'smooth')});
+        if(behavior==='auto'||reducedMotion()){
+          scroll.scrollTop+=delta;
+        }else{
+          scrollDetailBy(scroll,delta);
+        }
       }
     };
 
