@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22.16.0
@@ -18,6 +20,10 @@ jobs:
         run: npm install --no-audit --no-fund --package-lock=false
       - name: Static checks
         run: npm run check
+      - name: Release version guard
+        env:
+          RELEASE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/check-release-bump.mjs "$RELEASE_BASE"
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
       - name: Browser regression tests
