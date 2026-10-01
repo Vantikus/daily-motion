@@ -63,3 +63,40 @@
     font-size:clamp(1.8125rem,8.2vw,2rem)!important;
   }
 }
+
+/* v234 — Manrope workout hierarchy */
+.exercise-head h1{
+  font-weight:680;
+  letter-spacing:-.04em;
+}
+.exercise-head p{
+  font-weight:350;
+}
+.exercise-facts span{
+  font-weight:500!important;
+}
+.exercise-facts strong{
+  font-weight:600!important;
+}
+.technique-key__label{
+  font-weight:600;
+}
+.technique-key strong{
+  font-weight:450;
+}
+.details-title{
+  font-weight:650;
+}
+.detail-card__toggle{
+  font-weight:550!important;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  font-weight:350;
+}
+.session-nav .nav-button--back{
+  font-weight:500;
+}
+.session-nav .nav-button--next{
+  font-weight:700;
+}
