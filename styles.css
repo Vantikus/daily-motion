@@ -1,3 +1,11 @@
+@font-face{
+  font-family:"Manrope";
+  src:url("fonts/manrope-variable.woff2") format("woff2");
+  font-style:normal;
+  font-weight:200 800;
+  font-display:swap;
+}
+
 /* Daily Motion stylesheet
    Order is part of the visual contract. Search the component selector first;
    responsive and state variants stay at their original cascade positions.
@@ -87,7 +95,7 @@
   --base:var(--motion-base);
   --slow:var(--motion-slow);
   --ease:var(--motion-ease-standard);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif;
+  font-family:"Manrope",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif;
   color:var(--text);
   background:var(--bg);
 }
@@ -231,7 +239,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .completion-overlay{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:22px;background:rgba(244,245,241,.94);transition:opacity 120ms cubic-bezier(.2,.72,.2,1),visibility 120ms ease}
 .completion-overlay.is-visible{opacity:1;visibility:visible}
 .completion-card{background:#fff;display:grid;justify-items:center;text-align:center;}
-.completion-check{border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);font-weight:900}
+.completion-check{border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);font-weight:800}
 .completion-card p{margin:0;color:var(--muted);font-size:var(--font-size-sm)}
 .completion-button{width:100%;margin-top:8px;min-height:var(--control-primary)}
 .stage-placeholder{min-height:min(520px,70vh);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;max-width:580px;margin:auto}
@@ -283,7 +291,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .ios-install-guide__title{font-size:var(--font-size-md);line-height:1.35;letter-spacing:-.01em}
 .ios-install-guide__steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .ios-install-guide__steps li{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:start;gap:10px}
-.ios-install-guide__steps li>span{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:var(--font-size-xs);font-weight:850}
+.ios-install-guide__steps li>span{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:var(--font-size-xs);font-weight:800}
 .ios-install-guide__steps p{margin:3px 0 0;color:#4b554d;font-size:var(--font-size-xs);line-height:1.45}
 .ios-install-guide__steps b{color:var(--text);font-weight:800}
 .ios-install-guide__done{appearance:none;min-height:var(--component-hit);border:1px solid var(--component-border);border-radius:12px;background:var(--component-surface);color:var(--text);font-size:var(--font-size-xs);font-weight:800;cursor:pointer}
@@ -292,7 +300,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .pwa-banner{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6000;width:min(520px,calc(100% - 24px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px 11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#171917;color:#fff;box-shadow:0 16px 42px rgba(20,27,23,.2);opacity:0;visibility:hidden;transform:translate(-50%,10px);transition:opacity var(--motion-exit) var(--motion-ease-exit),transform var(--motion-exit) var(--motion-ease-exit),visibility var(--motion-exit) linear}
 .pwa-banner.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0);transition-duration:var(--motion-enter),var(--motion-enter),0ms;transition-timing-function:var(--motion-ease-enter),var(--motion-ease-enter),linear}
 .pwa-banner__text{font-size:var(--font-size-xs);line-height:1.4;font-weight:700}
-.pwa-banner__action{appearance:none;flex:0 0 auto;min-height:38px;border:0;border-radius:11px;background:#fff;color:#171917;padding:0 12px;font-size:var(--font-size-xs);font-weight:850;cursor:pointer}
+.pwa-banner__action{appearance:none;flex:0 0 auto;min-height:38px;border:0;border-radius:11px;background:#fff;color:#171917;padding:0 12px;font-size:var(--font-size-xs);font-weight:800;cursor:pointer}
 .session-body .pwa-banner{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
 
 @media(prefers-reduced-motion:no-preference){
@@ -811,7 +819,7 @@ html,body{background:var(--bg)}
   color:var(--accent);
   font-size:var(--font-size-xs);
   line-height:1.2;
-  font-weight:850;
+  font-weight:800;
   letter-spacing:.09em;
   text-transform:uppercase;
 }
@@ -880,7 +888,7 @@ html,body{background:var(--bg)}
   color:#fff;
   padding:0 18px;
   font-size:var(--font-size-body);
-  font-weight:850;
+  font-weight:800;
   cursor:pointer;
   transition:transform var(--fast) ease,background-color var(--base) ease;
 }
@@ -4897,4 +4905,93 @@ html.dm-page-transition .exercise-main .exercise-visual{animation:none!important
   html.dm-page-transition::view-transition-group(daily-motion-page),
   html.dm-page-transition::view-transition-old(daily-motion-page),
   html.dm-page-transition::view-transition-new(daily-motion-page){animation:none!important}
+}
+
+/* v234 — Manrope variable type hierarchy across the app */
+body{
+  font-weight:400;
+}
+input,select,textarea{
+  font:inherit;
+}
+.eyebrow{
+  font-weight:600;
+}
+.topbar h1,
+.progress-topbar__copy h1{
+  font-weight:700;
+}
+.today-card h2{
+  font-weight:720;
+}
+.today-card>p,
+.hero-note,
+.safety-note,
+.progress-intro,
+.data-card>p,
+.activity-empty{
+  font-weight:350;
+}
+.status-pill,
+.today-progress__label{
+  font-weight:600;
+}
+.primary-button{
+  font-weight:700;
+}
+.section-heading h3,
+.activity-card__head h3,
+.progress-card__head h3{
+  font-weight:650;
+}
+.routine-copy strong,
+.history-row__meta strong{
+  font-weight:600;
+}
+.routine-copy small,
+.setting-copy small,
+.routine-setting-copy small,
+.progress-metrics small,
+.history-day small{
+  font-weight:350;
+}
+.routine-status,
+.progress-metrics span,
+.history-legend{
+  font-weight:500;
+}
+.text-link,
+.data-actions button,
+.settings-install,
+.ios-install-guide__done{
+  font-weight:650;
+}
+.settings-sheet__head h2,
+.routine-settings-head h2{
+  font-weight:700;
+}
+.setting-row strong,
+.routine-setting-copy strong{
+  font-weight:600;
+}
+.pwa-banner__text{
+  font-weight:500;
+}
+.pwa-banner__action{
+  font-weight:700;
+}
+.execution-stage h2{
+  font-weight:700;
+}
+.execution-eyebrow,
+.execution-meta{
+  font-weight:550;
+}
+.execution-primary{
+  font-weight:700;
+}
+.timer-ring__inner strong,
+.execution-countdown__value,
+.execution-rest__value{
+  font-weight:720;
 }
