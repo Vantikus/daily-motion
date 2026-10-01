@@ -209,23 +209,16 @@ test('expanded technique starts scrolling immediately and stays above workout na
   await page.setViewportSize({width:360,height:640});
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
 
-  await page.evaluate(()=>{
-    window.__techniqueClickAt=0;
-    window.__techniqueScrollAt=0;
-    document.querySelector('#detail-progression-toggle').addEventListener('click',()=>{
-      window.__techniqueClickAt=performance.now();
-    },{capture:true,once:true});
-    document.querySelector('#exerciseScroll').addEventListener('scroll',()=>{
-      if(window.__techniqueClickAt&&!window.__techniqueScrollAt){
-        window.__techniqueScrollAt=performance.now();
-      }
-    });
+  const immediateDelta=await page.evaluate(()=>{
+    const scroll=document.querySelector('#exerciseScroll');
+    const toggle=document.querySelector('#detail-progression-toggle');
+    const before=scroll.scrollTop;
+    toggle.click();
+    return scroll.scrollTop-before;
   });
-  await page.locator('#detail-progression-toggle').click();
+
+  expect(immediateDelta).toBeGreaterThan(0);
   await expect(page.locator('#detail-progression-toggle')).toHaveAttribute('aria-expanded','true');
-  await page.waitForFunction(()=>window.__techniqueScrollAt>0,null,{polling:'raf',timeout:180});
-  const scrollDelay=await page.evaluate(()=>window.__techniqueScrollAt-window.__techniqueClickAt);
-  expect(scrollDelay).toBeLessThan(180);
   await expect.poll(()=>page.evaluate(()=>{
     const scroll=document.querySelector('#exerciseScroll').getBoundingClientRect();
     const card=document.querySelector('#detail-progression-toggle').closest('.detail-card').getBoundingClientRect();
