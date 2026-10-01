@@ -14,7 +14,7 @@
 /* iPhone installed PWA: move controls lower and keep breathing room above */
 @media (display-mode: standalone) {
   .session-nav{
-    padding-top:6px;
+    padding-top:2px;
     padding-bottom:max(4px, env(safe-area-inset-bottom,0px));
   }
   .session-nav__inner{
