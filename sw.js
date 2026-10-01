@@ -1,4 +1,4 @@
-const CACHE_NAME='daily-motion-v226';
+const CACHE_NAME='daily-motion-v227';
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
   '/vendor/swup/preload-3.2.12.js',
@@ -12,8 +12,8 @@ const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
-  '/v226.css?v=226',
-  '/v226.js?v=226',
+  '/v226.css?v=227',
+  '/v226.js?v=227',
   '/progress.html',
   '/heroicons.css?v=226',
   '/vendor/heroicons/adjustments-horizontal.svg',
