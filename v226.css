@@ -22,3 +22,44 @@
   }
 }
 
+
+/* v233 — calmer workout typography hierarchy only */
+.exercise-head h1{
+  font-size:clamp(1.875rem,7.8vw,2.1875rem)!important;
+  line-height:1.02;
+  letter-spacing:-.046em;
+  font-weight:720;
+}
+.exercise-head p{
+  color:var(--muted)!important;
+  font-weight:430;
+}
+.exercise-facts strong{
+  font-size:.84375rem!important;
+  font-weight:650!important;
+  letter-spacing:-.008em;
+}
+.technique-key strong{
+  font-size:.875rem;
+  line-height:1.48;
+  font-weight:560;
+  letter-spacing:-.006em;
+}
+.details-title{
+  font-size:1rem;
+  font-weight:680;
+  letter-spacing:-.014em;
+}
+.detail-card__toggle{
+  font-weight:580!important;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  color:var(--muted)!important;
+  font-weight:430;
+}
+@media(max-width:390px){
+  .exercise-head h1{
+    font-size:clamp(1.8125rem,8.2vw,2rem)!important;
+  }
+}
