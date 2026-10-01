@@ -50,6 +50,32 @@
       }
     };
 
+    const revealDetailCard=card=>{
+      const scroll=$('#exerciseScroll');
+      if(!scroll||!card)return;
+
+      const scrollBox=scroll.getBoundingClientRect();
+      const cardBox=card.getBoundingClientRect();
+      const topGuard=12;
+      const bottomGuard=16;
+      const availableHeight=scrollBox.height-topGuard-bottomGuard;
+      let delta=0;
+
+      if(cardBox.height<=availableHeight){
+        if(cardBox.bottom>scrollBox.bottom-bottomGuard){
+          delta=cardBox.bottom-(scrollBox.bottom-bottomGuard);
+        }else if(cardBox.top<scrollBox.top+topGuard){
+          delta=cardBox.top-(scrollBox.top+topGuard);
+        }
+      }else if(cardBox.top<scrollBox.top+topGuard||cardBox.bottom>scrollBox.bottom-bottomGuard){
+        delta=cardBox.top-(scrollBox.top+topGuard);
+      }
+
+      if(Math.abs(delta)>1){
+        scroll.scrollBy({top:delta,behavior:reducedMotion()?'auto':'smooth'});
+      }
+    };
+
     const animateDetailState=(card,open)=>{
       const toggle=card.querySelector('.detail-card__toggle');
       const panel=card.querySelector('.detail-card__panel');
@@ -76,6 +102,7 @@
       const targetHeight=open?inner.scrollHeight:0;
       if(reducedMotion()){
         setDetailState(card,open);
+        if(open)revealDetailCard(card);
         return;
       }
 
@@ -125,6 +152,7 @@
           panel.style.opacity='1';
           inner.style.opacity='1';
           inner.style.transform='translate3d(0,0,0)';
+          revealDetailCard(card);
         }else{
           card.classList.remove('is-open');
           panel.style.height='0px';
@@ -153,13 +181,6 @@
           });
         }
         animateDetailState(card,willOpen);
-        if(willOpen){
-          const timer=setTimeout(()=>{
-            detailTimers.delete(timer);
-            toggle.scrollIntoView({block:'nearest',behavior:reducedMotion()?'auto':'smooth'});
-          },110);
-          detailTimers.add(timer);
-        }
         haptic?.('tap');
       });
     });

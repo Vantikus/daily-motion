@@ -205,6 +205,19 @@ test('technique accordion keeps at most one section expanded',async({page})=>{
   await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
 });
 
+test('expanded technique stays fully above workout navigation on compact screens',async({page})=>{
+  await page.setViewportSize({width:360,height:640});
+  await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+
+  await page.locator('#detail-progression-toggle').click();
+  await expect(page.locator('#detail-progression-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect.poll(()=>page.evaluate(()=>{
+    const scroll=document.querySelector('#exerciseScroll').getBoundingClientRect();
+    const card=document.querySelector('#detail-progression-toggle').closest('.detail-card').getBoundingClientRect();
+    return Math.round(card.bottom-scroll.bottom);
+  }),{timeout:1500}).toBeLessThanOrEqual(-12);
+});
+
 test('finish-early hands timer to rest without exposing two full stages',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('dailyMotionState.v3',JSON.stringify({
