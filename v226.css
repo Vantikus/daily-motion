@@ -14,10 +14,10 @@
 /* iPhone installed PWA: move controls lower and keep breathing room above */
 @media (display-mode: standalone) {
   .session-nav{
-    padding-top:18px;
-    padding-bottom:2px;
+    padding-top:6px;
+    padding-bottom:max(4px, env(safe-area-inset-bottom,0px));
   }
   .session-nav__inner{
-    transform:translateY(10px);
+    transform:none;
   }
 }
