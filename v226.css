@@ -1,0 +1,11 @@
+/* v226 — compact workout footer only */
+.exercise-scroll{
+  scroll-padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));
+}
+.session-nav{
+  padding-top:6px;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);
+}
+.session-nav .nav-button{
+  height:48px;
+}
