@@ -1,8 +1,8 @@
 @font-face{
-  font-family:"Manrope";
-  src:url("fonts/manrope-variable.woff2") format("woff2");
+  font-family:"Onest";
+  src:url("fonts/onest-variable.ttf") format("truetype");
   font-style:normal;
-  font-weight:200 800;
+  font-weight:100 900;
   font-display:swap;
 }
 
@@ -95,7 +95,7 @@
   --base:var(--motion-base);
   --slow:var(--motion-slow);
   --ease:var(--motion-ease-standard);
-  font-family:"Manrope",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif;
+  font-family:"Onest",-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif;
   color:var(--text);
   background:var(--bg);
 }
@@ -4907,91 +4907,26 @@ html.dm-page-transition .exercise-main .exercise-visual{animation:none!important
   html.dm-page-transition::view-transition-new(daily-motion-page){animation:none!important}
 }
 
-/* v234 — Manrope variable type hierarchy across the app */
-body{
-  font-weight:400;
-}
-input,select,textarea{
-  font:inherit;
-}
-.eyebrow{
-  font-weight:600;
-}
-.topbar h1,
-.progress-topbar__copy h1{
-  font-weight:700;
-}
-.today-card h2{
-  font-weight:720;
-}
-.today-card>p,
-.hero-note,
-.safety-note,
-.progress-intro,
-.data-card>p,
-.activity-empty{
-  font-weight:350;
-}
-.status-pill,
-.today-progress__label{
-  font-weight:600;
-}
-.primary-button{
-  font-weight:700;
-}
-.section-heading h3,
-.activity-card__head h3,
-.progress-card__head h3{
-  font-weight:650;
-}
-.routine-copy strong,
-.history-row__meta strong{
-  font-weight:600;
-}
-.routine-copy small,
-.setting-copy small,
-.routine-setting-copy small,
-.progress-metrics small,
-.history-day small{
-  font-weight:350;
-}
-.routine-status,
-.progress-metrics span,
-.history-legend{
-  font-weight:500;
-}
-.text-link,
-.data-actions button,
-.settings-install,
-.ios-install-guide__done{
-  font-weight:650;
-}
-.settings-sheet__head h2,
-.routine-settings-head h2{
-  font-weight:700;
-}
-.setting-row strong,
-.routine-setting-copy strong{
-  font-weight:600;
-}
-.pwa-banner__text{
-  font-weight:500;
-}
-.pwa-banner__action{
-  font-weight:700;
-}
-.execution-stage h2{
-  font-weight:700;
-}
-.execution-eyebrow,
-.execution-meta{
-  font-weight:550;
-}
-.execution-primary{
-  font-weight:700;
-}
-.timer-ring__inner strong,
-.execution-countdown__value,
-.execution-rest__value{
-  font-weight:720;
-}
+
+/* v235 — Onest variable hierarchy across the app */
+body{font-weight:400}
+input,select,textarea{font:inherit}
+.eyebrow{font-weight:500}
+.topbar h1,.progress-topbar__copy h1{font-weight:800}
+.today-card h2{font-weight:800}
+.today-card>p,.hero-note,.safety-note,.progress-intro,.data-card>p,.activity-empty{font-weight:300}
+.status-pill,.today-progress__label{font-weight:600}
+.primary-button{font-weight:800}
+.section-heading h3,.activity-card__head h3,.progress-card__head h3{font-weight:700}
+.routine-copy strong,.history-row__meta strong{font-weight:650}
+.routine-copy small,.setting-copy small,.routine-setting-copy small,.progress-metrics small,.history-day small{font-weight:300}
+.routine-status,.progress-metrics span,.history-legend{font-weight:500}
+.text-link,.data-actions button,.settings-install,.ios-install-guide__done{font-weight:650}
+.settings-sheet__head h2,.routine-settings-head h2{font-weight:800}
+.setting-row strong,.routine-setting-copy strong{font-weight:650}
+.pwa-banner__text{font-weight:500}
+.pwa-banner__action{font-weight:800}
+.execution-stage h2{font-weight:800}
+.execution-eyebrow,.execution-meta{font-weight:500}
+.execution-primary{font-weight:800}
+.timer-ring__inner strong,.execution-countdown__value,.execution-rest__value{font-weight:800}
