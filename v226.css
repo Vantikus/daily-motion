@@ -77,3 +77,45 @@
 .detail-card__inner p,.detail-card__inner li{font-weight:300}
 .session-nav .nav-button--back{font-weight:500}
 .session-nav .nav-button--next{font-weight:800}
+
+/* v236 — clearer Onest weight hierarchy on workout screen */
+.exercise-toolbar__title{
+  font-weight:600!important;
+}
+.step-indicator>strong{
+  font-weight:500!important;
+}
+.exercise-head h1{
+  font-weight:700!important;
+}
+.exercise-head p{
+  font-weight:300!important;
+}
+.exercise-facts span{
+  font-weight:400!important;
+}
+.exercise-facts strong{
+  font-weight:650!important;
+}
+.technique-key__label{
+  font-weight:600!important;
+}
+.technique-key strong{
+  font-weight:400!important;
+}
+.details-title{
+  font-weight:650!important;
+}
+.detail-card__toggle{
+  font-weight:450!important;
+}
+.detail-card.is-open .detail-card__toggle{
+  font-weight:600!important;
+}
+.detail-card__inner p,
+.detail-card__inner li{
+  font-weight:300!important;
+}
+.session-nav .nav-button--next{
+  font-weight:700!important;
+}
