@@ -23,6 +23,12 @@ const openHomeSettings=async page=>{
 
 test('home settings opens and closes cleanly',async({page})=>{
   await openHomeSettings(page);
+  const overlayMotion=await page.locator('#settingsOverlay').evaluate(node=>({
+    opacity:getComputedStyle(node).opacity,
+    background:getComputedStyle(node).backgroundColor
+  }));
+  expect(overlayMotion.opacity).toBe('1');
+  expect(overlayMotion.background).toBe('rgba(0, 0, 0, 0)');
   await page.locator('#settingsClose').click();
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
 });
