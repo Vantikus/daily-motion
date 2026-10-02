@@ -89,7 +89,15 @@ test('native navigation remains usable when the Swup runtime cannot load',async(
 for(const native of [true,false]){
   test(`rapid interrupted visits settle with ${native?'browser snapshots':'fallback animation'}`,async({page})=>{
     await page.addInitScript(native=>{
-      if(!native)document.startViewTransition=undefined;
+      if(native){
+        Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+          'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/153 Safari/537.36'
+        });
+        Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'Linux x86_64'});
+        Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=> 0});
+      }else{
+        document.startViewTransition=undefined;
+      }
       window.__snapshots=0;
       if(document.startViewTransition){
         const start=document.startViewTransition.bind(document);
@@ -143,13 +151,28 @@ test('iPhone navigation uses the compositor fallback instead of page snapshots',
   });
   await page.goto('/index.html');
   await expectSwup(page);
-  const token=await page.evaluate(()=>window.__iosFallbackToken=crypto.randomUUID());
+  const token=await page.evaluate(()=>{
+    window.__iosFallbackToken=crypto.randomUUID();
+    window.__iosPageTweens=[];
+    const original=gsap.to.bind(gsap);
+    gsap.to=(target,vars)=>{
+      if(target?.matches?.('.app-shell,.exercise-app')){
+        window.__iosPageTweens.push({opacity:Object.hasOwn(vars,'opacity'),duration:vars.duration});
+      }
+      return original(target,vars);
+    };
+    return window.__iosFallbackToken;
+  });
   await page.evaluate(()=>DailyMotionNavigate('progress.html',{animation:'progress'}));
   await expect(page.locator('#historyCalendar')).toBeVisible();
   await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
   await expect(page.locator('#swup')).toHaveCSS('opacity','1');
   expect(await page.evaluate(()=>window.__iosFallbackToken)).toBe(token);
   expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
+  const tweens=await page.evaluate(()=>window.__iosPageTweens);
+  expect(tweens.length).toBe(1);
+  expect(tweens[0].opacity).toBe(false);
+  expect(tweens[0].duration).toBeLessThanOrEqual(.16);
 });
 
 test('reduced motion skips page snapshots',async({page})=>{
@@ -186,6 +209,11 @@ test('a first tap waits for local navigation instead of reloading the document',
 
 test('the incoming workout snapshot contains visible exercise content',async({page})=>{
   await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/153 Safari/537.36'
+    });
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'Linux x86_64'});
+    Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=> 0});
     const start=document.startViewTransition?.bind(document);
     if(!start)return;
     document.startViewTransition=(...args)=>{
