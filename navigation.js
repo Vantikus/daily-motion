@@ -1,8 +1,8 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.10;
-  const pageEnter=.18;
+  const pageExit=.07;
+  const pageEnter=.28;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -34,7 +34,8 @@
     [container,target].filter(Boolean).forEach(node=>{
       window.gsap?.killTweensOf?.(node);
       window.gsap?.set?.(node,{clearProps:'opacity,transform,willChange'});
-      if(node.style)node.style.removeProperty('transform');
+      node.style?.removeProperty('transform');
+      node.style?.removeProperty('opacity');
     });
   };
 
@@ -91,23 +92,24 @@
     if(appleMobile){
       if(typeof target.animate!=='function')return Promise.resolve();
       try{applePageAnimation?.cancel?.();}catch{}
-      const transformFor=vars=>{
-        const x=Number(vars?.x)||0;
-        const y=Number(vars?.y)||0;
-        return `translate3d(${x}px,${y}px,0)`;
-      };
-      const opacityFor=(vars,fallback)=>Number.isFinite(Number(vars?.opacity))?Number(vars.opacity):fallback;
-      const animation=target.animate(
-        [
-          {transform:transformFor(from),opacity:opacityFor(from,1)},
-          {transform:transformFor(to),opacity:opacityFor(to,1)}
-        ],
-        {
-          duration:duration*1000,
-          easing:'cubic-bezier(.2,.72,.2,1)',
-          fill:phase==='out'?'forwards':'none'
-        }
-      );
+      const direction=Math.sign(Number((phase==='in'?from?.x:to?.x)||0))||1;
+      const animation=phase==='out'
+        ?target.animate(
+          [
+            {transform:'translate3d(0,0,0)'},
+            {transform:`translate3d(${direction*6}px,0,0)`}
+          ],
+          {duration:duration*1000,easing:'cubic-bezier(.4,0,.8,.2)',fill:'forwards'}
+        )
+        :target.animate(
+          [
+            {transform:`translate3d(${direction*10}px,0,0)`,offset:0,easing:'cubic-bezier(.16,.82,.24,1)'},
+            {transform:`translate3d(${-direction*1.25}px,0,0)`,offset:.68,easing:'cubic-bezier(.2,.72,.2,1)'},
+            {transform:`translate3d(${direction*.45}px,0,0)`,offset:.86,easing:'cubic-bezier(.2,.72,.2,1)'},
+            {transform:'translate3d(0,0,0)',offset:1}
+          ],
+          {duration:duration*1000,easing:'linear'}
+        );
       applePageAnimation=animation;
       return animation.finished.then(
         ()=>{if(applePageAnimation===animation)applePageAnimation=null;},
@@ -145,30 +147,30 @@
     {
       from:'(.*)',
       to:'completion-home',
-      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:.72,x:-8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{x:0},to:{x:6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{x:-10},to:{x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'workout',
-      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
-      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:.72,x:-8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{x:0},to:{x:6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{x:-10},to:{x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'progress',
-      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'})
     },
     transition(
-      {from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'},
-      {from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'}
+      {from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'},
+      {from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'}
     )
   ];
 
@@ -331,7 +333,6 @@
     });
   };
 
-  // Keep a first tap in this document while local navigation scripts finish.
   document.addEventListener('click',event=>{
     if(swup||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
