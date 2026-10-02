@@ -7,7 +7,8 @@
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:webkit": "playwright test --project=webkit",
-    "deploy:cf": "wrangler deploy"
+    "deploy:cf": "wrangler deploy",
+    "release:bump": "node scripts/bump-release.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

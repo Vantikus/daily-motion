@@ -26,7 +26,7 @@ const behaviorSpecs=[
   'tests/motion.spec.js',
   'tests/visual.spec.js'
 ];
-const syntaxFiles=[...runtimeFiles,'playwright.config.js','scripts/test-server.mjs','tests/helpers/runtime.js',...behaviorSpecs];
+const syntaxFiles=[...runtimeFiles,'playwright.config.js','scripts/test-server.mjs','scripts/check-release-bump.mjs','scripts/bump-release.mjs','tests/helpers/runtime.js',...behaviorSpecs];
 
 for(const file of syntaxFiles){
   requireFile(file);
@@ -35,6 +35,7 @@ for(const file of syntaxFiles){
 }
 if(existsSync(join(root,'tests/smoke.spec.js')))fail('tests/smoke.spec.js must remain split by responsibility');
 if(existsSync(join(root,'DAILY_MOTION_HANDOFF_STAGE8.md')))fail('Stage 8 handoff file must not ship in the final source');
+if(existsSync(join(root,'_handoff')))fail('_handoff/ must not remain in the working source');
 
 const htmlFiles=['index.html','session.html','progress.html'];
 const html=Object.fromEntries(htmlFiles.map(file=>[file,read(file)]));
@@ -55,7 +56,8 @@ const navigation=read('navigation.js');
 const theme=read('theme.js');
 const heroicons=read('heroicons.css');
 const assetsIgnore=read('.assetsignore');
-for(const pattern of ['node_modules/','tests/','scripts/','*.md','package*.json','playwright.config.js','wrangler.json']){
+const headers=read('_headers');
+for(const pattern of ['node_modules/','tests/','scripts/','_handoff/','*.md','package*.json','playwright.config.js','wrangler.json']){
   if(!assetsIgnore.split(/\r?\n/).includes(pattern))fail(`.assetsignore: development asset exclusion missing ${pattern}`);
 }
 
@@ -64,24 +66,30 @@ if(packageJson.devDependencies?.wrangler!=='4.143.0')fail('package.json: Wrangle
 if(!ci.includes('node-version: 22.16.0'))fail('ci.yml: Node runtime must stay pinned to 22.16.0');
 if(!ci.includes('npm install --no-audit --no-fund --package-lock=false'))fail('ci.yml: deterministic tooling install is missing');
 if(!ci.includes('npm run check')||!ci.includes('npm run test:e2e'))fail('ci.yml: static and browser regression stages are required');
+if(!ci.includes("if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'"))fail('ci.yml: full browser regression must stay off ordinary main pushes');
 if(!ci.includes('actions/upload-artifact@v4'))fail('ci.yml: failed browser artifacts must be uploaded');
+if(packageJson.scripts?.['release:bump']!=='node scripts/bump-release.mjs')fail('package.json: release bump helper missing');
 
-const releaseVersions=new Set();
+const releaseMatch=sw.match(/const RELEASE_VERSION=(\d+);/);
+if(!releaseMatch)fail('sw.js: RELEASE_VERSION missing');
+const releaseVersion=releaseMatch[1];
+if(sw.includes('?v='))fail('sw.js: runtime query versions must not return');
 for(const [file,content] of Object.entries(html)){
-  const versions=[...content.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
-  if(!versions.length)fail(`${file}: no versioned runtime assets`);
-  const unique=[...new Set(versions)];
-  if(unique.length!==1)fail(`${file}: mixed runtime versions ${unique.join(', ')}`);
-  releaseVersions.add(unique[0]);
+  if(/\?v=\d+/.test(content))fail(`${file}: runtime query versions must not return`);
 }
-const cacheMatch=sw.match(/const CACHE_NAME='daily-motion-v(\d+)'/);
-if(!cacheMatch)fail('sw.js: CACHE_NAME version missing');
-releaseVersions.add(cacheMatch[1]);
-const swVersions=[...sw.matchAll(/\?v=(\d+)/g)].map(match=>match[1]);
-if(!swVersions.length||new Set(swVersions).size!==1)fail('sw.js: mixed or missing asset versions');
-releaseVersions.add(swVersions[0]);
-if(releaseVersions.size!==1)fail(`Release version mismatch: ${[...releaseVersions].join(', ')}`);
-const releaseVersion=[...releaseVersions][0];
+for(const mutable of [
+  '/styles.css','/heroicons.css','/v226.css','/theme.js','/program.js','/state.js','/audio.js',
+  '/gsap.min.js','/motion.js','/ui.js','/session-view.js','/pwa.js','/app.js','/session.js',
+  '/progress.js','/navigation.js','/v226.js','/sw.js'
+]){
+  if(!headers.includes(`${mutable}\n  Cache-Control: no-cache`))fail(`_headers: mutable runtime must revalidate ${mutable}`);
+}
+if(!sw.includes("const MUTABLE_STATIC_URLS=new Set(["))fail('sw.js: mutable runtime revalidation set missing');
+for(const mutable of ['/styles.css','/heroicons.css','/v226.css','/theme.js','/program.js','/state.js','/audio.js','/gsap.min.js','/motion.js','/ui.js','/session-view.js','/pwa.js','/app.js','/session.js','/progress.js','/navigation.js','/v226.js','/manifest.webmanifest']){
+  if(!sw.includes(`  '${mutable}',`)&&!sw.includes(`  '${mutable}'\n`))fail(`sw.js: mutable runtime missing ${mutable}`);
+}
+if(!sw.includes("fetch(request,{cache:'no-cache'})"))fail('sw.js: mutable runtime must revalidate through HTTP cache');
+if(!sw.includes("if(MUTABLE_STATIC_URLS.has(url.pathname))"))fail('sw.js: mutable runtime network-fresh routing missing');
 
 const designThemeColor='#f4f5f1';
 if(manifest.theme_color!==designThemeColor||manifest.background_color!==designThemeColor){
@@ -92,7 +100,7 @@ for(const [file,content] of Object.entries(html)){
   if(!themeMeta||themeMeta[1].toLowerCase()!==designThemeColor)fail(`${file}: theme-color meta drifted`);
   if(!content.includes('id="swup"')||!content.includes('class="transition-page"'))fail(`${file}: Swup container contract missing`);
   for(const runtime of ['navigation.js','motion.js','ui.js','session-view.js','app.js','progress.js','session.js']){
-    if(!content.includes(`${runtime}?v=${releaseVersion}`))fail(`${file}: persistent runtime missing ${runtime}`);
+    if(!content.includes(runtime))fail(`${file}: persistent runtime missing ${runtime}`);
   }
   if(content.includes('unpkg.com/'))fail(`${file}: parser-blocking remote runtime tag returned`);
 }
@@ -111,11 +119,11 @@ if(!shellMatch)fail('sw.js: APP_SHELL missing');
 for(const match of shellMatch[1].matchAll(/'([^']+)'/g)){
   const url=match[1];
   if(url==='/')continue;
-  const relative=url.split('?')[0].replace(/^\//,'');
+  const relative=url.replace(/^\//,'');
   if(relative&&!existsSync(join(root,relative)))fail(`sw.js: APP_SHELL points to missing file ${url}`);
 }
 for(const runtime of ['navigation.js','motion.js','ui.js','session-view.js','app.js','progress.js','session.js']){
-  if(!sw.includes(`'/${runtime}?v=${releaseVersion}'`))fail(`sw.js: persistent runtime not cached ${runtime}`);
+  if(!sw.includes(`'/${runtime}'`))fail(`sw.js: persistent runtime not cached ${runtime}`);
 }
 if(!sw.includes("pathname.endsWith('/progress.html')")||!sw.includes("pathname.endsWith('/session.html')")){
   fail('sw.js: canonical offline navigation fallback missing');
@@ -279,7 +287,7 @@ for(const [file,content] of Object.entries(html)){
   for(const match of content.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)){
     const url=match[1];
     if(/^https?:|^data:|^#/.test(url))continue;
-    const relative=url.split('?')[0].replace(/^\//,'');
+    const relative=url.replace(/^\//,'');
     if(relative&&!existsSync(join(root,relative)))fail(`${file}: missing local asset ${url}`);
   }
 }

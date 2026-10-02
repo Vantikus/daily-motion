@@ -3,8 +3,8 @@ import { execFileSync } from 'node:child_process';
 
 const fail=message=>{throw new Error(message);};
 const versionOf=content=>{
-  const match=content.match(/const CACHE_NAME='daily-motion-v(\d+)'/);
-  if(!match)fail('sw.js release version missing');
+  const match=content.match(/const RELEASE_VERSION=(\d+);/);
+  if(!match)fail('sw.js RELEASE_VERSION missing');
   return Number(match[1]);
 };
 
@@ -44,6 +44,6 @@ try{
 const previous=versionOf(baseSw);
 const current=versionOf(readFileSync('sw.js','utf8'));
 if(current<=previous){
-  fail(`Deployable files changed without a service worker version bump (v${previous} -> v${current}). Bump sw.js and all runtime ?v= references together.`);
+  fail(`Deployable files changed without a service worker version bump (v${previous} -> v${current}). Run npm run release:bump before publishing.`);
 }
 console.log(`Release version guard passed · v${previous} -> v${current}`);

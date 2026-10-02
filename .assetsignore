@@ -30,3 +30,4 @@ _verify*.png
 *.md
 package*.json
 .assetsignore
+_handoff/

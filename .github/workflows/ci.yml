@@ -4,11 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,6 +25,18 @@ jobs:
         env:
           RELEASE_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: node scripts/check-release-bump.mjs "$RELEASE_BASE"
+
+  browser-regression:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Install test tooling
+        run: npm install --no-audit --no-fund --package-lock=false
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
       - name: Browser regression tests

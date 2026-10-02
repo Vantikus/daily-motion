@@ -1,4 +1,5 @@
-const CACHE_NAME='daily-motion-v246';
+const RELEASE_VERSION=247;
+const CACHE_NAME=`daily-motion-v${RELEASE_VERSION}`;
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
   '/vendor/swup/preload-3.2.12.js',
@@ -12,10 +13,10 @@ const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
-  '/v226.css?v=246',
-  '/v226.js?v=246',
+  '/v226.css',
+  '/v226.js',
   '/progress.html',
-  '/heroicons.css?v=246',
+  '/heroicons.css',
   '/fonts/onest-variable.ttf',
   '/vendor/heroicons/adjustments-horizontal.svg',
   '/vendor/heroicons/queue-list.svg',
@@ -49,26 +50,49 @@ const APP_SHELL=[
   '/vendor/heroicons/circle-stack.svg',
   '/vendor/heroicons/arrow-down-tray.svg',
   '/vendor/heroicons/arrow-up-tray.svg',
-  '/styles.css?v=246',
-  '/theme.js?v=246',
-  '/program.js?v=246',
-  '/state.js?v=246',
-  '/audio.js?v=246',
-  '/gsap.min.js?v=246',
-  '/motion.js?v=246',
-  '/ui.js?v=246',
-  '/session-view.js?v=246',
-  '/pwa.js?v=246',
-  '/app.js?v=246',
-  '/session.js?v=246',
-  '/progress.js?v=246',
-  '/navigation.js?v=246',
+  '/styles.css',
+  '/theme.js',
+  '/program.js',
+  '/state.js',
+  '/audio.js',
+  '/gsap.min.js',
+  '/motion.js',
+  '/ui.js',
+  '/session-view.js',
+  '/pwa.js',
+  '/app.js',
+  '/session.js',
+  '/progress.js',
+  '/navigation.js',
   '/manifest.webmanifest',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
   '/icons/daily-motion-app-192-v97.png',
   '/icons/daily-motion-app-512-v97.svg'
 ];
+
+
+const MUTABLE_STATIC_URLS=new Set([
+  '/styles.css',
+  '/heroicons.css',
+  '/v226.css',
+  '/theme.js',
+  '/program.js',
+  '/state.js',
+  '/audio.js',
+  '/gsap.min.js',
+  '/motion.js',
+  '/ui.js',
+  '/session-view.js',
+  '/pwa.js',
+  '/app.js',
+  '/session.js',
+  '/progress.js',
+  '/navigation.js',
+  '/v226.js',
+  '/manifest.webmanifest'
+]);
+
 
 self.addEventListener('install',event=>{
   event.waitUntil(
@@ -102,7 +126,7 @@ const cacheStatic=async request=>{
 const networkFreshStatic=async request=>{
   const cache=await caches.open(CACHE_NAME);
   try{
-    const response=await fetch(request,{cache:'no-store'});
+    const response=await fetch(request,{cache:'no-cache'});
     if(response&&response.ok)cache.put(request,response.clone()).catch(()=>{});
     return response;
   }catch{
@@ -160,7 +184,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  if(url.pathname==='/pwa.js'){
+  if(MUTABLE_STATIC_URLS.has(url.pathname)){
     event.respondWith(networkFreshStatic(request));
     return;
   }
