@@ -95,7 +95,10 @@ window.DailyMotionPages.session=function mountSession(){
     easeStandard:'cubic-bezier(.2,.72,.2,1)',
     easeExit:'cubic-bezier(.4,0,1,1)'
   };
+  const appleMobileMotion=/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const exerciseApp=$('.exercise-app');
+  const executionShell=$('.execution-shell');
+  if(appleMobileMotion)executionShell?.style.setProperty('animation','none','important');
   let modalReturnFocus=null;
 
   // Reload safety / modal ownership.
@@ -145,11 +148,10 @@ window.DailyMotionPages.session=function mountSession(){
   const animateValue=node=>{
     if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.animate(
-      [
-        {transform:'translateY(3px)',opacity:.55},
-        {transform:'translateY(0)',opacity:1}
-      ],
-      {duration:MotionTokens.microMs,easing:MotionTokens.easeStandard}
+      appleMobileMotion
+        ?[{transform:'translate3d(0,2px,0)'},{transform:'translate3d(0,0,0)'}]
+        :[{transform:'translateY(3px)',opacity:.55},{transform:'translateY(0)',opacity:1}],
+      {duration:appleMobileMotion?120:MotionTokens.microMs,easing:MotionTokens.easeStandard}
     );
   };
 
@@ -157,31 +159,36 @@ window.DailyMotionPages.session=function mountSession(){
     if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.getAnimations?.().forEach(animation=>animation.cancel());
     node.animate(
-      launch
+      appleMobileMotion
         ?[
-          {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
-          {transform:'translate3d(0,-1px,0) scale(1.035)',opacity:1,offset:.72},
-          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+          {transform:launch?'translate3d(0,4px,0) scale(.94)':'translate3d(0,3px,0) scale(.95)'},
+          {transform:'translate3d(0,0,0) scale(1)'}
         ]
-        :[
-          {transform:'translate3d(0,5px,0) scale(.88)',opacity:.3},
-          {transform:'translate3d(0,-1px,0) scale(1.025)',opacity:1,offset:.72},
-          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
-        ],
-      {duration:launch?235:215,easing:launch?MotionTokens.easeEmphasized:MotionTokens.easeEnter}
+        :launch
+          ?[
+            {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
+            {transform:'translate3d(0,-1px,0) scale(1.035)',opacity:1,offset:.72},
+            {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+          ]
+          :[
+            {transform:'translate3d(0,5px,0) scale(.88)',opacity:.3},
+            {transform:'translate3d(0,-1px,0) scale(1.025)',opacity:1,offset:.72},
+            {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+          ],
+      {duration:appleMobileMotion?135:(launch?235:215),easing:appleMobileMotion?MotionTokens.easeEnter:(launch?MotionTokens.easeEmphasized:MotionTokens.easeEnter)}
     );
   };
 
   const animateTimerState=()=>{
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    [$('#timerValue'),$('#timerLabel'),$('#timerState')].filter(Boolean).forEach((node,index)=>{
+    const nodes=appleMobileMotion?[$('#timerValue')]:[$('#timerValue'),$('#timerLabel'),$('#timerState')];
+    nodes.filter(Boolean).forEach((node,index)=>{
       node.getAnimations?.().forEach(animation=>animation.cancel());
       node.animate(
-        [
-          {transform:'translate3d(0,2px,0)',opacity:.58},
-          {transform:'translate3d(0,0,0)',opacity:1}
-        ],
-        {duration:150+index*12,easing:MotionTokens.easeEnter}
+        appleMobileMotion
+          ?[{transform:'translate3d(0,2px,0)'},{transform:'translate3d(0,0,0)'}]
+          :[{transform:'translate3d(0,2px,0)',opacity:.58},{transform:'translate3d(0,0,0)',opacity:1}],
+        {duration:appleMobileMotion?110:150+index*12,easing:MotionTokens.easeEnter}
       );
     });
   };
@@ -447,7 +454,7 @@ window.DailyMotionPages.session=function mountSession(){
   }
 
   function playExecutionStageContent(stage,node,{delay=0}={}){
-    if(!node||prefersReducedMotion())return;
+    if(!node||prefersReducedMotion()||appleMobileMotion)return;
 
     const item=(selector,keyframes,duration,itemDelay=0)=>{
       const target=node.querySelector(selector);
@@ -530,41 +537,52 @@ window.DailyMotionPages.session=function mountSession(){
     next.inert=false;
     next.classList.add('is-stage-entering');
 
-    if(previousAlreadyExited){
+    if(appleMobileMotion){
       previous.hidden=true;
       previous.inert=false;
       previous.classList.remove('is-finishing-early','is-stage-leaving');
-    }else{
-      previous.hidden=false;
-      previous.inert=true;
-      previous.classList.add('is-stage-leaving');
-      const leaving=animateExecutionNode(
-        previous,
-        [{opacity:1,transform:'translate3d(0,0,0)'},{opacity:0,transform:'translate3d(0,-6px,0)'}],
-        {duration:110,easing:MotionTokens.easeExit,fill:'forwards'}
+      animateExecutionNode(
+        next,
+        [{transform:'translate3d(0,6px,0)'},{transform:'translate3d(0,0,0)'}],
+        {duration:145,easing:MotionTokens.easeEnter}
       );
-      const settlePrevious=()=>{
-        if(token!==stageTransitionToken)return;
+    }else{
+      if(previousAlreadyExited){
         previous.hidden=true;
         previous.inert=false;
-        previous.classList.remove('is-stage-leaving','is-finishing-early');
-        try{leaving?.cancel();}catch{}
-      };
-      if(leaving)leaving.finished.then(settlePrevious,()=>{});
-      else settlePrevious();
-    }
+        previous.classList.remove('is-finishing-early','is-stage-leaving');
+      }else{
+        previous.hidden=false;
+        previous.inert=true;
+        previous.classList.add('is-stage-leaving');
+        const leaving=animateExecutionNode(
+          previous,
+          [{opacity:1,transform:'translate3d(0,0,0)'},{opacity:0,transform:'translate3d(0,-6px,0)'}],
+          {duration:110,easing:MotionTokens.easeExit,fill:'forwards'}
+        );
+        const settlePrevious=()=>{
+          if(token!==stageTransitionToken)return;
+          previous.hidden=true;
+          previous.inert=false;
+          previous.classList.remove('is-stage-leaving','is-finishing-early');
+          try{leaving?.cancel();}catch{}
+        };
+        if(leaving)leaving.finished.then(settlePrevious,()=>{});
+        else settlePrevious();
+      }
 
-    animateExecutionNode(
-      next,
-      [{opacity:.62,transform:'translate3d(0,7px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
-      {duration:175,delay:12,easing:MotionTokens.easeEnter,fill:'backwards'}
-    );
-    playExecutionStageContent(stage,next,{delay:20});
+      animateExecutionNode(
+        next,
+        [{opacity:.62,transform:'translate3d(0,7px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+        {duration:175,delay:12,easing:MotionTokens.easeEnter,fill:'backwards'}
+      );
+      playExecutionStageContent(stage,next,{delay:20});
+    }
 
     defer(()=>{
       if(token!==stageTransitionToken)return;
       next.classList.remove('is-stage-entering');
-    },220);
+    },appleMobileMotion?170:220);
   }
 
   function playEarlyTimerExit(callback){
@@ -584,11 +602,16 @@ window.DailyMotionPages.session=function mountSession(){
 
     const token=stageTransitionToken;
     const exit=card.animate(
-      [
-        {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-        {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
-      ],
-      {duration:135,easing:MotionTokens.easeExit,fill:'forwards'}
+      appleMobileMotion
+        ?[
+          {transform:'translate3d(0,0,0)'},
+          {transform:'translate3d(0,-5px,0)'}
+        ]
+        :[
+          {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
+          {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
+        ],
+      {duration:appleMobileMotion?100:135,easing:MotionTokens.easeExit,fill:'forwards'}
     );
 
     let settled=false;
@@ -641,8 +664,10 @@ window.DailyMotionPages.session=function mountSession(){
         const node=executionStages()[stage];
         animateExecutionNode(
           node,
-          [{opacity:.72,transform:'translate3d(0,6px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
-          {duration:185,easing:MotionTokens.easeEnter,fill:'backwards'}
+          appleMobileMotion
+            ?[{transform:'translate3d(0,6px,0)'},{transform:'translate3d(0,0,0)'}]
+            :[{opacity:.72,transform:'translate3d(0,6px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+          {duration:appleMobileMotion?145:185,easing:MotionTokens.easeEnter,fill:appleMobileMotion?'none':'backwards'}
         );
         playExecutionStageContent(stage,node,{delay:12});
       });
@@ -710,7 +735,17 @@ window.DailyMotionPages.session=function mountSession(){
     }
 
     overlay.classList.add('is-closing');
-    afterAnimations($('.execution-shell'),()=>{
+    if(appleMobileMotion){
+      const closing=animateExecutionNode(
+        executionShell,
+        [{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,-3px,0)'}],
+        {duration:80,easing:MotionTokens.easeExit}
+      );
+      if(closing)closing.finished.then(finish,finish);
+      else finish();
+      return;
+    }
+    afterAnimations(executionShell,()=>{
       if(token!==executionHideToken)return;
       overlay.classList.add('is-surface-fade');
       afterAnimations(overlay,finish);
