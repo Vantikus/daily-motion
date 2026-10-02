@@ -1,29 +1,91 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.07;
-  const pageEnter=.28;
-  const applePageEnter=.32;
-  const appleSpringPath=[
-    [0,16],[.08,12.38],[.16,5.54],[.24,-.13],[.32,-2.92],[.4,-3.13],[.48,-1.97],
-    [.56,-.59],[.64,.34],[.72,.67],[.8,.56],[.88,.28],[.96,.03],[1,0]
-  ];
+  const pageExit=.1;
+  const pageEnter=.24;
+  const pageEase='cubic-bezier(.32,.72,.24,1)';
+  const pageMotion={
+    forward:{
+      out:{x:-8,scale:.995,opacity:.97},
+      in:{x:16,scale:.996,opacity:.94}
+    },
+    back:{
+      out:{x:8,scale:.995,opacity:.97},
+      in:{x:-16,scale:.996,opacity:.94}
+    }
+  };
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
-  let applePageAnimation=null;
+  let pageAnimation=null;
+  let pageDirection='forward';
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
   const isAppleMobileWebKit=()=>/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   document.documentElement.classList.toggle('dm-apple-mobile',isAppleMobileWebKit());
-  const pageMotionTarget=()=>{
-    const container=currentContainer();
-    if(!container||!isAppleMobileWebKit())return container;
-    return container.querySelector('.app-shell,.exercise-app')||container;
-  };
+  const pageMotionTarget=()=>currentContainer();
   const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!isAppleMobileWebKit();
+
+  const installPageMotionStyles=()=>{
+    if(document.getElementById('dm-page-motion'))return;
+    const style=document.createElement('style');
+    style.id='dm-page-motion';
+    style.textContent=`
+      html.dm-page-transition #swup{view-transition-name:daily-motion-page;background:inherit}
+      html.dm-page-fallback #swup{background:inherit;backface-visibility:hidden}
+      html.dm-page-transition::view-transition-old(root),
+      html.dm-page-transition::view-transition-new(root){animation:none}
+      html.dm-page-transition::view-transition-group(daily-motion-page){
+        animation-duration:300ms;
+        animation-timing-function:${pageEase};
+      }
+      html.dm-page-transition::view-transition-image-pair(daily-motion-page){isolation:isolate}
+      html.dm-page-transition::view-transition-old(daily-motion-page),
+      html.dm-page-transition::view-transition-new(daily-motion-page){
+        mix-blend-mode:normal;
+        backface-visibility:hidden;
+        transform-origin:50% 50%;
+      }
+      html.dm-page-transition::view-transition-old(daily-motion-page){animation:dmPageForwardOut 300ms ${pageEase} both}
+      html.dm-page-transition::view-transition-new(daily-motion-page){animation:dmPageForwardIn 300ms ${pageEase} both}
+      html.dm-page-transition.dm-page-back::view-transition-old(daily-motion-page){animation-name:dmPageBackOut}
+      html.dm-page-transition.dm-page-back::view-transition-new(daily-motion-page){animation-name:dmPageBackIn}
+      @keyframes dmPageForwardOut{
+        from{opacity:1;transform:translate3d(0,0,0) scale(1)}
+        to{opacity:.96;transform:translate3d(-10px,0,0) scale(.992)}
+      }
+      @keyframes dmPageForwardIn{
+        from{opacity:.94;transform:translate3d(18px,0,0) scale(.996)}
+        to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+      }
+      @keyframes dmPageBackOut{
+        from{opacity:1;transform:translate3d(0,0,0) scale(1)}
+        to{opacity:.96;transform:translate3d(10px,0,0) scale(.992)}
+      }
+      @keyframes dmPageBackIn{
+        from{opacity:.94;transform:translate3d(-18px,0,0) scale(.996)}
+        to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+      }
+      html.dm-page-transition .exercise-main.enter-forward .exercise-head,
+      html.dm-page-transition .exercise-main.enter-back .exercise-head,
+      html.dm-page-transition .exercise-main.enter-forward .exercise-facts,
+      html.dm-page-transition .exercise-main.enter-back .exercise-facts,
+      html.dm-page-transition .exercise-main.enter-forward .technique-key,
+      html.dm-page-transition .exercise-main.enter-back .technique-key,
+      html.dm-page-transition .exercise-main.enter-forward .details-section,
+      html.dm-page-transition .exercise-main.enter-back .details-section,
+      html.dm-page-transition .exercise-main .exercise-visual{animation:none!important}
+      @media(prefers-reduced-motion:reduce){
+        html.dm-page-transition::view-transition-group(daily-motion-page),
+        html.dm-page-transition::view-transition-old(daily-motion-page),
+        html.dm-page-transition::view-transition-new(daily-motion-page){animation:none!important}
+      }
+    `;
+    document.body.append(style);
+  };
+  installPageMotionStyles();
 
   const clearPageState=()=>{
     document.documentElement.classList.remove('app-ready','session-ready');
@@ -31,17 +93,14 @@
   };
 
   const clearPageMotion=()=>{
-    const container=currentContainer();
     const target=pageMotionTarget();
-    if(!container)return;
-    try{applePageAnimation?.cancel?.();}catch{}
-    applePageAnimation=null;
-    [container,target].filter(Boolean).forEach(node=>{
-      window.gsap?.killTweensOf?.(node);
-      window.gsap?.set?.(node,{clearProps:'opacity,transform,willChange'});
-      node.style?.removeProperty('transform');
-      node.style?.removeProperty('opacity');
-    });
+    try{pageAnimation?.cancel?.();}catch{}
+    pageAnimation=null;
+    if(!target)return;
+    target.style.removeProperty('transform');
+    target.style.removeProperty('opacity');
+    target.style.removeProperty('will-change');
+    target.style.removeProperty('transform-origin');
   };
 
   const unmountPage=()=>{
@@ -90,84 +149,43 @@
     },true);
   };
 
-  const runTween=(phase,{from,to,duration,ease})=>{
+  const runPageMotion=phase=>{
     const target=pageMotionTarget();
-    if(!target||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
-    const appleMobile=isAppleMobileWebKit();
-    if(appleMobile){
-      if(phase==='out'||typeof target.animate!=='function')return Promise.resolve();
-      try{applePageAnimation?.cancel?.();}catch{}
-      const direction=Math.sign(Number(from?.x||0))||1;
-      const animation=target.animate(
-        appleSpringPath.map(([offset,x])=>({
-          transform:`translate3d(${direction*x}px,0,0)`,
-          offset
-        })),
-        {duration:applePageEnter*1000,easing:'linear'}
-      );
-      applePageAnimation=animation;
-      return animation.finished.then(
-        ()=>{if(applePageAnimation===animation)applePageAnimation=null;},
-        ()=>{}
-      );
-    }
-    if(!window.gsap)return Promise.resolve();
-    window.gsap.killTweensOf(target);
-    target.style.willChange='opacity, transform';
-    if(phase==='in')window.gsap.set(target,from);
-    return new Promise(resolve=>{
-      window.gsap.to(target,{
-        ...to,
-        force3D:true,
-        duration,
-        ease,
-        overwrite:true,
-        onInterrupt:resolve,
-        onComplete:()=>{
-          if(phase==='in')window.gsap.set(target,{clearProps:'opacity,transform,willChange'});
-          resolve();
-        }
-      });
+    if(!target||reducedMotion.matches||swup?.visit?.animation.native||typeof target.animate!=='function')return Promise.resolve();
+    const spec=pageMotion[pageDirection]||pageMotion.forward;
+    const state=spec[phase];
+    const from=phase==='out'
+      ?{transform:'translate3d(0,0,0) scale(1)',opacity:1}
+      :{transform:`translate3d(${state.x}px,0,0) scale(${state.scale})`,opacity:state.opacity};
+    const to=phase==='out'
+      ?{transform:`translate3d(${state.x}px,0,0) scale(${state.scale})`,opacity:state.opacity}
+      :{transform:'translate3d(0,0,0) scale(1)',opacity:1};
+    try{pageAnimation?.cancel?.();}catch{}
+    target.style.willChange='transform, opacity';
+    target.style.transformOrigin='50% 50%';
+    const animation=target.animate([from,to],{
+      duration:(phase==='out'?pageExit:pageEnter)*1000,
+      easing:pageEase,
+      fill:'both'
     });
+    pageAnimation=animation;
+    return animation.finished.then(
+      ()=>{
+        if(pageAnimation!==animation)return;
+        pageAnimation=null;
+        if(phase==='in')clearPageMotion();
+      },
+      ()=>{}
+    );
   };
 
-  const transition=(outMotion,inMotion)=>({
+  const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>runTween('out',outMotion),
-    in:()=>runTween('in',inMotion)
-  });
+    out:()=>runPageMotion('out'),
+    in:()=>runPageMotion('in')
+  }];
 
-  const pageAnimations=[
-    {
-      from:'(.*)',
-      to:'completion-home',
-      out:()=>runTween('out',{from:{x:0},to:{x:6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{x:-10},to:{x:0},duration:pageEnter,ease:'power2.out'})
-    },
-    {
-      from:'(.*)',
-      to:'workout',
-      out:()=>runTween('out',{from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'})
-    },
-    {
-      from:'(.*)',
-      to:'back-home',
-      out:()=>runTween('out',{from:{x:0},to:{x:6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{x:-10},to:{x:0},duration:pageEnter,ease:'power2.out'})
-    },
-    {
-      from:'(.*)',
-      to:'progress',
-      out:()=>runTween('out',{from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'})
-    },
-    transition(
-      {from:{x:0},to:{x:-6},duration:pageExit,ease:'power2.in'},
-      {from:{x:10},to:{x:0},duration:pageEnter,ease:'power2.out'}
-    )
-  ];
 
   const SWUP_RUNTIME=[
     ['Swup','/vendor/swup/swup-4.10.0.js'],
@@ -181,7 +199,7 @@
   const requiredGlobals=SWUP_RUNTIME.map(([name])=>name);
   let runtimePromise=null;
 
-  const pluginsReady=()=>requiredGlobals.every(name=>typeof window[name]==='function')&&Boolean(window.gsap);
+  const pluginsReady=()=>requiredGlobals.every(name=>typeof window[name]==='function');
 
   const loadRuntimeScript=([name,src])=>{
     if(typeof window[name]==='function')return Promise.resolve();
@@ -269,18 +287,20 @@
 
     const finishTransition=()=>{
       backPending=false;
-      document.documentElement.classList.remove('dm-page-transition','dm-page-back');
+      document.documentElement.classList.remove('dm-page-transition','dm-page-fallback','dm-page-back');
       clearPageMotion();
     };
 
     swup.hooks.on('visit:start',visit=>{
       visit.animation.wait=true;
+      const historyBack=visit.history.popstate&&visit.history.direction==='backwards';
+      const namedBack=visit.animation.name==='back-home'||visit.animation.name==='completion-home';
+      pageDirection=historyBack||namedBack?'back':'forward';
+      if(historyBack)visit.animation.name='back-home';
       visit.animation.native=canUseNativePageTransition();
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
-      document.documentElement.classList.toggle('dm-page-back',visit.animation.name==='back-home'||(visit.history.popstate&&visit.history.direction==='backwards'));
-      if(visit.history.popstate&&visit.history.direction==='backwards'){
-        visit.animation.name='back-home';
-      }
+      document.documentElement.classList.toggle('dm-page-fallback',!visit.animation.native&&!reducedMotion.matches);
+      document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
     });
 
     swup.hooks.on('fetch:error',visit=>{
