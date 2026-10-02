@@ -1,8 +1,8 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.09;
-  const pageEnter=.22;
+  const pageExit=.10;
+  const pageEnter=.18;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -96,14 +96,15 @@
         const y=Number(vars?.y)||0;
         return `translate3d(${x}px,${y}px,0)`;
       };
+      const opacityFor=(vars,fallback)=>Number.isFinite(Number(vars?.opacity))?Number(vars.opacity):fallback;
       const animation=target.animate(
         [
-          {transform:transformFor(from)},
-          {transform:transformFor(to)}
+          {transform:transformFor(from),opacity:opacityFor(from,1)},
+          {transform:transformFor(to),opacity:opacityFor(to,1)}
         ],
         {
           duration:duration*1000,
-          easing:phase==='out'?'cubic-bezier(.4,0,.8,.2)':'cubic-bezier(.16,.82,.24,1)',
+          easing:'cubic-bezier(.2,.72,.2,1)',
           fill:phase==='out'?'forwards':'none'
         }
       );
@@ -144,30 +145,30 @@
     {
       from:'(.*)',
       to:'completion-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,x:5},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,x:-14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:.72,x:-8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'workout',
-      out:()=>runTween('out',{from:{},to:{opacity:0,x:-5},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,x:14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,x:5},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,x:-14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:.72,x:-8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'progress',
-      out:()=>runTween('out',{from:{},to:{opacity:0,x:-5},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,x:14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     transition(
-      {from:{},to:{opacity:0,x:-4},duration:pageExit,ease:'power2.in'},
-      {from:{opacity:0,x:12},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'}
+      {from:{opacity:1,x:0},to:{opacity:.72,x:-6},duration:pageExit,ease:'power2.in'},
+      {from:{opacity:.72,x:8},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'}
     )
   ];
 
@@ -330,6 +331,7 @@
     });
   };
 
+  // Keep a first tap in this document while local navigation scripts finish.
   document.addEventListener('click',event=>{
     if(swup||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
