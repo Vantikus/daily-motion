@@ -3,6 +3,11 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageExit=.07;
   const pageEnter=.28;
+  const applePageEnter=.32;
+  const appleSpringPath=[
+    [0,16],[.08,12.38],[.16,5.54],[.24,-.13],[.32,-2.92],[.4,-3.13],[.48,-1.97],
+    [.56,-.59],[.64,.34],[.72,.67],[.8,.56],[.88,.28],[.96,.03],[1,0]
+  ];
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -90,26 +95,16 @@
     if(!target||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
     const appleMobile=isAppleMobileWebKit();
     if(appleMobile){
-      if(typeof target.animate!=='function')return Promise.resolve();
+      if(phase==='out'||typeof target.animate!=='function')return Promise.resolve();
       try{applePageAnimation?.cancel?.();}catch{}
-      const direction=Math.sign(Number((phase==='in'?from?.x:to?.x)||0))||1;
-      const animation=phase==='out'
-        ?target.animate(
-          [
-            {transform:'translate3d(0,0,0)'},
-            {transform:`translate3d(${direction*6}px,0,0)`}
-          ],
-          {duration:duration*1000,easing:'cubic-bezier(.4,0,.8,.2)',fill:'forwards'}
-        )
-        :target.animate(
-          [
-            {transform:`translate3d(${direction*10}px,0,0)`,offset:0,easing:'cubic-bezier(.16,.82,.24,1)'},
-            {transform:`translate3d(${-direction*1.25}px,0,0)`,offset:.68,easing:'cubic-bezier(.2,.72,.2,1)'},
-            {transform:`translate3d(${direction*.45}px,0,0)`,offset:.86,easing:'cubic-bezier(.2,.72,.2,1)'},
-            {transform:'translate3d(0,0,0)',offset:1}
-          ],
-          {duration:duration*1000,easing:'linear'}
-        );
+      const direction=Math.sign(Number(from?.x||0))||1;
+      const animation=target.animate(
+        appleSpringPath.map(([offset,x])=>({
+          transform:`translate3d(${direction*x}px,0,0)`,
+          offset
+        })),
+        {duration:applePageEnter*1000,easing:'linear'}
+      );
       applePageAnimation=animation;
       return animation.finished.then(
         ()=>{if(applePageAnimation===animation)applePageAnimation=null;},
@@ -333,12 +328,13 @@
     });
   };
 
+  // Keep a first tap in this document while local navigation scripts finish.
   document.addEventListener('click',event=>{
     if(swup||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
     if(!link||link.target&&link.target!=='_self')return;
     const url=new URL(link.href,location.href);
-    if(url.origin!==location.origin||!/(?:index|session|progress).html$/.test(url.pathname))return;
+    if(url.origin!==location.origin||!/(?:index|session|progress)\.html$/.test(url.pathname))return;
     event.preventDefault();
     navigateWhenReady(url.pathname+url.search+url.hash);
   },true);

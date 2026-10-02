@@ -89,15 +89,7 @@ test('native navigation remains usable when the Swup runtime cannot load',async(
 for(const native of [true,false]){
   test(`rapid interrupted visits settle with ${native?'browser snapshots':'fallback animation'}`,async({page})=>{
     await page.addInitScript(native=>{
-      if(native){
-        Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
-          'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/153 Safari/537.36'
-        });
-        Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'Linux x86_64'});
-        Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=> 0});
-      }else{
-        document.startViewTransition=undefined;
-      }
+      if(!native)document.startViewTransition=undefined;
       window.__snapshots=0;
       if(document.startViewTransition){
         const start=document.startViewTransition.bind(document);
@@ -137,21 +129,74 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone navigation uses native spring motion without snapshots or GSAP page tweens',async({page})=>{
+test('iPhone page motion is one transform-only spring on the incoming surface',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
+    });
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+    window.__dmPageAnimations=[];
+    const animate=Element.prototype.animate;
+    Element.prototype.animate=function(keyframes,options){
+      if(this.matches?.('.app-shell,.exercise-app')){
+        window.__dmPageAnimations.push({
+          page:this.closest('#swup')?.dataset.page||'',
+          keyframes:Array.from(keyframes,frame=>({...frame})),
+          options:{...options}
+        });
+      }
+      return animate.call(this,keyframes,options);
+    };
+  });
+  await page.goto('/index.html');
+  await expectSwup(page);
+
+  const readX=transform=>Number(/translate3d\(([-.\d]+)px/.exec(transform)?.[1]||0);
+  const assertSpring=async({destination,startSign})=>{
+    const calls=await page.evaluate(()=>window.__dmPageAnimations);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].page).toBe(destination);
+    expect(calls[0].options.duration).toBe(320);
+    expect(calls[0].options.easing).toBe('linear');
+    expect(calls[0].keyframes.length).toBeGreaterThan(10);
+    expect(calls[0].keyframes.every(frame=>frame.transform&&!('opacity' in frame))).toBe(true);
+    const xs=calls[0].keyframes.map(frame=>readX(frame.transform));
+    expect(Math.sign(xs[0])).toBe(startSign);
+    expect(Math.abs(xs[0])).toBeGreaterThanOrEqual(15);
+    if(startSign>0){
+      expect(Math.min(...xs)).toBeLessThan(-2.5);
+      expect(xs.slice(xs.indexOf(Math.min(...xs))+1).some(x=>x>.5)).toBe(true);
+    }else{
+      expect(Math.max(...xs)).toBeGreaterThan(2.5);
+      expect(xs.slice(xs.indexOf(Math.max(...xs))+1).some(x=>x<-.5)).toBe(true);
+    }
+    expect(xs.at(-1)).toBe(0);
+  };
+
+  await page.evaluate(()=>{
+    window.__dmPageAnimations=[];
+    DailyMotionNavigate('progress.html',{animation:'progress'});
+  });
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  await assertSpring({destination:'progress',startSign:1});
+
+  await page.evaluate(()=>{
+    window.__dmPageAnimations=[];
+    DailyMotionBack();
+  });
+  await expect(page.locator('#todayCard')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  await assertSpring({destination:'home',startSign:-1});
+});
+
+test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
     });
     Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
     window.__snapshots=0;
-    window.__iosPageNativeAnimations=[];
-    const originalAnimate=Element.prototype.animate;
-    Element.prototype.animate=function(keyframes,options){
-      if(this.matches?.('.app-shell,.exercise-app')){
-        window.__iosPageNativeAnimations.push({keyframes,options});
-      }
-      return originalAnimate.call(this,keyframes,options);
-    };
     const start=document.startViewTransition?.bind(document);
     if(start){
       document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
@@ -159,58 +204,13 @@ test('iPhone navigation uses native spring motion without snapshots or GSAP page
   });
   await page.goto('/index.html');
   await expectSwup(page);
-  const token=await page.evaluate(()=>{
-    window.__iosFallbackToken=crypto.randomUUID();
-    window.__iosPageGsapTweens=0;
-    const original=gsap.to.bind(gsap);
-    gsap.to=(target,vars)=>{
-      if(target?.matches?.('.app-shell,.exercise-app'))window.__iosPageGsapTweens++;
-      return original(target,vars);
-    };
-    return window.__iosFallbackToken;
-  });
+  const token=await page.evaluate(()=>window.__iosFallbackToken=crypto.randomUUID());
   await page.evaluate(()=>DailyMotionNavigate('progress.html',{animation:'progress'}));
   await expect(page.locator('#historyCalendar')).toBeVisible();
   await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
   await expect(page.locator('#swup')).toHaveCSS('opacity','1');
   expect(await page.evaluate(()=>window.__iosFallbackToken)).toBe(token);
   expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
-  expect(await page.evaluate(()=>window.__iosPageGsapTweens)).toBe(0);
-  const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
-  expect(animations.length).toBe(2);
-  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>['transform','offset','easing'].includes(key))))).toBe(true);
-  expect(animations.map(entry=>entry.options.duration)).toEqual([70,280]);
-  expect(animations[0].keyframes[1].transform).toContain('-6px');
-  expect(animations[1].keyframes[0].transform).toContain('10px');
-  expect(animations[1].keyframes[1].transform).toContain('-1.25px');
-  expect(animations[1].keyframes[2].transform).toContain('0.45px');
-});
-
-test('iPhone back navigation mirrors the spring direction',async({page})=>{
-  await page.addInitScript(()=>{
-    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
-    });
-    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
-    window.__iosPageNativeAnimations=[];
-    const originalAnimate=Element.prototype.animate;
-    Element.prototype.animate=function(keyframes,options){
-      if(this.matches?.('.app-shell,.exercise-app')){
-        window.__iosPageNativeAnimations.push({keyframes,options});
-      }
-      return originalAnimate.call(this,keyframes,options);
-    };
-  });
-  await page.goto('/progress.html');
-  await expectSwup(page);
-  await page.locator('[data-nav-back]').click();
-  await expect(page).toHaveURL(/\/index\.html$/);
-  await expect(page.locator('#todayCard')).toBeVisible();
-  const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
-  expect(animations.length).toBe(2);
-  expect(animations[0].keyframes[1].transform).toContain('6px');
-  expect(animations[1].keyframes[0].transform).toContain('-10px');
-  expect(animations[1].keyframes[1].transform).toContain('1.25px');
 });
 
 test('reduced motion skips page snapshots',async({page})=>{
@@ -247,11 +247,6 @@ test('a first tap waits for local navigation instead of reloading the document',
 
 test('the incoming workout snapshot contains visible exercise content',async({page})=>{
   await page.addInitScript(()=>{
-    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/153 Safari/537.36'
-    });
-    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'Linux x86_64'});
-    Object.defineProperty(navigator,'maxTouchPoints',{configurable:true,get:()=> 0});
     const start=document.startViewTransition?.bind(document);
     if(!start)return;
     document.startViewTransition=(...args)=>{
