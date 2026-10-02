@@ -177,9 +177,37 @@ test('iPhone navigation uses native transform motion instead of snapshots or GSA
   expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
   expect(await page.evaluate(()=>window.__iosPageGsapTweens)).toBe(0);
   const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
-  expect(animations.length).toBe(1);
-  expect(animations[0].keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform'))).toBe(true);
-  expect(animations[0].options.duration).toBeLessThanOrEqual(160);
+  expect(animations.length).toBe(2);
+  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform')))).toBe(true);
+  expect(animations.map(entry=>entry.options.duration)).toEqual([90,220]);
+  expect(animations[0].keyframes[1].transform).toContain('-5px');
+  expect(animations[1].keyframes[0].transform).toContain('14px');
+});
+
+test('iPhone back navigation mirrors the native page direction',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
+    });
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+    window.__iosPageNativeAnimations=[];
+    const originalAnimate=Element.prototype.animate;
+    Element.prototype.animate=function(keyframes,options){
+      if(this.matches?.('.app-shell,.exercise-app')){
+        window.__iosPageNativeAnimations.push({keyframes,options});
+      }
+      return originalAnimate.call(this,keyframes,options);
+    };
+  });
+  await page.goto('/progress.html');
+  await expectSwup(page);
+  await page.locator('[data-nav-back]').click();
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('#todayCard')).toBeVisible();
+  const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
+  expect(animations.length).toBe(2);
+  expect(animations[0].keyframes[1].transform).toContain('5px');
+  expect(animations[1].keyframes[0].transform).toContain('-14px');
 });
 
 test('reduced motion skips page snapshots',async({page})=>{

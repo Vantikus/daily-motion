@@ -1,6 +1,6 @@
 # Daily Motion — краткая памятка
 
-Версия: v242. Исходная пользовательская база: daily-motion-main.zip (v239); v240 и v241 продолжены из этой локальной линии без чтения GitHub-кода.
+Версия: v243. Исходная пользовательская база: daily-motion-main.zip (v239); v240 и v241 продолжены из этой локальной линии без чтения GitHub-кода.
 Работать только с последним ZIP. Не читать, не скачивать и не сравнивать код GitHub.
 GitHub использовать только для финальной публикации. Пользователь разрешил
 автоматически публиковать готовые изменения после обязательных проверок.
@@ -15,6 +15,7 @@ GitHub использовать только для финальной публ�
 - Объяснять дизайнеру кратко: что видно, что удобнее и как проверить; без кода и логов.
 
 ## Последние изменения
+- v243: на iPhone/iPadOS возвращены плавные направленные page transitions без потери найденной производительности: browser-native transform-only, forward 5px out + 14px in, back зеркально, 90мс + 220мс. Без opacity, scale, snapshots и GSAP frame-loop. Остальные анимации и UI не менялись.
 - v242: iPhone/iPadOS обычные UI-анимации переведены с JS frame-loop на browser-native WAAPI transform-only: page enter, sheet open/close и workout stage/micro motion. Затемнение Settings возвращено статичным и больше не анимируется. Drag/snap/dismiss physics, desktop motion, дизайн, размеры, тексты и safe-area не менялись.
 - v241: performance-pass для iPhone/iPadOS на 60 Гц. Page navigation стала transform-only: без outgoing fade и без opacity на входе; анимируется только видимая page surface. Мобильные Settings больше не затемняют фон и не анимируют backdrop opacity; sheet open/close двигает сам sheet напрямую, без покадрового JS repaint. На workout смена упражнения использует один короткий transform вместо нескольких одновременно анимируемых блоков. Дизайн, размеры, тексты, safe-area, нижняя панель и drag/snap/dismiss physics не менялись.
 - v240: на iPhone/iPadOS page navigation больше не использует полноэкранные View Transition snapshots. Swup сохраняет тот же документ и переключается на compositor-only GSAP fallback (`transform + opacity`), чтобы убрать snapshot capture/composite spike на 60 Гц. Быстрый page rhythm возвращён к 80 мс exit + 180–200 мс enter; native snapshots на остальных поддерживаемых платформах остаются 280 мс. Theme View Transition, sheets, safe-area, геометрия и тексты не менялись. Добавлена регрессия, что iPhone-путь не запускает page snapshots.

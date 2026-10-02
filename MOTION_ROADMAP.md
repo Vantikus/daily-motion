@@ -41,7 +41,7 @@ CSS не должен запускать параллельную entrance/exit 
 View Transition API используется для theme switch и page snapshots там, где они не отключены платформенным guard.
 На iPhone/iPadOS page navigation всегда использует browser-native WAAPI transform-only path: без snapshot layers, без GSAP frame-loop, без outgoing fade и без opacity; двигается только входящая видимая page surface. Theme transition остаётся native.
 Навигация выбирает один owner: native snapshots либо GSAP fallback.
-Page snapshot длится 280ms; обычный fallback — 80ms exit + 180–200ms enter, Apple mobile — до 160ms browser-native transform-only вход.
+Page snapshot длится 280ms; обычный fallback — 80ms exit + 180–200ms enter, Apple mobile — направленный browser-native transform-only переход: 90ms out + 220ms in; forward и back зеркальны.
 Во время page snapshots внутренний reveal упражнений отключён.
 
 ## Frozen motion contracts
