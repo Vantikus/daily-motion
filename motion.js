@@ -20,12 +20,12 @@
   const reducedMotion=()=>reducedQuery.matches;
 
   const SHEET_MOTION=Object.freeze({
-    openDuration:.34,
-    closeDuration:.28,
+    openDuration:.38,
+    closeDuration:.30,
     closeGestureMin:.18,
     closeGestureMax:.32,
     snapFastDuration:.22,
-    snapDuration:.48,
+    snapDuration:.55,
     dismissRatio:.28,
     dismissMin:110,
     dismissMax:190,
