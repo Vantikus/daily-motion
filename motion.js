@@ -158,6 +158,17 @@
     let desktopCloseListener=null;
     let closeFallbackTimer=null;
     const isDesktop=()=>desktopModal.matches;
+    const syncBackdrop=()=>{
+      if(isDesktop()){
+        overlay.style.removeProperty('background');
+        overlay.style.removeProperty('will-change');
+        return;
+      }
+      overlay.style.setProperty('background','transparent');
+      overlay.style.setProperty('will-change','auto','important');
+    };
+    syncBackdrop();
+    listen(desktopModal,'change',syncBackdrop);
 
     const measure=()=>{
       const rect=sheet.getBoundingClientRect();
@@ -190,12 +201,11 @@
     };
     gsap.set(sheet,{force3D:true});
     const setSheetY=gsap.quickSetter?.(sheet,'y','px')||((value)=>gsap.set(sheet,{y:value}));
-    const setOverlayOpacity=gsap.quickSetter?.(overlay,'opacity')||((value)=>gsap.set(overlay,{opacity:value}));
+    const readSheetY=()=>parseFloat(gsap.getProperty(sheet,'y'))||0;
+    const syncCurrentY=()=>{currentY=readSheetY();};
     const paint=y=>{
       currentY=y;
       setSheetY(y);
-      const progress=clamp(Math.max(0,y)/Math.max(1,travel),0,1);
-      setOverlayOpacity(1-progress);
     };
     const clearGesture=()=>{
       const id=pointerId;
@@ -217,7 +227,6 @@
       overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing','is-desktop-modal');
       overlay.setAttribute('aria-hidden','true');
       gsap.set(sheet,{clearProps:'transform'});
-      gsap.set(overlay,{clearProps:'opacity'});
       currentY=0;
       phase='closed';
       unlockScroll();
@@ -228,20 +237,27 @@
       motion=null;
       clearGesture();
       overlay.classList.remove('is-moving','is-settling','is-dismissing');
-      if(!isDesktop())paint(0);
+      if(!isDesktop()){currentY=0;paint(0);}
       phase='open';
       onOpened?.();
     };
     const moveTo=(target,duration,ease,done)=>{
       kill();
       if(reduceMotion.matches){paint(target);done();return;}
-      const position={y:currentY};
-      motion=gsap.to(position,{y:target,duration,ease,onUpdate:()=>paint(position.y),onComplete:done});
+      motion=gsap.to(sheet,{
+        y:target,
+        force3D:true,
+        duration,
+        ease,
+        overwrite:true,
+        onComplete:()=>{currentY=target;done();}
+      });
     };
     const open=()=>{
       if(phase==='open'||phase==='opening')return;
       const wasClosed=phase==='closed';
       clearCloseFallback();
+      if(phase!=='closed')syncCurrentY();
       kill();
       clearGesture();
       phase='opening';
@@ -251,7 +267,6 @@
 
       if(isDesktop()){
         gsap.set(sheet,{clearProps:'transform'});
-        gsap.set(overlay,{clearProps:'opacity'});
         overlay.classList.add('is-desktop-modal','is-visible');
         requestAnimationFrame(()=>{
           if(phase==='opening')finishOpen();
@@ -266,6 +281,7 @@
     const close=(velocity=0,fromGesture=false)=>{
       if(phase==='closed'||phase==='closing')return;
       onBeforeClose?.();
+      if(!isDesktop())syncCurrentY();
       kill();
       phase='closing';
       clearGesture();
@@ -292,7 +308,6 @@
       overlay.classList.add('is-moving','is-settling','is-dismissing');
       const remaining=Math.max(1,travel-currentY);
       const duration=fromGesture?clamp(remaining/Math.max(1000,velocity),SHEET_MOTION.closeGestureMin,SHEET_MOTION.closeGestureMax):SHEET_MOTION.closeDuration;
-      // Cubic Hermite: match release velocity, settle at rest, no overshoot.
       const slope=clamp(velocity*duration/remaining,0,3);
       const ease=fromGesture?t=>(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t:SHEET_MOTION.closeEase;
       moveTo(travel,duration,ease,finishClosed);
@@ -308,7 +323,6 @@
       overlay.classList.add('is-moving','is-settling');
       if(reduceMotion.matches){finishOpen();return;}
       if(currentY<=0){moveTo(0,SHEET_MOTION.snapFastDuration,SHEET_MOTION.snapEase,finishOpen);return;}
-      // Critically damped return: retain gesture momentum, never bounce past zero.
       const origin=currentY;
       const omega=20;
       const speed=clamp(velocity,-omega*origin,1600);
@@ -321,6 +335,7 @@
     listen(handle,'pointerdown',event=>{
       if(isDesktop()||phase==='closed'||phase==='closing'||pointerId!==null)return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
+      syncCurrentY();
       kill();
       measure();
       phase='dragging';
@@ -345,7 +360,6 @@
     listen(handle,'pointerup',event=>{
       if(phase!=='dragging'||event.pointerId!==pointerId)return;
       const now=performance.now();
-      // A hold before release is not a fling.
       samples=samples.filter(sample=>now-sample.t<=100);
       samples.push({y:event.clientY,t:now});
       const first=samples[0];
@@ -383,7 +397,8 @@
       sheet.classList.remove('is-dragging');
       overlay.setAttribute('aria-hidden','true');
       gsap.set(sheet,{clearProps:'transform'});
-      gsap.set(overlay,{clearProps:'backgroundColor'});
+      overlay.style.removeProperty('background');
+      overlay.style.removeProperty('will-change');
       phase='closed';
     };
     return {open,close:()=>close(0,false),destroy,isOpen:()=>phase!=='closed',state:()=>phase};
@@ -442,7 +457,6 @@
         defaults:{ease:'power3.out'},
         onComplete:()=>{
           gsap.set([nodes.card,nodes.mark,nodes.eyebrow,nodes.title,nodes.meta,nodes.highlight,nodes.stats,nodes.effort,nodes.button].filter(Boolean),{clearProps:'opacity,transform,visibility,willChange,boxShadow'});
-          // Keep the drawn success mark visible until the overlay is cleaned up.
           [nodes.ring,nodes.check].filter(Boolean).forEach(node=>{
             node.style.removeProperty('will-change');
           });
