@@ -137,13 +137,21 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
+test('iPhone navigation uses native transform motion instead of snapshots or GSAP page tweens',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
     });
     Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
     window.__snapshots=0;
+    window.__iosPageNativeAnimations=[];
+    const originalAnimate=Element.prototype.animate;
+    Element.prototype.animate=function(keyframes,options){
+      if(this.matches?.('.app-shell,.exercise-app')){
+        window.__iosPageNativeAnimations.push({keyframes,options});
+      }
+      return originalAnimate.call(this,keyframes,options);
+    };
     const start=document.startViewTransition?.bind(document);
     if(start){
       document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
@@ -153,12 +161,10 @@ test('iPhone navigation uses the compositor fallback instead of page snapshots',
   await expectSwup(page);
   const token=await page.evaluate(()=>{
     window.__iosFallbackToken=crypto.randomUUID();
-    window.__iosPageTweens=[];
+    window.__iosPageGsapTweens=0;
     const original=gsap.to.bind(gsap);
     gsap.to=(target,vars)=>{
-      if(target?.matches?.('.app-shell,.exercise-app')){
-        window.__iosPageTweens.push({opacity:Object.hasOwn(vars,'opacity'),duration:vars.duration});
-      }
+      if(target?.matches?.('.app-shell,.exercise-app'))window.__iosPageGsapTweens++;
       return original(target,vars);
     };
     return window.__iosFallbackToken;
@@ -169,10 +175,11 @@ test('iPhone navigation uses the compositor fallback instead of page snapshots',
   await expect(page.locator('#swup')).toHaveCSS('opacity','1');
   expect(await page.evaluate(()=>window.__iosFallbackToken)).toBe(token);
   expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
-  const tweens=await page.evaluate(()=>window.__iosPageTweens);
-  expect(tweens.length).toBe(1);
-  expect(tweens[0].opacity).toBe(false);
-  expect(tweens[0].duration).toBeLessThanOrEqual(.16);
+  expect(await page.evaluate(()=>window.__iosPageGsapTweens)).toBe(0);
+  const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
+  expect(animations.length).toBe(1);
+  expect(animations[0].keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform'))).toBe(true);
+  expect(animations[0].options.duration).toBeLessThanOrEqual(160);
 });
 
 test('reduced motion skips page snapshots',async({page})=>{
