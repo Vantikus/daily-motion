@@ -11,6 +11,12 @@
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
   const isAppleMobileWebKit=()=>/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  document.documentElement.classList.toggle('dm-apple-mobile',isAppleMobileWebKit());
+  const pageMotionTarget=()=>{
+    const container=currentContainer();
+    if(!container||!isAppleMobileWebKit())return container;
+    return container.querySelector('.app-shell,.exercise-app')||container;
+  };
   const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!isAppleMobileWebKit();
 
   const clearPageState=()=>{
@@ -20,9 +26,12 @@
 
   const clearPageMotion=()=>{
     const container=currentContainer();
+    const target=pageMotionTarget();
     if(!container)return;
-    window.gsap?.killTweensOf?.(container);
-    window.gsap?.set?.(container,{clearProps:'opacity,transform,willChange'});
+    [container,target].filter(Boolean).forEach(node=>{
+      window.gsap?.killTweensOf?.(node);
+      window.gsap?.set?.(node,{clearProps:'opacity,transform,willChange'});
+    });
   };
 
   const unmountPage=()=>{
@@ -72,21 +81,26 @@
   };
 
   const runTween=(phase,{from,to,duration,ease})=>{
-    const container=currentContainer();
-    if(!container||!window.gsap||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
-    window.gsap.killTweensOf(container);
-    container.style.willChange='opacity, transform';
-    if(phase==='in')window.gsap.set(container,from);
+    const target=pageMotionTarget();
+    if(!target||!window.gsap||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
+    const appleMobile=isAppleMobileWebKit();
+    if(appleMobile&&phase==='out')return Promise.resolve();
+    const transformOnly=vars=>Object.fromEntries(Object.entries(vars).filter(([key])=>key!=='opacity'));
+    const fromVars=appleMobile?transformOnly(from):from;
+    const toVars=appleMobile?transformOnly(to):to;
+    window.gsap.killTweensOf(target);
+    if(!appleMobile)target.style.willChange='opacity, transform';
+    if(phase==='in')window.gsap.set(target,fromVars);
     return new Promise(resolve=>{
-      window.gsap.to(container,{
-        ...to,
+      window.gsap.to(target,{
+        ...toVars,
         force3D:true,
-        duration,
+        duration:appleMobile?Math.min(duration,.16):duration,
         ease,
         overwrite:true,
         onInterrupt:resolve,
         onComplete:()=>{
-          if(phase==='in')window.gsap.set(container,{clearProps:'opacity,transform,willChange'});
+          if(phase==='in')window.gsap.set(target,{clearProps:'opacity,transform,willChange'});
           resolve();
         }
       });
@@ -290,7 +304,6 @@
     });
   };
 
-  // Keep a first tap in this document while local navigation scripts finish.
   document.addEventListener('click',event=>{
     if(swup||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
