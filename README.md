@@ -53,7 +53,7 @@ Swup меняет только `#swup`, поэтому page runtimes загру�
 - GSAP Core — page/completion/sheet motion и press feedback;
 - WAAPI — локальные workout/content transitions, где это остаётся единственным владельцем;
 - CSS — статические состояния, urgency pulse и простые transitions;
-- View Transition API — смена темы и page snapshots на поддерживаемых не-iPhone/iPadOS платформах; iPhone/iPadOS page navigation использует browser-native WAAPI transform-only path без GSAP frame-loop.
+- View Transition API — смена темы и page snapshots на поддерживаемых не-iPhone/iPadOS платформах; iPhone/iPadOS page navigation использует направленный browser-native WAAPI transform-only path без GSAP frame-loop, opacity и snapshots.
 
 Один interaction не должен иметь двух независимых motion-owner.
 
