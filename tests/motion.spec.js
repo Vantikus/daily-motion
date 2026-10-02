@@ -28,9 +28,52 @@ test('home settings opens and closes cleanly',async({page})=>{
     background:getComputedStyle(node).backgroundColor
   }));
   expect(overlayMotion.opacity).toBe('1');
-  expect(overlayMotion.background).toBe('rgba(0, 0, 0, 0)');
+  expect(overlayMotion.background).toBe('rgba(23, 25, 23, 0.18)');
   await page.locator('#settingsClose').click();
   await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+});
+
+
+
+test('iPhone settings open and close use native transform animation with a static dimmed backdrop',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
+    });
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+    window.__sheetNativeAnimations=[];
+    const original=Element.prototype.animate;
+    Element.prototype.animate=function(keyframes,options){
+      if(this.matches?.('.settings-sheet,.routine-settings-sheet')){
+        window.__sheetNativeAnimations.push({keyframes,options});
+      }
+      return original.call(this,keyframes,options);
+    };
+  });
+  await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+  await page.evaluate(()=>{
+    window.__sheetGsapTweens=0;
+    const original=gsap.to.bind(gsap);
+    gsap.to=(target,vars)=>{
+      if(target?.matches?.('.settings-sheet,.routine-settings-sheet'))window.__sheetGsapTweens++;
+      return original(target,vars);
+    };
+  });
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(430);
+  await page.locator('#settingsClose').click();
+  await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','true',{timeout:1000});
+
+  const result=await page.evaluate(()=>({
+    native:window.__sheetNativeAnimations,
+    gsap:window.__sheetGsapTweens,
+    backdrop:getComputedStyle(document.querySelector('#settingsOverlay')).backgroundColor
+  }));
+  expect(result.native.length).toBeGreaterThanOrEqual(2);
+  expect(result.native.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform')))).toBe(true);
+  expect(result.gsap).toBe(0);
+  expect(result.backdrop).toBe('rgba(23, 25, 23, 0.18)');
 });
 
 test('short sheet drag snaps back instead of dismissing',async({page})=>{
