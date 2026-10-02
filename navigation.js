@@ -1,8 +1,8 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.08;
-  const pageEnter=.18;
+  const pageExit=.10;
+  const pageEnter=.20;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -102,29 +102,29 @@
       from:'(.*)',
       to:'completion-home',
       out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
+      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'workout',
       out:()=>runTween('out',{from:{},to:{opacity:0,y:-3},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:6},to:{opacity:1,y:0},duration:pageEnter+.02,ease:'power3.out'})
+      in:()=>runTween('in',{from:{opacity:0,y:6},to:{opacity:1,y:0},duration:pageEnter+.02,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
       out:()=>runTween('out',{from:{},to:{opacity:0,y:3},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:-4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
+      in:()=>runTween('in',{from:{opacity:0,y:-4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'progress',
       out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'})
+      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
     },
     transition(
       {from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'},
-      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power3.out'}
+      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'}
     )
   ];
 

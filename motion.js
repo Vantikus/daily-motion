@@ -32,7 +32,7 @@
     flingMinY:52,
     flingVelocity:700,
     flingProjection:.12,
-    openEase:'power3.out',
+    openEase:'power2.out',
     closeEase:'power2.inOut',
     snapEase:'power2.out'
   });
@@ -188,11 +188,14 @@
       motion?.kill();
       motion=null;
     };
+    gsap.set(sheet,{force3D:true});
+    const setSheetY=gsap.quickSetter?.(sheet,'y','px')||((value)=>gsap.set(sheet,{y:value}));
+    const setOverlayOpacity=gsap.quickSetter?.(overlay,'opacity')||((value)=>gsap.set(overlay,{opacity:value}));
     const paint=y=>{
       currentY=y;
-      gsap.set(sheet,{y,force3D:true});
+      setSheetY(y);
       const progress=clamp(Math.max(0,y)/Math.max(1,travel),0,1);
-      gsap.set(overlay,{backgroundColor:`rgba(23,25,23,${.18*(1-progress)})`});
+      setOverlayOpacity(1-progress);
     };
     const clearGesture=()=>{
       const id=pointerId;
@@ -214,7 +217,7 @@
       overlay.classList.remove('is-visible','is-moving','is-settling','is-dismissing','is-desktop-modal');
       overlay.setAttribute('aria-hidden','true');
       gsap.set(sheet,{clearProps:'transform'});
-      gsap.set(overlay,{clearProps:'backgroundColor'});
+      gsap.set(overlay,{clearProps:'opacity'});
       currentY=0;
       phase='closed';
       unlockScroll();
@@ -248,7 +251,7 @@
 
       if(isDesktop()){
         gsap.set(sheet,{clearProps:'transform'});
-        gsap.set(overlay,{clearProps:'backgroundColor'});
+        gsap.set(overlay,{clearProps:'opacity'});
         overlay.classList.add('is-desktop-modal','is-visible');
         requestAnimationFrame(()=>{
           if(phase==='opening')finishOpen();
