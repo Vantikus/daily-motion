@@ -24,6 +24,7 @@
 .hi-sun{--hi-mask:url("vendor/heroicons/sun.svg")}
 .hi-moon{--hi-mask:url("vendor/heroicons/moon.svg")}
 .hi-chevron-left{--hi-mask:url("vendor/heroicons/chevron-left.svg")}
+.hi-chevron-down{--hi-mask:url("vendor/heroicons/chevron-down.svg")}
 .hi-ellipsis-horizontal{--hi-mask:url("vendor/heroicons/ellipsis-horizontal.svg")}
 .hi-arrows-up-down{--hi-mask:url("vendor/heroicons/arrows-up-down.svg")}
 .hi-key{--hi-mask:url("vendor/heroicons/key.svg")}
