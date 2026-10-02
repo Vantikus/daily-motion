@@ -178,10 +178,12 @@ test('iPhone navigation uses native transform motion instead of snapshots or GSA
   expect(await page.evaluate(()=>window.__iosPageGsapTweens)).toBe(0);
   const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
   expect(animations.length).toBe(2);
-  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform')))).toBe(true);
-  expect(animations.map(entry=>entry.options.duration)).toEqual([90,220]);
-  expect(animations[0].keyframes[1].transform).toContain('-5px');
-  expect(animations[1].keyframes[0].transform).toContain('14px');
+  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>['transform','opacity'].includes(key))))).toBe(true);
+  expect(animations.map(entry=>entry.options.duration)).toEqual([100,180]);
+  expect(animations[0].keyframes[1].transform).toContain('-6px');
+  expect(animations[1].keyframes[0].transform).toContain('8px');
+  expect(animations[0].keyframes[1].opacity).toBeCloseTo(.72);
+  expect(animations[1].keyframes[0].opacity).toBeCloseTo(.72);
 });
 
 test('iPhone back navigation mirrors the native page direction',async({page})=>{
@@ -206,8 +208,10 @@ test('iPhone back navigation mirrors the native page direction',async({page})=>{
   await expect(page.locator('#todayCard')).toBeVisible();
   const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
   expect(animations.length).toBe(2);
-  expect(animations[0].keyframes[1].transform).toContain('5px');
-  expect(animations[1].keyframes[0].transform).toContain('-14px');
+  expect(animations[0].keyframes[1].transform).toContain('6px');
+  expect(animations[1].keyframes[0].transform).toContain('-8px');
+  expect(animations[0].keyframes[1].opacity).toBeCloseTo(.72);
+  expect(animations[1].keyframes[0].opacity).toBeCloseTo(.72);
 });
 
 test('reduced motion skips page snapshots',async({page})=>{
