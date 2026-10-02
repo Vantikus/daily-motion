@@ -1,5 +1,10 @@
 # Daily Motion — Changelog
 
+## v243
+- iPhone/iPadOS page transitions снова получили выраженное плавное направление без возврата к тяжёлым snapshot/fade-эффектам;
+- forward navigation: старый экран коротко уходит на 5px влево, новый входит с 14px справа; back navigation зеркальна;
+- оба этапа остаются browser-native WAAPI и transform-only: 90мс выход + 220мс вход, без opacity/scale и без GSAP frame-loop.
+
 ## v242
 - iPhone/iPadOS ordinary UI motion переведён с покадровых GSAP updates на browser-native Web Animations для transform-only переходов страниц и open/close нижних панелей;
 - затемнение Settings возвращено как статичный фон: оно появляется вместе с панелью, но не анимирует opacity;
