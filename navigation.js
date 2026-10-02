@@ -7,6 +7,7 @@
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
+  let applePageAnimation=null;
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
@@ -28,9 +29,12 @@
     const container=currentContainer();
     const target=pageMotionTarget();
     if(!container)return;
+    try{applePageAnimation?.cancel?.();}catch{}
+    applePageAnimation=null;
     [container,target].filter(Boolean).forEach(node=>{
       window.gsap?.killTweensOf?.(node);
       window.gsap?.set?.(node,{clearProps:'opacity,transform,willChange'});
+      if(node.style)node.style.removeProperty('transform');
     });
   };
 
@@ -82,20 +86,39 @@
 
   const runTween=(phase,{from,to,duration,ease})=>{
     const target=pageMotionTarget();
-    if(!target||!window.gsap||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
+    if(!target||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
     const appleMobile=isAppleMobileWebKit();
-    if(appleMobile&&phase==='out')return Promise.resolve();
-    const transformOnly=vars=>Object.fromEntries(Object.entries(vars).filter(([key])=>key!=='opacity'));
-    const fromVars=appleMobile?transformOnly(from):from;
-    const toVars=appleMobile?transformOnly(to):to;
+    if(appleMobile){
+      if(phase==='out')return Promise.resolve();
+      if(typeof target.animate!=='function')return Promise.resolve();
+      try{applePageAnimation?.cancel?.();}catch{}
+      const fromY=Number(from?.y)||0;
+      const toY=Number(to?.y)||0;
+      const animation=target.animate(
+        [
+          {transform:`translate3d(0,${fromY}px,0)`},
+          {transform:`translate3d(0,${toY}px,0)`}
+        ],
+        {
+          duration:Math.min(duration,.16)*1000,
+          easing:'cubic-bezier(.16,.82,.24,1)'
+        }
+      );
+      applePageAnimation=animation;
+      return animation.finished.then(
+        ()=>{if(applePageAnimation===animation)applePageAnimation=null;},
+        ()=>{}
+      );
+    }
+    if(!window.gsap)return Promise.resolve();
     window.gsap.killTweensOf(target);
-    if(!appleMobile)target.style.willChange='opacity, transform';
-    if(phase==='in')window.gsap.set(target,fromVars);
+    target.style.willChange='opacity, transform';
+    if(phase==='in')window.gsap.set(target,from);
     return new Promise(resolve=>{
       window.gsap.to(target,{
-        ...toVars,
+        ...to,
         force3D:true,
-        duration:appleMobile?Math.min(duration,.16):duration,
+        duration,
         ease,
         overwrite:true,
         onInterrupt:resolve,
