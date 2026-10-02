@@ -1,8 +1,8 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.08;
-  const pageEnter=.18;
+  const pageExit=.09;
+  const pageEnter=.22;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -89,19 +89,22 @@
     if(!target||reducedMotion.matches||swup?.visit?.animation.native)return Promise.resolve();
     const appleMobile=isAppleMobileWebKit();
     if(appleMobile){
-      if(phase==='out')return Promise.resolve();
       if(typeof target.animate!=='function')return Promise.resolve();
       try{applePageAnimation?.cancel?.();}catch{}
-      const fromY=Number(from?.y)||0;
-      const toY=Number(to?.y)||0;
+      const transformFor=vars=>{
+        const x=Number(vars?.x)||0;
+        const y=Number(vars?.y)||0;
+        return `translate3d(${x}px,${y}px,0)`;
+      };
       const animation=target.animate(
         [
-          {transform:`translate3d(0,${fromY}px,0)`},
-          {transform:`translate3d(0,${toY}px,0)`}
+          {transform:transformFor(from)},
+          {transform:transformFor(to)}
         ],
         {
-          duration:Math.min(duration,.16)*1000,
-          easing:'cubic-bezier(.16,.82,.24,1)'
+          duration:duration*1000,
+          easing:phase==='out'?'cubic-bezier(.4,0,.8,.2)':'cubic-bezier(.16,.82,.24,1)',
+          fill:phase==='out'?'forwards':'none'
         }
       );
       applePageAnimation=animation;
@@ -141,30 +144,30 @@
     {
       from:'(.*)',
       to:'completion-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,x:5},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,x:-14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'workout',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-3},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:6},to:{opacity:1,y:0},duration:pageEnter+.02,ease:'power2.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,x:-5},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,x:14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'back-home',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:3},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:-4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,x:5},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,x:-14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     {
       from:'(.*)',
       to:'progress',
-      out:()=>runTween('out',{from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'}),
-      in:()=>runTween('in',{from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'})
+      out:()=>runTween('out',{from:{},to:{opacity:0,x:-5},duration:pageExit,ease:'power2.in'}),
+      in:()=>runTween('in',{from:{opacity:0,x:14},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'})
     },
     transition(
-      {from:{},to:{opacity:0,y:-2},duration:pageExit,ease:'power2.in'},
-      {from:{opacity:0,y:4},to:{opacity:1,y:0},duration:pageEnter,ease:'power2.out'}
+      {from:{},to:{opacity:0,x:-4},duration:pageExit,ease:'power2.in'},
+      {from:{opacity:0,x:12},to:{opacity:1,x:0},duration:pageEnter,ease:'power2.out'}
     )
   ];
 
