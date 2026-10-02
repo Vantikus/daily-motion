@@ -1,8 +1,8 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.10;
-  const pageEnter=.20;
+  const pageExit=.08;
+  const pageEnter=.18;
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
@@ -10,6 +10,8 @@
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
+  const isAppleMobileWebKit=()=>/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!isAppleMobileWebKit();
 
   const clearPageState=()=>{
     document.documentElement.classList.remove('app-ready','session-ready');
@@ -78,6 +80,7 @@
     return new Promise(resolve=>{
       window.gsap.to(container,{
         ...to,
+        force3D:true,
         duration,
         ease,
         overwrite:true,
@@ -234,7 +237,7 @@
 
     swup.hooks.on('visit:start',visit=>{
       visit.animation.wait=true;
-      visit.animation.native=Boolean(document.startViewTransition)&&!reducedMotion.matches;
+      visit.animation.native=canUseNativePageTransition();
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
       document.documentElement.classList.toggle('dm-page-back',visit.animation.name==='back-home'||(visit.history.popstate&&visit.history.direction==='backwards'));
       if(visit.history.popstate&&visit.history.direction==='backwards'){
@@ -293,7 +296,7 @@
     const link=event.target.closest?.('a[href]:not([data-no-swup]):not([data-nav-back]):not([download])');
     if(!link||link.target&&link.target!=='_self')return;
     const url=new URL(link.href,location.href);
-    if(url.origin!==location.origin||!/(?:index|session|progress)\.html$/.test(url.pathname))return;
+    if(url.origin!==location.origin||!/(?:index|session|progress).html$/.test(url.pathname))return;
     event.preventDefault();
     navigateWhenReady(url.pathname+url.search+url.hash);
   },true);

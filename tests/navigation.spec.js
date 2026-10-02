@@ -129,6 +129,29 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
+test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
+    });
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+    window.__snapshots=0;
+    const start=document.startViewTransition?.bind(document);
+    if(start){
+      document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
+    }
+  });
+  await page.goto('/index.html');
+  await expectSwup(page);
+  const token=await page.evaluate(()=>window.__iosFallbackToken=crypto.randomUUID());
+  await page.evaluate(()=>DailyMotionNavigate('progress.html',{animation:'progress'}));
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
+  await expect(page.locator('#swup')).toHaveCSS('opacity','1');
+  expect(await page.evaluate(()=>window.__iosFallbackToken)).toBe(token);
+  expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
+});
+
 test('reduced motion skips page snapshots',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.addInitScript(()=>{

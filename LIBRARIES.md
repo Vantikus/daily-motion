@@ -20,7 +20,7 @@ Native platform dependencies:
 - Web Audio / HTMLAudioElement — audio;
 - Wake Lock — active workout;
 - Vibration API — optional haptics;
-- View Transition API — theme transition when supported;
+- View Transition API — theme transition and guarded page snapshots when supported; iPhone/iPadOS page navigation uses the GSAP fallback;
 - WAAPI — narrow local transitions.
 
 Development only:
