@@ -18,7 +18,7 @@
     padding-bottom:max(4px, env(safe-area-inset-bottom,0px));
   }
   .session-nav__inner{
-    transform:translateY(4px);
+    transform:translateY(6px);
   }
 }
 
