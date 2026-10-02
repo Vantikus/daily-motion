@@ -137,7 +137,7 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone navigation uses native transform motion instead of snapshots or GSAP page tweens',async({page})=>{
+test('iPhone navigation uses native spring motion without snapshots or GSAP page tweens',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
@@ -178,15 +178,15 @@ test('iPhone navigation uses native transform motion instead of snapshots or GSA
   expect(await page.evaluate(()=>window.__iosPageGsapTweens)).toBe(0);
   const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
   expect(animations.length).toBe(2);
-  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>['transform','opacity'].includes(key))))).toBe(true);
-  expect(animations.map(entry=>entry.options.duration)).toEqual([100,180]);
+  expect(animations.every(entry=>entry.keyframes.every(frame=>Object.keys(frame).every(key=>['transform','offset','easing'].includes(key))))).toBe(true);
+  expect(animations.map(entry=>entry.options.duration)).toEqual([70,280]);
   expect(animations[0].keyframes[1].transform).toContain('-6px');
-  expect(animations[1].keyframes[0].transform).toContain('8px');
-  expect(animations[0].keyframes[1].opacity).toBeCloseTo(.72);
-  expect(animations[1].keyframes[0].opacity).toBeCloseTo(.72);
+  expect(animations[1].keyframes[0].transform).toContain('10px');
+  expect(animations[1].keyframes[1].transform).toContain('-1.25px');
+  expect(animations[1].keyframes[2].transform).toContain('0.45px');
 });
 
-test('iPhone back navigation mirrors the native page direction',async({page})=>{
+test('iPhone back navigation mirrors the spring direction',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
@@ -209,9 +209,8 @@ test('iPhone back navigation mirrors the native page direction',async({page})=>{
   const animations=await page.evaluate(()=>window.__iosPageNativeAnimations);
   expect(animations.length).toBe(2);
   expect(animations[0].keyframes[1].transform).toContain('6px');
-  expect(animations[1].keyframes[0].transform).toContain('-8px');
-  expect(animations[0].keyframes[1].opacity).toBeCloseTo(.72);
-  expect(animations[1].keyframes[0].opacity).toBeCloseTo(.72);
+  expect(animations[1].keyframes[0].transform).toContain('-10px');
+  expect(animations[1].keyframes[1].transform).toContain('1.25px');
 });
 
 test('reduced motion skips page snapshots',async({page})=>{
