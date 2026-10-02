@@ -1,5 +1,11 @@
 # Daily Motion — Changelog
 
+## v242
+- iPhone/iPadOS ordinary UI motion переведён с покадровых GSAP updates на browser-native Web Animations для transform-only переходов страниц и open/close нижних панелей;
+- затемнение Settings возвращено как статичный фон: оно появляется вместе с панелью, но не анимирует opacity;
+- workout fullscreen на Apple mobile упрощён до одного transform-анимируемого stage без каскада opacity/stagger, а countdown/timer micro-motion на iPhone оставлен transform-only;
+- sheet drag/snap/dismiss physics, дизайн, размеры, тексты, safe-area и desktop motion не менялись.
+
 ## v241
 - iPhone/iPadOS motion облегчён для 60 Гц: page navigation использует только короткий входящий transform без fade/out-animation, а смена упражнения не запускает каскад нескольких opacity-анимаций;
 - мобильные настройки больше не затемняют весь экран и не анимируют backdrop opacity; sheet открывается/закрывается только transform-анимацией;
