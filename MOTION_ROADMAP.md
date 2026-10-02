@@ -39,14 +39,15 @@ CSS не должен запускать параллельную entrance/exit 
 
 ### Theme
 View Transition API используется для theme switch и page snapshots там, где они не отключены платформенным guard.
-На iPhone/iPadOS page navigation всегда использует GSAP fallback, чтобы не создавать полноэкранные snapshot layers; theme transition остаётся native.
+На iPhone/iPadOS page navigation всегда использует облегчённый GSAP fallback: без snapshot layers, без outgoing fade и без opacity; двигается только входящая видимая page surface. Theme transition остаётся native.
 Навигация выбирает один owner: native snapshots либо GSAP fallback.
-Page snapshot длится 280ms; fallback — 80ms exit + 180–200ms enter.
+Page snapshot длится 280ms; обычный fallback — 80ms exit + 180–200ms enter, Apple mobile — до 160ms transform-only вход.
 Во время page snapshots внутренний reveal упражнений отключён.
 
 ## Frozen motion contracts
 
 Bottom sheet:
+- mobile backdrop static/transparent; open/close motion принадлежит только sheet transform;
 - open: 0.38s;
 - close: 0.30s;
 - dismiss ratio: 0.28;
