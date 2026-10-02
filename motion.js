@@ -145,6 +145,7 @@
     const lifecycle=new AbortController();
     const listen=(target,type,handler,options={})=>target?.addEventListener(type,handler,{...options,signal:lifecycle.signal});
     const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+    const appleMobile=/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
     let phase='closed';
     let pointerId=null;
     let startY=0;
@@ -159,13 +160,8 @@
     let closeFallbackTimer=null;
     const isDesktop=()=>desktopModal.matches;
     const syncBackdrop=()=>{
-      if(isDesktop()){
-        overlay.style.removeProperty('background');
-        overlay.style.removeProperty('will-change');
-        return;
-      }
-      overlay.style.setProperty('background','transparent');
-      overlay.style.setProperty('will-change','auto','important');
+      overlay.style.removeProperty('background');
+      overlay.style.removeProperty('will-change');
     };
     syncBackdrop();
     listen(desktopModal,'change',syncBackdrop);
@@ -195,17 +191,35 @@
         closeFallbackTimer=null;
       }
     };
-    const kill=()=>{
-      motion?.kill();
-      motion=null;
-    };
     gsap.set(sheet,{force3D:true});
     const setSheetY=gsap.quickSetter?.(sheet,'y','px')||((value)=>gsap.set(sheet,{y:value}));
-    const readSheetY=()=>parseFloat(gsap.getProperty(sheet,'y'))||0;
+    const readSheetY=()=>{
+      const value=getComputedStyle(sheet).transform;
+      if(!value||value==='none')return 0;
+      if(typeof DOMMatrixReadOnly==='function'){
+        try{return new DOMMatrixReadOnly(value).m42||0;}catch{}
+      }
+      const match=value.match(/^matrix(?:3d)?\((.+)\)$/);
+      if(!match)return 0;
+      const parts=match[1].split(',').map(Number);
+      return value.startsWith('matrix3d')?(parts[13]||0):(parts[5]||0);
+    };
     const syncCurrentY=()=>{currentY=readSheetY();};
     const paint=y=>{
       currentY=y;
       setSheetY(y);
+    };
+    const kill=(preserve=false)=>{
+      if(!motion)return;
+      if(preserve&&typeof motion.cancel==='function'){
+        syncCurrentY();
+        try{motion.cancel();}catch{}
+        paint(currentY);
+      }else{
+        try{motion.kill?.();}catch{}
+        try{motion.cancel?.();}catch{}
+      }
+      motion=null;
     };
     const clearGesture=()=>{
       const id=pointerId;
@@ -241,16 +255,41 @@
       phase='open';
       onOpened?.();
     };
-    const moveTo=(target,duration,ease,done)=>{
-      kill();
+    const moveTo=(target,duration,ease,done,{nativeEligible=true}={})=>{
+      kill(true);
       if(reduceMotion.matches){paint(target);done();return;}
+      if(appleMobile&&nativeEligible&&typeof sheet.animate==='function'){
+        const from=currentY;
+        const cssEase=ease===SHEET_MOTION.openEase
+          ?'cubic-bezier(.16,.82,.24,1)'
+          :ease===SHEET_MOTION.closeEase
+            ?'cubic-bezier(.45,0,.55,1)'
+            :'cubic-bezier(.2,.72,.2,1)';
+        const animation=sheet.animate(
+          [
+            {transform:`translate3d(0,${from}px,0)`},
+            {transform:`translate3d(0,${target}px,0)`}
+          ],
+          {duration:duration*1000,easing:cssEase,fill:'forwards'}
+        );
+        motion=animation;
+        animation.finished.then(()=>{
+          if(motion!==animation)return;
+          currentY=target;
+          paint(target);
+          try{animation.cancel();}catch{}
+          motion=null;
+          done();
+        },()=>{});
+        return;
+      }
       motion=gsap.to(sheet,{
         y:target,
         force3D:true,
         duration,
         ease,
         overwrite:true,
-        onComplete:()=>{currentY=target;done();}
+        onComplete:()=>{currentY=target;motion=null;done();}
       });
     };
     const open=()=>{
@@ -258,7 +297,7 @@
       const wasClosed=phase==='closed';
       clearCloseFallback();
       if(phase!=='closed')syncCurrentY();
-      kill();
+      kill(true);
       clearGesture();
       phase='opening';
       lockScroll();
@@ -282,7 +321,7 @@
       if(phase==='closed'||phase==='closing')return;
       onBeforeClose?.();
       if(!isDesktop())syncCurrentY();
-      kill();
+      kill(true);
       phase='closing';
       clearGesture();
 
@@ -310,7 +349,7 @@
       const duration=fromGesture?clamp(remaining/Math.max(1000,velocity),SHEET_MOTION.closeGestureMin,SHEET_MOTION.closeGestureMax):SHEET_MOTION.closeDuration;
       const slope=clamp(velocity*duration/remaining,0,3);
       const ease=fromGesture?t=>(slope-2)*t*t*t+(3-2*slope)*t*t+slope*t:SHEET_MOTION.closeEase;
-      moveTo(travel,duration,ease,finishClosed);
+      moveTo(travel,duration,ease,finishClosed,{nativeEligible:!fromGesture});
       closeFallbackTimer=setTimeout(()=>{
         if(phase==='closing')finishClosed();
       },Math.ceil(duration*1000)+180);
@@ -336,7 +375,7 @@
       if(isDesktop()||phase==='closed'||phase==='closing'||pointerId!==null)return;
       if(event.pointerType==='mouse'&&event.button!==0)return;
       syncCurrentY();
-      kill();
+      kill(true);
       measure();
       phase='dragging';
       pointerId=event.pointerId;
