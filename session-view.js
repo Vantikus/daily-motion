@@ -266,20 +266,9 @@
       if(!card)return;
       card.classList.remove('enter-forward','enter-back');
       const appleMobile=document.documentElement.classList.contains('dm-apple-mobile');
-      if(appleMobile&&!reducedMotion()){
-        const head=$('.exercise-head');
-        head?.getAnimations?.().forEach(animation=>{try{animation.cancel();}catch{}});
-        head?.animate?.(
-          [
-            {transform:`translate3d(${direction==='back'?-6:6}px,0,0)`},
-            {transform:'translate3d(0,0,0)'}
-          ],
-          {duration:150,easing:motionTokens?.easeEnter||'cubic-bezier(.16,.82,.24,1)'}
-        );
-      }else{
-        void card.offsetWidth;
-        card.classList.add(direction==='back'?'enter-back':'enter-forward');
-      }
+      if(appleMobile)return;
+      void card.offsetWidth;
+      card.classList.add(direction==='back'?'enter-back':'enter-forward');
       const badge=$('#headerProgress');
       if(!badge)return;
       badge.classList.remove('is-updating');

@@ -3,9 +3,9 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const appleVeilDuration={cover:170,reveal:230};
-  const appleVeilEase={
-    cover:'cubic-bezier(.42,0,.35,1)',
+  const applePulseDuration={cover:90,reveal:170};
+  const applePulseEase={
+    cover:'cubic-bezier(.3,0,.35,1)',
     reveal:'cubic-bezier(.2,.72,.22,1)'
   };
   const pageMotion={
@@ -19,7 +19,8 @@
   let backPending=false;
   let pageGhost=null;
   let pageDepthOverlay=null;
-  let pageVeil=null;
+  let pagePulse=null;
+  let pagePulseEdge=null;
   let activePageAnimations=[];
   let pageMotionVersion=0;
   let pageDirection='forward';
@@ -80,27 +81,44 @@
         background:rgba(12,18,15,.075);
         will-change:opacity;
       }
-      .dm-page-veil{
+      .dm-page-pulse{
         position:fixed;
-        inset:-1px;
-        pointer-events:none;
-        z-index:2147483646;
-        overflow:hidden;
-        backface-visibility:hidden;
-        contain:paint;
-        will-change:transform;
-        box-shadow:0 0 30px rgba(17,24,20,.10);
-      }
-      .dm-page-veil__glint{
-        position:absolute;
         inset:0;
         pointer-events:none;
-        background:linear-gradient(105deg,
-          transparent 28%,
-          rgba(255,255,255,.10) 44%,
-          rgba(47,107,85,.055) 53%,
-          rgba(17,24,20,.035) 61%,
-          transparent 74%);
+        z-index:2147483646;
+        background:rgba(35,67,53,.11);
+        opacity:0;
+        will-change:opacity;
+      }
+      .dm-page-pulse__edge{
+        position:fixed;
+        top:0;
+        bottom:0;
+        left:0;
+        width:56px;
+        pointer-events:none;
+        z-index:2147483647;
+        opacity:0;
+        background:linear-gradient(90deg,
+          rgba(47,107,85,0) 0%,
+          rgba(47,107,85,.12) 42%,
+          rgba(255,255,255,.13) 52%,
+          rgba(47,107,85,0) 100%);
+        will-change:transform,opacity;
+      }
+
+      html.dm-apple-mobile .app-ready .page-grid>*,
+      html.dm-apple-mobile .app-ready .routine-card,
+      html.dm-apple-mobile .app-ready .today-card,
+      html.dm-apple-mobile .app-ready .progress-page,
+      html.dm-apple-mobile .app-ready .progress-metrics article,
+      html.dm-apple-mobile .app-ready .progress-card,
+      html.dm-apple-mobile .exercise-main.enter-forward :is(.exercise-head,.exercise-facts,.technique-key,.details-section),
+      html.dm-apple-mobile .exercise-main.enter-back :is(.exercise-head,.exercise-facts,.technique-key,.details-section),
+      html.dm-apple-mobile .step-indicator>strong.is-updating{
+        animation:none!important;
+        transform:none!important;
+        opacity:1!important;
       }
       .dm-page-ghost *,
       .dm-page-ghost *::before,
@@ -154,9 +172,11 @@
     pageDepthOverlay=null;
   };
 
-  const removePageVeil=()=>{
-    pageVeil?.remove?.();
-    pageVeil=null;
+  const removePagePulse=()=>{
+    pagePulseEdge?.remove?.();
+    pagePulse?.remove?.();
+    pagePulseEdge=null;
+    pagePulse=null;
   };
 
   const removePageGhost=()=>{
@@ -176,22 +196,22 @@
     return overlay;
   };
 
-  const preparePageVeil=()=>{
+  const preparePagePulse=()=>{
     if(!isAppleMobileWebKit()||reducedMotion.matches)return null;
-    removePageVeil();
-    const veil=document.createElement('div');
-    veil.className=`dm-page-veil dm-page-veil--${pageDirection}`;
-    veil.setAttribute('aria-hidden','true');
-    const glint=document.createElement('div');
-    glint.className='dm-page-veil__glint';
-    veil.append(glint);
-    copySurfaceBackground(veil);
-    veil.style.transform=pageDirection==='forward'
-      ?'translate3d(101%,0,0)'
-      :'translate3d(-101%,0,0)';
-    document.body.append(veil);
-    pageVeil=veil;
-    return veil;
+    removePagePulse();
+    const pulse=document.createElement('div');
+    pulse.className='dm-page-pulse';
+    pulse.setAttribute('aria-hidden','true');
+    const edge=document.createElement('div');
+    edge.className='dm-page-pulse__edge';
+    edge.setAttribute('aria-hidden','true');
+    edge.style.transform=pageDirection==='forward'
+      ?'translate3d(100vw,0,0)'
+      :'translate3d(-56px,0,0)';
+    document.body.append(pulse,edge);
+    pagePulse=pulse;
+    pagePulseEdge=edge;
+    return pulse;
   };
 
   const clearPageMotion=()=>{
@@ -200,7 +220,7 @@
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
-    removePageVeil();
+    removePagePulse();
     removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
@@ -232,7 +252,7 @@
     if(isAppleMobileWebKit()||reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
-    removePageVeil();
+    removePagePulse();
     removePageDepth();
     removePageGhost();
 
@@ -334,39 +354,46 @@
     },true);
   };
 
-  const runPageVeil=phase=>{
+  const runPagePulse=phase=>{
     if(!isAppleMobileWebKit()||reducedMotion.matches)return Promise.resolve();
-    const veil=pageVeil||preparePageVeil();
-    if(!veil||typeof veil.animate!=='function')return Promise.resolve();
+    const pulse=pagePulse||preparePagePulse();
+    const edge=pagePulseEdge;
+    if(!pulse||!edge||typeof pulse.animate!=='function'||typeof edge.animate!=='function')return Promise.resolve();
 
-    const forward=pageDirection==='forward';
     const cover=phase==='cover';
-    const from=cover
-      ?(forward?'translate3d(101%,0,0)':'translate3d(-101%,0,0)')
-      :'translate3d(0,0,0)';
-    const to=cover
-      ?'translate3d(0,0,0)'
-      :(forward?'translate3d(-101%,0,0)':'translate3d(101%,0,0)');
-    const animation=veil.animate(
-      [{transform:from},{transform:to}],
+    const forward=pageDirection==='forward';
+    const pulseAnimation=pulse.animate(
+      cover
+        ?[{opacity:0},{opacity:1}]
+        :[{opacity:1},{opacity:0}],
       {
-        duration:appleVeilDuration[phase],
-        easing:appleVeilEase[phase],
+        duration:applePulseDuration[phase],
+        easing:applePulseEase[phase],
         fill:'forwards'
       }
     );
-    activePageAnimations=[animation];
-    return animation.finished.then(
-      ()=>{
-        if(cover){
-          veil.style.transform='translate3d(0,0,0)';
-          return;
-        }
-        removePageVeil();
-        activePageAnimations=[];
-      },
-      ()=>{}
+    const edgeAnimation=edge.animate(
+      cover
+        ?[
+          {transform:forward?'translate3d(100vw,0,0)':'translate3d(-56px,0,0)',opacity:0},
+          {transform:'translate3d(48vw,0,0)',opacity:.9}
+        ]
+        :[
+          {transform:'translate3d(48vw,0,0)',opacity:.9},
+          {transform:forward?'translate3d(-56px,0,0)':'translate3d(100vw,0,0)',opacity:0}
+        ],
+      {
+        duration:applePulseDuration[phase],
+        easing:applePulseEase[phase],
+        fill:'forwards'
+      }
     );
+    activePageAnimations=[pulseAnimation,edgeAnimation];
+    return Promise.allSettled([pulseAnimation.finished,edgeAnimation.finished]).then(()=>{
+      if(cover)return;
+      activePageAnimations=[];
+      removePagePulse();
+    });
   };
 
   const runPageMotion=()=>{
@@ -420,8 +447,8 @@
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>isAppleMobileWebKit()?runPageVeil('cover'):Promise.resolve(),
-    in:()=>isAppleMobileWebKit()?runPageVeil('reveal'):runPageMotion()
+    out:()=>isAppleMobileWebKit()?runPagePulse('cover'):Promise.resolve(),
+    in:()=>isAppleMobileWebKit()?runPagePulse('reveal'):runPageMotion()
   }];
 
   const SWUP_RUNTIME=[
@@ -538,7 +565,7 @@
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
       document.documentElement.classList.toggle('dm-page-fallback',!visit.animation.native&&!reducedMotion.matches);
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
-      if(isAppleMobileWebKit()&&!reducedMotion.matches)preparePageVeil();
+      if(isAppleMobileWebKit()&&!reducedMotion.matches)preparePagePulse();
     });
 
     swup.hooks.on('fetch:error',visit=>{
