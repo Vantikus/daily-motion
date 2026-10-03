@@ -4,7 +4,7 @@
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
   const mobilePageDuration=240;
-  const workoutPageDuration=420;
+  const workoutPageDuration=350;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
