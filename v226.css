@@ -35,8 +35,8 @@
   font-weight:430;
 }
 .exercise-facts strong{
-  font-size:.84375rem!important;
-  font-weight:650!important;
+  font-size:.9375rem!important;
+  font-weight:600!important;
   letter-spacing:-.008em;
 }
 .technique-key strong{
@@ -69,7 +69,6 @@
 .exercise-head h1{font-weight:750;letter-spacing:-.038em}
 .exercise-head p{font-weight:300}
 .exercise-facts span{font-weight:500!important}
-.exercise-facts strong{font-weight:650!important}
 .technique-key__label{font-weight:600}
 .technique-key strong{font-weight:450}
 .details-title{font-weight:700}
@@ -93,9 +92,6 @@
 }
 .exercise-facts span{
   font-weight:400!important;
-}
-.exercise-facts strong{
-  font-weight:650!important;
 }
 .technique-key__label{
   font-weight:600!important;
