@@ -371,3 +371,63 @@ test('final timer hands off directly to completion without exposing technique',a
   await expect(page.locator('.exercise-app')).toHaveAttribute('inert','');
   await expect(page.locator('#completionTitle')).toBeVisible();
 });
+
+for(const autoNext of [true,false]){
+  for(const paused of [true,false]){
+    test(`finish-early never paints a zero timer again (autoNext=${autoNext}, paused=${paused})`,async({page})=>{
+      await page.addInitScript(autoNext=>{
+        localStorage.setItem('dailyMotionState.v3',JSON.stringify({version:3,
+          settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext,theme:'system'},
+          programVersions:{morning:'morning-v3-active-2026-09-19'},days:{}}));
+      },autoNext);
+      await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+      await page.locator('#nextButton').click();
+      await expect(page.locator('#timerState')).toHaveText('Идёт');
+      if(paused){
+        // This fixture measures painted handoff frames; real pointer activation
+        // is covered by lifecycle.spec.js. Avoid racing WebKit compositor stability.
+        await page.locator('#timerToggle').evaluate(button=>button.click());
+        await expect(page.locator('#timerState')).toHaveText('Пауза');
+      }
+      await page.evaluate(()=>{
+        const card=document.querySelector('#timerCard');
+        const overlay=document.querySelector('#executionOverlay');
+        const value=document.querySelector('#timerValue');
+        const capture=window.__finishFrames={samples:[],count:0,raf:0};
+        const sample=()=>{
+          capture.count++;
+          // Only a zero candidate needs computed visibility. Reading animated
+          // ring styles on every nonzero frame destabilizes headless WebKit.
+          const text=value.textContent.trim();
+          if(!card.hidden&&/^0+(?::0+)?$/.test(text)){
+            const surface=getComputedStyle(overlay);
+            const style=getComputedStyle(card);
+            if(style.display!=='none'&&style.visibility==='visible'&&Number(style.opacity)>.01&&
+              surface.visibility==='visible'&&Number(surface.opacity)>.01){
+              capture.samples.push(text);
+            }
+          }
+          capture.raf=requestAnimationFrame(sample);
+        };
+        capture.raf=requestAnimationFrame(sample);
+        document.querySelector('#executionFinishEarly').click();
+      });
+      // Keep the observation window in the driver, independent of WebKit's
+      // animation-frame scheduling while the timer surface is being hidden.
+      await page.waitForTimeout(700);
+      const frames=await page.evaluate(()=>{
+        cancelAnimationFrame(window.__finishFrames.raf);
+        return window.__finishFrames;
+      });
+      expect(frames.count).toBeGreaterThan(5);
+      expect(frames.samples).toEqual([]);
+      await expect(page.locator('#timerCard')).toBeHidden();
+      if(autoNext)await expect(page.locator('#executionRestStage')).toBeVisible();
+      else await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
+      const routine=await page.evaluate(()=>DailyMotionState.getRoutine('morning'));
+      expect(routine.completedUntil).toBe(1);
+      expect(routine.timers['cat-cow'].remaining).toBe(0);
+      expect(routine.activeSeconds).toBeLessThan(5);
+    });
+  }
+}

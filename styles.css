@@ -2686,7 +2686,7 @@ a[href] *,
 .home-body .activity-card__head .text-link{
   min-width:72px;
   padding:0 12px;
-  margin-right:-12px;
+  margin-right:0;
   justify-content:center;
   border-radius:12px;
   transition:

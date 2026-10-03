@@ -145,7 +145,7 @@ for(const url of swupVendorUrls){
 }
 for(const token of [
   'new window.SwupPreloadPlugin({throttle:3})',
-  'new window.SwupHeadPlugin()',
+  'new window.SwupHeadPlugin({awaitAssets:true,timeout:4000})',
   'new window.SwupBodyClassPlugin()',
   'new window.SwupA11yPlugin(',
   'new window.SwupJsPlugin({animations:pageAnimations})',

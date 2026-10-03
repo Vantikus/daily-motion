@@ -86,6 +86,7 @@ window.DailyMotionPages.session=function mountSession(){
   let executionStage='idle';
   let stageTimer=null;
   let stageTransitionToken=0;
+  let earlyFinishPending=false;
   let executionHideToken=0;
   const Audio=window.DailyMotionAudio;
   const Motion=window.DailyMotionMotion;
@@ -519,6 +520,7 @@ window.DailyMotionPages.session=function mountSession(){
     });
 
     if(!canAnimate){
+      earlyFinishPending=false;
       Object.entries(stages).forEach(([name,node])=>{
         if(!node)return;
         node.hidden=name!==stage;
@@ -572,6 +574,7 @@ window.DailyMotionPages.session=function mountSession(){
     defer(()=>{
       if(token!==stageTransitionToken)return;
       next.classList.remove('is-stage-entering');
+      earlyFinishPending=false;
     },appleMobileMotion?170:220);
   }
 
@@ -607,10 +610,11 @@ window.DailyMotionPages.session=function mountSession(){
         card.classList.remove('is-finishing-early');
         return;
       }
-      card.style.opacity='0';
+      // Hide the finished stage before cancelling its filled exit effect.
+      // Closing the overlay may take more frames; the zero timer must stay hidden.
+      card.hidden=true;
       try{exit?.cancel?.();}catch{}
       callback();
-      card.style.removeProperty('opacity');
     };
     if(appleMobileMotion){
       completeExit();
@@ -697,6 +701,7 @@ window.DailyMotionPages.session=function mountSession(){
       if(token!==executionHideToken)return;
       overlay.classList.remove('is-visible','is-handoff','is-closing','is-surface-fade');
       overlay.dataset.stage='idle';
+      earlyFinishPending=false;
       Object.values(executionStages()).forEach(node=>{
         if(!node)return;
         node.hidden=true;
@@ -1258,7 +1263,7 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   listen($('#executionClose'),'click',()=>{
-    if($('#timerCard')?.classList.contains('is-finishing-early'))return;
+    if(earlyFinishPending)return;
     if(executionStage==='countdown'){
       cancelCountdown();
       haptic('tap');
@@ -1279,7 +1284,8 @@ window.DailyMotionPages.session=function mountSession(){
 
   listen($('#executionFinishEarly'),'click',()=>{
     const card=$('#timerCard');
-    if(card?.classList.contains('is-finishing-early'))return;
+    if(earlyFinishPending||executionStage!=='timer'||card?.hidden)return;
+    earlyFinishPending=true;
 
     const timer=timerData(exercises[current]);
     stopTicker();
