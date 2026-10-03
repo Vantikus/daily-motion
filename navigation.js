@@ -3,8 +3,7 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const mobilePageDuration=280;
-  const mobilePageExitDuration=120;
+  const mobilePageDuration=240;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
@@ -30,7 +29,7 @@
   const pageMotionTarget=()=>currentContainer();
   const prefersMobilePageMotion=()=>isAppleMobileWebKit()||window.matchMedia('(max-width: 767px), (pointer: coarse), (display-mode: standalone)').matches||navigator.standalone===true;
   document.documentElement.classList.toggle('dm-mobile-page-motion',prefersMobilePageMotion());
-  const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!mobilePageMotion;
+  const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches;
 
   const installPageMotionStyles=()=>{
     if(document.getElementById('dm-page-motion'))return;
@@ -67,6 +66,32 @@
         from{opacity:.935;transform:translate3d(-22%,0,0)}
         to{opacity:1;transform:translate3d(0,0,0)}
       }
+
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-group(root){
+        animation:none!important;
+        width:100vw;
+        height:100dvh;
+        overflow:hidden;
+      }
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-old(root),
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-new(root){
+        width:100%;height:100%;object-fit:none;object-position:top left;
+        opacity:1;box-shadow:none;
+        animation-duration:${mobilePageDuration}ms;
+        animation-timing-function:${pageEase};
+      }
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-old(root){animation-name:dmMobileForwardOut}
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-new(root){animation-name:dmMobileForwardIn}
+      html.dm-mobile-page-motion.dm-page-transition.dm-page-back::view-transition-old(root){animation-name:dmMobileBackOut}
+      html.dm-mobile-page-motion.dm-page-transition.dm-page-back::view-transition-new(root){animation-name:dmMobileBackIn}
+      html.dm-mobile-page-motion.dm-page-transition .session-nav{view-transition-name:dm-workout-nav}
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-group(dm-workout-nav){animation:none}
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-old(dm-workout-nav){animation:none;opacity:0}
+      html.dm-mobile-page-motion.dm-page-transition::view-transition-new(dm-workout-nav){animation:none;opacity:1}
+      @keyframes dmMobileForwardOut{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+      @keyframes dmMobileForwardIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+      @keyframes dmMobileBackOut{from{transform:translateX(0)}to{transform:translateX(100%)}}
+      @keyframes dmMobileBackIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
 
       .dm-page-ghost{
         background:inherit;
@@ -218,7 +243,9 @@
     });
     await waitForOnest();
     if(version!==pageMotionVersion||target!==currentContainer())return;
-    await nextPaint();
+    // Native capture suspends painting inside its DOM update callback.
+    // Waiting for two paint frames here would make the transition time out.
+    if(!swup?.visit?.animation.native)await nextPaint();
     if(version!==pageMotionVersion||target!==currentContainer())return;
     target?.getAnimations?.({subtree:true})?.forEach(animation=>{
       try{animation.cancel();}catch{}
@@ -300,17 +327,19 @@
     clone.removeAttribute('id');
     for(const node of clone.querySelectorAll('[id]'))node.removeAttribute('id');
     if(mobilePageMotion){
-      // Preserve the old page's grid and safe-area geometry after its IDs go away.
-      const originals=[source,...source.children];
-      const copies=[clone,...clone.children];
+      // Freeze the whole old appearance: new body classes and removed IDs must
+      // not restyle its descendants while the fallback copy is on screen.
+      const originals=[source,...source.querySelectorAll('*')];
+      const copies=[clone,...clone.querySelectorAll('*')];
       originals.forEach((node,index)=>{
         const style=getComputedStyle(node);
-        for(const property of ['display','grid-template-rows','grid-row','height','min-height','overflow']){
-          copies[index].style.setProperty(property,style.getPropertyValue(property),'important');
-        }
+        copies[index].style.cssText=Array.from(style,property=>`${property}:${style.getPropertyValue(property)}!important`).join(';');
+        copies[index].style.setProperty('animation','none','important');
+        copies[index].style.setProperty('transition','none','important');
+        copies[index].style.setProperty('view-transition-name','none','important');
       });
+      clone.querySelector('.session-nav')?.style.setProperty('visibility','hidden','important');
       layer.style.zIndex='2147483000';
-      layer.style.willChange='opacity';
     }
     const scrollY=window.scrollY;
     Object.assign(clone.style,{
@@ -389,25 +418,27 @@
   };
 
   const runMobilePageMotion=async()=>{
-    if(!mobilePageMotion||reducedMotion.matches)return;
+    if(!mobilePageMotion||reducedMotion.matches||swup?.visit?.animation.native)return;
     const version=pageMotionVersion;
     await pageReadyPromise;
     if(version!==pageMotionVersion)return;
     const animations=[];
-    // Keep the old content visible until the mounted destination is ready,
-    // then dissolve it over the fully visible new page instead of a blank cover.
+    // Opaque pages move edge to edge; their text never cross-fades or scales.
+    const width=document.documentElement.clientWidth;
+    const direction=pageDirection==='back'?-1:1;
+    const options={duration:mobilePageDuration,easing:pageEase,fill:'both'};
     if(pageGhost?.animate){
-      animations.push(pageGhost.animate([{opacity:1},{opacity:0}],{
-        duration:mobilePageExitDuration,easing:pageEase,fill:'forwards'
-      }));
+      animations.push(pageGhost.animate([
+        {transform:'translateX(0)'},
+        {transform:`translateX(${-direction*width}px)`}
+      ],options));
     }
     const surface=currentContainer()?.querySelector('.exercise-main,.app-shell');
     if(surface?.animate){
-      const offset=pageDirection==='back'?-24:24;
       animations.push(surface.animate([
-        {transform:`translate3d(${offset}px,0,0)`},
-        {transform:'translate3d(0,0,0)'}
-      ],{duration:mobilePageDuration,easing:pageEase,fill:'both'}));
+        {transform:`translateX(${direction*width}px)`},
+        {transform:'translateX(0)'}
+      ],options));
     }
     activePageAnimations=animations;
     try{await Promise.all(animations.map(item=>item.finished));}catch{}
@@ -612,6 +643,7 @@
       pageReadyPromise=mobilePageMotion&&!reducedMotion.matches
         ?stabilizeIncomingPage()
         :Promise.resolve();
+      return pageReadyPromise;
     });
     swup.hooks.on('page:view',()=>preloadLikelyRoutes());
     swup.hooks.on('visit:end',finishTransition);

@@ -755,7 +755,7 @@ html,body{background:var(--bg)}
   animation:qmExecutionShellIn 120ms cubic-bezier(.16,.82,.24,1) both;
 }
 .execution-overlay.is-closing .execution-shell{
-  animation:qmExecutionShellOut 80ms cubic-bezier(.4,0,1,1) both;
+  animation:none;
   pointer-events:none;
 }
 .execution-overlay.is-surface-fade{
