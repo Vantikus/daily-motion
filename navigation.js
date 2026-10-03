@@ -4,6 +4,7 @@
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
   const mobilePageDuration=280;
+  const mobilePageExitDuration=120;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
@@ -397,7 +398,7 @@
     // then dissolve it over the fully visible new page instead of a blank cover.
     if(pageGhost?.animate){
       animations.push(pageGhost.animate([{opacity:1},{opacity:0}],{
-        duration:mobilePageDuration,easing:pageEase,fill:'forwards'
+        duration:mobilePageExitDuration,easing:pageEase,fill:'forwards'
       }));
     }
     const surface=currentContainer()?.querySelector('.exercise-main,.app-shell');

@@ -621,16 +621,12 @@ window.DailyMotionPages.session=function mountSession(){
       try{exit?.cancel?.();}catch{}
       callback();
     };
-    if(appleMobileMotion){
-      completeExit();
-      return;
-    }
     exit=card.animate(
       [
         {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
         {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
       ],
-      {duration:135,easing:MotionTokens.easeExit,fill:'forwards'}
+      {duration:180,easing:MotionTokens.easeExit,fill:'forwards'}
     );
     exit.finished.then(completeExit,completeExit);
     // WebKit/CI can leave a cancelled WAAPI .finished promise unsettled.
