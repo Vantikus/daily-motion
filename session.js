@@ -585,53 +585,13 @@ window.DailyMotionPages.session=function mountSession(){
 
   function playEarlyTimerExit(callback){
     const card=$('#timerCard');
-    if(!card||executionStage!=='timer'||prefersReducedMotion()){
-      callback();
-      return;
+    if(card&&executionStage==='timer'){
+      card.inert=true;
+      card.classList.add('is-finishing-early');
     }
-
-    clearExecutionStageTransition();
-    card.getAnimations?.({subtree:true}).forEach(animation=>{
-      try{animation.cancel();}catch{}
-    });
-    $('#timerRing')?.classList.remove('is-running','is-ending','is-final-three');
-    card.inert=true;
-    card.classList.add('is-finishing-early');
-
-    const token=stageTransitionToken;
-    let exit=null;
-    let settled=false;
-    let fallbackTimer=null;
-    const completeExit=()=>{
-      if(settled)return;
-      settled=true;
-      if(fallbackTimer!==null){
-        cancelDeferred(fallbackTimer);
-        fallbackTimer=null;
-      }
-      if(destroyed||token!==stageTransitionToken||executionStage!=='timer'){
-        try{exit?.cancel?.();}catch{}
-        card.inert=false;
-        card.classList.remove('is-finishing-early');
-        return;
-      }
-      // Hide the finished stage before cancelling its filled exit effect.
-      // Closing the overlay may take more frames; the zero timer must stay hidden.
-      card.hidden=true;
-      try{exit?.cancel?.();}catch{}
-      callback();
-    };
-    exit=card.animate(
-      [
-        {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-        {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
-      ],
-      {duration:180,easing:MotionTokens.easeExit,fill:'forwards'}
-    );
-    exit.finished.then(completeExit,completeExit);
-    // WebKit/CI can leave a cancelled WAAPI .finished promise unsettled.
-    // This fallback is after the visual exit window and only completes the same state handoff.
-    fallbackTimer=defer(completeExit,Math.max(220,MotionTokens.exitMs+80));
+    // The stage/overlay transition owns the only exit. Keep its content
+    // visible until the destination is ready instead of fading it first.
+    callback();
   }
 
   function showExecution(stage){
@@ -1033,7 +993,8 @@ window.DailyMotionPages.session=function mountSession(){
     sessionView.updateNextButton();
     sessionView.renderStepSegments();
     sessionView.resetDetails();
-    updateTimerUI();
+    // Rendering the next exercise must not repaint the outgoing timer.
+    if(!$('#executionOverlay')?.classList.contains('is-handoff'))updateTimerUI();
 
     const timer=timerData(exercise);
     if(timer.running){
@@ -1092,7 +1053,7 @@ window.DailyMotionPages.session=function mountSession(){
     };
 
     if(fromExecution){
-      hideExecution(null,{afterHidden:revealCompletion});
+      hideExecution(revealCompletion);
     }else{
       revealCompletion();
     }
@@ -1315,10 +1276,7 @@ window.DailyMotionPages.session=function mountSession(){
     timer.remaining=0;
     Store.save();
 
-    playEarlyTimerExit(()=>{
-      updateTimerUI();
-      onTimerFinished();
-    });
+    playEarlyTimerExit(onTimerFinished);
   });
 
   const takeRestFinish=()=>{
