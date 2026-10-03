@@ -735,15 +735,25 @@ window.DailyMotionPages.session=function mountSession(){
     }
 
     overlay.classList.add('is-closing');
-    if(appleMobileMotion){
+    const exits=[
+      animateExecutionNode(executionShell,
+        [{transform:'translateY(0)'},{transform:'translateY(-12px)'}],
+        {duration:180,easing:MotionTokens.easeExit,fill:'forwards'}),
+      animateExecutionNode(overlay,[{opacity:1},{opacity:0}],
+        {duration:180,easing:MotionTokens.easeExit,fill:'forwards'})
+    ].filter(Boolean);
+    let settled=false;
+    let fallback=null;
+    const finishExit=()=>{
+      if(settled||destroyed||token!==executionHideToken)return;
+      settled=true;
+      if(fallback!==null)cancelDeferred(fallback);
+      // Hide the overlay before releasing its filled exit effect.
       finish();
-      return;
-    }
-    afterAnimations(executionShell,()=>{
-      if(token!==executionHideToken)return;
-      overlay.classList.add('is-surface-fade');
-      afterAnimations(overlay,finish);
-    });
+      exits.forEach(animation=>{try{animation.cancel();}catch{}});
+    };
+    Promise.allSettled(exits.map(animation=>animation.finished)).then(finishExit);
+    fallback=defer(finishExit,260);
   }
 
   // Countdown / rest orchestration.
