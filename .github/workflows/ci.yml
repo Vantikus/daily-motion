@@ -40,6 +40,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
       - name: Browser regression tests
+        env:
+          DEBUG: pw:browser
         run: npm run test:e2e
       - name: Upload browser regression artifacts
         if: failure()

@@ -1,5 +1,9 @@
 import { test, expect, expectSwup } from './helpers/runtime.js';
 
+// These assertions measure state and painted handoffs. Keep the backing surface
+// bounded; the visual matrix separately retains the full device pixel scale.
+test.use({deviceScaleFactor:1});
+
 test('morning workout completes end-to-end and reaches history',async({page})=>{
   await page.addInitScript(()=>{
     if(localStorage.getItem('dailyMotionState.v3'))return;
