@@ -24,7 +24,7 @@ GitHub использовать только для финальной публ�
 - Расширенный прогон layout/motion/session-flow/visual/visual-matrix: 43 passed, 16 skipped, 27 failed. Старые visual baselines расходятся с текущими шрифтом/геометрией: 23 visual failures; 3 Chromium layout expectations устарели; отдельный WebKit timer/rest simultaneous-close сценарий также падает.
 - Контроль с восстановленной исходной navigation.js воспроизвёл 3 layout failures, compact visual failures в обоих браузерах и WebKit simultaneous-close. Actual PNG Home и workout 360×640 побайтно идентичны до/после в Chromium и WebKit. Expected/actual/diff просмотрены; эталоны и CSS не менялись.
 - На физическом iPhone и в установленной PWA на устройстве не проверено; FPS не измерялся.
-- Публикация: подготовлена ветка fix/mobile-page-transitions-v257 для проверки. Main не обновлять при красном обязательном CI; старые расхождения требуют отдельного решения, а не принятия эталонов ради зелёного теста.
+- Публикация: draft PR https://github.com/Vantikus/daily-motion/pull/43, ветка fix/mobile-page-transitions-v257. Дополнительная Chromium-регрессия освобождения desktop fallback WAAPI effects пройдена (1 passed, 1 WebKit skip). Main не обновлять при красном обязательном CI; старые расхождения требуют отдельного решения, а не принятия эталонов ради зелёного теста.
 
 ## Последние изменения
 - v243: на iPhone/iPadOS возвращены плавные направленные page transitions без потери найденной производительности: browser-native transform-only, forward 5px out + 14px in, back зеркально, 90мс + 220мс. Без opacity, scale, snapshots и GSAP frame-loop. Остальные анимации и UI не менялись.
