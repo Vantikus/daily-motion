@@ -3,22 +3,23 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
+  const appleVeilDuration={cover:170,reveal:230};
+  const appleVeilEase={
+    cover:'cubic-bezier(.42,0,.35,1)',
+    reveal:'cubic-bezier(.2,.72,.22,1)'
+  };
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
   };
   const pageEdgeShadow='-1px 0 0 rgba(17,24,20,.05),-12px 0 24px rgba(17,24,20,.08)';
-  const pageAppleEdgeShadow={
-    forward:'12px 0 28px rgba(17,24,20,.11)',
-    back:'-12px 0 28px rgba(17,24,20,.11)'
-  };
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
   let pageGhost=null;
   let pageDepthOverlay=null;
-  let pageSweep=null;
+  let pageVeil=null;
   let activePageAnimations=[];
   let pageMotionVersion=0;
   let pageDirection='forward';
@@ -35,7 +36,6 @@
     const style=document.createElement('style');
     style.id='dm-page-motion';
     style.textContent=`
-      html.dm-apple-mobile body{-webkit-font-smoothing:antialiased}
       html.dm-page-transition #swup{view-transition-name:none!important;background:inherit}
       html.dm-page-transition::view-transition-image-pair(root){isolation:isolate}
       html.dm-page-transition::view-transition-old(root),
@@ -80,21 +80,27 @@
         background:rgba(12,18,15,.075);
         will-change:opacity;
       }
-      .dm-page-sweep{
+      .dm-page-veil{
         position:fixed;
-        top:0;
-        bottom:0;
-        left:0;
-        width:108px;
+        inset:-1px;
         pointer-events:none;
         z-index:2147483646;
-        background:linear-gradient(90deg,
-          rgba(255,255,255,0) 0%,
-          rgba(255,255,255,.11) 34%,
-          rgba(47,107,85,.085) 55%,
-          rgba(17,24,20,.075) 68%,
-          rgba(17,24,20,0) 100%);
-        will-change:transform,opacity;
+        overflow:hidden;
+        backface-visibility:hidden;
+        contain:paint;
+        will-change:transform;
+        box-shadow:0 0 30px rgba(17,24,20,.10);
+      }
+      .dm-page-veil__glint{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:linear-gradient(105deg,
+          transparent 28%,
+          rgba(255,255,255,.10) 44%,
+          rgba(47,107,85,.055) 53%,
+          rgba(17,24,20,.035) 61%,
+          transparent 74%);
       }
       .dm-page-ghost *,
       .dm-page-ghost *::before,
@@ -148,9 +154,9 @@
     pageDepthOverlay=null;
   };
 
-  const removePageSweep=()=>{
-    pageSweep?.remove?.();
-    pageSweep=null;
+  const removePageVeil=()=>{
+    pageVeil?.remove?.();
+    pageVeil=null;
   };
 
   const removePageGhost=()=>{
@@ -170,14 +176,22 @@
     return overlay;
   };
 
-  const createPageSweep=()=>{
-    removePageSweep();
-    const sweep=document.createElement('div');
-    sweep.className='dm-page-sweep';
-    sweep.setAttribute('aria-hidden','true');
-    document.body.append(sweep);
-    pageSweep=sweep;
-    return sweep;
+  const preparePageVeil=()=>{
+    if(!isAppleMobileWebKit()||reducedMotion.matches)return null;
+    removePageVeil();
+    const veil=document.createElement('div');
+    veil.className=`dm-page-veil dm-page-veil--${pageDirection}`;
+    veil.setAttribute('aria-hidden','true');
+    const glint=document.createElement('div');
+    glint.className='dm-page-veil__glint';
+    veil.append(glint);
+    copySurfaceBackground(veil);
+    veil.style.transform=pageDirection==='forward'
+      ?'translate3d(101%,0,0)'
+      :'translate3d(-101%,0,0)';
+    document.body.append(veil);
+    pageVeil=veil;
+    return veil;
   };
 
   const clearPageMotion=()=>{
@@ -186,7 +200,7 @@
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
-    removePageSweep();
+    removePageVeil();
     removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
@@ -215,10 +229,10 @@
   };
 
   const createPageGhost=()=>{
-    if(reducedMotion.matches||swup?.visit?.animation.native)return;
+    if(isAppleMobileWebKit()||reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
-    removePageSweep();
+    removePageVeil();
     removePageDepth();
     removePageGhost();
 
@@ -267,16 +281,6 @@
     target.style.position='relative';
     target.style.isolation='isolate';
     copySurfaceBackground(target);
-
-    if(isAppleMobileWebKit()){
-      target.style.zIndex='2147482999';
-      pageGhost.style.zIndex='2147483001';
-      pageGhost.style.boxShadow=pageAppleEdgeShadow[pageDirection]||pageAppleEdgeShadow.forward;
-      if(pageDirection==='back')createPageDepth(target,1);
-      createPageSweep();
-      return;
-    }
-
     target.style.transform=`translate3d(${spec.incomingX},0,0)`;
     target.style.willChange='transform';
     target.style.zIndex=spec.incomingAbove?'2147483001':'2147482999';
@@ -330,37 +334,65 @@
     },true);
   };
 
+  const runPageVeil=phase=>{
+    if(!isAppleMobileWebKit()||reducedMotion.matches)return Promise.resolve();
+    const veil=pageVeil||preparePageVeil();
+    if(!veil||typeof veil.animate!=='function')return Promise.resolve();
+
+    const forward=pageDirection==='forward';
+    const cover=phase==='cover';
+    const from=cover
+      ?(forward?'translate3d(101%,0,0)':'translate3d(-101%,0,0)')
+      :'translate3d(0,0,0)';
+    const to=cover
+      ?'translate3d(0,0,0)'
+      :(forward?'translate3d(-101%,0,0)':'translate3d(101%,0,0)');
+    const animation=veil.animate(
+      [{transform:from},{transform:to}],
+      {
+        duration:appleVeilDuration[phase],
+        easing:appleVeilEase[phase],
+        fill:'forwards'
+      }
+    );
+    activePageAnimations=[animation];
+    return animation.finished.then(
+      ()=>{
+        if(cover){
+          veil.style.transform='translate3d(0,0,0)';
+          return;
+        }
+        removePageVeil();
+        activePageAnimations=[];
+      },
+      ()=>{}
+    );
+  };
+
   const runPageMotion=()=>{
     const target=pageMotionTarget();
     if(!target||reducedMotion.matches||swup?.visit?.animation.native||typeof target.animate!=='function'){
-      removePageSweep();
       removePageDepth();
       removePageGhost();
       clearSurfaceStyles(target);
       return Promise.resolve();
     }
     const spec=pageMotion[pageDirection]||pageMotion.forward;
-    const appleMobile=isAppleMobileWebKit();
     const version=++pageMotionVersion;
     const duration=(pageDuration[pageDirection]||pageDuration.forward)*1000;
     const options={duration,easing:pageEase,fill:'both'};
     const animations=[];
 
-    if(!appleMobile){
-      const incoming=target.animate([
-        {transform:`translate3d(${spec.incomingX},0,0)`},
-        {transform:'translate3d(0,0,0)'}
-      ],options);
-      animations.push(incoming);
-    }
+    const incoming=target.animate([
+      {transform:`translate3d(${spec.incomingX},0,0)`},
+      {transform:'translate3d(0,0,0)'}
+    ],options);
+    animations.push(incoming);
 
     if(pageGhost){
-      const outgoingX=appleMobile
-        ?(pageDirection==='forward'?'-100%':'100%')
-        :spec.outgoingX;
       const outgoing=pageGhost.animate([
         {transform:'translate3d(0,0,0)'},
-        {transform:`translate3d(${outgoingX},0,0)`}
+        {transform:`translate3d(${spec.outgoingX},0,0)`}
       ],options);
       animations.push(outgoing);
     }
@@ -375,29 +407,10 @@
       animations.push(depth);
     }
 
-    if(pageSweep){
-      const sweep=pageSweep.animate(
-        pageDirection==='forward'
-          ?[
-            {transform:'translate3d(100vw,0,0)',opacity:0},
-            {transform:'translate3d(72vw,0,0)',opacity:.92,offset:.18},
-            {transform:'translate3d(-108px,0,0)',opacity:0}
-          ]
-          :[
-            {transform:'translate3d(-108px,0,0)',opacity:0},
-            {transform:'translate3d(18vw,0,0)',opacity:.92,offset:.18},
-            {transform:'translate3d(100vw,0,0)',opacity:0}
-          ],
-        options
-      );
-      animations.push(sweep);
-    }
-
     activePageAnimations=animations;
     return Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{
       if(version!==pageMotionVersion)return;
       activePageAnimations=[];
-      removePageSweep();
       removePageDepth();
       removePageGhost();
       clearSurfaceStyles(target);
@@ -407,8 +420,8 @@
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>Promise.resolve(),
-    in:()=>runPageMotion()
+    out:()=>isAppleMobileWebKit()?runPageVeil('cover'):Promise.resolve(),
+    in:()=>isAppleMobileWebKit()?runPageVeil('reveal'):runPageMotion()
   }];
 
   const SWUP_RUNTIME=[
@@ -525,6 +538,7 @@
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
       document.documentElement.classList.toggle('dm-page-fallback',!visit.animation.native&&!reducedMotion.matches);
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
+      if(isAppleMobileWebKit()&&!reducedMotion.matches)preparePageVeil();
     });
 
     swup.hooks.on('fetch:error',visit=>{

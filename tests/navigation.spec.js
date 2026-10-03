@@ -129,7 +129,7 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone page motion keeps incoming text static and animates only the outgoing surface plus effects',async({page})=>{
+test('iPhone navigation animates only a decorative veil, never page text surfaces',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
@@ -138,10 +138,9 @@ test('iPhone page motion keeps incoming text static and animates only the outgoi
     window.__dmPageAnimations=[];
     const animate=Element.prototype.animate;
     Element.prototype.animate=function(keyframes,options){
-      if(this.matches?.('#swup,.dm-page-ghost,.dm-page-depth,.dm-page-sweep')){
+      if(this.matches?.('#swup,.dm-page-ghost,.dm-page-depth,.dm-page-veil')){
         window.__dmPageAnimations.push({
-          kind:this.id==='swup'?'incoming':this.classList.contains('dm-page-depth')?'depth':this.classList.contains('dm-page-sweep')?'sweep':'outgoing',
-          page:this.id==='swup'?this.dataset.page||'':'',
+          kind:this.id==='swup'?'page':this.classList.contains('dm-page-veil')?'veil':'legacy-surface',
           keyframes:Array.from(keyframes,frame=>({...frame})),
           options:{...options}
         });
@@ -152,23 +151,20 @@ test('iPhone page motion keeps incoming text static and animates only the outgoi
   await page.goto('/index.html');
   await expectSwup(page);
 
-  const assertMotion=async({direction})=>{
+  const assertVeil=async direction=>{
     const calls=await page.evaluate(()=>window.__dmPageAnimations);
-    expect(calls.filter(call=>call.kind==='incoming')).toHaveLength(0);
-    const outgoing=calls.find(call=>call.kind==='outgoing');
-    const depth=calls.find(call=>call.kind==='depth');
-    const sweep=calls.find(call=>call.kind==='sweep');
-    expect(outgoing).toBeTruthy();
-    expect(depth).toBeTruthy();
-    expect(sweep).toBeTruthy();
-    expect(outgoing.keyframes.every(frame=>frame.transform&&!('opacity' in frame))).toBe(true);
-    expect(depth.keyframes.every(frame=>'opacity' in frame&&!('transform' in frame))).toBe(true);
-    expect(sweep.keyframes.every(frame=>'opacity' in frame&&'transform' in frame)).toBe(true);
-    expect(outgoing.keyframes.at(-1).transform).toContain(direction==='forward'?'-100%':'100%');
-    const smoothing=await page.evaluate(()=>document.getElementById('dm-page-motion').textContent.includes('-webkit-font-smoothing:antialiased'));
-    expect(smoothing).toBe(true);
+    expect(calls.filter(call=>call.kind==='page')).toHaveLength(0);
+    expect(calls.filter(call=>call.kind==='legacy-surface')).toHaveLength(0);
+    const veils=calls.filter(call=>call.kind==='veil');
+    expect(veils).toHaveLength(2);
+    expect(veils[0].options.duration).toBe(170);
+    expect(veils[1].options.duration).toBe(230);
+    expect(veils.every(call=>call.keyframes.every(frame=>Object.keys(frame).every(key=>key==='transform')))).toBe(true);
+    expect(veils[0].keyframes[0].transform).toContain(direction==='forward'?'101%':'-101%');
+    expect(veils[1].keyframes.at(-1).transform).toContain(direction==='forward'?'-101%':'101%');
     await expect(page.locator('#swup')).toHaveCSS('transform','none');
-    await expect(page.locator('.dm-page-sweep')).toHaveCount(0);
+    await expect(page.locator('.dm-page-ghost')).toHaveCount(0);
+    await expect(page.locator('.dm-page-veil')).toHaveCount(0);
   };
 
   await page.evaluate(()=>{
@@ -176,14 +172,14 @@ test('iPhone page motion keeps incoming text static and animates only the outgoi
     DailyMotionNavigate('progress.html',{animation:'progress'});
   });
   await expect(page.locator('#historyCalendar')).toBeVisible();
-  await assertMotion({direction:'forward'});
+  await assertVeil('forward');
 
   await page.evaluate(()=>{
     window.__dmPageAnimations=[];
     DailyMotionBack();
   });
   await expect(page.locator('#todayCard')).toBeVisible();
-  await assertMotion({direction:'back'});
+  await assertVeil('back');
 });
 
 test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
