@@ -236,8 +236,6 @@
     }catch{}
   };
 
-  const nextPaint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-
   const stabilizeIncomingPage=async()=>{
     if(!mobilePageMotion||reducedMotion.matches)return;
     const target=currentContainer();
@@ -248,10 +246,8 @@
     });
     await waitForOnest();
     if(version!==pageMotionVersion||target!==currentContainer())return;
-    // Native capture suspends painting inside its DOM update callback.
-    // Waiting for two paint frames here would make the transition time out.
-    if(!swup?.visit?.animation.native)await nextPaint();
-    if(version!==pageMotionVersion||target!==currentContainer())return;
+    // Mount is synchronous and page-entry CSS is suppressed during the slide.
+    // Start moving as soon as fonts are ready, without two extra paint frames.
     target?.getAnimations?.({subtree:true})?.forEach(animation=>{
       try{animation.cancel();}catch{}
     });
@@ -554,7 +550,8 @@
 
   const preloadLikelyRoutes=()=>{
     if(!swup?.preload||currentPage()!=='home')return;
-    swup.preload('/session.html?routine=morning&resume=1').catch(()=>{});
+    // The shell is identical for every routine; state comes from the visit URL.
+    swup.preload('/session.html').catch(()=>{});
   };
 
   const installSwup=()=>{
@@ -566,6 +563,13 @@
         animationSelector:false,
         animateHistoryBrowsing:true,
         cache:true,
+        // Offline shell responses carry /session.html as their response URL.
+        // Match that shell in memory while keeping the visit's routine/resume
+        // parameters in history and available to mountSession.
+        resolveUrl:url=>{
+          const parsed=new URL(url,location.href);
+          return parsed.pathname.endsWith('/session.html')?parsed.pathname:url;
+        },
         native:true,
         timeout:8000,
         linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
