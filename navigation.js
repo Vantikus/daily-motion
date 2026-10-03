@@ -1,24 +1,20 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageExit=.1;
-  const pageEnter=.24;
-  const pageEase='cubic-bezier(.32,.72,.24,1)';
+  const pageDuration={forward:.36,back:.34};
+  const pageEase='cubic-bezier(.3,.5,.3,1)';
   const pageMotion={
-    forward:{
-      out:{x:-8,scale:.995,opacity:.97},
-      in:{x:16,scale:.996,opacity:.94}
-    },
-    back:{
-      out:{x:8,scale:.995,opacity:.97},
-      in:{x:-16,scale:.996,opacity:.94}
-    }
+    forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
+    back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
   };
+  const pageEdgeShadow='-10px 0 24px rgba(17,24,20,.08)';
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
-  let pageAnimation=null;
+  let pageGhost=null;
+  let activePageAnimations=[];
+  let pageMotionVersion=0;
   let pageDirection='forward';
 
   const currentContainer=()=>document.querySelector('#swup');
@@ -33,41 +29,43 @@
     const style=document.createElement('style');
     style.id='dm-page-motion';
     style.textContent=`
-      html.dm-page-transition #swup{view-transition-name:daily-motion-page;background:inherit}
-      html.dm-page-fallback #swup{background:inherit;backface-visibility:hidden}
+      html.dm-page-transition #swup{view-transition-name:none!important;background:inherit}
+      html.dm-page-transition::view-transition-image-pair(root){isolation:isolate}
       html.dm-page-transition::view-transition-old(root),
-      html.dm-page-transition::view-transition-new(root){animation:none}
-      html.dm-page-transition::view-transition-group(daily-motion-page){
-        animation-duration:300ms;
-        animation-timing-function:${pageEase};
-      }
-      html.dm-page-transition::view-transition-image-pair(daily-motion-page){isolation:isolate}
-      html.dm-page-transition::view-transition-old(daily-motion-page),
-      html.dm-page-transition::view-transition-new(daily-motion-page){
+      html.dm-page-transition::view-transition-new(root){
         mix-blend-mode:normal;
         backface-visibility:hidden;
-        transform-origin:50% 50%;
       }
-      html.dm-page-transition::view-transition-old(daily-motion-page){animation:dmPageForwardOut 300ms ${pageEase} both}
-      html.dm-page-transition::view-transition-new(daily-motion-page){animation:dmPageForwardIn 300ms ${pageEase} both}
-      html.dm-page-transition.dm-page-back::view-transition-old(daily-motion-page){animation-name:dmPageBackOut}
-      html.dm-page-transition.dm-page-back::view-transition-new(daily-motion-page){animation-name:dmPageBackIn}
-      @keyframes dmPageForwardOut{
-        from{opacity:1;transform:translate3d(0,0,0) scale(1)}
-        to{opacity:.96;transform:translate3d(-10px,0,0) scale(.992)}
+      html.dm-page-transition::view-transition-old(root){animation:dmPageForwardOut ${pageDuration.forward*1000}ms ${pageEase} both}
+      html.dm-page-transition::view-transition-new(root){
+        animation:dmPageForwardIn ${pageDuration.forward*1000}ms ${pageEase} both;
+        box-shadow:${pageEdgeShadow};
       }
-      @keyframes dmPageForwardIn{
-        from{opacity:.94;transform:translate3d(18px,0,0) scale(.996)}
-        to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+      html.dm-page-transition.dm-page-back::view-transition-old(root){
+        animation:dmPageBackOut ${pageDuration.back*1000}ms ${pageEase} both;
+        box-shadow:${pageEdgeShadow};
       }
-      @keyframes dmPageBackOut{
-        from{opacity:1;transform:translate3d(0,0,0) scale(1)}
-        to{opacity:.96;transform:translate3d(10px,0,0) scale(.992)}
+      html.dm-page-transition.dm-page-back::view-transition-new(root){
+        animation:dmPageBackIn ${pageDuration.back*1000}ms ${pageEase} both;
+        box-shadow:none;
       }
-      @keyframes dmPageBackIn{
-        from{opacity:.94;transform:translate3d(-18px,0,0) scale(.996)}
-        to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+      @keyframes dmPageForwardOut{to{transform:translate3d(-22%,0,0)}}
+      @keyframes dmPageForwardIn{from{transform:translate3d(100%,0,0)}}
+      @keyframes dmPageBackOut{to{transform:translate3d(100%,0,0)}}
+      @keyframes dmPageBackIn{from{transform:translate3d(-22%,0,0)}}
+
+      .dm-page-ghost{
+        background:inherit;
+        backface-visibility:hidden;
+        isolation:isolate;
       }
+      .dm-page-ghost *,
+      .dm-page-ghost *::before,
+      .dm-page-ghost *::after{
+        animation-play-state:paused!important;
+        caret-color:transparent!important;
+      }
+
       html.dm-page-transition .exercise-main.enter-forward .exercise-head,
       html.dm-page-transition .exercise-main.enter-back .exercise-head,
       html.dm-page-transition .exercise-main.enter-forward .exercise-facts,
@@ -76,11 +74,20 @@
       html.dm-page-transition .exercise-main.enter-back .technique-key,
       html.dm-page-transition .exercise-main.enter-forward .details-section,
       html.dm-page-transition .exercise-main.enter-back .details-section,
-      html.dm-page-transition .exercise-main .exercise-visual{animation:none!important}
+      html.dm-page-transition .exercise-main .exercise-visual,
+      html.dm-page-fallback .exercise-main.enter-forward .exercise-head,
+      html.dm-page-fallback .exercise-main.enter-back .exercise-head,
+      html.dm-page-fallback .exercise-main.enter-forward .exercise-facts,
+      html.dm-page-fallback .exercise-main.enter-back .exercise-facts,
+      html.dm-page-fallback .exercise-main.enter-forward .technique-key,
+      html.dm-page-fallback .exercise-main.enter-back .technique-key,
+      html.dm-page-fallback .exercise-main.enter-forward .details-section,
+      html.dm-page-fallback .exercise-main.enter-back .details-section,
+      html.dm-page-fallback .exercise-main .exercise-visual{animation:none!important}
+
       @media(prefers-reduced-motion:reduce){
-        html.dm-page-transition::view-transition-group(daily-motion-page),
-        html.dm-page-transition::view-transition-old(daily-motion-page),
-        html.dm-page-transition::view-transition-new(daily-motion-page){animation:none!important}
+        html.dm-page-transition::view-transition-old(root),
+        html.dm-page-transition::view-transition-new(root){animation:none!important}
       }
     `;
     document.body.append(style);
@@ -92,15 +99,106 @@
     document.body.classList.remove('settings-open','modal-open');
   };
 
+  const clearSurfaceStyles=node=>{
+    if(!node)return;
+    for(const prop of ['transform','will-change','position','z-index','box-shadow','isolation','background-color','background-image','background-position','background-size','background-repeat']){
+      node.style.removeProperty(prop);
+    }
+  };
+
+  const removePageGhost=()=>{
+    pageGhost?.remove?.();
+    pageGhost=null;
+  };
+
   const clearPageMotion=()=>{
+    pageMotionVersion+=1;
+    for(const animation of activePageAnimations){
+      try{animation?.cancel?.();}catch{}
+    }
+    activePageAnimations=[];
+    removePageGhost();
+    clearSurfaceStyles(pageMotionTarget());
+  };
+
+  const copyScrollState=(source,clone)=>{
+    const sourceNodes=[source,...source.querySelectorAll('*')];
+    const cloneNodes=[clone,...clone.querySelectorAll('*')];
+    for(let index=0;index<sourceNodes.length;index+=1){
+      const from=sourceNodes[index];
+      const to=cloneNodes[index];
+      if(!to)continue;
+      if(from.scrollTop)to.scrollTop=from.scrollTop;
+      if(from.scrollLeft)to.scrollLeft=from.scrollLeft;
+    }
+  };
+
+  const copySurfaceBackground=(node,source=document.body)=>{
+    if(!node||!source)return;
+    const style=getComputedStyle(source);
+    node.style.backgroundColor=style.backgroundColor;
+    node.style.backgroundImage=style.backgroundImage;
+    node.style.backgroundPosition=style.backgroundPosition;
+    node.style.backgroundSize=style.backgroundSize;
+    node.style.backgroundRepeat=style.backgroundRepeat;
+  };
+
+  const createPageGhost=()=>{
+    if(reducedMotion.matches||swup?.visit?.animation.native)return;
+    const source=currentContainer();
+    if(!source)return;
+    removePageGhost();
+
+    const layer=document.createElement('div');
+    layer.className=['dm-page-ghost',...document.body.classList].join(' ');
+    layer.setAttribute('aria-hidden','true');
+    layer.inert=true;
+    Object.assign(layer.style,{
+      position:'fixed',
+      inset:'0',
+      width:'100%',
+      height:'100dvh',
+      overflow:'hidden',
+      pointerEvents:'none',
+      contain:'paint',
+      isolation:'isolate',
+      backfaceVisibility:'hidden',
+      transform:'translate3d(0,0,0)',
+      willChange:'transform'
+    });
+    copySurfaceBackground(layer);
+
+    const clone=source.cloneNode(true);
+    clone.removeAttribute('id');
+    for(const node of clone.querySelectorAll('[id]'))node.removeAttribute('id');
+    copyScrollState(source,clone);
+    const scrollY=window.scrollY;
+    Object.assign(clone.style,{
+      position:'absolute',
+      left:'0',
+      right:'0',
+      top:`-${scrollY}px`,
+      width:'100%',
+      minHeight:`${Math.max(document.documentElement.scrollHeight,window.innerHeight)}px`
+    });
+    layer.append(clone);
+    document.body.append(layer);
+    pageGhost=layer;
+  };
+
+  const prepareIncomingSurface=()=>{
     const target=pageMotionTarget();
-    try{pageAnimation?.cancel?.();}catch{}
-    pageAnimation=null;
-    if(!target)return;
-    target.style.removeProperty('transform');
-    target.style.removeProperty('opacity');
-    target.style.removeProperty('will-change');
-    target.style.removeProperty('transform-origin');
+    if(!target||!pageGhost||reducedMotion.matches||swup?.visit?.animation.native)return;
+    const spec=pageMotion[pageDirection]||pageMotion.forward;
+    target.style.transform=`translate3d(${spec.incomingX},0,0)`;
+    target.style.willChange='transform';
+    target.style.position='relative';
+    target.style.isolation='isolate';
+    target.style.zIndex=spec.incomingAbove?'2147483001':'2147482999';
+    pageGhost.style.zIndex=spec.incomingAbove?'2147483000':'2147483001';
+    if(spec.incomingAbove)target.style.boxShadow=pageEdgeShadow;
+    else pageGhost.style.boxShadow=pageEdgeShadow;
+    copySurfaceBackground(target);
   };
 
   const unmountPage=()=>{
@@ -108,12 +206,10 @@
       try{unmountCurrent();}catch(error){console.error('[Daily Motion] page cleanup failed',error);}
     }
     unmountCurrent=null;
-    clearPageMotion();
     clearPageState();
   };
 
   const mountPage=()=>{
-    clearPageMotion();
     clearPageState();
     const page=currentPage();
     const mount=pages[page];
@@ -149,43 +245,48 @@
     },true);
   };
 
-  const runPageMotion=phase=>{
+  const runPageMotion=()=>{
     const target=pageMotionTarget();
-    if(!target||reducedMotion.matches||swup?.visit?.animation.native||typeof target.animate!=='function')return Promise.resolve();
+    if(!target||reducedMotion.matches||swup?.visit?.animation.native||typeof target.animate!=='function'){
+      removePageGhost();
+      clearSurfaceStyles(target);
+      return Promise.resolve();
+    }
     const spec=pageMotion[pageDirection]||pageMotion.forward;
-    const state=spec[phase];
-    const from=phase==='out'
-      ?{transform:'translate3d(0,0,0) scale(1)',opacity:1}
-      :{transform:`translate3d(${state.x}px,0,0) scale(${state.scale})`,opacity:state.opacity};
-    const to=phase==='out'
-      ?{transform:`translate3d(${state.x}px,0,0) scale(${state.scale})`,opacity:state.opacity}
-      :{transform:'translate3d(0,0,0) scale(1)',opacity:1};
-    try{pageAnimation?.cancel?.();}catch{}
-    target.style.willChange='transform, opacity';
-    target.style.transformOrigin='50% 50%';
-    const animation=target.animate([from,to],{
-      duration:(phase==='out'?pageExit:pageEnter)*1000,
-      easing:pageEase,
-      fill:'both'
+    const version=++pageMotionVersion;
+    const duration=(pageDuration[pageDirection]||pageDuration.forward)*1000;
+    const options={duration,easing:pageEase,fill:'both'};
+    const animations=[];
+
+    const incoming=target.animate([
+      {transform:`translate3d(${spec.incomingX},0,0)`},
+      {transform:'translate3d(0,0,0)'}
+    ],options);
+    animations.push(incoming);
+
+    if(pageGhost){
+      const outgoing=pageGhost.animate([
+        {transform:'translate3d(0,0,0)'},
+        {transform:`translate3d(${spec.outgoingX},0,0)`}
+      ],options);
+      animations.push(outgoing);
+    }
+
+    activePageAnimations=animations;
+    return Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{
+      if(version!==pageMotionVersion)return;
+      activePageAnimations=[];
+      removePageGhost();
+      clearSurfaceStyles(target);
     });
-    pageAnimation=animation;
-    return animation.finished.then(
-      ()=>{
-        if(pageAnimation!==animation)return;
-        pageAnimation=null;
-        if(phase==='in')clearPageMotion();
-      },
-      ()=>{}
-    );
   };
 
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>runPageMotion('out'),
-    in:()=>runPageMotion('in')
+    out:()=>Promise.resolve(),
+    in:()=>runPageMotion()
   }];
-
 
   const SWUP_RUNTIME=[
     ['Swup','/vendor/swup/swup-4.10.0.js'],
@@ -308,12 +409,12 @@
       location.assign(new URL(visit.to.url,location.href).href);
     });
 
-    swup.hooks.before('content:replace',()=>unmountPage());
-    swup.hooks.on('content:replace',()=>mountPage());
+    swup.hooks.before('content:replace',()=>{createPageGhost();unmountPage();});
+    swup.hooks.on('content:replace',()=>{prepareIncomingSurface();mountPage();});
     swup.hooks.on('page:view',()=>preloadLikelyRoutes());
     swup.hooks.on('visit:end',finishTransition);
     swup.hooks.on('visit:abort',finishTransition);
-    swup.hooks.on('animation:skip',()=>clearPageMotion());
+    swup.hooks.on('animation:skip',finishTransition);
 
     preloadLikelyRoutes();
     return true;
