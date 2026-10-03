@@ -4073,6 +4073,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   border-color:transparent!important;
 }
 .details-stack.is-detail-animating .detail-card{
+  overflow:visible;
   border-bottom-color:transparent!important;
   background:var(--surface-raised)!important;
 }
