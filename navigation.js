@@ -8,12 +8,17 @@
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
   };
   const pageEdgeShadow='-1px 0 0 rgba(17,24,20,.05),-12px 0 24px rgba(17,24,20,.08)';
+  const pageAppleEdgeShadow={
+    forward:'12px 0 28px rgba(17,24,20,.11)',
+    back:'-12px 0 28px rgba(17,24,20,.11)'
+  };
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
   let pageGhost=null;
   let pageDepthOverlay=null;
+  let pageSweep=null;
   let activePageAnimations=[];
   let pageMotionVersion=0;
   let pageDirection='forward';
@@ -30,6 +35,7 @@
     const style=document.createElement('style');
     style.id='dm-page-motion';
     style.textContent=`
+      html.dm-apple-mobile body{-webkit-font-smoothing:antialiased}
       html.dm-page-transition #swup{view-transition-name:none!important;background:inherit}
       html.dm-page-transition::view-transition-image-pair(root){isolation:isolate}
       html.dm-page-transition::view-transition-old(root),
@@ -71,8 +77,24 @@
         inset:0;
         pointer-events:none;
         z-index:2147483647;
-        background:rgba(12,18,15,.065);
+        background:rgba(12,18,15,.075);
         will-change:opacity;
+      }
+      .dm-page-sweep{
+        position:fixed;
+        top:0;
+        bottom:0;
+        left:0;
+        width:108px;
+        pointer-events:none;
+        z-index:2147483646;
+        background:linear-gradient(90deg,
+          rgba(255,255,255,0) 0%,
+          rgba(255,255,255,.11) 34%,
+          rgba(47,107,85,.085) 55%,
+          rgba(17,24,20,.075) 68%,
+          rgba(17,24,20,0) 100%);
+        will-change:transform,opacity;
       }
       .dm-page-ghost *,
       .dm-page-ghost *::before,
@@ -126,6 +148,11 @@
     pageDepthOverlay=null;
   };
 
+  const removePageSweep=()=>{
+    pageSweep?.remove?.();
+    pageSweep=null;
+  };
+
   const removePageGhost=()=>{
     pageGhost?.remove?.();
     pageGhost=null;
@@ -143,12 +170,23 @@
     return overlay;
   };
 
+  const createPageSweep=()=>{
+    removePageSweep();
+    const sweep=document.createElement('div');
+    sweep.className='dm-page-sweep';
+    sweep.setAttribute('aria-hidden','true');
+    document.body.append(sweep);
+    pageSweep=sweep;
+    return sweep;
+  };
+
   const clearPageMotion=()=>{
     pageMotionVersion+=1;
     for(const animation of activePageAnimations){
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
+    removePageSweep();
     removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
@@ -180,6 +218,7 @@
     if(reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
+    removePageSweep();
     removePageDepth();
     removePageGhost();
 
@@ -225,15 +264,25 @@
     const target=pageMotionTarget();
     if(!target||!pageGhost||reducedMotion.matches||swup?.visit?.animation.native)return;
     const spec=pageMotion[pageDirection]||pageMotion.forward;
-    target.style.transform=`translate3d(${spec.incomingX},0,0)`;
-    target.style.willChange='transform';
     target.style.position='relative';
     target.style.isolation='isolate';
+    copySurfaceBackground(target);
+
+    if(isAppleMobileWebKit()){
+      target.style.zIndex='2147482999';
+      pageGhost.style.zIndex='2147483001';
+      pageGhost.style.boxShadow=pageAppleEdgeShadow[pageDirection]||pageAppleEdgeShadow.forward;
+      if(pageDirection==='back')createPageDepth(target,1);
+      createPageSweep();
+      return;
+    }
+
+    target.style.transform=`translate3d(${spec.incomingX},0,0)`;
+    target.style.willChange='transform';
     target.style.zIndex=spec.incomingAbove?'2147483001':'2147482999';
     pageGhost.style.zIndex=spec.incomingAbove?'2147483000':'2147483001';
     if(spec.incomingAbove)target.style.boxShadow=pageEdgeShadow;
     else pageGhost.style.boxShadow=pageEdgeShadow;
-    copySurfaceBackground(target);
     if(pageDirection==='back')createPageDepth(target,1);
   };
 
@@ -284,26 +333,34 @@
   const runPageMotion=()=>{
     const target=pageMotionTarget();
     if(!target||reducedMotion.matches||swup?.visit?.animation.native||typeof target.animate!=='function'){
+      removePageSweep();
+      removePageDepth();
       removePageGhost();
       clearSurfaceStyles(target);
       return Promise.resolve();
     }
     const spec=pageMotion[pageDirection]||pageMotion.forward;
+    const appleMobile=isAppleMobileWebKit();
     const version=++pageMotionVersion;
     const duration=(pageDuration[pageDirection]||pageDuration.forward)*1000;
     const options={duration,easing:pageEase,fill:'both'};
     const animations=[];
 
-    const incoming=target.animate([
-      {transform:`translate3d(${spec.incomingX},0,0)`},
-      {transform:'translate3d(0,0,0)'}
-    ],options);
-    animations.push(incoming);
+    if(!appleMobile){
+      const incoming=target.animate([
+        {transform:`translate3d(${spec.incomingX},0,0)`},
+        {transform:'translate3d(0,0,0)'}
+      ],options);
+      animations.push(incoming);
+    }
 
     if(pageGhost){
+      const outgoingX=appleMobile
+        ?(pageDirection==='forward'?'-100%':'100%')
+        :spec.outgoingX;
       const outgoing=pageGhost.animate([
         {transform:'translate3d(0,0,0)'},
-        {transform:`translate3d(${spec.outgoingX},0,0)`}
+        {transform:`translate3d(${outgoingX},0,0)`}
       ],options);
       animations.push(outgoing);
     }
@@ -318,10 +375,30 @@
       animations.push(depth);
     }
 
+    if(pageSweep){
+      const sweep=pageSweep.animate(
+        pageDirection==='forward'
+          ?[
+            {transform:'translate3d(100vw,0,0)',opacity:0},
+            {transform:'translate3d(72vw,0,0)',opacity:.92,offset:.18},
+            {transform:'translate3d(-108px,0,0)',opacity:0}
+          ]
+          :[
+            {transform:'translate3d(-108px,0,0)',opacity:0},
+            {transform:'translate3d(18vw,0,0)',opacity:.92,offset:.18},
+            {transform:'translate3d(100vw,0,0)',opacity:0}
+          ],
+        options
+      );
+      animations.push(sweep);
+    }
+
     activePageAnimations=animations;
     return Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{
       if(version!==pageMotionVersion)return;
       activePageAnimations=[];
+      removePageSweep();
+      removePageDepth();
       removePageGhost();
       clearSurfaceStyles(target);
     });
