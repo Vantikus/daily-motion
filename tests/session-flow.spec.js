@@ -396,11 +396,16 @@ for(const autoNext of [true,false]){
         const capture=window.__finishFrames={samples:[],count:0,raf:0};
         const sample=()=>{
           capture.count++;
-          const surface=getComputedStyle(overlay);
-          const style=getComputedStyle(card);
-          if(!card.hidden&&style.display!=='none'&&style.visibility==='visible'&&Number(style.opacity)>.01&&
-            surface.visibility==='visible'&&Number(surface.opacity)>.01){
-            capture.samples.push(value.textContent.trim());
+          // Only a zero candidate needs computed visibility. Reading animated
+          // ring styles on every nonzero frame destabilizes headless WebKit.
+          const text=value.textContent.trim();
+          if(!card.hidden&&/^0+(?::0+)?$/.test(text)){
+            const surface=getComputedStyle(overlay);
+            const style=getComputedStyle(card);
+            if(style.display!=='none'&&style.visibility==='visible'&&Number(style.opacity)>.01&&
+              surface.visibility==='visible'&&Number(surface.opacity)>.01){
+              capture.samples.push(text);
+            }
           }
           capture.raf=requestAnimationFrame(sample);
         };
@@ -415,7 +420,7 @@ for(const autoNext of [true,false]){
         return window.__finishFrames;
       });
       expect(frames.count).toBeGreaterThan(5);
-      expect(frames.samples.filter(text=>/^0+(?::0+)?$/.test(text))).toEqual([]);
+      expect(frames.samples).toEqual([]);
       await expect(page.locator('#timerCard')).toBeHidden();
       if(autoNext)await expect(page.locator('#executionRestStage')).toBeVisible();
       else await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
