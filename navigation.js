@@ -4,6 +4,7 @@
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
   const mobilePageDuration=240;
+  const workoutPageDuration=420;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
@@ -21,6 +22,8 @@
   let pageMotionVersion=0;
   let pageDirection='forward';
   let mobilePageMotion=false;
+  let workoutPageEntry=false;
+  let departureAnimation=null;
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
@@ -88,6 +91,8 @@
       html.dm-mobile-page-motion.dm-page-transition::view-transition-group(dm-workout-nav){animation:none}
       html.dm-mobile-page-motion.dm-page-transition::view-transition-old(dm-workout-nav){animation:none;opacity:0}
       html.dm-mobile-page-motion.dm-page-transition::view-transition-new(dm-workout-nav){animation:none;opacity:1}
+      html.dm-page-transition.dm-workout-entry::view-transition-old(root),
+      html.dm-page-transition.dm-workout-entry::view-transition-new(root){animation-duration:${workoutPageDuration}ms}
       @keyframes dmMobileForwardOut{from{transform:translateX(0)}to{transform:translateX(-100%)}}
       @keyframes dmMobileForwardIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
       @keyframes dmMobileBackOut{from{transform:translateX(0)}to{transform:translateX(100%)}}
@@ -266,6 +271,9 @@
 
   const clearPageMotion=()=>{
     pageMotionVersion+=1;
+    try{departureAnimation?.cancel();}catch{}
+    departureAnimation=null;
+    document.documentElement.classList.remove('dm-workout-entry');
     for(const animation of activePageAnimations){
       try{animation?.cancel?.();}catch{}
     }
@@ -426,7 +434,7 @@
     // Opaque pages move edge to edge; their text never cross-fades or scales.
     const width=document.documentElement.clientWidth;
     const direction=pageDirection==='back'?-1:1;
-    const options={duration:mobilePageDuration,easing:pageEase,fill:'both'};
+    const options={duration:workoutPageEntry?workoutPageDuration:mobilePageDuration,easing:pageEase,fill:'both'};
     if(pageGhost?.animate){
       animations.push(pageGhost.animate([
         {transform:'translateX(0)'},
@@ -459,7 +467,7 @@
     }
     const spec=pageMotion[pageDirection]||pageMotion.forward;
     const version=++pageMotionVersion;
-    const duration=(pageDuration[pageDirection]||pageDuration.forward)*1000;
+    const duration=workoutPageEntry?workoutPageDuration:(pageDuration[pageDirection]||pageDuration.forward)*1000;
     const options={duration,easing:pageEase,fill:'both'};
     const animations=[];
 
@@ -614,6 +622,8 @@
       clearPageMotion();
       releasePageFreeze();
       mobilePageMotion=prefersMobilePageMotion();
+      workoutPageEntry=currentPage()==='home'&&new URL(visit.to.url,location.href).pathname.endsWith('/session.html');
+      document.documentElement.classList.toggle('dm-workout-entry',workoutPageEntry);
       document.documentElement.classList.toggle('dm-mobile-page-motion',mobilePageMotion);
       visit.animation.wait=true;
       const historyBack=visit.history.popstate&&visit.history.direction==='backwards';
@@ -626,6 +636,17 @@
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
       if(mobilePageMotion&&!reducedMotion.matches){
         freezeCurrentPage();
+      }
+      if(workoutPageEntry&&!reducedMotion.matches){
+        const surface=currentContainer()?.querySelector('.app-shell');
+        if(surface?.animate){
+          // Begin feedback while Swup waits for the destination. Keep this
+          // position in the outgoing capture so the final slide continues it.
+          departureAnimation=surface.animate([
+            {transform:'translateX(0)'},
+            {transform:'translateX(-12px)'}
+          ],{duration:520,easing:pageEase,fill:'both'});
+        }
       }
     });
 
