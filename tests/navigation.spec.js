@@ -246,6 +246,10 @@ test('the incoming workout snapshot contains visible exercise content',async({pa
   await expect(page.locator('html')).not.toHaveClass(/dm-page-transition/);
 });
 
+test.describe('mobile content motion',()=>{
+  // Check painted state, not device GPU throughput; avoid a 3x desktop-sized
+  // backing surface when proving standalone routing at a wide viewport.
+  test.use({deviceScaleFactor:1});
 for(const mode of ['phone','android','standalone']){
   test(`${mode} replaces pages only behind an opaque themed cover and cleans up on back`,async({page})=>{
     await page.setViewportSize({width:mode==='standalone'?1024:390,height:844});
@@ -256,6 +260,7 @@ for(const mode of ['phone','android','standalone']){
       }
       if(mode==='standalone')Object.defineProperty(navigator,'standalone',{configurable:true,value:true});
       window.__coveredReplacements=[];
+      window.__mobilePaints=[];
       window.__pageSnapshots=0;
       const start=document.startViewTransition?.bind(document);
       if(start)document.startViewTransition=(...args)=>{window.__pageSnapshots++;return start(...args);};
@@ -264,6 +269,23 @@ for(const mode of ['phone','android','standalone']){
           if(!records.some(record=>Array.from(record.addedNodes).some(node=>node.id==='swup')))return;
           const cover=document.querySelector('.dm-page-shield');
           const surface=document.querySelector('#swup');
+          const content=surface.querySelector('.exercise-main,.app-shell');
+          const nav=surface.querySelector('.session-nav');
+          const frames=[];
+          window.__mobilePaints.push(frames);
+          const started=performance.now();
+          const sample=()=>{
+            if(!content.isConnected)return;
+            const transform=getComputedStyle(content).transform;
+            frames.push({
+              x:transform==='none'?0:new DOMMatrixReadOnly(transform).m41,
+              cover:cover?.isConnected?Number(getComputedStyle(cover).opacity):0,
+              navX:nav?.getBoundingClientRect().x,
+              navBottom:nav?.getBoundingClientRect().bottom
+            });
+            if(performance.now()-started<700)requestAnimationFrame(sample);
+          };
+          requestAnimationFrame(sample);
           window.__coveredReplacements.push({
             opacity:cover?getComputedStyle(cover).opacity:null,
             background:cover?getComputedStyle(cover).backgroundColor:null,
@@ -281,12 +303,15 @@ for(const mode of ['phone','android','standalone']){
     await page.evaluate(()=>DailyMotionNavigate('session.html?routine=morning&resume=1'));
     await expect(page.locator('#exerciseTitle')).toBeVisible();
     await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-freeze|dm-page-stabilize/);
+    await page.waitForTimeout(350);
     await page.evaluate(()=>DailyMotionBack());
     await expect(page.locator('#todayCard')).toBeVisible();
     await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-freeze|dm-page-stabilize/);
+    await page.waitForTimeout(350);
     const result=await page.evaluate(()=>({
       records:window.__coveredReplacements,snapshots:window.__pageSnapshots,token:window.__mobileVisitToken,
-      animations:document.getAnimations().filter(animation=>animation.effect?.target?.matches?.('.dm-page-shield,#swup')).length
+      paints:window.__mobilePaints,
+      animations:document.getAnimations().filter(animation=>animation.effect?.target?.matches?.('.dm-page-shield,#swup,.exercise-main,.app-shell')).length
     }));
     expect(result.token).toBe(token);
     expect(result.snapshots).toBe(0);
@@ -298,10 +323,24 @@ for(const mode of ['phone','android','standalone']){
       expect(record.ghosts).toBe(0);
     }
     expect(result.animations).toBe(0);
+    expect(result.paints).toHaveLength(2);
+    for(const [index,frames] of result.paints.entries()){
+      // Prove the content actually moves while uncovered, in both directions.
+      const moving=frames.filter(frame=>frame.cover<.1&&Math.abs(frame.x)>2);
+      expect(moving.length,JSON.stringify(frames)).toBeGreaterThan(0);
+      expect(moving.every(frame=>index===0?frame.x>0:frame.x<0)).toBe(true);
+      expect(Math.abs(frames.at(-1).x)).toBeLessThan(.1);
+      const fixed=frames.filter(frame=>frame.navBottom!==undefined);
+      if(fixed.length){
+        expect(Math.max(...fixed.map(frame=>frame.navX))-Math.min(...fixed.map(frame=>frame.navX))).toBeLessThan(.1);
+        expect(Math.max(...fixed.map(frame=>frame.navBottom))-Math.min(...fixed.map(frame=>frame.navBottom))).toBeLessThan(.1);
+      }
+    }
     await expect(page.locator('.dm-page-shield')).toHaveCount(0);
     await expect(page.locator('#swup')).not.toHaveAttribute('inert');
   });
 }
+});
 
 test('desktop fallback releases filled animations after the visit',async({page,browserName})=>{
   test.skip(browserName!=='chromium','desktop compositor fallback');

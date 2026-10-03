@@ -538,6 +538,11 @@ window.DailyMotionPages.session=function mountSession(){
       previous.hidden=true;
       previous.inert=false;
       previous.classList.remove('is-finishing-early','is-stage-leaving');
+      animateExecutionNode(
+        next,
+        [{transform:'translate3d(0,16px,0)'},{transform:'translate3d(0,0,0)'}],
+        {duration:220,easing:MotionTokens.easeStandard,fill:'backwards'}
+      );
     }else{
       if(previousAlreadyExited){
         previous.hidden=true;
@@ -575,7 +580,7 @@ window.DailyMotionPages.session=function mountSession(){
       if(token!==stageTransitionToken)return;
       next.classList.remove('is-stage-entering');
       earlyFinishPending=false;
-    },appleMobileMotion?170:220);
+    },220);
   }
 
   function playEarlyTimerExit(callback){
