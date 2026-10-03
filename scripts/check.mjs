@@ -222,7 +222,8 @@ for(const obsolete of [
 
 for(const token of [
   'window.DailyMotionSessionView=Object.freeze({create})',
-  'const animateDetailState=',
+  'const animateDetails=',
+  'const finishDetailMotion=',
   'const renderExercise=',
   'const renderStepSegments=',
   'const updateNextButton='

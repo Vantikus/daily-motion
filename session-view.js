@@ -150,7 +150,11 @@
         const inset=getComputedStyle(card).clipPath.match(/^inset\(([^)]+)\)/);
         const values=inset?inset[1].split(' round ')[0].trim().split(/\s+/):[];
         const clipped=values.length>2?parseFloat(values[2])||0:0;
-        return {top:box.top,height:Math.max(0,box.height-clipped)};
+        const innerTransform=getComputedStyle(card.querySelector('.detail-card__inner')).transform;
+        return {
+          top:box.top,height:Math.max(0,box.height-clipped),
+          innerY:innerTransform==='none'?0:new DOMMatrixReadOnly(innerTransform).m42
+        };
       });
       const style=getComputedStyle(detailStack);
       const appearance=detailMotion?.appearance||{
@@ -194,7 +198,8 @@
 
       rows.forEach((row,index)=>{
         const old=oldRows[index];
-        const expanded=row.open||old.height>row.headerHeight+row.borderWidth+.5;
+        const wasVisible=old.height>row.headerHeight+row.borderWidth+.5;
+        const expanded=row.open||wasVisible;
         const height=Math.max(old.height,row.box.height,expanded?row.headerHeight+row.contentHeight+row.borderWidth:0);
         Object.assign(row.card.style,{
           position:'absolute',left:'0',
@@ -203,8 +208,20 @@
         });
         row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
         row.panel.style.opacity=expanded?'1':'0';
-        // Retiring text must disappear before the neighboring rows cover it.
-        row.inner.style.opacity=row.open?'1':'0';
+        // Slide the full-size text behind the heading while the row clips it.
+        // Preserve the live offset on another tap so reversals never restart.
+        row.inner.style.opacity=expanded?'1':'0';
+        if(expanded){
+          const fromY=wasVisible?old.innerY:-row.contentHeight;
+          const toY=row.open?0:-row.contentHeight;
+          row.inner.style.transform=`translateY(${toY}px)`;
+          if(Math.abs(fromY-toY)>.1){
+            state.animations.push(row.inner.animate([
+              {transform:`translateY(${fromY}px)`},
+              {transform:`translateY(${toY}px)`}
+            ],options));
+          }
+        }
         const radii=[
           index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
           index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,
