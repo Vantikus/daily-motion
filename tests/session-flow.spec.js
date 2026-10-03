@@ -389,26 +389,33 @@ for(const autoNext of [true,false]){
         await page.locator('#timerToggle').evaluate(button=>button.click());
         await expect(page.locator('#timerState')).toHaveText('Пауза');
       }
-      const frames=await page.evaluate(()=>new Promise(resolve=>{
+      await page.evaluate(()=>{
         const card=document.querySelector('#timerCard');
         const overlay=document.querySelector('#executionOverlay');
         const value=document.querySelector('#timerValue');
-        const samples=[];
-        const start=performance.now();
-        document.querySelector('#executionFinishEarly').click();
+        const capture=window.__finishFrames={samples:[],count:0,raf:0};
         const sample=()=>{
+          capture.count++;
           const surface=getComputedStyle(overlay);
           const style=getComputedStyle(card);
           if(!card.hidden&&style.display!=='none'&&style.visibility==='visible'&&Number(style.opacity)>.01&&
             surface.visibility==='visible'&&Number(surface.opacity)>.01){
-            samples.push(value.textContent.trim());
+            capture.samples.push(value.textContent.trim());
           }
-          if(performance.now()-start>=700){resolve(samples);return;}
-          requestAnimationFrame(sample);
+          capture.raf=requestAnimationFrame(sample);
         };
-        requestAnimationFrame(sample);
-      }));
-      expect(frames.filter(text=>/^0+(?::0+)?$/.test(text))).toEqual([]);
+        capture.raf=requestAnimationFrame(sample);
+        document.querySelector('#executionFinishEarly').click();
+      });
+      // Keep the observation window in the driver, independent of WebKit's
+      // animation-frame scheduling while the timer surface is being hidden.
+      await page.waitForTimeout(700);
+      const frames=await page.evaluate(()=>{
+        cancelAnimationFrame(window.__finishFrames.raf);
+        return window.__finishFrames;
+      });
+      expect(frames.count).toBeGreaterThan(5);
+      expect(frames.samples.filter(text=>/^0+(?::0+)?$/.test(text))).toEqual([]);
       await expect(page.locator('#timerCard')).toBeHidden();
       if(autoNext)await expect(page.locator('#executionRestStage')).toBeVisible();
       else await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
