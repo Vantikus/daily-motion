@@ -1,6 +1,6 @@
 # Daily Motion — краткая памятка
 
-Версия: v243. Исходная пользовательская база: daily-motion-main.zip (v239); v240 и v241 продолжены из этой локальной линии без чтения GitHub-кода.
+Версия: v257. Текущая локальная база перед этой задачей имела RELEASE_VERSION=256; прежние разделы памятки остались на v243. Исходная пользовательская база: daily-motion-main.zip (v239); v240 и v241 продолжены из этой локальной линии без чтения GitHub-кода.
 Работать только с последним ZIP. Не читать, не скачивать и не сравнивать код GitHub.
 GitHub использовать только для финальной публикации. Пользователь разрешил
 автоматически публиковать готовые изменения после обязательных проверок.
@@ -13,6 +13,18 @@ GitHub использовать только для финальной публ�
 - Сохранять историю, настройки, localStorage v3, учёт времени, офлайн и iPhone safe-area.
 - Не менять физику нижних панелей без отдельного запроса.
 - Объяснять дизайнеру кратко: что видно, что удобнее и как проверить; без кода и логов.
+
+## Исправление мобильных переходов v257 — 3 октября 2026
+- Причина: iPhone заменял DOM под затемнением с alpha .085, которое не скрывало резкую смену; остальные мобильные экраны использовали полноэкранные snapshots/сдвиг на 100%.
+- Мобильные экраны до 767 px, устройства с coarse pointer, iPhone/iPadOS и standalone PWA используют единый короткий переход через сплошной фон текущей темы: WAAPI opacity слоя, 90 мс закрытие + 170 мс открытие. Замена страницы происходит при opacity=1; reveal ждёт CSS и Onest. #swup, fixed-панели и safe-area не трансформируются.
+- Убраны повторные stagger-анимации карточек на мобильном page reveal. Прерывание отменяет старые анимации и асинхронное ожидание, снимает inert и убирает слой. Desktop fallback освобождает завершённые WAAPI effects.
+- Таймер, история, тексты, размеры, физика sheets и тема не менялись. Reduced motion остаётся без page animation.
+- Статическая проверка scripts/check.mjs пройдена. Исправлена устаревшая проверка SwupHeadPlugin: локальный runtime уже использовал awaitAssets:true,timeout:4000 до этой задачи.
+- Playwright из доступного bundled runtime 1.62.1 (Chromium 151 / WebKit 26.5), а не pinned CI 1.63.0: navigation + PWA + lifecycle — 52 passed, 4 платформенных skips. Проверены сохранение документа Swup, быстрые переходы, back/forward, тёмный непрозрачный cover при DOM replacement, Android/iPhone/standalone и реальный Chromium SW/offline/update safety.
+- Расширенный прогон layout/motion/session-flow/visual/visual-matrix: 43 passed, 16 skipped, 27 failed. Старые visual baselines расходятся с текущими шрифтом/геометрией: 23 visual failures; 3 Chromium layout expectations устарели; отдельный WebKit timer/rest simultaneous-close сценарий также падает.
+- Контроль с восстановленной исходной navigation.js воспроизвёл 3 layout failures, compact visual failures в обоих браузерах и WebKit simultaneous-close. Actual PNG Home и workout 360×640 побайтно идентичны до/после в Chromium и WebKit. Expected/actual/diff просмотрены; эталоны и CSS не менялись.
+- На физическом iPhone и в установленной PWA на устройстве не проверено; FPS не измерялся.
+- Публикация: подготовлена ветка fix/mobile-page-transitions-v257 для проверки. Main не обновлять при красном обязательном CI; старые расхождения требуют отдельного решения, а не принятия эталонов ради зелёного теста.
 
 ## Последние изменения
 - v243: на iPhone/iPadOS возвращены плавные направленные page transitions без потери найденной производительности: browser-native transform-only, forward 5px out + 14px in, back зеркально, 90мс + 220мс. Без opacity, scale, snapshots и GSAP frame-loop. Остальные анимации и UI не менялись.

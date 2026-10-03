@@ -3,8 +3,8 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const appleShieldDuration={cover:80,reveal:140};
-  const appleShieldEase={
+  const mobileShieldDuration={cover:90,reveal:170};
+  const mobileShieldEase={
     cover:'cubic-bezier(.3,0,.35,1)',
     reveal:'cubic-bezier(.2,.72,.22,1)'
   };
@@ -25,13 +25,16 @@
   let pageReadyPromise=Promise.resolve();
   let pageMotionVersion=0;
   let pageDirection='forward';
+  let mobilePageMotion=false;
 
   const currentContainer=()=>document.querySelector('#swup');
   const currentPage=()=>currentContainer()?.dataset.page||'';
   const isAppleMobileWebKit=()=>/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   document.documentElement.classList.toggle('dm-apple-mobile',isAppleMobileWebKit());
   const pageMotionTarget=()=>currentContainer();
-  const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!isAppleMobileWebKit();
+  const prefersMobilePageMotion=()=>isAppleMobileWebKit()||window.matchMedia('(max-width: 767px), (pointer: coarse), (display-mode: standalone)').matches||navigator.standalone===true;
+  document.documentElement.classList.toggle('dm-mobile-page-motion',prefersMobilePageMotion());
+  const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches&&!mobilePageMotion;
 
   const installPageMotionStyles=()=>{
     if(document.getElementById('dm-page-motion'))return;
@@ -87,7 +90,7 @@
         inset:0;
         pointer-events:none;
         z-index:2147483647;
-        background:rgba(30,52,42,.085);
+        background:var(--bg);
         opacity:0;
         will-change:opacity;
       }
@@ -104,6 +107,14 @@
         transition:none!important;
       }
 
+      html.dm-mobile-page-motion .app-ready .page-grid>*,
+      html.dm-mobile-page-motion .app-ready .routine-card,
+      html.dm-mobile-page-motion .app-ready .today-card,
+      html.dm-mobile-page-motion .app-ready .progress-page,
+      html.dm-mobile-page-motion .app-ready .progress-metrics article,
+      html.dm-mobile-page-motion .app-ready .progress-card,
+      html.dm-mobile-page-motion .app-ready .activity-day__dot,
+      html.dm-mobile-page-motion .app-ready .progress-track i,
       html.dm-apple-mobile .app-ready .page-grid>*,
       html.dm-apple-mobile .app-ready .routine-card,
       html.dm-apple-mobile .app-ready .today-card,
@@ -192,7 +203,7 @@
   };
 
   const preparePageShield=()=>{
-    if(!isAppleMobileWebKit()||reducedMotion.matches)return null;
+    if(!mobilePageMotion||reducedMotion.matches)return null;
     removePageShield();
     const shield=document.createElement('div');
     shield.className='dm-page-shield';
@@ -203,7 +214,7 @@
   };
 
   const freezeCurrentPage=()=>{
-    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    if(!mobilePageMotion||reducedMotion.matches)return;
     const target=currentContainer();
     frozenPageAnimations=target?.getAnimations?.({subtree:true})||[];
     for(const animation of frozenPageAnimations){
@@ -227,14 +238,17 @@
   const nextPaint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 
   const stabilizeIncomingPage=async()=>{
-    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    if(!mobilePageMotion||reducedMotion.matches)return;
     const target=currentContainer();
+    const version=pageMotionVersion;
     document.documentElement.classList.add('dm-page-stabilize');
     target?.getAnimations?.({subtree:true})?.forEach(animation=>{
       try{animation.cancel();}catch{}
     });
     await waitForOnest();
+    if(version!==pageMotionVersion||target!==currentContainer())return;
     await nextPaint();
+    if(version!==pageMotionVersion||target!==currentContainer())return;
     target?.getAnimations?.({subtree:true})?.forEach(animation=>{
       try{animation.cancel();}catch{}
     });
@@ -242,6 +256,11 @@
   };
 
   const releasePageFreeze=()=>{
+    for(const animation of frozenPageAnimations){
+      if(animation.effect?.target?.isConnected){
+        try{animation.play();}catch{}
+      }
+    }
     frozenPageAnimations=[];
     currentContainer()?.removeAttribute('inert');
     document.documentElement.classList.remove('dm-page-freeze','dm-page-stabilize');
@@ -282,7 +301,7 @@
   };
 
   const createPageGhost=()=>{
-    if(isAppleMobileWebKit()||reducedMotion.matches||swup?.visit?.animation.native)return;
+    if(mobilePageMotion||reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
     removePageShield();
@@ -388,8 +407,10 @@
   };
 
   const runPageShield=async phase=>{
-    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    if(!mobilePageMotion||reducedMotion.matches)return;
+    const version=pageMotionVersion;
     if(phase==='reveal')await pageReadyPromise;
+    if(version!==pageMotionVersion)return;
     const shield=pageShield||preparePageShield();
     if(!shield||typeof shield.animate!=='function')return;
 
@@ -398,14 +419,20 @@
         ?[{opacity:0},{opacity:1}]
         :[{opacity:1},{opacity:0}],
       {
-        duration:appleShieldDuration[phase],
-        easing:appleShieldEase[phase],
+        duration:mobileShieldDuration[phase],
+        easing:mobileShieldEase[phase],
         fill:'forwards'
       }
     );
+    if(phase==='reveal'){
+      // Install the reveal before releasing the opaque cover; no uncovered frame.
+      for(const previous of activePageAnimations)previous.cancel();
+    }
     activePageAnimations=[animation];
     try{await animation.finished;}catch{}
+    if(version!==pageMotionVersion)return;
     if(phase==='reveal'){
+      animation.cancel();
       activePageAnimations=[];
       removePageShield();
       releasePageFreeze();
@@ -453,6 +480,7 @@
     activePageAnimations=animations;
     return Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{
       if(version!==pageMotionVersion)return;
+      for(const animation of animations)animation.cancel();
       activePageAnimations=[];
       removePageDepth();
       removePageGhost();
@@ -463,8 +491,8 @@
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>isAppleMobileWebKit()?runPageShield('cover'):Promise.resolve(),
-    in:()=>isAppleMobileWebKit()?runPageShield('reveal'):runPageMotion()
+    out:()=>mobilePageMotion?runPageShield('cover'):Promise.resolve(),
+    in:()=>mobilePageMotion?runPageShield('reveal'):runPageMotion()
   }];
 
   const SWUP_RUNTIME=[
@@ -573,6 +601,10 @@
     };
 
     swup.hooks.on('visit:start',visit=>{
+      clearPageMotion();
+      releasePageFreeze();
+      mobilePageMotion=prefersMobilePageMotion();
+      document.documentElement.classList.toggle('dm-mobile-page-motion',mobilePageMotion);
       visit.animation.wait=true;
       const historyBack=visit.history.popstate&&visit.history.direction==='backwards';
       const namedBack=visit.animation.name==='back-home'||visit.animation.name==='completion-home';
@@ -582,7 +614,7 @@
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
       document.documentElement.classList.toggle('dm-page-fallback',!visit.animation.native&&!reducedMotion.matches);
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
-      if(isAppleMobileWebKit()&&!reducedMotion.matches){
+      if(mobilePageMotion&&!reducedMotion.matches){
         freezeCurrentPage();
         preparePageShield();
       }
@@ -596,10 +628,10 @@
 
     swup.hooks.before('content:replace',()=>{createPageGhost();unmountPage();});
     swup.hooks.on('content:replace',()=>{
-      if(isAppleMobileWebKit()&&!reducedMotion.matches)document.documentElement.classList.add('dm-page-stabilize');
+      if(mobilePageMotion&&!reducedMotion.matches)document.documentElement.classList.add('dm-page-stabilize');
       prepareIncomingSurface();
       mountPage();
-      pageReadyPromise=isAppleMobileWebKit()&&!reducedMotion.matches
+      pageReadyPromise=mobilePageMotion&&!reducedMotion.matches
         ?stabilizeIncomingPage()
         :Promise.resolve();
     });
