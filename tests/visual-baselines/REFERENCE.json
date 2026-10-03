@@ -1,0 +1,129 @@
+{
+  "approved_on": "2026-10-03",
+  "approved_by": "User: preserve the current UI and update visual references",
+  "reference_url": "https://a1ab82a8-daily-motion.gfgygjhd.workers.dev",
+  "reference_release": 259,
+  "reference_head": "0b614c2fdec4956c118af3d9914b34235b3e5b0f",
+  "capture_run": 37115406248,
+  "capture_artifact": 11271239234,
+  "artifact_sha256": "94c61e8dd2cceb1b748c78ff6ed92f51bde69a754f53d77f9e632aa954ed3137",
+  "environment": "ubuntu-latest; Node 22.16.0; Playwright 1.63.0; Chromium and WebKit",
+  "pixel_policy": "Existing maxDiffPixels=0 and default Playwright pixel threshold unchanged",
+  "images": [
+    {
+      "path": "chromium/home-390x844.png",
+      "sha256": "82cf7628278806f5ac4d101009f9218b5493f4c151981dfb858f57006697834a",
+      "bytes": 70525
+    },
+    {
+      "path": "chromium/home-compact-light.png",
+      "sha256": "b319bb8fa95fbd13613da36e6d6b8cf7e41ff1eca8103d4b217c89a05c528616",
+      "bytes": 69040
+    },
+    {
+      "path": "chromium/home-dark.png",
+      "sha256": "fbd0667b283fb5bb718dbd50ae8dcdb61d75320bcf15a9eec59c1ab9a9da59cc",
+      "bytes": 71365
+    },
+    {
+      "path": "chromium/home-settings.png",
+      "sha256": "31d74bd6f5b434fd7386f7155dd0f9c1156008b210a53d25834386d15113dde1",
+      "bytes": 83810
+    },
+    {
+      "path": "chromium/home-wide-light.png",
+      "sha256": "2faf92fff322f35fa26009b997b4950a725dc02c1e2dd917b927218389702e4d",
+      "bytes": 91824
+    },
+    {
+      "path": "chromium/progress-390x844.png",
+      "sha256": "ee4b0f3c03b7e6eae98e85465bf7c7b3d7725abed62451fe50f01447914ed40c",
+      "bytes": 79422
+    },
+    {
+      "path": "chromium/progress-dark.png",
+      "sha256": "ad7250e4c7b9e096f23541bbb60b9e4a4e5e33777a40ac2c3266006d799dadd8",
+      "bytes": 83975
+    },
+    {
+      "path": "chromium/workout-390x844.png",
+      "sha256": "df9cb4af1f854a7f24af8b01c0a97c13fbecf93db4ee45f380a4f515fed452e4",
+      "bytes": 48359
+    },
+    {
+      "path": "chromium/workout-compact-light.png",
+      "sha256": "7bc650d10d070bcb9f7d2796c1402e2f844c02f91d72822313622a1fbfee205a",
+      "bytes": 36112
+    },
+    {
+      "path": "chromium/workout-completion.png",
+      "sha256": "2b205ceed1dd8a89781f7c50f123dbc33701482d07d4dadc9139ae9c4bec9af7",
+      "bytes": 26728
+    },
+    {
+      "path": "chromium/workout-paused.png",
+      "sha256": "0f7b5dbecff845cf64256e2911eda512157aa9f956e71d032c06f68561496587",
+      "bytes": 29966
+    },
+    {
+      "path": "chromium/workout-rest-dark.png",
+      "sha256": "ca5845a3b49ee4e022d5a33b33f54c66e36970244be5028c935b5d49bb1347f1",
+      "bytes": 17738
+    },
+    {
+      "path": "chromium/workout-wide-light.png",
+      "sha256": "bbbabfb0943dd1b374fe3a6c486f21862fce60fa033ed2d9732aff4f0d59090b",
+      "bytes": 62241
+    },
+    {
+      "path": "webkit/home-compact-light.png",
+      "sha256": "526f94574dd4805f2ba769d68c838c1c027a5762c00737e029ceea1e37b094ec",
+      "bytes": 63753
+    },
+    {
+      "path": "webkit/home-dark.png",
+      "sha256": "66dffe0c4481bfc9e688c18925f7a58d8340d40df6e7119b24bb296dc76f5c0e",
+      "bytes": 62543
+    },
+    {
+      "path": "webkit/home-settings.png",
+      "sha256": "10b5c77a068331d0206ed21ec1c3906d47c9471a31fb3879c443ea3ae73a72f8",
+      "bytes": 87070
+    },
+    {
+      "path": "webkit/home-wide-light.png",
+      "sha256": "e7d1189ee5e6b4a87fa0c3a5ac903d12b60e14b289ceefcbbe3e3115f2283d1f",
+      "bytes": 73538
+    },
+    {
+      "path": "webkit/progress-dark.png",
+      "sha256": "94e0bc0085d0cf5930502edb0029a57be103729b0eb8edab92f6e70567e9fd7f",
+      "bytes": 96094
+    },
+    {
+      "path": "webkit/workout-compact-light.png",
+      "sha256": "088fc8f1f8d3b9ad846a6b6a13ac34859a7002fb61ce3b0ffb7cb3345c3e768c",
+      "bytes": 50152
+    },
+    {
+      "path": "webkit/workout-completion.png",
+      "sha256": "6065cc59358de347736d53d3fbde3b8a4fb6c324644b96c2650d4e437dc0a708",
+      "bytes": 34209
+    },
+    {
+      "path": "webkit/workout-paused.png",
+      "sha256": "6fe767103f328fdade551ad75d7fcba9dfdae1eac1da73ec66e471290b7c38a2",
+      "bytes": 37259
+    },
+    {
+      "path": "webkit/workout-rest-dark.png",
+      "sha256": "3bdf52c03fb1f3933c11823bd8ebff8ce14c267a583c595f378ea078446505e7",
+      "bytes": 21961
+    },
+    {
+      "path": "webkit/workout-wide-light.png",
+      "sha256": "f4506d6a45ce9b347532bdf01739430abb421e8eb9823f85cd485ede8cc791db",
+      "bytes": 86719
+    }
+  ]
+}
