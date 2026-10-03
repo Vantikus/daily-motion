@@ -7,13 +7,13 @@
       throw new Error('DailyMotionSessionView.create: invalid session dependencies');
     }
 
-    const detailAnimations=new WeakMap();
-    const detailTimers=new Map();
     const detailCards=[...document.querySelectorAll('.detail-card')];
+    const detailStack=document.querySelector('.details-stack');
+    const detailScroll=document.querySelector('#exerciseScroll');
+    const detailShell=document.querySelector('.session-shell');
     const detailDuration=280;
-    // Linear time on x makes this exactly the cubic ease used by scroll below.
     const detailEase='cubic-bezier(.333333,1,.666667,1)';
-    let detailScrollFrame=0;
+    let detailMotion=null;
     let exerciseAnimation=null;
     let destroyed=false;
     const on=(node,type,handler,options={})=>{
@@ -35,200 +35,232 @@
       box.innerHTML='';
     };
 
-    const cancelDetailMotion=card=>{
-      const timer=detailTimers.get(card);
-      if(timer!==undefined)clearTimeout(timer);
-      detailTimers.delete(card);
-      const animations=detailAnimations.get(card)||[];
-      detailAnimations.delete(card);
-      animations.forEach(animation=>animation.cancel());
-      card.querySelector('.detail-card__inner')?.style.removeProperty('will-change');
-    };
-
-    const cancelDetailScroll=()=>{
-      if(detailScrollFrame)cancelAnimationFrame(detailScrollFrame);
-      detailScrollFrame=0;
-    };
-
     const setDetailState=(card,open)=>{
-      cancelDetailMotion(card);
-
       const toggle=card.querySelector('.detail-card__toggle');
       const panel=card.querySelector('.detail-card__panel');
       const inner=card.querySelector('.detail-card__inner');
-
       card.classList.toggle('is-open',open);
+      toggle?.setAttribute('aria-expanded',String(open));
       if(panel){
         panel.inert=!open;
         panel.setAttribute('aria-hidden',String(!open));
         panel.style.height=open?'auto':'0px';
         panel.style.opacity=open?'1':'0';
       }
-      toggle?.setAttribute('aria-expanded',String(open));
       if(inner){
         inner.style.opacity=open?'1':'0';
         inner.style.transform='translate3d(0,0,0)';
       }
     };
 
-    const scrollDetailBy=(scroll,delta)=>{
-      cancelDetailScroll();
-      if(reducedMotion()){
-        scroll.scrollTop+=delta;
-        return;
-      }
-
-      const target=scroll.scrollTop+delta;
-      const start=scroll.scrollTop;
-      const distance=target-start;
-      if(Math.abs(distance)<=1)return;
-
-      const started=performance.now();
-      const tick=now=>{
-        if(destroyed||signal?.aborted){detailScrollFrame=0;return;}
-        const progress=Math.min(1,(now-started)/detailDuration);
-        const eased=1-Math.pow(1-progress,3);
-        scroll.scrollTop=start+distance*eased;
-        if(progress<1){
-          detailScrollFrame=requestAnimationFrame(tick);
-        }else{
-          detailScrollFrame=0;
+    const finishDetailMotion=()=>{
+      const state=detailMotion;
+      if(!state)return;
+      detailMotion=null;
+      clearTimeout(state.timer);
+      state.animations.forEach(animation=>animation.cancel());
+      state.dividers.forEach(node=>node.remove());
+      state.skin?.remove();
+      detailStack.classList.remove('is-detail-animating');
+      detailStack.style.removeProperty('height');
+      detailCards.forEach(card=>{
+        for(const property of ['position','top','left','width','height','transform','clip-path','will-change']){
+          card.style.removeProperty(property);
         }
-      };
-      detailScrollFrame=requestAnimationFrame(tick);
+        setDetailState(card,card.classList.contains('is-open'));
+      });
     };
 
-    const revealDetailCard=(card,{heightDelta=0,topDelta=0,behavior}={})=>{
-      const scroll=$('#exerciseScroll');
-      if(!scroll||!card)return;
-
-      const scrollBox=scroll.getBoundingClientRect();
+    const revealDetailCard=card=>{
+      if(!detailScroll||!card)return;
+      const scrollBox=detailScroll.getBoundingClientRect();
       const cardBox=card.getBoundingClientRect();
-      const projectedTop=cardBox.top+topDelta;
-      const projectedHeight=Math.max(0,cardBox.height+heightDelta);
-      const projectedBottom=projectedTop+projectedHeight;
-      const topGuard=12;
-      const bottomGuard=16;
-      const availableHeight=scrollBox.height-topGuard-bottomGuard;
+      const top=scrollBox.top+12;
+      const bottom=scrollBox.bottom-16;
       let delta=0;
-
-      if(projectedHeight<=availableHeight){
-        if(projectedBottom>scrollBox.bottom-bottomGuard){
-          delta=projectedBottom-(scrollBox.bottom-bottomGuard);
-        }else if(projectedTop<scrollBox.top+topGuard){
-          delta=projectedTop-(scrollBox.top+topGuard);
-        }
-      }else if(projectedTop<scrollBox.top+topGuard||projectedBottom>scrollBox.bottom-bottomGuard){
-        delta=projectedTop-(scrollBox.top+topGuard);
+      if(cardBox.height>bottom-top){
+        if(cardBox.top<top||cardBox.bottom>bottom)delta=cardBox.top-top;
+      }else if(cardBox.bottom>bottom){
+        delta=cardBox.bottom-bottom;
+      }else if(cardBox.top<top){
+        delta=cardBox.top-top;
       }
-
-      if(Math.abs(delta)>1){
-        if(behavior==='auto'||reducedMotion()){
-          scroll.scrollTop+=delta;
-        }else{
-          scrollDetailBy(scroll,delta);
-        }
-      }
+      // Set the final scroll once. A shell transform compensates this change
+      // during the motion; no JavaScript scroll loop runs on every frame.
+      if(Math.abs(delta)>1)detailScroll.scrollTop+=delta;
     };
 
-    const animateDetailState=(card,open,{currentHeight,targetHeight})=>{
-      const toggle=card.querySelector('.detail-card__toggle');
-      const panel=card.querySelector('.detail-card__panel');
-      const inner=card.querySelector('.detail-card__inner');
-      if(!panel||!inner){
-        setDetailState(card,open);
-        return;
+    const createDetailSkin=(appearance,fromHeight,toHeight,state,options)=>{
+      const skin=document.createElement('div');
+      skin.className='dm-detail-skin';
+      skin.setAttribute('aria-hidden','true');
+      Object.assign(skin.style,{
+        top:`-${appearance.topWidth}px`,
+        left:`-${appearance.leftWidth}px`,
+        width:`calc(100% + ${appearance.leftWidth+appearance.rightWidth}px)`,
+        height:`${toHeight}px`
+      });
+      const cap=Math.max(1,...appearance.radii);
+      const top=document.createElement('div');
+      const middle=document.createElement('div');
+      const bottom=document.createElement('div');
+      for(const node of [top,middle,bottom]){
+        Object.assign(node.style,{
+          position:'absolute',left:'0',width:'100%',boxSizing:'border-box',
+          background:appearance.background,borderLeft:appearance.left,borderRight:appearance.right
+        });
       }
-
-      cancelDetailMotion(card);
-
-      panel.style.height=`${currentHeight}px`;
-      panel.style.opacity='1';
-      inner.style.opacity='1';
-      inner.style.transform='translate3d(0,0,0)';
-
-      card.classList.toggle('is-open',open);
-      toggle?.setAttribute('aria-expanded',String(open));
-      panel.inert=!open;
-      panel.setAttribute('aria-hidden',String(!open));
-
-      if(reducedMotion()){
-        setDetailState(card,open);
-        return;
-      }
-
-      // Rasterize the text at its final size; only its clipping box changes.
-      inner.style.willChange='transform';
-      const panelAnimation=panel.animate(
-        [
-          {height:`${currentHeight}px`},
-          {height:`${open?targetHeight:0}px`}
-        ],
-        {
-          duration:detailDuration,
-          easing:detailEase,
-          fill:'forwards'
-        }
+      Object.assign(top.style,{
+        top:'0',height:`${cap}px`,borderTop:appearance.top,
+        borderRadius:`${appearance.radii[0]}px ${appearance.radii[1]}px 0 0`
+      });
+      Object.assign(middle.style,{
+        top:`${cap}px`,height:`${toHeight-2*cap}px`,transformOrigin:'top'
+      });
+      Object.assign(bottom.style,{
+        top:`${toHeight-cap}px`,height:`${cap}px`,borderBottom:appearance.bottom,
+        borderRadius:`0 0 ${appearance.radii[2]}px ${appearance.radii[3]}px`
+      });
+      skin.append(top,middle,bottom);
+      detailStack.prepend(skin);
+      state.skin=skin;
+      state.bottomCap=bottom;
+      // Keep the 1px border and corner radii constant: only the middle fill
+      // scales, and the rounded bottom cap moves without being resized.
+      state.animations.push(
+        middle.animate([
+          {transform:`scaleY(${(fromHeight-2*cap)/(toHeight-2*cap)})`},
+          {transform:'scaleY(1)'}
+        ],options),
+        bottom.animate([
+          {transform:`translateY(${fromHeight-toHeight}px)`},
+          {transform:'translateY(0)'}
+        ],options)
       );
+    };
 
-      const animations=[panelAnimation];
-      detailAnimations.set(card,animations);
-
-      let finished=false;
-      const finish=()=>{
-        if(finished||destroyed||signal?.aborted||detailAnimations.get(card)!==animations)return;
-        finished=true;
-        setDetailState(card,open);
+    const animateDetails=(selected,willOpen)=>{
+      const oldStackBox=detailStack.getBoundingClientRect();
+      const oldStackHeight=detailMotion
+        ?detailMotion.bottomCap.getBoundingClientRect().bottom-oldStackBox.top
+        :oldStackBox.height;
+      const oldShellTop=detailShell.getBoundingClientRect().top;
+      const oldRows=detailCards.map(card=>{
+        const box=card.getBoundingClientRect();
+        const inset=getComputedStyle(card).clipPath.match(/^inset\(([^)]+)\)/);
+        const values=inset?inset[1].split(' round ')[0].trim().split(/\s+/):[];
+        const clipped=values.length>2?parseFloat(values[2])||0:0;
+        return {top:box.top,height:Math.max(0,box.height-clipped)};
+      });
+      const style=getComputedStyle(detailStack);
+      const appearance=detailMotion?.appearance||{
+        background:style.backgroundColor,
+        top:style.borderTop,bottom:style.borderBottom,left:style.borderLeft,right:style.borderRight,
+        topWidth:parseFloat(style.borderTopWidth)||0,
+        leftWidth:parseFloat(style.borderLeftWidth)||0,
+        rightWidth:parseFloat(style.borderRightWidth)||0,
+        radii:[style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomRightRadius,style.borderBottomLeftRadius].map(value=>parseFloat(value)||0)
       };
 
-      panelAnimation.addEventListener('finish',finish,{once:true});
-      const timer=setTimeout(()=>{
-        detailTimers.delete(card);
-        finish();
-      },detailDuration+70);
-      detailTimers.set(card,timer);
+      // Commit the final layout once, then animate its already laid-out rows.
+      // This also gives the correct final scroll range before compensating it.
+      finishDetailMotion();
+      detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
+      if(willOpen)revealDetailCard(selected);
+      if(reducedMotion()||typeof detailStack.animate!=='function')return;
+
+      const stackBox=detailStack.getBoundingClientRect();
+      const shellDelta=oldShellTop-detailShell.getBoundingClientRect().top;
+      const rows=detailCards.map(card=>{
+        const panel=card.querySelector('.detail-card__panel');
+        const inner=card.querySelector('.detail-card__inner');
+        const box=card.getBoundingClientRect();
+        const cardStyle=getComputedStyle(card);
+        return {
+          card,panel,inner,box,
+          headerHeight:card.querySelector('.detail-card__heading').getBoundingClientRect().height,
+          contentHeight:inner.getBoundingClientRect().height,
+          borderWidth:parseFloat(cardStyle.borderBottomWidth)||0,
+          borderColor:cardStyle.borderBottomColor,
+          open:card.classList.contains('is-open')
+        };
+      });
+      const options={duration:detailDuration,easing:detailEase,fill:'both'};
+      const state={animations:[],dividers:[],skin:null,bottomCap:null,timer:null,appearance};
+      detailMotion=state;
+      detailStack.classList.add('is-detail-animating');
+      detailStack.style.height=`${Math.max(oldStackHeight,stackBox.height)}px`;
+      createDetailSkin(appearance,oldStackHeight,stackBox.height,state,options);
+
+      rows.forEach((row,index)=>{
+        const old=oldRows[index];
+        const expanded=row.open||old.height>row.headerHeight+row.borderWidth+.5;
+        const height=Math.max(old.height,row.box.height,expanded?row.headerHeight+row.contentHeight+row.borderWidth:0);
+        Object.assign(row.card.style,{
+          position:'absolute',left:'0',
+          top:`${row.box.top-stackBox.top-appearance.topWidth}px`,
+          width:`${row.box.width}px`,height:`${height}px`
+        });
+        row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
+        row.panel.style.opacity=expanded?'1':'0';
+        row.inner.style.opacity=expanded?'1':'0';
+        const radii=[
+          index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
+          index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,
+          index===rows.length-1?Math.max(0,appearance.radii[2]-appearance.rightWidth):0,
+          index===rows.length-1?Math.max(0,appearance.radii[3]-appearance.leftWidth):0
+        ].map(value=>`${value}px`).join(' ');
+        const clip=visible=>`inset(0px 0px ${Math.max(0,height-visible)}px 0px round ${radii})`;
+        const resizing=Math.abs(old.height-row.box.height)>.1;
+        row.card.style.willChange=resizing?'transform,clip-path':'transform';
+        row.card.style.clipPath=clip(row.box.height);
+        state.animations.push(row.card.animate([
+          {transform:`translateY(${old.top-row.box.top-shellDelta}px)`,...(resizing?{clipPath:clip(old.height)}:{})},
+          {transform:'translateY(0)',...(resizing?{clipPath:clip(row.box.height)}:{})}
+        ],options));
+        if(row.borderWidth){
+          const divider=document.createElement('div');
+          divider.className='dm-detail-divider';
+          divider.setAttribute('aria-hidden','true');
+          Object.assign(divider.style,{
+            height:`${row.borderWidth}px`,background:row.borderColor,
+            transform:`translateY(${row.box.height-row.borderWidth}px)`
+          });
+          row.card.append(divider);
+          state.dividers.push(divider);
+          if(resizing)state.animations.push(divider.animate([
+            {transform:`translateY(${old.height-row.borderWidth}px)`},
+            {transform:`translateY(${row.box.height-row.borderWidth}px)`}
+          ],options));
+        }
+      });
+      if(Math.abs(shellDelta)>.1){
+        state.animations.push(detailShell.animate([
+          {transform:`translateY(${shellDelta}px)`},
+          {transform:'translateY(0)'}
+        ],options));
+      }
+
+      const finish=()=>{
+        if(!destroyed&&!signal?.aborted&&detailMotion===state)finishDetailMotion();
+      };
+      Promise.allSettled(state.animations.map(animation=>animation.finished)).then(finish);
+      state.timer=setTimeout(finish,detailDuration+70);
     };
 
     detailCards.forEach(card=>{
-      const toggle=card.querySelector('.detail-card__toggle');
-      on(toggle,'click',()=>{
-        if(destroyed||signal?.aborted)return;
-        cancelDetailScroll();
-        const willOpen=!card.classList.contains('is-open');
-        // Read every box before mutating any panel: switching sections needs
-        // one layout measurement, rather than alternating reads and writes.
-        const boxes=detailCards.map(other=>({
-          card:other,
-          currentHeight:other.querySelector('.detail-card__panel')?.getBoundingClientRect().height||0,
-          targetHeight:other.querySelector('.detail-card__inner')?.getBoundingClientRect().height||0
-        }));
-        if(willOpen){
-          const {currentHeight,targetHeight}=boxes.find(box=>box.card===card);
-          let closingShift=0;
-          boxes.forEach(box=>{
-            if(box.card!==card&&(box.card.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING)){
-              closingShift+=box.currentHeight;
-            }
-          });
-
-          revealDetailCard(card,{
-            heightDelta:targetHeight-currentHeight,
-            topDelta:-closingShift
-          });
-
-        }
-        boxes.forEach(box=>{
-          if(box.card===card||box.currentHeight>0||detailAnimations.has(box.card)){
-            animateDetailState(box.card,box.card===card&&willOpen,box);
-          }
-        });
-        if(willOpen&&reducedMotion())revealDetailCard(card,{behavior:'auto'});
+      on(card.querySelector('.detail-card__toggle'),'click',()=>{
+        if(destroyed||signal?.aborted||!detailStack||!detailShell)return;
+        animateDetails(card,!card.classList.contains('is-open'));
         haptic?.('tap');
       });
     });
+    on(detailScroll,'wheel',finishDetailMotion,{passive:true});
+    on(detailScroll,'touchmove',finishDetailMotion,{passive:true});
+    on(window,'resize',finishDetailMotion,{passive:true});
 
     const resetDetails=()=>{
-      cancelDetailScroll();
+      finishDetailMotion();
       detailCards.forEach((card,index)=>setDetailState(card,index===0));
     };
 
@@ -326,10 +358,9 @@
     const destroy=()=>{
       if(destroyed)return;
       destroyed=true;
-      cancelDetailScroll();
+      finishDetailMotion();
       exerciseAnimation?.cancel();
       exerciseAnimation=null;
-      detailCards.forEach(cancelDetailMotion);
       signal?.removeEventListener('abort',destroy);
     };
     signal?.addEventListener('abort',destroy,{once:true});
