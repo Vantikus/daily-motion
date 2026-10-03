@@ -383,6 +383,10 @@ for(const autoNext of [true,false]){
       await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
       await page.locator('#nextButton').click();
       await expect(page.locator('#timerState')).toHaveText('Идёт');
+      // Observe an actually ticking timer before measuring its exit. Immediate
+      // start/finish races are covered separately by the simultaneous-close case.
+      const initialValue=await page.locator('#timerValue').textContent();
+      await expect(page.locator('#timerValue')).not.toHaveText(initialValue);
       if(paused){
         // This fixture measures painted handoff frames; real pointer activation
         // is covered by lifecycle.spec.js. Avoid racing WebKit compositor stability.
