@@ -8,9 +8,14 @@
     }
 
     const detailAnimations=new WeakMap();
-    const detailTimers=new Set();
+    const detailTimers=new Map();
+    const detailCards=[...document.querySelectorAll('.detail-card')];
+    const detailDuration=280;
+    // Linear time on x makes this exactly the cubic ease used by scroll below.
+    const detailEase='cubic-bezier(.333333,1,.666667,1)';
     let detailScrollFrame=0;
     let exerciseAnimation=null;
+    let destroyed=false;
     const on=(node,type,handler,options={})=>{
       if(!node)return;
       node.addEventListener(type,handler,signal?{...options,signal}:options);
@@ -30,9 +35,23 @@
       box.innerHTML='';
     };
 
-    const setDetailState=(card,open)=>{
-      detailAnimations.get(card)?.forEach?.(animation=>animation.cancel());
+    const cancelDetailMotion=card=>{
+      const timer=detailTimers.get(card);
+      if(timer!==undefined)clearTimeout(timer);
+      detailTimers.delete(card);
+      const animations=detailAnimations.get(card)||[];
       detailAnimations.delete(card);
+      animations.forEach(animation=>animation.cancel());
+      card.querySelector('.detail-card__inner')?.style.removeProperty('will-change');
+    };
+
+    const cancelDetailScroll=()=>{
+      if(detailScrollFrame)cancelAnimationFrame(detailScrollFrame);
+      detailScrollFrame=0;
+    };
+
+    const setDetailState=(card,open)=>{
+      cancelDetailMotion(card);
 
       const toggle=card.querySelector('.detail-card__toggle');
       const panel=card.querySelector('.detail-card__panel');
@@ -48,31 +67,26 @@
       toggle?.setAttribute('aria-expanded',String(open));
       if(inner){
         inner.style.opacity=open?'1':'0';
-        inner.style.transform=open?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
+        inner.style.transform='translate3d(0,0,0)';
       }
     };
 
     const scrollDetailBy=(scroll,delta)=>{
-      if(detailScrollFrame){
-        cancelAnimationFrame(detailScrollFrame);
-        detailScrollFrame=0;
-      }
+      cancelDetailScroll();
       if(reducedMotion()){
         scroll.scrollTop+=delta;
         return;
       }
 
       const target=scroll.scrollTop+delta;
-      const immediate=Math.sign(delta)*Math.min(Math.abs(delta),Math.max(8,Math.abs(delta)*.1));
-      scroll.scrollTop+=immediate;
       const start=scroll.scrollTop;
       const distance=target-start;
       if(Math.abs(distance)<=1)return;
 
       const started=performance.now();
-      const duration=180;
       const tick=now=>{
-        const progress=Math.min(1,(now-started)/duration);
+        if(destroyed||signal?.aborted){detailScrollFrame=0;return;}
+        const progress=Math.min(1,(now-started)/detailDuration);
         const eased=1-Math.pow(1-progress,3);
         scroll.scrollTop=start+distance*eased;
         if(progress<1){
@@ -117,7 +131,7 @@
       }
     };
 
-    const animateDetailState=(card,open)=>{
+    const animateDetailState=(card,open,{currentHeight,targetHeight})=>{
       const toggle=card.querySelector('.detail-card__toggle');
       const panel=card.querySelector('.detail-card__panel');
       const inner=card.querySelector('.detail-card__inner');
@@ -126,106 +140,74 @@
         return;
       }
 
-      const previous=detailAnimations.get(card)||[];
-      const currentHeight=panel.getBoundingClientRect().height;
-      previous.forEach(animation=>animation.cancel());
+      cancelDetailMotion(card);
 
       panel.style.height=`${currentHeight}px`;
-      panel.style.opacity=currentHeight>0?'1':'0';
-      inner.style.opacity=currentHeight>0?'1':'0';
-      inner.style.transform=currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-2px,0)';
+      panel.style.opacity='1';
+      inner.style.opacity='1';
+      inner.style.transform='translate3d(0,0,0)';
 
       card.classList.toggle('is-open',open);
       toggle?.setAttribute('aria-expanded',String(open));
       panel.inert=!open;
       panel.setAttribute('aria-hidden',String(!open));
 
-      const targetHeight=open?inner.scrollHeight:0;
       if(reducedMotion()){
         setDetailState(card,open);
-        if(open)revealDetailCard(card);
         return;
       }
 
+      // Rasterize the text at its final size; only its clipping box changes.
+      inner.style.willChange='transform';
       const panelAnimation=panel.animate(
         [
-          {height:`${currentHeight}px`,opacity:currentHeight>0?1:.25},
-          {height:`${targetHeight}px`,opacity:open?1:.2}
+          {height:`${currentHeight}px`},
+          {height:`${open?targetHeight:0}px`}
         ],
         {
-          duration:open?270:190,
-          easing:open?motionTokens.easeEnter:motionTokens.easeExit,
+          duration:detailDuration,
+          easing:detailEase,
           fill:'forwards'
         }
       );
 
-      const innerAnimation=inner.animate(
-        open
-          ?[
-            {opacity:currentHeight>0?1:0,transform:currentHeight>0?'translate3d(0,0,0)':'translate3d(0,-3px,0)'},
-            {opacity:1,transform:'translate3d(0,0,0)'}
-          ]
-          :[
-            {opacity:1,transform:'translate3d(0,0,0)'},
-            {opacity:0,transform:'translate3d(0,-2px,0)'}
-          ],
-        {
-          duration:open?190:110,
-          delay:open?35:0,
-          easing:open?motionTokens.easeEnter:motionTokens.easeExit,
-          fill:'forwards'
-        }
-      );
-
-      const animations=[panelAnimation,innerAnimation];
+      const animations=[panelAnimation];
       detailAnimations.set(card,animations);
 
       let finished=false;
       const finish=()=>{
-        if(finished||detailAnimations.get(card)!==animations)return;
+        if(finished||destroyed||signal?.aborted||detailAnimations.get(card)!==animations)return;
         finished=true;
-        animations.forEach(animation=>animation.cancel());
-        detailAnimations.delete(card);
-
-        if(open){
-          card.classList.add('is-open');
-          panel.style.height='auto';
-          panel.style.opacity='1';
-          inner.style.opacity='1';
-          inner.style.transform='translate3d(0,0,0)';
-        }else{
-          card.classList.remove('is-open');
-          panel.style.height='0px';
-          panel.style.opacity='0';
-          inner.style.opacity='0';
-          inner.style.transform='translate3d(0,-2px,0)';
-        }
+        setDetailState(card,open);
       };
 
       panelAnimation.addEventListener('finish',finish,{once:true});
       const timer=setTimeout(()=>{
-        detailTimers.delete(timer);
+        detailTimers.delete(card);
         finish();
-      },(open?270:190)+70);
-      detailTimers.add(timer);
+      },detailDuration+70);
+      detailTimers.set(card,timer);
     };
 
-    document.querySelectorAll('.detail-card__toggle').forEach(toggle=>{
+    detailCards.forEach(card=>{
+      const toggle=card.querySelector('.detail-card__toggle');
       on(toggle,'click',()=>{
-        const card=toggle.closest('.detail-card');
-        if(!card)return;
+        if(destroyed||signal?.aborted)return;
+        cancelDetailScroll();
         const willOpen=!card.classList.contains('is-open');
+        // Read every box before mutating any panel: switching sections needs
+        // one layout measurement, rather than alternating reads and writes.
+        const boxes=detailCards.map(other=>({
+          card:other,
+          currentHeight:other.querySelector('.detail-card__panel')?.getBoundingClientRect().height||0,
+          targetHeight:other.querySelector('.detail-card__inner')?.getBoundingClientRect().height||0
+        }));
         if(willOpen){
-          const panel=card.querySelector('.detail-card__panel');
-          const inner=card.querySelector('.detail-card__inner');
-          const currentHeight=panel?.getBoundingClientRect().height||0;
-          const targetHeight=inner?.scrollHeight||currentHeight;
+          const {currentHeight,targetHeight}=boxes.find(box=>box.card===card);
           let closingShift=0;
-
-          document.querySelectorAll('.detail-card.is-open').forEach(other=>{
-            if(other===card)return;
-            if(other.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING){
-              closingShift+=other.querySelector('.detail-card__panel')?.getBoundingClientRect().height||0;
+          boxes.forEach(box=>{
+            if(box.card!==card&&(box.card.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING)){
+              closingShift+=box.currentHeight;
             }
           });
 
@@ -234,17 +216,20 @@
             topDelta:-closingShift
           });
 
-          document.querySelectorAll('.detail-card.is-open').forEach(other=>{
-            if(other!==card)animateDetailState(other,false);
-          });
         }
-        animateDetailState(card,willOpen);
+        boxes.forEach(box=>{
+          if(box.card===card||box.currentHeight>0||detailAnimations.has(box.card)){
+            animateDetailState(box.card,box.card===card&&willOpen,box);
+          }
+        });
+        if(willOpen&&reducedMotion())revealDetailCard(card,{behavior:'auto'});
         haptic?.('tap');
       });
     });
 
     const resetDetails=()=>{
-      document.querySelectorAll('.detail-card').forEach((card,index)=>setDetailState(card,index===0));
+      cancelDetailScroll();
+      detailCards.forEach((card,index)=>setDetailState(card,index===0));
     };
 
     const renderStepSegments=()=>{
@@ -339,15 +324,15 @@
     };
 
     const destroy=()=>{
+      if(destroyed)return;
+      destroyed=true;
+      cancelDetailScroll();
       exerciseAnimation?.cancel();
       exerciseAnimation=null;
-      detailTimers.forEach(timer=>clearTimeout(timer));
-      detailTimers.clear();
-      document.querySelectorAll('.detail-card').forEach(card=>{
-        detailAnimations.get(card)?.forEach?.(animation=>animation.cancel());
-        detailAnimations.delete(card);
-      });
+      detailCards.forEach(cancelDetailMotion);
+      signal?.removeEventListener('abort',destroy);
     };
+    signal?.addEventListener('abort',destroy,{once:true});
 
     return Object.freeze({
       renderExercise,

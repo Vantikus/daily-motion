@@ -2213,7 +2213,7 @@ a[href] *,
 }
 
 .detail-card{
-  transform:translateZ(0);
+  transform:none;
 }
 
 .detail-card__panel{
@@ -2223,7 +2223,7 @@ a[href] *,
   overflow:hidden;
   grid-template-rows:none!important;
   transition:none!important;
-  will-change:height,opacity;
+  contain:layout;
 }
 
 .detail-card.is-open .detail-card__panel{
@@ -2231,7 +2231,7 @@ a[href] *,
   opacity:1;
 }
 
-.detail-card__inner{opacity:0;transform:translate3d(0,-2px,0);transition:none!important}
+.detail-card__inner{opacity:0;transform:translate3d(0,0,0);contain:layout paint;transition:none!important}
 
 .detail-card.is-open .detail-card__inner{
   opacity:1;
@@ -4062,7 +4062,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   letter-spacing:-.02em;
 }
 .details-stack{
-  display:grid!important;
+  display:block!important;
   grid-template-columns:1fr!important;
   gap:0!important;
   overflow:hidden;
