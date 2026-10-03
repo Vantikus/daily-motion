@@ -1,10 +1,10 @@
 (() => {
   const pages=window.DailyMotionPages||{};
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const pageDuration={forward:.36,back:.34};
+  const pageDuration={forward:.28,back:.28};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const mobilePageDuration=240;
-  const workoutPageDuration=350;
+  const mobilePageDuration=280;
+  const workoutPageDuration=280;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
