@@ -384,7 +384,9 @@ for(const autoNext of [true,false]){
       await page.locator('#nextButton').click();
       await expect(page.locator('#timerState')).toHaveText('Идёт');
       if(paused){
-        await page.locator('#timerToggle').click();
+        // This fixture measures painted handoff frames; real pointer activation
+        // is covered by lifecycle.spec.js. Avoid racing WebKit compositor stability.
+        await page.locator('#timerToggle').evaluate(button=>button.click());
         await expect(page.locator('#timerState')).toHaveText('Пауза');
       }
       const frames=await page.evaluate(()=>new Promise(resolve=>{

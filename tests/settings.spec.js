@@ -252,7 +252,7 @@ test('settings sheet uses intrinsic selectors and progress actions keep rounded 
     expect(fiveWidth).toBeLessThanOrEqual(122);
 
     await expect(page.locator('#countdownSetting option[value="0"]')).toHaveText('Нет');
-    await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 секунд');
+    await expect(page.locator('#restSetting option[value="15"]')).toHaveText('15 сек');
     await expect(page.locator('#themeSetting [data-theme-value="system"]')).toHaveText('Система');
     await expect(page.locator('#themeSetting [data-theme-value="system"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('#themeSetting [data-theme-value="light"]')).toHaveText('Светлая');

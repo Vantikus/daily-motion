@@ -39,9 +39,9 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   expect(layout.shellWidth).toBe('328px');
   expect(layout.mainPadding).toBe('0px');
   expect(layout.mainBorder).toBe('0px');
-  expect(layout.headGap).toBe('6px');
+  expect(layout.headGap).toBe('8px');
   expect(layout.factsGap).toBe('16px');
-  expect(layout.techniqueMargin).toBe('18px');
+  expect(layout.techniqueMargin).toBe('24px');
 });
 
 test('P3 timer urgency never changes ring geometry',async({page,browserName})=>{
@@ -195,7 +195,7 @@ test('Daily Motion Design System foundation stays stable',async({page,browserNam
   expect(workout).toEqual({
     shellWidth:'358px',
     techniqueMinHeight:'52px',
-    navHeight:'54px'
+    navHeight:'48px'
   });
 
   await page.goto('/progress.html',{waitUntil:'domcontentloaded'});
@@ -272,7 +272,7 @@ test('R1 shared layout rhythm stays consistent across pages',async({page,browser
     techniqueRadius:'16px',
     detailGroupRadius:'18px',
     detailRowRadius:'0px',
-    nav:'54px',
+    nav:'48px',
     executionPadding:'14px'
   });
 

@@ -1,0 +1,32 @@
+name: Approved v259 visual reference
+
+on:
+  pull_request:
+    paths: ['.github/workflows/visual-reference.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+      - name: Install pinned test tooling
+        run: npm install --no-audit --no-fund --package-lock=false
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Capture user-approved immutable v259 reference
+        env:
+          DM_CAPTURE_BASELINES: '1'
+          DM_BASELINE_URL: https://a1ab82a8-daily-motion.gfgygjhd.workers.dev
+        run: npx playwright test tests/visual-matrix.spec.js tests/visual.spec.js --update-snapshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: approved-v259-visual-reference
+          path: tests/visual-baselines
+          if-no-files-found: error
