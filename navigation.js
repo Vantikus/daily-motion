@@ -222,11 +222,11 @@
 
   const waitForOnest=async()=>{
     if(!document.fonts)return;
+    if(document.fonts.check('400 16px "Onest"')&&document.fonts.check('700 16px "Onest"'))return;
     try{
       await Promise.all([
         document.fonts.load('400 16px "Onest"'),
-        document.fonts.load('700 16px "Onest"'),
-        document.fonts.ready
+        document.fonts.load('700 16px "Onest"')
       ]);
     }catch{}
   };
@@ -697,6 +697,8 @@
   window.DailyMotionNavigate=navigateWhenReady;
   window.DailyMotionBack=fallbackBack;
   installBackHandler();
+  // Warm the font before a visit, outside native capture's paused render phase.
+  void waitForOnest();
   mountPage();
   ensureSwup();
   window.addEventListener('online',()=>{if(!swup)ensureSwup();},{passive:true});
