@@ -7,12 +7,13 @@
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
   };
-  const pageEdgeShadow='-10px 0 24px rgba(17,24,20,.08)';
+  const pageEdgeShadow='-1px 0 0 rgba(17,24,20,.05),-12px 0 24px rgba(17,24,20,.08)';
   let unmountCurrent=null;
   let swup=null;
   let backHandlerInstalled=false;
   let backPending=false;
   let pageGhost=null;
+  let pageDepthOverlay=null;
   let activePageAnimations=[];
   let pageMotionVersion=0;
   let pageDirection='forward';
@@ -49,15 +50,29 @@
         animation:dmPageBackIn ${pageDuration.back*1000}ms ${pageEase} both;
         box-shadow:none;
       }
-      @keyframes dmPageForwardOut{to{transform:translate3d(-22%,0,0)}}
+      @keyframes dmPageForwardOut{
+        from{opacity:1;transform:translate3d(0,0,0)}
+        to{opacity:.935;transform:translate3d(-22%,0,0)}
+      }
       @keyframes dmPageForwardIn{from{transform:translate3d(100%,0,0)}}
       @keyframes dmPageBackOut{to{transform:translate3d(100%,0,0)}}
-      @keyframes dmPageBackIn{from{transform:translate3d(-22%,0,0)}}
+      @keyframes dmPageBackIn{
+        from{opacity:.935;transform:translate3d(-22%,0,0)}
+        to{opacity:1;transform:translate3d(0,0,0)}
+      }
 
       .dm-page-ghost{
         background:inherit;
         backface-visibility:hidden;
         isolation:isolate;
+      }
+      .dm-page-depth{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        z-index:2147483647;
+        background:rgba(12,18,15,.065);
+        will-change:opacity;
       }
       .dm-page-ghost *,
       .dm-page-ghost *::before,
@@ -106,9 +121,26 @@
     }
   };
 
+  const removePageDepth=()=>{
+    pageDepthOverlay?.remove?.();
+    pageDepthOverlay=null;
+  };
+
   const removePageGhost=()=>{
     pageGhost?.remove?.();
     pageGhost=null;
+  };
+
+  const createPageDepth=(host,opacity)=>{
+    removePageDepth();
+    if(!host)return null;
+    const overlay=document.createElement('div');
+    overlay.className='dm-page-depth';
+    overlay.setAttribute('aria-hidden','true');
+    overlay.style.opacity=String(opacity);
+    host.append(overlay);
+    pageDepthOverlay=overlay;
+    return overlay;
   };
 
   const clearPageMotion=()=>{
@@ -117,6 +149,7 @@
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
+    removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
   };
@@ -147,6 +180,7 @@
     if(reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
+    removePageDepth();
     removePageGhost();
 
     const layer=document.createElement('div');
@@ -184,6 +218,7 @@
     layer.append(clone);
     document.body.append(layer);
     pageGhost=layer;
+    if(pageDirection==='forward')createPageDepth(layer,0);
   };
 
   const prepareIncomingSurface=()=>{
@@ -199,6 +234,7 @@
     if(spec.incomingAbove)target.style.boxShadow=pageEdgeShadow;
     else pageGhost.style.boxShadow=pageEdgeShadow;
     copySurfaceBackground(target);
+    if(pageDirection==='back')createPageDepth(target,1);
   };
 
   const unmountPage=()=>{
@@ -270,6 +306,16 @@
         {transform:`translate3d(${spec.outgoingX},0,0)`}
       ],options);
       animations.push(outgoing);
+    }
+
+    if(pageDepthOverlay){
+      const depth=pageDepthOverlay.animate(
+        pageDirection==='forward'
+          ?[{opacity:0},{opacity:1}]
+          :[{opacity:1},{opacity:0}],
+        options
+      );
+      animations.push(depth);
     }
 
     activePageAnimations=animations;

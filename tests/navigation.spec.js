@@ -129,7 +129,7 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone page motion is one transform-only spring on the incoming surface',async({page})=>{
+test('iPhone page motion uses two transform surfaces plus a lightweight depth scrim',async({page})=>{
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
       'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
@@ -138,9 +138,10 @@ test('iPhone page motion is one transform-only spring on the incoming surface',a
     window.__dmPageAnimations=[];
     const animate=Element.prototype.animate;
     Element.prototype.animate=function(keyframes,options){
-      if(this.matches?.('.app-shell,.exercise-app')){
+      if(this.matches?.('#swup,.dm-page-ghost,.dm-page-depth')){
         window.__dmPageAnimations.push({
-          page:this.closest('#swup')?.dataset.page||'',
+          kind:this.id==='swup'?'incoming':this.classList.contains('dm-page-depth')?'depth':'outgoing',
+          page:this.id==='swup'?this.dataset.page||'':'',
           keyframes:Array.from(keyframes,frame=>({...frame})),
           options:{...options}
         });
@@ -151,26 +152,21 @@ test('iPhone page motion is one transform-only spring on the incoming surface',a
   await page.goto('/index.html');
   await expectSwup(page);
 
-  const readX=transform=>Number(/translate3d\(([-.\d]+)px/.exec(transform)?.[1]||0);
-  const assertSpring=async({destination,startSign})=>{
+  const assertMotion=async({destination,direction})=>{
     const calls=await page.evaluate(()=>window.__dmPageAnimations);
-    expect(calls).toHaveLength(1);
-    expect(calls[0].page).toBe(destination);
-    expect(calls[0].options.duration).toBe(320);
-    expect(calls[0].options.easing).toBe('linear');
-    expect(calls[0].keyframes.length).toBeGreaterThan(10);
-    expect(calls[0].keyframes.every(frame=>frame.transform&&!('opacity' in frame))).toBe(true);
-    const xs=calls[0].keyframes.map(frame=>readX(frame.transform));
-    expect(Math.sign(xs[0])).toBe(startSign);
-    expect(Math.abs(xs[0])).toBeGreaterThanOrEqual(15);
-    if(startSign>0){
-      expect(Math.min(...xs)).toBeLessThan(-2.5);
-      expect(xs.slice(xs.indexOf(Math.min(...xs))+1).some(x=>x>.5)).toBe(true);
-    }else{
-      expect(Math.max(...xs)).toBeGreaterThan(2.5);
-      expect(xs.slice(xs.indexOf(Math.max(...xs))+1).some(x=>x<-.5)).toBe(true);
-    }
-    expect(xs.at(-1)).toBe(0);
+    const incoming=calls.find(call=>call.kind==='incoming');
+    const outgoing=calls.find(call=>call.kind==='outgoing');
+    const depth=calls.find(call=>call.kind==='depth');
+    expect(incoming?.page).toBe(destination);
+    expect(incoming?.keyframes.every(frame=>frame.transform&&!('opacity' in frame))).toBe(true);
+    expect(outgoing?.keyframes.every(frame=>frame.transform&&!('opacity' in frame))).toBe(true);
+    expect(depth?.keyframes.every(frame=>'opacity' in frame&&!('transform' in frame))).toBe(true);
+    expect(incoming?.options.duration).toBe(direction==='forward'?360:340);
+    expect(outgoing?.options.duration).toBe(direction==='forward'?360:340);
+    expect(depth?.options.duration).toBe(direction==='forward'?360:340);
+    expect(incoming?.keyframes[0].transform).toContain(direction==='forward'?'100%':'-22%');
+    expect(outgoing?.keyframes.at(-1).transform).toContain(direction==='forward'?'-22%':'100%');
+    expect(depth?.keyframes.map(frame=>Number(frame.opacity))).toEqual(direction==='forward'?[0,1]:[1,0]);
   };
 
   await page.evaluate(()=>{
@@ -178,16 +174,14 @@ test('iPhone page motion is one transform-only spring on the incoming surface',a
     DailyMotionNavigate('progress.html',{animation:'progress'});
   });
   await expect(page.locator('#historyCalendar')).toBeVisible();
-  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
-  await assertSpring({destination:'progress',startSign:1});
+  await assertMotion({destination:'progress',direction:'forward'});
 
   await page.evaluate(()=>{
     window.__dmPageAnimations=[];
     DailyMotionBack();
   });
   await expect(page.locator('#todayCard')).toBeVisible();
-  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
-  await assertSpring({destination:'home',startSign:-1});
+  await assertMotion({destination:'home',direction:'back'});
 });
 
 test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
