@@ -2205,7 +2205,7 @@ a[href] *,
   border-color:rgba(47,107,85,.18)!important;
 }
 
-/* Exercise details — session-view.js owns explicit height interpolation. */
+/* Exercise details — session-view.js lays out once, then moves/clips rows. */
 .details-section,
 .details-stack,
 .detail-card{
@@ -4071,6 +4071,16 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:var(--surface-raised)!important;
   box-shadow:none!important;
 }
+.details-stack.is-detail-animating{
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  background:transparent!important;
+  border-color:transparent!important;
+}
+.details-stack.is-detail-animating .detail-card{border-bottom-color:transparent!important}
+.dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
+.dm-detail-divider{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .details-stack .detail-card,
 .details-stack .detail-card:first-child{
   grid-column:auto!important;
