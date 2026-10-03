@@ -371,3 +371,49 @@ test('final timer hands off directly to completion without exposing technique',a
   await expect(page.locator('.exercise-app')).toHaveAttribute('inert','');
   await expect(page.locator('#completionTitle')).toBeVisible();
 });
+
+for(const autoNext of [true,false]){
+  for(const paused of [true,false]){
+    test(`finish-early never paints a zero timer again (autoNext=${autoNext}, paused=${paused})`,async({page})=>{
+      await page.addInitScript(autoNext=>{
+        localStorage.setItem('dailyMotionState.v3',JSON.stringify({version:3,
+          settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext,theme:'system'},
+          programVersions:{morning:'morning-v3-active-2026-09-19'},days:{}}));
+      },autoNext);
+      await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
+      await page.locator('#nextButton').click();
+      await expect(page.locator('#timerState')).toHaveText('Идёт');
+      if(paused){
+        await page.locator('#timerToggle').click();
+        await expect(page.locator('#timerState')).toHaveText('Пауза');
+      }
+      const frames=await page.evaluate(()=>new Promise(resolve=>{
+        const card=document.querySelector('#timerCard');
+        const overlay=document.querySelector('#executionOverlay');
+        const value=document.querySelector('#timerValue');
+        const samples=[];
+        const start=performance.now();
+        document.querySelector('#executionFinishEarly').click();
+        const sample=()=>{
+          const surface=getComputedStyle(overlay);
+          const style=getComputedStyle(card);
+          if(!card.hidden&&style.display!=='none'&&style.visibility==='visible'&&Number(style.opacity)>.01&&
+            surface.visibility==='visible'&&Number(surface.opacity)>.01){
+            samples.push(value.textContent.trim());
+          }
+          if(performance.now()-start>=700){resolve(samples);return;}
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      }));
+      expect(frames.filter(text=>/^0+(?::0+)?$/.test(text))).toEqual([]);
+      await expect(page.locator('#timerCard')).toBeHidden();
+      if(autoNext)await expect(page.locator('#executionRestStage')).toBeVisible();
+      else await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
+      const routine=await page.evaluate(()=>DailyMotionState.getRoutine('morning'));
+      expect(routine.completedUntil).toBe(1);
+      expect(routine.timers['cat-cow'].remaining).toBe(0);
+      expect(routine.activeSeconds).toBeLessThan(5);
+    });
+  }
+}
