@@ -3,8 +3,8 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const applePulseDuration={cover:90,reveal:170};
-  const applePulseEase={
+  const appleShieldDuration={cover:80,reveal:140};
+  const appleShieldEase={
     cover:'cubic-bezier(.3,0,.35,1)',
     reveal:'cubic-bezier(.2,.72,.22,1)'
   };
@@ -19,9 +19,10 @@
   let backPending=false;
   let pageGhost=null;
   let pageDepthOverlay=null;
-  let pagePulse=null;
-  let pagePulseEdge=null;
+  let pageShield=null;
   let activePageAnimations=[];
+  let frozenPageAnimations=[];
+  let pageReadyPromise=Promise.resolve();
   let pageMotionVersion=0;
   let pageDirection='forward';
 
@@ -81,30 +82,26 @@
         background:rgba(12,18,15,.075);
         will-change:opacity;
       }
-      .dm-page-pulse{
+      .dm-page-shield{
         position:fixed;
         inset:0;
         pointer-events:none;
-        z-index:2147483646;
-        background:rgba(35,67,53,.11);
+        z-index:2147483647;
+        background:rgba(30,52,42,.085);
         opacity:0;
         will-change:opacity;
       }
-      .dm-page-pulse__edge{
-        position:fixed;
-        top:0;
-        bottom:0;
-        left:0;
-        width:56px;
-        pointer-events:none;
-        z-index:2147483647;
-        opacity:0;
-        background:linear-gradient(90deg,
-          rgba(47,107,85,0) 0%,
-          rgba(47,107,85,.12) 42%,
-          rgba(255,255,255,.13) 52%,
-          rgba(47,107,85,0) 100%);
-        will-change:transform,opacity;
+      html.dm-page-freeze #swup{
+        pointer-events:none!important;
+        user-select:none!important;
+        -webkit-user-select:none!important;
+      }
+      html.dm-page-stabilize #swup,
+      html.dm-page-stabilize #swup *,
+      html.dm-page-stabilize #swup *::before,
+      html.dm-page-stabilize #swup *::after{
+        animation:none!important;
+        transition:none!important;
       }
 
       html.dm-apple-mobile .app-ready .page-grid>*,
@@ -172,11 +169,9 @@
     pageDepthOverlay=null;
   };
 
-  const removePagePulse=()=>{
-    pagePulseEdge?.remove?.();
-    pagePulse?.remove?.();
-    pagePulseEdge=null;
-    pagePulse=null;
+  const removePageShield=()=>{
+    pageShield?.remove?.();
+    pageShield=null;
   };
 
   const removePageGhost=()=>{
@@ -196,22 +191,60 @@
     return overlay;
   };
 
-  const preparePagePulse=()=>{
+  const preparePageShield=()=>{
     if(!isAppleMobileWebKit()||reducedMotion.matches)return null;
-    removePagePulse();
-    const pulse=document.createElement('div');
-    pulse.className='dm-page-pulse';
-    pulse.setAttribute('aria-hidden','true');
-    const edge=document.createElement('div');
-    edge.className='dm-page-pulse__edge';
-    edge.setAttribute('aria-hidden','true');
-    edge.style.transform=pageDirection==='forward'
-      ?'translate3d(100vw,0,0)'
-      :'translate3d(-56px,0,0)';
-    document.body.append(pulse,edge);
-    pagePulse=pulse;
-    pagePulseEdge=edge;
-    return pulse;
+    removePageShield();
+    const shield=document.createElement('div');
+    shield.className='dm-page-shield';
+    shield.setAttribute('aria-hidden','true');
+    document.body.append(shield);
+    pageShield=shield;
+    return shield;
+  };
+
+  const freezeCurrentPage=()=>{
+    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    const target=currentContainer();
+    frozenPageAnimations=target?.getAnimations?.({subtree:true})||[];
+    for(const animation of frozenPageAnimations){
+      try{animation.pause();}catch{}
+    }
+    try{target?.setAttribute('inert','');}catch{}
+    document.documentElement.classList.add('dm-page-freeze');
+  };
+
+  const waitForOnest=async()=>{
+    if(!document.fonts)return;
+    try{
+      await Promise.all([
+        document.fonts.load('400 16px "Onest"'),
+        document.fonts.load('700 16px "Onest"'),
+        document.fonts.ready
+      ]);
+    }catch{}
+  };
+
+  const nextPaint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const stabilizeIncomingPage=async()=>{
+    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    const target=currentContainer();
+    document.documentElement.classList.add('dm-page-stabilize');
+    target?.getAnimations?.({subtree:true})?.forEach(animation=>{
+      try{animation.cancel();}catch{}
+    });
+    await waitForOnest();
+    await nextPaint();
+    target?.getAnimations?.({subtree:true})?.forEach(animation=>{
+      try{animation.cancel();}catch{}
+    });
+    document.documentElement.classList.remove('dm-page-stabilize');
+  };
+
+  const releasePageFreeze=()=>{
+    frozenPageAnimations=[];
+    currentContainer()?.removeAttribute('inert');
+    document.documentElement.classList.remove('dm-page-freeze','dm-page-stabilize');
   };
 
   const clearPageMotion=()=>{
@@ -220,7 +253,7 @@
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
-    removePagePulse();
+    removePageShield();
     removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
@@ -252,7 +285,7 @@
     if(isAppleMobileWebKit()||reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
-    removePagePulse();
+    removePageShield();
     removePageDepth();
     removePageGhost();
 
@@ -354,46 +387,29 @@
     },true);
   };
 
-  const runPagePulse=phase=>{
-    if(!isAppleMobileWebKit()||reducedMotion.matches)return Promise.resolve();
-    const pulse=pagePulse||preparePagePulse();
-    const edge=pagePulseEdge;
-    if(!pulse||!edge||typeof pulse.animate!=='function'||typeof edge.animate!=='function')return Promise.resolve();
+  const runPageShield=async phase=>{
+    if(!isAppleMobileWebKit()||reducedMotion.matches)return;
+    if(phase==='reveal')await pageReadyPromise;
+    const shield=pageShield||preparePageShield();
+    if(!shield||typeof shield.animate!=='function')return;
 
-    const cover=phase==='cover';
-    const forward=pageDirection==='forward';
-    const pulseAnimation=pulse.animate(
-      cover
+    const animation=shield.animate(
+      phase==='cover'
         ?[{opacity:0},{opacity:1}]
         :[{opacity:1},{opacity:0}],
       {
-        duration:applePulseDuration[phase],
-        easing:applePulseEase[phase],
+        duration:appleShieldDuration[phase],
+        easing:appleShieldEase[phase],
         fill:'forwards'
       }
     );
-    const edgeAnimation=edge.animate(
-      cover
-        ?[
-          {transform:forward?'translate3d(100vw,0,0)':'translate3d(-56px,0,0)',opacity:0},
-          {transform:'translate3d(48vw,0,0)',opacity:.9}
-        ]
-        :[
-          {transform:'translate3d(48vw,0,0)',opacity:.9},
-          {transform:forward?'translate3d(-56px,0,0)':'translate3d(100vw,0,0)',opacity:0}
-        ],
-      {
-        duration:applePulseDuration[phase],
-        easing:applePulseEase[phase],
-        fill:'forwards'
-      }
-    );
-    activePageAnimations=[pulseAnimation,edgeAnimation];
-    return Promise.allSettled([pulseAnimation.finished,edgeAnimation.finished]).then(()=>{
-      if(cover)return;
+    activePageAnimations=[animation];
+    try{await animation.finished;}catch{}
+    if(phase==='reveal'){
       activePageAnimations=[];
-      removePagePulse();
-    });
+      removePageShield();
+      releasePageFreeze();
+    }
   };
 
   const runPageMotion=()=>{
@@ -447,8 +463,8 @@
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>isAppleMobileWebKit()?runPagePulse('cover'):Promise.resolve(),
-    in:()=>isAppleMobileWebKit()?runPagePulse('reveal'):runPageMotion()
+    out:()=>isAppleMobileWebKit()?runPageShield('cover'):Promise.resolve(),
+    in:()=>isAppleMobileWebKit()?runPageShield('reveal'):runPageMotion()
   }];
 
   const SWUP_RUNTIME=[
@@ -509,7 +525,7 @@
         linkSelector:'a[href]:not([data-no-swup]):not([data-nav-back])',
         plugins:[
           new window.SwupPreloadPlugin({throttle:3}),
-          new window.SwupHeadPlugin(),
+          new window.SwupHeadPlugin({awaitAssets:true,timeout:4000}),
           new window.SwupBodyClassPlugin(),
           new window.SwupA11yPlugin({
             respectReducedMotion:true,
@@ -552,6 +568,7 @@
     const finishTransition=()=>{
       backPending=false;
       document.documentElement.classList.remove('dm-page-transition','dm-page-fallback','dm-page-back');
+      releasePageFreeze();
       clearPageMotion();
     };
 
@@ -565,16 +582,27 @@
       document.documentElement.classList.toggle('dm-page-transition',visit.animation.native);
       document.documentElement.classList.toggle('dm-page-fallback',!visit.animation.native&&!reducedMotion.matches);
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
-      if(isAppleMobileWebKit()&&!reducedMotion.matches)preparePagePulse();
+      if(isAppleMobileWebKit()&&!reducedMotion.matches){
+        freezeCurrentPage();
+        preparePageShield();
+      }
     });
 
     swup.hooks.on('fetch:error',visit=>{
+      releasePageFreeze();
       clearPageMotion();
       location.assign(new URL(visit.to.url,location.href).href);
     });
 
     swup.hooks.before('content:replace',()=>{createPageGhost();unmountPage();});
-    swup.hooks.on('content:replace',()=>{prepareIncomingSurface();mountPage();});
+    swup.hooks.on('content:replace',()=>{
+      if(isAppleMobileWebKit()&&!reducedMotion.matches)document.documentElement.classList.add('dm-page-stabilize');
+      prepareIncomingSurface();
+      mountPage();
+      pageReadyPromise=isAppleMobileWebKit()&&!reducedMotion.matches
+        ?stabilizeIncomingPage()
+        :Promise.resolve();
+    });
     swup.hooks.on('page:view',()=>preloadLikelyRoutes());
     swup.hooks.on('visit:end',finishTransition);
     swup.hooks.on('visit:abort',finishTransition);
