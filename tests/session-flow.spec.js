@@ -1,5 +1,15 @@
 import { test, expect, expectSwup } from './helpers/runtime.js';
 
+// These assertions measure state and painted handoffs. Keep the backing surface
+// bounded; the visual matrix separately retains the full device pixel scale.
+test.use({deviceScaleFactor:1});
+
+const activateNext=async page=>{
+  const button=page.locator('#nextButton');
+  if(await page.evaluate(()=>navigator.maxTouchPoints>0))await button.tap();
+  else await button.click();
+};
+
 test('morning workout completes end-to-end and reaches history',async({page})=>{
   await page.addInitScript(()=>{
     if(localStorage.getItem('dailyMotionState.v3'))return;
@@ -236,7 +246,7 @@ test('finish-early hands timer to rest without exposing two full stages',async({
     }));
   });
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.locator('#nextButton').click();
+  await activateNext(page);
   await expect(page.locator('#timerCard')).toBeVisible();
 
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
@@ -307,7 +317,7 @@ test('finish-early ignores a simultaneous close until the rest handoff is stable
     }));
   });
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.locator('#nextButton').click();
+  await activateNext(page);
   await expect(page.locator('#timerCard')).toBeVisible();
 
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
@@ -330,7 +340,7 @@ test('rest actions match their result',async({page})=>{
     }));
   });
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-  await page.locator('#nextButton').click();
+  await activateNext(page);
   await page.locator('#executionFinishEarly').evaluate(button=>button.click());
   await expect(page.locator('#executionRestStage')).toBeVisible();
   await expect(page.locator('#restSkip')).toHaveText('Начать следующее');
@@ -381,8 +391,12 @@ for(const autoNext of [true,false]){
           programVersions:{morning:'morning-v3-active-2026-09-19'},days:{}}));
       },autoNext);
       await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-      await page.locator('#nextButton').click();
+      await activateNext(page);
       await expect(page.locator('#timerState')).toHaveText('Идёт');
+      // Observe an actually ticking timer before measuring its exit. Immediate
+      // start/finish races are covered separately by the simultaneous-close case.
+      const initialValue=await page.locator('#timerValue').textContent();
+      await expect(page.locator('#timerValue')).not.toHaveText(initialValue);
       if(paused){
         // This fixture measures painted handoff frames; real pointer activation
         // is covered by lifecycle.spec.js. Avoid racing WebKit compositor stability.

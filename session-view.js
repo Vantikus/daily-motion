@@ -10,6 +10,7 @@
     const detailAnimations=new WeakMap();
     const detailTimers=new Set();
     let detailScrollFrame=0;
+    let exerciseAnimation=null;
     const on=(node,type,handler,options={})=>{
       if(!node)return;
       node.addEventListener(type,handler,signal?{...options,signal}:options);
@@ -266,7 +267,18 @@
       if(!card)return;
       card.classList.remove('enter-forward','enter-back');
       const appleMobile=document.documentElement.classList.contains('dm-apple-mobile');
-      if(appleMobile)return;
+      exerciseAnimation?.cancel();
+      exerciseAnimation=null;
+      if(reducedMotion())return;
+      if(appleMobile){
+        if(typeof card.animate==='function'){
+          exerciseAnimation=card.animate([
+            {transform:`translate3d(${direction==='back'?-24:24}px,0,0)`},
+            {transform:'translate3d(0,0,0)'}
+          ],{duration:240,easing:motionTokens.easeStandard});
+        }
+        return;
+      }
       void card.offsetWidth;
       card.classList.add(direction==='back'?'enter-back':'enter-forward');
       const badge=$('#headerProgress');
@@ -327,6 +339,8 @@
     };
 
     const destroy=()=>{
+      exerciseAnimation?.cancel();
+      exerciseAnimation=null;
       detailTimers.forEach(timer=>clearTimeout(timer));
       detailTimers.clear();
       document.querySelectorAll('.detail-card').forEach(card=>{

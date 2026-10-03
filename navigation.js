@@ -3,7 +3,7 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const mobileShieldDuration={cover:90,reveal:170};
+  const mobileShieldDuration={cover:90,reveal:320};
   const mobileShieldEase={
     cover:'cubic-bezier(.3,0,.35,1)',
     reveal:'cubic-bezier(.2,.72,.22,1)'
@@ -417,7 +417,7 @@
     const animation=shield.animate(
       phase==='cover'
         ?[{opacity:0},{opacity:1}]
-        :[{opacity:1},{opacity:0}],
+        :[{opacity:1,offset:0},{opacity:0,offset:.25},{opacity:0,offset:1}],
       {
         duration:mobileShieldDuration[phase],
         easing:mobileShieldEase[phase],
@@ -428,11 +428,23 @@
       // Install the reveal before releasing the opaque cover; no uncovered frame.
       for(const previous of activePageAnimations)previous.cancel();
     }
-    activePageAnimations=[animation];
-    try{await animation.finished;}catch{}
+    const animations=[animation];
+    if(phase==='reveal'){
+      // Move the content, not #swup: fixed controls and iOS safe areas stay put.
+      const surface=currentContainer()?.querySelector('.exercise-main,.app-shell');
+      if(surface?.animate){
+        const offset=pageDirection==='back'?-48:48;
+        animations.push(surface.animate([
+          {transform:`translate3d(${offset}px,0,0)`},
+          {transform:'translate3d(0,0,0)'}
+        ],{duration:mobileShieldDuration.reveal,easing:pageEase,fill:'both'}));
+      }
+    }
+    activePageAnimations=animations;
+    try{await Promise.all(animations.map(item=>item.finished));}catch{}
     if(version!==pageMotionVersion)return;
     if(phase==='reveal'){
-      animation.cancel();
+      for(const item of animations)item.cancel();
       activePageAnimations=[];
       removePageShield();
       releasePageFreeze();

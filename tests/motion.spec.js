@@ -194,3 +194,45 @@ test('session presentation is owned by the extracted view runtime',async({page})
   await expect(toggles.nth(1)).toHaveAttribute('aria-expanded','true');
   await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','false');
 });
+
+test('iPhone rest and exercise changes paint motion instead of jumping instantly',async({page})=>{
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=> 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
+    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+    localStorage.setItem('dailyMotionState.v3',JSON.stringify({version:3,
+      settings:{countdownSeconds:0,restSeconds:15,sound:false,autoNext:true,theme:'light'},
+      programVersions:{morning:'morning-v3-active-2026-09-19'},days:{}}));
+  });
+  await page.goto('/session.html?routine=morning');
+  await page.locator('#nextButton').evaluate(button=>button.click());
+  await expect(page.locator('#timerState')).toHaveText('Идёт');
+  const capture=async(selector,action)=>{
+    await page.evaluate(({selector,action})=>{
+      const node=document.querySelector(selector);
+      window.__handoffPaints=[];
+      const started=performance.now();
+      const sample=()=>{
+        const style=getComputedStyle(node);
+        const matrix=style.transform==='none'?null:new DOMMatrixReadOnly(style.transform);
+        window.__handoffPaints.push({x:matrix?.m41||0,y:matrix?.m42||0,hidden:node.hidden});
+        if(performance.now()-started<650)requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+      document.querySelector(action).click();
+    },{selector,action});
+    await page.waitForTimeout(700);
+    return page.evaluate(()=>window.__handoffPaints);
+  };
+  const rest=await capture('#executionRestStage','#executionFinishEarly');
+  expect(rest.some(frame=>!frame.hidden&&frame.y>1)).toBe(true);
+  expect(rest.at(-1).y).toBe(0);
+  await expect(page.locator('#timerCard')).toBeHidden();
+  await page.locator('#restTechnique').evaluate(button=>button.click());
+  await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
+  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await page.waitForTimeout(300);
+  const exercise=await capture('.exercise-main','#prevButton');
+  expect(exercise.some(frame=>frame.x< -1)).toBe(true);
+  expect(exercise.at(-1).x).toBe(0);
+  await expect(page.locator('#headerProgress')).toHaveText('1 / 9');
+});
