@@ -159,9 +159,9 @@ window.DailyMotionPages.session=function mountSession(){
   };
 
   const animateCountdownValue=(node,{launch=false}={})=>{
-    if(!node||appleMobileMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.getAnimations?.().forEach(animation=>animation.cancel());
-    node.animate(
+    animateExecutionNode(node,
       launch
         ?[
           {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
@@ -655,7 +655,14 @@ window.DailyMotionPages.session=function mountSession(){
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
 
-    if(!wasVisible&&!prefersReducedMotion()&&!appleMobileMotion){
+    if(!wasVisible&&!prefersReducedMotion()&&appleMobileMotion){
+      animateExecutionNode(
+        executionShell,
+        [{opacity:.72,transform:'translate3d(0,24px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+        {duration:260,easing:MotionTokens.easeEnter,fill:'backwards'}
+      );
+      if(stage==='countdown')animateCountdownValue($('#countdownValue'));
+    }else if(!wasVisible&&!prefersReducedMotion()){
       const token=stageTransitionToken;
       frame(()=>{
         if(destroyed||token!==stageTransitionToken||executionStage!==stage||!overlay.classList.contains('is-visible'))return;

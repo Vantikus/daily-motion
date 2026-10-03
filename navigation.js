@@ -3,11 +3,7 @@
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const pageDuration={forward:.36,back:.34};
   const pageEase='cubic-bezier(.3,.5,.3,1)';
-  const mobileShieldDuration={cover:90,reveal:320};
-  const mobileShieldEase={
-    cover:'cubic-bezier(.3,0,.35,1)',
-    reveal:'cubic-bezier(.2,.72,.22,1)'
-  };
+  const mobilePageDuration=280;
   const pageMotion={
     forward:{incomingX:'100%',outgoingX:'-22%',incomingAbove:true},
     back:{incomingX:'-22%',outgoingX:'100%',incomingAbove:false}
@@ -19,7 +15,6 @@
   let backPending=false;
   let pageGhost=null;
   let pageDepthOverlay=null;
-  let pageShield=null;
   let activePageAnimations=[];
   let frozenPageAnimations=[];
   let pageReadyPromise=Promise.resolve();
@@ -83,15 +78,6 @@
         pointer-events:none;
         z-index:2147483647;
         background:rgba(12,18,15,.075);
-        will-change:opacity;
-      }
-      .dm-page-shield{
-        position:fixed;
-        inset:0;
-        pointer-events:none;
-        z-index:2147483647;
-        background:var(--bg);
-        opacity:0;
         will-change:opacity;
       }
       html.dm-page-freeze #swup{
@@ -180,11 +166,6 @@
     pageDepthOverlay=null;
   };
 
-  const removePageShield=()=>{
-    pageShield?.remove?.();
-    pageShield=null;
-  };
-
   const removePageGhost=()=>{
     pageGhost?.remove?.();
     pageGhost=null;
@@ -200,17 +181,6 @@
     host.append(overlay);
     pageDepthOverlay=overlay;
     return overlay;
-  };
-
-  const preparePageShield=()=>{
-    if(!mobilePageMotion||reducedMotion.matches)return null;
-    removePageShield();
-    const shield=document.createElement('div');
-    shield.className='dm-page-shield';
-    shield.setAttribute('aria-hidden','true');
-    document.body.append(shield);
-    pageShield=shield;
-    return shield;
   };
 
   const freezeCurrentPage=()=>{
@@ -272,7 +242,6 @@
       try{animation?.cancel?.();}catch{}
     }
     activePageAnimations=[];
-    removePageShield();
     removePageDepth();
     removePageGhost();
     clearSurfaceStyles(pageMotionTarget());
@@ -301,10 +270,9 @@
   };
 
   const createPageGhost=()=>{
-    if(mobilePageMotion||reducedMotion.matches||swup?.visit?.animation.native)return;
+    if(reducedMotion.matches||swup?.visit?.animation.native)return;
     const source=currentContainer();
     if(!source)return;
-    removePageShield();
     removePageDepth();
     removePageGhost();
 
@@ -330,7 +298,19 @@
     const clone=source.cloneNode(true);
     clone.removeAttribute('id');
     for(const node of clone.querySelectorAll('[id]'))node.removeAttribute('id');
-    copyScrollState(source,clone);
+    if(mobilePageMotion){
+      // Preserve the old page's grid and safe-area geometry after its IDs go away.
+      const originals=[source,...source.children];
+      const copies=[clone,...clone.children];
+      originals.forEach((node,index)=>{
+        const style=getComputedStyle(node);
+        for(const property of ['display','grid-template-rows','grid-row','height','min-height','overflow']){
+          copies[index].style.setProperty(property,style.getPropertyValue(property),'important');
+        }
+      });
+      layer.style.zIndex='2147483000';
+      layer.style.willChange='opacity';
+    }
     const scrollY=window.scrollY;
     Object.assign(clone.style,{
       position:'absolute',
@@ -342,13 +322,14 @@
     });
     layer.append(clone);
     document.body.append(layer);
+    copyScrollState(source,clone);
     pageGhost=layer;
-    if(pageDirection==='forward')createPageDepth(layer,0);
+    if(!mobilePageMotion&&pageDirection==='forward')createPageDepth(layer,0);
   };
 
   const prepareIncomingSurface=()=>{
     const target=pageMotionTarget();
-    if(!target||!pageGhost||reducedMotion.matches||swup?.visit?.animation.native)return;
+    if(mobilePageMotion||!target||!pageGhost||reducedMotion.matches||swup?.visit?.animation.native)return;
     const spec=pageMotion[pageDirection]||pageMotion.forward;
     target.style.position='relative';
     target.style.isolation='isolate';
@@ -406,49 +387,34 @@
     },true);
   };
 
-  const runPageShield=async phase=>{
+  const runMobilePageMotion=async()=>{
     if(!mobilePageMotion||reducedMotion.matches)return;
     const version=pageMotionVersion;
-    if(phase==='reveal')await pageReadyPromise;
+    await pageReadyPromise;
     if(version!==pageMotionVersion)return;
-    const shield=pageShield||preparePageShield();
-    if(!shield||typeof shield.animate!=='function')return;
-
-    const animation=shield.animate(
-      phase==='cover'
-        ?[{opacity:0},{opacity:1}]
-        :[{opacity:1,offset:0},{opacity:0,offset:.25},{opacity:0,offset:1}],
-      {
-        duration:mobileShieldDuration[phase],
-        easing:mobileShieldEase[phase],
-        fill:'forwards'
-      }
-    );
-    if(phase==='reveal'){
-      // Install the reveal before releasing the opaque cover; no uncovered frame.
-      for(const previous of activePageAnimations)previous.cancel();
+    const animations=[];
+    // Keep the old content visible until the mounted destination is ready,
+    // then dissolve it over the fully visible new page instead of a blank cover.
+    if(pageGhost?.animate){
+      animations.push(pageGhost.animate([{opacity:1},{opacity:0}],{
+        duration:mobilePageDuration,easing:pageEase,fill:'forwards'
+      }));
     }
-    const animations=[animation];
-    if(phase==='reveal'){
-      // Move the content, not #swup: fixed controls and iOS safe areas stay put.
-      const surface=currentContainer()?.querySelector('.exercise-main,.app-shell');
-      if(surface?.animate){
-        const offset=pageDirection==='back'?-48:48;
-        animations.push(surface.animate([
-          {transform:`translate3d(${offset}px,0,0)`},
-          {transform:'translate3d(0,0,0)'}
-        ],{duration:mobileShieldDuration.reveal,easing:pageEase,fill:'both'}));
-      }
+    const surface=currentContainer()?.querySelector('.exercise-main,.app-shell');
+    if(surface?.animate){
+      const offset=pageDirection==='back'?-24:24;
+      animations.push(surface.animate([
+        {transform:`translate3d(${offset}px,0,0)`},
+        {transform:'translate3d(0,0,0)'}
+      ],{duration:mobilePageDuration,easing:pageEase,fill:'both'}));
     }
     activePageAnimations=animations;
     try{await Promise.all(animations.map(item=>item.finished));}catch{}
     if(version!==pageMotionVersion)return;
-    if(phase==='reveal'){
-      for(const item of animations)item.cancel();
-      activePageAnimations=[];
-      removePageShield();
-      releasePageFreeze();
-    }
+    removePageGhost();
+    for(const item of animations)item.cancel();
+    activePageAnimations=[];
+    releasePageFreeze();
   };
 
   const runPageMotion=()=>{
@@ -503,8 +469,8 @@
   const pageAnimations=[{
     from:'(.*)',
     to:'(.*)',
-    out:()=>mobilePageMotion?runPageShield('cover'):Promise.resolve(),
-    in:()=>mobilePageMotion?runPageShield('reveal'):runPageMotion()
+    out:()=>Promise.resolve(),
+    in:()=>mobilePageMotion?runMobilePageMotion():runPageMotion()
   }];
 
   const SWUP_RUNTIME=[
@@ -628,7 +594,6 @@
       document.documentElement.classList.toggle('dm-page-back',pageDirection==='back');
       if(mobilePageMotion&&!reducedMotion.matches){
         freezeCurrentPage();
-        preparePageShield();
       }
     });
 
