@@ -98,7 +98,11 @@ window.DailyMotionPages.session=function mountSession(){
   const appleMobileMotion=/iP(?:hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const exerciseApp=$('.exercise-app');
   const executionShell=$('.execution-shell');
-  if(appleMobileMotion)executionShell?.style.setProperty('animation','none','important');
+  const executionTop=$('.execution-top');
+  if(appleMobileMotion){
+    executionShell?.style.setProperty('animation','none','important');
+    executionTop?.style.setProperty('animation','none','important');
+  }
   let modalReturnFocus=null;
 
   // Reload safety / modal ownership.
@@ -146,49 +150,40 @@ window.DailyMotionPages.session=function mountSession(){
   };
 
   const animateValue=node=>{
-    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!node||appleMobileMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.animate(
-      appleMobileMotion
-        ?[{transform:'translate3d(0,2px,0)'},{transform:'translate3d(0,0,0)'}]
-        :[{transform:'translateY(3px)',opacity:.55},{transform:'translateY(0)',opacity:1}],
-      {duration:appleMobileMotion?120:MotionTokens.microMs,easing:MotionTokens.easeStandard}
+      [{transform:'translateY(3px)',opacity:.55},{transform:'translateY(0)',opacity:1}],
+      {duration:MotionTokens.microMs,easing:MotionTokens.easeStandard}
     );
   };
 
   const animateCountdownValue=(node,{launch=false}={})=>{
-    if(!node||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!node||appleMobileMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     node.getAnimations?.().forEach(animation=>animation.cancel());
     node.animate(
-      appleMobileMotion
+      launch
         ?[
-          {transform:launch?'translate3d(0,4px,0) scale(.94)':'translate3d(0,3px,0) scale(.95)'},
-          {transform:'translate3d(0,0,0) scale(1)'}
+          {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
+          {transform:'translate3d(0,-1px,0) scale(1.035)',opacity:1,offset:.72},
+          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
         ]
-        :launch
-          ?[
-            {transform:'translate3d(0,5px,0) scale(.9)',opacity:.36},
-            {transform:'translate3d(0,-1px,0) scale(1.035)',opacity:1,offset:.72},
-            {transform:'translate3d(0,0,0) scale(1)',opacity:1}
-          ]
-          :[
-            {transform:'translate3d(0,5px,0) scale(.88)',opacity:.3},
-            {transform:'translate3d(0,-1px,0) scale(1.025)',opacity:1,offset:.72},
-            {transform:'translate3d(0,0,0) scale(1)',opacity:1}
-          ],
-      {duration:appleMobileMotion?135:(launch?235:215),easing:appleMobileMotion?MotionTokens.easeEnter:(launch?MotionTokens.easeEmphasized:MotionTokens.easeEnter)}
+        :[
+          {transform:'translate3d(0,5px,0) scale(.88)',opacity:.3},
+          {transform:'translate3d(0,-1px,0) scale(1.025)',opacity:1,offset:.72},
+          {transform:'translate3d(0,0,0) scale(1)',opacity:1}
+        ],
+      {duration:launch?235:215,easing:launch?MotionTokens.easeEmphasized:MotionTokens.easeEnter}
     );
   };
 
   const animateTimerState=()=>{
-    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    const nodes=appleMobileMotion?[$('#timerValue')]:[$('#timerValue'),$('#timerLabel'),$('#timerState')];
+    if(appleMobileMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const nodes=[$('#timerValue'),$('#timerLabel'),$('#timerState')];
     nodes.filter(Boolean).forEach((node,index)=>{
       node.getAnimations?.().forEach(animation=>animation.cancel());
       node.animate(
-        appleMobileMotion
-          ?[{transform:'translate3d(0,2px,0)'},{transform:'translate3d(0,0,0)'}]
-          :[{transform:'translate3d(0,2px,0)',opacity:.58},{transform:'translate3d(0,0,0)',opacity:1}],
-        {duration:appleMobileMotion?110:150+index*12,easing:MotionTokens.easeEnter}
+        [{transform:'translate3d(0,2px,0)',opacity:.58},{transform:'translate3d(0,0,0)',opacity:1}],
+        {duration:150+index*12,easing:MotionTokens.easeEnter}
       );
     });
   };
@@ -541,11 +536,6 @@ window.DailyMotionPages.session=function mountSession(){
       previous.hidden=true;
       previous.inert=false;
       previous.classList.remove('is-finishing-early','is-stage-leaving');
-      animateExecutionNode(
-        next,
-        [{transform:'translate3d(0,6px,0)'},{transform:'translate3d(0,0,0)'}],
-        {duration:145,easing:MotionTokens.easeEnter}
-      );
     }else{
       if(previousAlreadyExited){
         previous.hidden=true;
@@ -601,19 +591,7 @@ window.DailyMotionPages.session=function mountSession(){
     card.classList.add('is-finishing-early');
 
     const token=stageTransitionToken;
-    const exit=card.animate(
-      appleMobileMotion
-        ?[
-          {transform:'translate3d(0,0,0)'},
-          {transform:'translate3d(0,-5px,0)'}
-        ]
-        :[
-          {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
-          {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
-        ],
-      {duration:appleMobileMotion?100:135,easing:MotionTokens.easeExit,fill:'forwards'}
-    );
-
+    let exit=null;
     let settled=false;
     let fallbackTimer=null;
     const completeExit=()=>{
@@ -624,16 +602,27 @@ window.DailyMotionPages.session=function mountSession(){
         fallbackTimer=null;
       }
       if(destroyed||token!==stageTransitionToken||executionStage!=='timer'){
-        try{exit.cancel();}catch{}
+        try{exit?.cancel?.();}catch{}
         card.inert=false;
         card.classList.remove('is-finishing-early');
         return;
       }
       card.style.opacity='0';
-      try{exit.cancel();}catch{}
+      try{exit?.cancel?.();}catch{}
       callback();
       card.style.removeProperty('opacity');
     };
+    if(appleMobileMotion){
+      completeExit();
+      return;
+    }
+    exit=card.animate(
+      [
+        {opacity:1,transform:'translate3d(0,0,0) scale(1)'},
+        {opacity:0,transform:'translate3d(0,-6px,0) scale(.985)'}
+      ],
+      {duration:135,easing:MotionTokens.easeExit,fill:'forwards'}
+    );
     exit.finished.then(completeExit,completeExit);
     // WebKit/CI can leave a cancelled WAAPI .finished promise unsettled.
     // This fallback is after the visual exit window and only completes the same state handoff.
@@ -657,17 +646,15 @@ window.DailyMotionPages.session=function mountSession(){
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
 
-    if(!wasVisible&&!prefersReducedMotion()){
+    if(!wasVisible&&!prefersReducedMotion()&&!appleMobileMotion){
       const token=stageTransitionToken;
       frame(()=>{
         if(destroyed||token!==stageTransitionToken||executionStage!==stage||!overlay.classList.contains('is-visible'))return;
         const node=executionStages()[stage];
         animateExecutionNode(
           node,
-          appleMobileMotion
-            ?[{transform:'translate3d(0,6px,0)'},{transform:'translate3d(0,0,0)'}]
-            :[{opacity:.72,transform:'translate3d(0,6px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
-          {duration:appleMobileMotion?145:185,easing:MotionTokens.easeEnter,fill:appleMobileMotion?'none':'backwards'}
+          [{opacity:.72,transform:'translate3d(0,6px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+          {duration:185,easing:MotionTokens.easeEnter,fill:'backwards'}
         );
         playExecutionStageContent(stage,node,{delay:12});
       });
@@ -736,13 +723,7 @@ window.DailyMotionPages.session=function mountSession(){
 
     overlay.classList.add('is-closing');
     if(appleMobileMotion){
-      const closing=animateExecutionNode(
-        executionShell,
-        [{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,-3px,0)'}],
-        {duration:80,easing:MotionTokens.easeExit}
-      );
-      if(closing)closing.finished.then(finish,finish);
-      else finish();
+      finish();
       return;
     }
     afterAnimations(executionShell,()=>{
