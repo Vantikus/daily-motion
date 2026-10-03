@@ -237,18 +237,22 @@
           {transform:'translateY(0)',...(resizing?{clipPath:clip(row.box.height)}:{})}
         ],options));
         if(row.borderWidth){
+          // Draw boundaries in the stack, not inside moving/clipped rows.
+          // A single translation avoids combining two independent transforms.
+          const fromY=old.top+old.height-stackBox.top-appearance.topWidth-shellDelta-row.borderWidth;
+          const toY=row.box.bottom-stackBox.top-appearance.topWidth-row.borderWidth;
           const divider=document.createElement('div');
           divider.className='dm-detail-divider';
           divider.setAttribute('aria-hidden','true');
           Object.assign(divider.style,{
             height:`${row.borderWidth}px`,background:row.borderColor,
-            transform:`translateY(${row.box.height-row.borderWidth}px)`
+            transform:`translateY(${toY}px)`
           });
-          row.card.append(divider);
+          detailStack.append(divider);
           state.dividers.push(divider);
-          if(resizing)state.animations.push(divider.animate([
-            {transform:`translateY(${old.height-row.borderWidth}px)`},
-            {transform:`translateY(${row.box.height-row.borderWidth}px)`}
+          if(Math.abs(fromY-toY)>.1)state.animations.push(divider.animate([
+            {transform:`translateY(${fromY}px)`},
+            {transform:`translateY(${toY}px)`}
           ],options));
         }
       });
@@ -258,6 +262,10 @@
           {transform:'translateY(0)'}
         ],options));
       }
+
+      // All boundaries, rows and scroll compensation share the same clock.
+      const startTime=document.timeline.currentTime;
+      state.animations.forEach(animation=>{animation.startTime=startTime;});
 
       const finish=()=>{
         if(!destroyed&&!signal?.aborted&&detailMotion===state)finishDetailMotion();
