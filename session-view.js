@@ -49,7 +49,7 @@
       }
       if(inner){
         inner.style.opacity=open?'1':'0';
-        inner.style.transform='translate3d(0,0,0)';
+        inner.style.transform='none';
       }
     };
 
@@ -64,7 +64,7 @@
       detailStack.classList.remove('is-detail-animating');
       detailStack.style.removeProperty('height');
       detailCards.forEach(card=>{
-        for(const property of ['position','top','left','width','height','transform','clip-path','will-change']){
+        for(const property of ['position','top','left','width','height','transform','clip-path','will-change','z-index']){
           card.style.removeProperty(property);
         }
         setDetailState(card,card.classList.contains('is-open'));
@@ -199,11 +199,12 @@
         Object.assign(row.card.style,{
           position:'absolute',left:'0',
           top:`${row.box.top-stackBox.top-appearance.topWidth}px`,
-          width:`${row.box.width}px`,height:`${height}px`
+          width:`${row.box.width}px`,height:`${height}px`,zIndex:String(index+1)
         });
         row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
         row.panel.style.opacity=expanded?'1':'0';
-        row.inner.style.opacity=expanded?'1':'0';
+        // Retiring text must disappear before the neighboring rows cover it.
+        row.inner.style.opacity=row.open?'1':'0';
         const radii=[
           index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
           index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,

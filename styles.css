@@ -2231,11 +2231,11 @@ a[href] *,
   opacity:1;
 }
 
-.detail-card__inner{opacity:0;transform:translate3d(0,0,0);contain:layout paint;transition:none!important}
+.detail-card__inner{opacity:0;transform:none;contain:layout;transition:none!important}
 
 .detail-card.is-open .detail-card__inner{
   opacity:1;
-  transform:translate3d(0,0,0);
+  transform:none;
   animation:none!important;
 }
 
@@ -4078,7 +4078,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:transparent!important;
   border-color:transparent!important;
 }
-.details-stack.is-detail-animating .detail-card{border-bottom-color:transparent!important}
+.details-stack.is-detail-animating .detail-card{
+  border-bottom-color:transparent!important;
+  background:var(--surface-raised)!important;
+}
 .dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
 .dm-detail-divider{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .details-stack .detail-card,
