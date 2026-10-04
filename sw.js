@@ -1,4 +1,4 @@
-const RELEASE_VERSION=282;
+const RELEASE_VERSION=283;
 const CACHE_NAME=`daily-motion-v${RELEASE_VERSION}`;
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
