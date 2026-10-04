@@ -192,7 +192,6 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .detail-card__heading{margin:0;font:inherit}
 
 .detail-card__toggle .detail-toggle-icon{font-style:normal;font-size:1.1875rem;color:var(--muted);font-weight:400;transition:transform var(--slow) var(--ease)}
-.detail-card.is-open .detail-card__toggle .detail-toggle-icon{transform:rotate(45deg);color:var(--accent)}
 .detail-card__panel{transition:grid-template-rows var(--slow) var(--ease),opacity var(--base) ease}
 .detail-card.is-open .detail-card__panel{grid-template-rows:1fr;}
 .detail-card__content{min-height:0;overflow:hidden}
@@ -1433,17 +1432,6 @@ a[href] *,
 .detail-card__toggle{
   transform:none!important;
 }
-.detail-card__toggle .qm-icon{
-  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out),background-color var(--motion-interaction-state) ease;
-}
-.detail-card.is-open .detail-card__toggle .qm-icon{
-  transform:scale(1.035);
-  background:rgba(47,107,85,.09);
-}
-.detail-card__toggle .detail-toggle-icon{
-  transition:transform var(--motion-content) var(--motion-ease-standard),color var(--motion-interaction-state) ease;
-}
-
 /* Text-like actions communicate touch through tone/opacity, not movement. */
 .execution-secondary button,
 .execution-text-action,
@@ -1849,25 +1837,6 @@ a[href] *,
   color:#756c91;
   background:rgba(117,108,145,.09);
 }
-.detail-card.is-open .technique-icon--how{
-  background:rgba(47,107,85,.13);
-}
-.detail-card.is-open .technique-icon--breath{
-  background:rgba(63,120,128,.13);
-}
-.detail-card.is-open .technique-icon--feel{
-  background:rgba(101,118,154,.13);
-}
-.detail-card.is-open .technique-icon--mistakes{
-  background:rgba(148,106,84,.135);
-}
-.detail-card.is-open .technique-icon--easy{
-  background:rgba(116,132,97,.135);
-}
-.detail-card.is-open .technique-icon--progress{
-  background:rgba(117,108,145,.135);
-}
-
 /* audit accessibility and metadata follow-up */
 .home-body .activity-day small{
   color:#566158;
@@ -4020,22 +3989,16 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 :root[data-theme="dark"] .technique-key{
   border-color:rgba(121,197,162,.11);
   background:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
-}/* compact, calm technique accordion. Existing JS owns expansion motion. */
-.details-title{
-  margin:0;
-  color:var(--text);
-  font-size:1.0625rem;
-  line-height:1.2;
-  font-weight:760;
-  letter-spacing:-.02em;
-}
+}/* Technique list: one visual system, with session-view.js owning disclosure motion. */
+.details-section{gap:12px!important}
+.details-title{margin:0!important;font-size:1.0625rem;font-weight:650;line-height:1.25;letter-spacing:-.02em}
 .details-stack{
+  --detail-duration:280ms;
+  --detail-ease:cubic-bezier(.333333,1,.666667,1);
   display:block!important;
-  grid-template-columns:1fr!important;
-  gap:0!important;
   overflow:hidden;
   border:1px solid var(--line-soft)!important;
-
+  border-radius:16px!important;
   background:var(--surface-raised)!important;
   box-shadow:none!important;
 }
@@ -4053,10 +4016,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 .dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
 .dm-detail-divider{position:absolute;z-index:7;top:0;left:0;width:100%;pointer-events:none}
-.details-stack .detail-card,
-.details-stack .detail-card:first-child{
-  grid-column:auto!important;
-}
+.details-stack .detail-card{grid-column:auto!important}
 .detail-card{
   margin:0!important;
   border:0!important;
@@ -4065,209 +4025,62 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:transparent!important;
   box-shadow:none!important;
 }
-.detail-card:last-of-type{
-  border-bottom:0!important;
-}
+.detail-card:last-of-type{border-bottom:0!important}
+.detail-card__heading{background:transparent;transition:background-color 175ms ease}
+.detail-card.is-open>.detail-card__heading{background:rgba(47,107,85,.025)!important}
+:root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{background:rgba(121,197,162,.035)!important}
 .detail-card__toggle{
-
+  min-height:56px!important;
+  padding:12px 16px!important;
+  gap:12px!important;
+  font-size:.875rem!important;
+  line-height:1.4!important;
+  font-weight:500!important;
   color:var(--text);
-
-  line-height:1.25;
-
-}
-.detail-label .qm-icon{
-
-  margin-left:0!important;
-
-  background:var(--surface-muted)!important;
-  color:var(--muted-strong)!important;
-}
-.detail-toggle-icon{
-  flex:0 0 auto;
-  color:var(--muted)!important;
-
-}
-.detail-card.is-open>.detail-card__heading{
-  background:rgba(47,107,85,.025)!important;
-}
-.detail-card.is-open .detail-label .qm-icon{
-  background:var(--accent-soft)!important;
-  color:var(--accent)!important;
+  background:transparent;
   transform:none!important;
 }
-.detail-card.is-open .detail-toggle-icon{
-  color:var(--accent)!important;
-  opacity:.9;
+.detail-card__toggle:focus-visible{outline:2px solid var(--focus-color);outline-offset:-3px;border-radius:8px}
+.detail-label{flex:1 1 auto;min-width:0;gap:12px!important;white-space:normal;overflow-wrap:anywhere}
+.detail-card .detail-label .qm-icon{
+  flex:0 0 28px;
+  width:28px!important;height:28px!important;min-width:28px!important;
+  margin-left:0!important;border-radius:8px!important;
+  color:var(--detail-icon-color,var(--muted-strong))!important;
+  background:var(--detail-icon-bg,var(--surface-muted))!important;
+  transform:none!important;
+  transition:none;
 }
-.detail-card__inner{
-
-  border-top:1px solid color-mix(in srgb,var(--line-soft) 72%,transparent)!important;
+.detail-label .qm-icon>.hi{font-size:14px!important}
+.detail-card__toggle .detail-toggle-icon{
+  flex:0 0 18px;width:18px;
+  font-size:15px!important;text-align:center;
+  color:var(--muted)!important;opacity:.7;
+  transform:rotate(0deg)!important;
+  transition:transform var(--detail-duration) var(--detail-ease),color 175ms ease;
 }
-.detail-card__inner p,
-.detail-card__inner li{
-  color:var(--muted-strong)!important;
-
-}
-@media(max-width:390px){
-  .detail-card__toggle{
-
-    padding-inline:12px!important;
-  }
-}
-:root[data-theme="dark"] .details-stack{
-  background:var(--surface-raised)!important;
-}
-:root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{
-  background:rgba(121,197,162,.035)!important;
-}
-
-/* correction — single-line labels + readable semantic technique colors. */
-.detail-card__toggle{
-
-  font-weight:650!important;
-}
-.detail-label{
-  flex:1 1 auto;
-  min-width:0;
-
-  white-space:nowrap;
-}
-.detail-toggle-icon{
-
-  text-align:center;
-
-  opacity:.7;
-}
-
-/* Restore semantic palette overridden by U4. */
-.detail-label .technique-icon--how{
-  color:#2f6b55!important;
-  background:rgba(47,107,85,.12)!important;
-}
-.detail-label .technique-icon--breath{
-  color:#28717a!important;
-  background:rgba(40,113,122,.12)!important;
-}
-.detail-label .technique-icon--feel{
-  color:#536a9c!important;
-  background:rgba(83,106,156,.12)!important;
-}
-.detail-label .technique-icon--mistakes{
-  color:#95604a!important;
-  background:rgba(149,96,74,.13)!important;
-}
-.detail-label .technique-icon--easy{
-  color:#667a4d!important;
-  background:rgba(102,122,77,.13)!important;
-}
-.detail-label .technique-icon--progress{
-  color:#6f6293!important;
-  background:rgba(111,98,147,.13)!important;
-}
-
-.detail-card.is-open .detail-label .technique-icon--how{
-  color:#245b47!important;
-  background:rgba(47,107,85,.18)!important;
-}
-.detail-card.is-open .detail-label .technique-icon--breath{
-  color:#205f67!important;
-  background:rgba(40,113,122,.18)!important;
-}
-.detail-card.is-open .detail-label .technique-icon--feel{
-  color:#445b8b!important;
-  background:rgba(83,106,156,.18)!important;
-}
-.detail-card.is-open .detail-label .technique-icon--mistakes{
-  color:#804d39!important;
-  background:rgba(149,96,74,.19)!important;
-}
-.detail-card.is-open .detail-label .technique-icon--easy{
-  color:#566b3f!important;
-  background:rgba(102,122,77,.19)!important;
-}
-.detail-card.is-open .detail-label .technique-icon--progress{
-  color:#5e5183!important;
-  background:rgba(111,98,147,.19)!important;
-}
-
-@media(max-width:390px){
-  .detail-card__toggle{
-    padding-inline:9px!important;
-
-  }
-}
-
-:root[data-theme="dark"] .detail-label .technique-icon--how{color:#79c5a2!important;background:rgba(121,197,162,.12)!important}
-:root[data-theme="dark"] .detail-label .technique-icon--breath{color:#71bcc3!important;background:rgba(113,188,195,.12)!important}
-:root[data-theme="dark"] .detail-label .technique-icon--feel{color:#91a7d7!important;background:rgba(145,167,215,.12)!important}
-:root[data-theme="dark"] .detail-label .technique-icon--mistakes{color:#d49a7e!important;background:rgba(212,154,126,.12)!important}
-:root[data-theme="dark"] .detail-label .technique-icon--easy{color:#a8ba88!important;background:rgba(168,186,136,.12)!important}
-:root[data-theme="dark"] .detail-label .technique-icon--progress{color:#b1a5d3!important;background:rgba(177,165,211,.12)!important}
-
-/* spacing correction — keep clarity, restore breathing room. */
-.details-section{
-  gap:12px!important;
-}
-.details-title{
-  margin-bottom:1px!important;
-}
-.details-stack{
-  border-radius:18px!important;
-}
-.detail-card__toggle{
-  min-height:54px!important;
-  padding:0 13px!important;
-  gap:9px!important;
-  font-size:.84375rem!important;
-}
-.detail-label{
-  gap:9px!important;
-}
-.detail-label .qm-icon{
-  width:29px!important;
-  height:29px!important;
-  min-width:29px!important;
-  border-radius:9px!important;
-}
-.detail-label .qm-icon>.hi{
-  font-size:15px!important;
-}
-.detail-toggle-icon{
-  width:20px;
-  font-size:16px!important;
-}
-.detail-card__inner{
-  padding:12px 14px 15px!important;
-}
-.detail-card__inner p,
-.detail-card__inner li{
-  font-size:.84375rem!important;
-  line-height:1.56!important;
-}
-.detail-card__inner ol,
-.detail-card__inner ul{
-  padding-left:20px!important;
-  gap:8px!important;
-}
-@media(max-width:390px){
-  .detail-card__toggle{
-    min-height:52px!important;
-    padding-inline:11px!important;
-    gap:8px!important;
-    font-size:.8125rem!important;
-  }
-  .detail-label{
-    gap:8px!important;
-  }
-  .detail-label .qm-icon{
-    width:28px!important;
-    height:28px!important;
-    min-width:28px!important;
-  }
-  .detail-card__inner{
-    padding:11px 13px 14px!important;
-  }
-}
+.detail-card.is-open .detail-toggle-icon{transform:rotate(180deg)!important;color:var(--accent)!important;opacity:.9}
+.detail-card__inner{padding:4px 16px 20px!important;border-top:0!important}
+.detail-card__inner p,.detail-card__inner li{font-size:.875rem!important;line-height:1.6!important;font-weight:400!important;color:var(--muted-strong)!important}
+.detail-card__inner p{margin:0}
+.detail-card__inner ol,.detail-card__inner ul{margin:0;padding-left:20px!important;display:grid;gap:12px!important}
+.detail-card__inner li{padding-left:4px}
+.detail-card__inner li::marker{color:var(--accent);font-weight:500}
+@media(hover:hover) and (pointer:fine){.detail-card:not(.is-open)>.detail-card__heading:hover{background:var(--surface-soft)}}
+@media(max-width:340px){.detail-card__toggle{padding-inline:12px!important;gap:8px!important}.detail-label{gap:8px!important}.detail-card__inner{padding-inline:12px!important}}
+@media(prefers-reduced-motion:reduce){.detail-card__heading,.detail-card__toggle .detail-toggle-icon{transition:none!important}}
+.technique-icon--how{--detail-icon-color:#2f6b55;--detail-icon-bg:rgba(47,107,85,.10)}
+:root[data-theme="dark"] .technique-icon--how{--detail-icon-color:#79c5a2;--detail-icon-bg:rgba(121,197,162,.12)}
+.technique-icon--breath{--detail-icon-color:#28717a;--detail-icon-bg:rgba(40,113,122,.10)}
+:root[data-theme="dark"] .technique-icon--breath{--detail-icon-color:#71bcc3;--detail-icon-bg:rgba(113,188,195,.12)}
+.technique-icon--feel{--detail-icon-color:#536a9c;--detail-icon-bg:rgba(83,106,156,.10)}
+:root[data-theme="dark"] .technique-icon--feel{--detail-icon-color:#91a7d7;--detail-icon-bg:rgba(145,167,215,.12)}
+.technique-icon--mistakes{--detail-icon-color:#95604a;--detail-icon-bg:rgba(149,96,74,.10)}
+:root[data-theme="dark"] .technique-icon--mistakes{--detail-icon-color:#d49a7e;--detail-icon-bg:rgba(212,154,126,.12)}
+.technique-icon--easy{--detail-icon-color:#667a4d;--detail-icon-bg:rgba(102,122,77,.10)}
+:root[data-theme="dark"] .technique-icon--easy{--detail-icon-color:#a8ba88;--detail-icon-bg:rgba(168,186,136,.12)}
+.technique-icon--progress{--detail-icon-color:#6f6293;--detail-icon-bg:rgba(111,98,147,.10)}
+:root[data-theme="dark"] .technique-icon--progress{--detail-icon-color:#b1a5d3;--detail-icon-bg:rgba(177,165,211,.12)}
 
 /* consolidated fullscreen execution refinements T1–T5. */
 /* T1 — fullscreen execution shell hierarchy only. */

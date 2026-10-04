@@ -11,8 +11,9 @@
     const detailStack=document.querySelector('.details-stack');
     const detailScroll=document.querySelector('#exerciseScroll');
     const detailShell=document.querySelector('.session-shell');
-    const detailDuration=280;
-    const detailEase='cubic-bezier(.333333,1,.666667,1)';
+    const detailStyle=detailStack?getComputedStyle(detailStack):null;
+    const detailDuration=parseFloat(detailStyle?.getPropertyValue('--detail-duration'))||280;
+    const detailEase=detailStyle?.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.333333,1,.666667,1)';
     let detailMotion=null;
     let exerciseAnimation=null;
     let destroyed=false;
@@ -71,20 +72,19 @@
       });
     };
 
-    const revealDetailCard=card=>{
+    const revealDetailCard=(card,preview=true)=>{
       if(!detailScroll||!card)return;
       const scrollBox=detailScroll.getBoundingClientRect();
       const cardBox=card.getBoundingClientRect();
       const top=scrollBox.top+12;
       const bottom=scrollBox.bottom-16;
+      const headerHeight=card.querySelector('.detail-card__heading').getBoundingClientRect().height;
+      // Reveal the heading and a useful start of the instructions, not the
+      // whole panel. Long instructions remain under the user's scroll control.
+      const visibleBottom=Math.min(cardBox.bottom,cardBox.top+headerHeight+(preview?112:0));
       let delta=0;
-      if(cardBox.height>bottom-top){
-        if(cardBox.top<top||cardBox.bottom>bottom)delta=cardBox.top-top;
-      }else if(cardBox.bottom>bottom){
-        delta=cardBox.bottom-bottom;
-      }else if(cardBox.top<top){
-        delta=cardBox.top-top;
-      }
+      if(cardBox.top<top)delta=cardBox.top-top;
+      else if(visibleBottom>bottom)delta=Math.min(visibleBottom-bottom,cardBox.top-top);
       // Set the final scroll once. A shell transform compensates this change
       // during the motion; no JavaScript scroll loop runs on every frame.
       if(Math.abs(delta)>1)detailScroll.scrollTop+=delta;
@@ -208,12 +208,12 @@
         });
         row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
         row.panel.style.opacity=expanded?'1':'0';
-        // Slide the full-size text behind the heading while the row clips it.
-        // Preserve the live offset on another tap so reversals never restart.
+        // The row clip owns disclosure; text only travels a short distance.
+        // Preserve its live offset on another tap so reversals never restart.
         row.inner.style.opacity=expanded?'1':'0';
         if(expanded){
-          const fromY=wasVisible?old.innerY:-row.contentHeight;
-          const toY=row.open?0:-row.contentHeight;
+          const fromY=wasVisible?old.innerY:-12;
+          const toY=row.open?0:-12;
           row.inner.style.transform=`translateY(${toY}px)`;
           if(Math.abs(fromY-toY)>.1){
             state.animations.push(row.inner.animate([
@@ -274,7 +274,22 @@
       state.timer=setTimeout(finish,detailDuration+70);
     };
 
-    detailCards.forEach(card=>{
+    const detailToggles=detailCards.map(card=>card.querySelector('.detail-card__toggle'));
+    detailCards.forEach((card,index)=>{
+      on(detailToggles[index],'keydown',event=>{
+        if(destroyed||signal?.aborted)return;
+        const key=event.key;
+        let next=index;
+        if(key==='ArrowDown')next=(index+1)%detailCards.length;
+        else if(key==='ArrowUp')next=(index+detailCards.length-1)%detailCards.length;
+        else if(key==='Home')next=0;
+        else if(key==='End')next=detailCards.length-1;
+        else return;
+        event.preventDefault();
+        finishDetailMotion();
+        detailToggles[next].focus({preventScroll:true});
+        revealDetailCard(detailCards[next],false);
+      });
       on(card.querySelector('.detail-card__toggle'),'click',()=>{
         if(destroyed||signal?.aborted||!detailStack||!detailShell)return;
         animateDetails(card,!card.classList.contains('is-open'));

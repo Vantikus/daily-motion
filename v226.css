@@ -10,7 +10,6 @@
   height:48px;
 }
 
-
 /* iPhone installed PWA: move controls lower and keep breathing room above */
 @media (display-mode: standalone) {
   .session-nav{
@@ -21,7 +20,6 @@
     transform:translateY(6px);
   }
 }
-
 
 /* v233 — calmer workout typography hierarchy only */
 .exercise-head h1{
@@ -49,20 +47,11 @@
   font-weight:680;
   letter-spacing:-.014em;
 }
-.detail-card__toggle{
-  font-weight:580!important;
-}
-.detail-card__inner p,
-.detail-card__inner li{
-  color:var(--muted)!important;
-  font-weight:430;
-}
 @media(max-width:390px){
   .exercise-head h1{
     font-size:clamp(1.8125rem,8.2vw,2rem)!important;
   }
 }
-
 
 /* v235 — Onest workout hierarchy */
 .exercise-head h1{font-weight:750;letter-spacing:-.038em}
@@ -71,7 +60,6 @@
 .technique-key__label{font-weight:600}
 .technique-key strong{font-weight:450}
 .details-title{font-weight:700}
-.detail-card__toggle{font-weight:550!important}
 .session-nav .nav-button--back{font-weight:500}
 .session-nav .nav-button--next{font-weight:800}
 
@@ -100,12 +88,6 @@
 .details-title{
   font-weight:650!important;
 }
-.detail-card__toggle{
-  font-weight:450!important;
-}
-.detail-card.is-open .detail-card__toggle{
-  font-weight:600!important;
-}
 .session-nav .nav-button--next{
   font-weight:700!important;
 }
@@ -133,53 +115,6 @@
   font-size:1.0625rem!important;
   font-weight:650!important;
 }
-.detail-card__toggle{
-  min-height:52px!important;
-  padding:0 14px!important;
-  gap:8px!important;
-  font-size:.84375rem!important;
-  font-weight:450!important;
-}
-.detail-card.is-open .detail-card__toggle{
-  font-weight:600!important;
-}
-.detail-label{
-  gap:8px!important;
-}
-.detail-label .qm-icon{
-  width:28px!important;
-  height:28px!important;
-  min-width:28px!important;
-  border-radius:8px!important;
-}
-.detail-label .qm-icon>.hi{
-  font-size:14px!important;
-}
-.detail-toggle-icon{
-  width:18px!important;
-  font-size:15px!important;
-  opacity:.62!important;
-  transform:rotate(0deg)!important;
-  transform-origin:center;
-}
-.detail-card.is-open .detail-toggle-icon{
-  opacity:.9!important;
-  transform:rotate(180deg)!important;
-}
-.detail-card__inner{
-  padding:16px!important;
-}
-.detail-card__inner p,
-.detail-card__inner li{
-  font-size:.875rem!important;
-  line-height:1.55!important;
-  font-weight:400!important;
-}
-.detail-card__inner ol,
-.detail-card__inner ul{
-  padding-left:18px!important;
-  gap:12px!important;
-}
 @media(max-width:390px){
   .step-segments{
     margin-bottom:20px!important;
@@ -189,15 +124,6 @@
   }
   .technique-key{
     margin-bottom:24px!important;
-    padding:16px!important;
-  }
-  .detail-card__toggle{
-    min-height:52px!important;
-    padding-inline:12px!important;
-    gap:8px!important;
-    font-size:.8125rem!important;
-  }
-  .detail-card__inner{
     padding:16px!important;
   }
 }
