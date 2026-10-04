@@ -81,8 +81,10 @@
     let active=null;
     let releaseTimer=null;
     let pressedAt=0;
+    let activePointer=null;
 
     const clear=()=>{
+      activePointer=null;
       if(releaseTimer!==null){
         clearTimeout(releaseTimer);
         releaseTimer=null;
@@ -93,22 +95,31 @@
       }
     };
 
-    const press=target=>{
+    const press=(target,pointer=null)=>{
       clear();
+      if(pointer)activePointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY};
       active=target;
       pressedAt=performance.now();
       target.classList.add('is-pressing');
     };
 
     document.addEventListener('pointerdown',event=>{
-      if(event.pointerType==='mouse'&&event.button!==0)return;
+      if(event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
       const target=event.target.closest?.(selector);
       if(!target)return;
-      press(target);
+      press(target,event);
     },{passive:true,capture:true});
 
-    const release=()=>{
+    document.addEventListener('pointermove',event=>{
+      if(!activePointer||event.pointerId!==activePointer.id)return;
+      if(Math.hypot(event.clientX-activePointer.x,event.clientY-activePointer.y)>10)clear();
+    },{passive:true,capture:true});
+
+    const release=event=>{
       if(!active)return;
+      if(activePointer&&event?.pointerId!==undefined&&event.pointerId!==activePointer.id)return;
+      activePointer=null;
+      if(releaseTimer!==null)clearTimeout(releaseTimer);
       const target=active;
       const elapsed=performance.now()-pressedAt;
       const delay=Math.max(0,pressMinMs-elapsed);
@@ -122,6 +133,7 @@
 
     document.addEventListener('pointercancel',clear,{passive:true,capture:true});
     window.addEventListener('blur',clear);
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)clear();});
     window.addEventListener('scroll',clear,{passive:true,capture:true});
 
     document.addEventListener('keydown',event=>{
