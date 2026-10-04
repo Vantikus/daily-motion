@@ -3994,7 +3994,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .details-title{margin:0!important;font-size:1.0625rem;font-weight:650;line-height:1.25;letter-spacing:-.02em}
 .details-stack{
   --detail-duration:280ms;
-  --detail-ease:cubic-bezier(.333333,1,.666667,1);
+  --detail-ease:cubic-bezier(.25,.5,.25,1);
   display:block!important;
   overflow:hidden;
   border:1px solid var(--line-soft)!important;
@@ -4051,7 +4051,17 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   transform:none!important;
   transition:none;
 }
-.detail-label .qm-icon>.hi{font-size:14px!important}
+.detail-label .qm-icon>.hi{
+  font-size:14px!important;
+  transform-origin:center;
+  transition:transform var(--motion-interaction-release) var(--motion-ease-press-out);
+}
+.detail-card__toggle:active .qm-icon>.hi,
+.detail-card__toggle.is-pressing .qm-icon>.hi{
+  transform:scale(.92);
+  transition-duration:90ms;
+  transition-timing-function:var(--motion-ease-press-in);
+}
 .detail-card__toggle .detail-toggle-icon{
   flex:0 0 18px;width:18px;
   font-size:15px!important;text-align:center;
@@ -4060,7 +4070,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   transition:transform var(--detail-duration) var(--detail-ease),color 175ms ease;
 }
 .detail-card.is-open .detail-toggle-icon{transform:rotate(180deg)!important;color:var(--accent)!important;opacity:.9}
-.detail-card__inner{padding:4px 16px 20px!important;border-top:0!important}
+.detail-card__inner{padding:8px 16px 16px!important;border-top:0!important}
 .detail-card__inner p,.detail-card__inner li{font-size:.875rem!important;line-height:1.6!important;font-weight:400!important;color:var(--muted-strong)!important}
 .detail-card__inner p{margin:0}
 .detail-card__inner ol,.detail-card__inner ul{margin:0;padding-left:20px!important;display:grid;gap:12px!important}
@@ -4068,7 +4078,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .detail-card__inner li::marker{color:var(--accent);font-weight:500}
 @media(hover:hover) and (pointer:fine){.detail-card:not(.is-open)>.detail-card__heading:hover{background:var(--surface-soft)}}
 @media(max-width:340px){.detail-card__toggle{padding-inline:12px!important;gap:8px!important}.detail-label{gap:8px!important}.detail-card__inner{padding-inline:12px!important}}
-@media(prefers-reduced-motion:reduce){.detail-card__heading,.detail-card__toggle .detail-toggle-icon{transition:none!important}}
+@media(prefers-reduced-motion:reduce){
+  .detail-card__heading,.detail-card__toggle .detail-toggle-icon,.detail-card__toggle .qm-icon>.hi{transition:none!important}
+  .detail-card__toggle .qm-icon>.hi{transform:none!important}
+}
 .technique-icon--how{--detail-icon-color:#2f6b55;--detail-icon-bg:rgba(47,107,85,.10)}
 :root[data-theme="dark"] .technique-icon--how{--detail-icon-color:#79c5a2;--detail-icon-bg:rgba(121,197,162,.12)}
 .technique-icon--breath{--detail-icon-color:#28717a;--detail-icon-bg:rgba(40,113,122,.10)}

@@ -13,7 +13,7 @@
     const detailShell=document.querySelector('.session-shell');
     const detailStyle=detailStack?getComputedStyle(detailStack):null;
     const detailDuration=parseFloat(detailStyle?.getPropertyValue('--detail-duration'))||280;
-    const detailEase=detailStyle?.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.333333,1,.666667,1)';
+    const detailEase=detailStyle?.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.25,.5,.25,1)';
     let detailMotion=null;
     let exerciseAnimation=null;
     let destroyed=false;
@@ -150,10 +150,8 @@
         const inset=getComputedStyle(card).clipPath.match(/^inset\(([^)]+)\)/);
         const values=inset?inset[1].split(' round ')[0].trim().split(/\s+/):[];
         const clipped=values.length>2?parseFloat(values[2])||0:0;
-        const innerTransform=getComputedStyle(card.querySelector('.detail-card__inner')).transform;
         return {
-          top:box.top,height:Math.max(0,box.height-clipped),
-          innerY:innerTransform==='none'?0:new DOMMatrixReadOnly(innerTransform).m42
+          top:box.top,height:Math.max(0,box.height-clipped)
         };
       });
       const style=getComputedStyle(detailStack);
@@ -208,20 +206,10 @@
         });
         row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
         row.panel.style.opacity=expanded?'1':'0';
-        // The row clip owns disclosure; text only travels a short distance.
-        // Preserve its live offset on another tap so reversals never restart.
+        // Keep the text fixed within its row. Only the row boundary reveals
+        // or conceals it, so content does not slide against the disclosure.
         row.inner.style.opacity=expanded?'1':'0';
-        if(expanded){
-          const fromY=wasVisible?old.innerY:-12;
-          const toY=row.open?0:-12;
-          row.inner.style.transform=`translateY(${toY}px)`;
-          if(Math.abs(fromY-toY)>.1){
-            state.animations.push(row.inner.animate([
-              {transform:`translateY(${fromY}px)`},
-              {transform:`translateY(${toY}px)`}
-            ],options));
-          }
-        }
+        row.inner.style.transform='none';
         const radii=[
           index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
           index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,
