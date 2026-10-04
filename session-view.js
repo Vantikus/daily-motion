@@ -10,7 +10,6 @@
     const detailCards=[...document.querySelectorAll('.detail-card')];
     const detailStack=document.querySelector('.details-stack');
     const detailScroll=document.querySelector('#exerciseScroll');
-    const detailShell=document.querySelector('.session-shell');
     const detailStyle=detailStack?getComputedStyle(detailStack):null;
     const detailDuration=parseFloat(detailStyle?.getPropertyValue('--detail-duration'))||280;
     const detailEase=detailStyle?.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.25,.5,.25,1)';
@@ -54,16 +53,8 @@
       }
     };
 
-    const finishDetailMotion=()=>{
-      const state=detailMotion;
-      if(!state)return;
-      detailMotion=null;
-      clearTimeout(state.timer);
-      state.animations.forEach(animation=>animation.cancel());
-      state.dividers.forEach(node=>node.remove());
-      state.skin?.remove();
+    const clearDetailLayout=()=>{
       detailStack.classList.remove('is-detail-animating');
-      detailStack.style.removeProperty('height');
       detailCards.forEach(card=>{
         for(const property of ['position','top','left','width','height','transform','clip-path','will-change','z-index']){
           card.style.removeProperty(property);
@@ -72,193 +63,122 @@
       });
     };
 
-    const revealDetailCard=(card,preview=true)=>{
+    const cancelDetailAnimations=()=>{
+      const state=detailMotion;
+      detailMotion=null;
+      if(!state)return;
+      clearTimeout(state.timer);
+      state.animations.forEach(animation=>animation.cancel());
+    };
+
+    const finishDetailMotion=()=>{
+      if(!detailMotion)return;
+      // The animation already reaches the natural height. Cleanup must not
+      // shorten the scroll range again or move the page at the last frame.
+      detailStack.style.height=`${detailMotion.toHeight}px`;
+      cancelDetailAnimations();
+      clearDetailLayout();
+      detailStack.style.removeProperty('height');
+    };
+
+    const revealDetailCard=card=>{
       if(!detailScroll||!card)return;
       const scrollBox=detailScroll.getBoundingClientRect();
       const cardBox=card.getBoundingClientRect();
       const top=scrollBox.top+12;
       const bottom=scrollBox.bottom-16;
       const headerHeight=card.querySelector('.detail-card__heading').getBoundingClientRect().height;
-      // Reveal the heading and a useful start of the instructions, not the
-      // whole panel. Long instructions remain under the user's scroll control.
-      const visibleBottom=Math.min(cardBox.bottom,cardBox.top+headerHeight+(preview?112:0));
       let delta=0;
       if(cardBox.top<top)delta=cardBox.top-top;
-      else if(visibleBottom>bottom)delta=Math.min(visibleBottom-bottom,cardBox.top-top);
-      // Set the final scroll once. A shell transform compensates this change
-      // during the motion; no JavaScript scroll loop runs on every frame.
+      else if(cardBox.top+headerHeight>bottom)delta=cardBox.top+headerHeight-bottom;
       if(Math.abs(delta)>1)detailScroll.scrollTop+=delta;
     };
 
-    const createDetailSkin=(appearance,fromHeight,toHeight,state,options)=>{
-      const skin=document.createElement('div');
-      skin.className='dm-detail-skin';
-      skin.setAttribute('aria-hidden','true');
-      Object.assign(skin.style,{
-        top:`-${appearance.topWidth}px`,
-        left:`-${appearance.leftWidth}px`,
-        width:`calc(100% + ${appearance.leftWidth+appearance.rightWidth}px)`,
-        height:`${toHeight}px`
-      });
-      const cap=Math.max(1,...appearance.radii);
-      const top=document.createElement('div');
-      const middle=document.createElement('div');
-      const bottom=document.createElement('div');
-      for(const node of [top,middle,bottom]){
-        Object.assign(node.style,{
-          position:'absolute',left:'0',width:'100%',boxSizing:'border-box',
-          background:appearance.background,borderLeft:appearance.left,borderRight:appearance.right
-        });
-      }
-      Object.assign(top.style,{
-        top:'0',height:`${cap}px`,borderTop:appearance.top,
-        borderRadius:`${appearance.radii[0]}px ${appearance.radii[1]}px 0 0`
-      });
-      Object.assign(middle.style,{
-        top:`${cap}px`,height:`${toHeight-2*cap}px`,transformOrigin:'top'
-      });
-      Object.assign(bottom.style,{
-        top:`${toHeight-cap}px`,height:`${cap}px`,borderBottom:appearance.bottom,
-        borderRadius:`0 0 ${appearance.radii[2]}px ${appearance.radii[3]}px`
-      });
-      skin.append(top,middle,bottom);
-      detailStack.prepend(skin);
-      state.skin=skin;
-      state.bottomCap=bottom;
-      // Keep the 1px border and corner radii constant: only the middle fill
-      // scales, and the rounded bottom cap moves without being resized.
-      state.animations.push(
-        middle.animate([
-          {transform:`scaleY(${(fromHeight-2*cap)/(toHeight-2*cap)})`},
-          {transform:'scaleY(1)'}
-        ],options),
-        bottom.animate([
-          {transform:`translateY(${fromHeight-toHeight}px)`},
-          {transform:'translateY(0)'}
-        ],options)
-      );
-    };
-
     const animateDetails=(selected,willOpen)=>{
-      const oldStackBox=detailStack.getBoundingClientRect();
-      const oldStackHeight=detailMotion
-        ?detailMotion.bottomCap.getBoundingClientRect().bottom-oldStackBox.top
-        :oldStackBox.height;
-      const oldShellTop=detailShell.getBoundingClientRect().top;
+      // Read the currently displayed geometry before cancelling anything.
+      // A second tap reverses from here, without first settling the old target.
+      const oldHeight=detailStack.getBoundingClientRect().height;
       const oldRows=detailCards.map(card=>{
         const box=card.getBoundingClientRect();
-        const inset=getComputedStyle(card).clipPath.match(/^inset\(([^)]+)\)/);
-        const values=inset?inset[1].split(' round ')[0].trim().split(/\s+/):[];
+        const style=getComputedStyle(card);
+        const inset=style.clipPath.match(/^inset\(([^)]+)\)/);
+        const values=inset?inset[1].trim().split(/\s+/):[];
         const clipped=values.length>2?parseFloat(values[2])||0:0;
-        return {
-          top:box.top,height:Math.max(0,box.height-clipped)
-        };
+        return {top:box.top,height:Math.max(0,box.height-clipped),
+          arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform};
       });
-      const style=getComputedStyle(detailStack);
-      const appearance=detailMotion?.appearance||{
-        background:style.backgroundColor,
-        top:style.borderTop,bottom:style.borderBottom,left:style.borderLeft,right:style.borderRight,
-        topWidth:parseFloat(style.borderTopWidth)||0,
-        leftWidth:parseFloat(style.borderLeftWidth)||0,
-        rightWidth:parseFloat(style.borderRightWidth)||0,
-        radii:[style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomRightRadius,style.borderBottomLeftRadius].map(value=>parseFloat(value)||0)
-      };
-
-      // Commit the final layout once, then animate its already laid-out rows.
-      // This also gives the correct final scroll range before compensating it.
-      finishDetailMotion();
+      // Keep the current scroll range while measuring the next natural layout.
+      detailStack.style.height=`${oldHeight}px`;
+      cancelDetailAnimations();
+      clearDetailLayout();
       setDetailState(selected,willOpen);
-      if(reducedMotion()||typeof detailStack.animate!=='function')return;
-
       const stackBox=detailStack.getBoundingClientRect();
-      const shellDelta=oldShellTop-detailShell.getBoundingClientRect().top;
+      const stackStyle=getComputedStyle(detailStack);
+      const borderTop=parseFloat(stackStyle.borderTopWidth)||0;
+      const borderBottom=parseFloat(stackStyle.borderBottomWidth)||0;
       const rows=detailCards.map(card=>{
         const panel=card.querySelector('.detail-card__panel');
         const inner=card.querySelector('.detail-card__inner');
+        const arrow=card.querySelector('.detail-toggle-icon');
         const box=card.getBoundingClientRect();
-        const cardStyle=getComputedStyle(card);
-        return {
-          card,panel,inner,box,
-          headerHeight:card.querySelector('.detail-card__heading').getBoundingClientRect().height,
+        return {card,panel,inner,arrow,box,
           contentHeight:inner.getBoundingClientRect().height,
-          borderWidth:parseFloat(cardStyle.borderBottomWidth)||0,
-          borderColor:cardStyle.borderBottomColor,
-          open:card.classList.contains('is-open')
-        };
+          open:card.classList.contains('is-open'),
+          arrowTarget:getComputedStyle(arrow).transform};
       });
-      const options={duration:detailDuration,easing:detailEase,fill:'both'};
-      const state={animations:[],dividers:[],skin:null,bottomCap:null,timer:null,appearance};
+      const toHeight=rows.reduce((sum,row)=>sum+row.box.height,borderTop+borderBottom);
+      if(reducedMotion()||typeof detailStack.animate!=='function'){
+        detailStack.style.removeProperty('height');
+        return;
+      }
+
+      const selectedIndex=detailCards.indexOf(selected);
+      const distance=Math.abs(oldRows[selectedIndex].height-rows[selectedIndex].box.height);
+      const duration=Math.max(90,detailDuration*Math.min(1,distance/Math.max(1,rows[selectedIndex].contentHeight)));
+      const options={duration,easing:detailEase,fill:'both'};
+      const state={animations:[],toHeight,timer:null};
       detailMotion=state;
       detailStack.classList.add('is-detail-animating');
-      detailStack.style.height=`${Math.max(oldStackHeight,stackBox.height)}px`;
-      createDetailSkin(appearance,oldStackHeight,stackBox.height,state,options);
-
       rows.forEach((row,index)=>{
         const old=oldRows[index];
-        const wasVisible=old.height>row.headerHeight+row.borderWidth+.5;
-        const expanded=row.open||wasVisible;
-        const height=Math.max(old.height,row.box.height,expanded?row.headerHeight+row.contentHeight+row.borderWidth:0);
+        const expanding=row.open||old.height>row.box.height+.5;
+        const height=Math.max(old.height,row.box.height);
         Object.assign(row.card.style,{
           position:'absolute',left:'0',
-          top:`${row.box.top-stackBox.top-appearance.topWidth}px`,
+          top:`${row.box.top-stackBox.top-borderTop}px`,
           width:`${row.box.width}px`,height:`${height}px`,zIndex:String(index+1)
         });
-        row.panel.style.height=expanded?`${row.contentHeight}px`:'0px';
-        row.panel.style.opacity=expanded?'1':'0';
-        // Keep the text fixed within its row. Only the row boundary reveals
-        // or conceals it, so content does not slide against the disclosure.
-        row.inner.style.opacity=expanded?'1':'0';
-        row.inner.style.transform='none';
-        const radii=[
-          index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
-          index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,
-          index===rows.length-1?Math.max(0,appearance.radii[2]-appearance.rightWidth):0,
-          index===rows.length-1?Math.max(0,appearance.radii[3]-appearance.leftWidth):0
-        ].map(value=>`${value}px`).join(' ');
-        const clip=visible=>`inset(0px 0px ${Math.max(0,height-visible)}px 0px round ${radii})`;
+        row.panel.style.height=expanding?`${row.contentHeight}px`:'0px';
+        row.panel.style.opacity=expanding?'1':'0';
+        row.inner.style.opacity=expanding?'1':'0';
+        const delta=old.top-row.box.top;
         const resizing=Math.abs(old.height-row.box.height)>.1;
-        row.card.style.willChange=resizing?'transform,clip-path':'transform';
-        row.card.style.clipPath=clip(row.box.height);
-        state.animations.push(row.card.animate([
-          {transform:`translateY(${old.top-row.box.top-shellDelta}px)`,...(resizing?{clipPath:clip(old.height)}:{})},
-          {transform:'translateY(0)',...(resizing?{clipPath:clip(row.box.height)}:{})}
-        ],options));
-        if(row.borderWidth){
-          // Draw boundaries in the stack, not inside moving/clipped rows.
-          // A single translation avoids combining two independent transforms.
-          const fromY=old.top+old.height-stackBox.top-appearance.topWidth-shellDelta-row.borderWidth;
-          const toY=row.box.bottom-stackBox.top-appearance.topWidth-row.borderWidth;
-          const divider=document.createElement('div');
-          divider.className='dm-detail-divider';
-          divider.setAttribute('aria-hidden','true');
-          Object.assign(divider.style,{
-            height:`${row.borderWidth}px`,background:row.borderColor,
-            transform:`translateY(${toY}px)`
-          });
-          detailStack.append(divider);
-          state.dividers.push(divider);
-          if(Math.abs(fromY-toY)>.1)state.animations.push(divider.animate([
-            {transform:`translateY(${fromY}px)`},
-            {transform:`translateY(${toY}px)`}
+        const clip=visible=>`inset(0px 0px ${Math.max(0,height-visible)}px 0px)`;
+        if(resizing||Math.abs(delta)>.1){
+          row.card.style.willChange=resizing?'transform,clip-path':'transform';
+          state.animations.push(row.card.animate([
+            {transform:`translateY(${delta}px)`,...(resizing?{clipPath:clip(old.height)}:{})},
+            {transform:'translateY(0)',...(resizing?{clipPath:clip(row.box.height)}:{})}
+          ],options));
+        }
+        if(old.arrow!==row.arrowTarget){
+          state.animations.push(row.arrow.animate([
+            {transform:old.arrow},{transform:row.arrowTarget}
           ],options));
         }
       });
-      if(Math.abs(shellDelta)>.1){
-        state.animations.push(detailShell.animate([
-          {transform:`translateY(${shellDelta}px)`},
-          {transform:'translateY(0)'}
-        ],options));
-      }
-
-      // All boundaries, rows and scroll compensation share the same clock.
+      // Only the empty shell changes height; its text is laid out once and
+      // its rows move independently. Native scrolling remains free throughout.
+      state.animations.push(detailStack.animate([
+        {height:`${oldHeight}px`},{height:`${toHeight}px`}
+      ],options));
       const startTime=document.timeline.currentTime;
       state.animations.forEach(animation=>{animation.startTime=startTime;});
-
       const finish=()=>{
         if(!destroyed&&!signal?.aborted&&detailMotion===state)finishDetailMotion();
       };
       Promise.allSettled(state.animations.map(animation=>animation.finished)).then(finish);
-      state.timer=setTimeout(finish,detailDuration+70);
+      state.timer=setTimeout(finish,duration+80);
     };
 
     const detailToggles=detailCards.map(card=>card.querySelector('.detail-card__toggle'));
@@ -275,16 +195,14 @@
         event.preventDefault();
         finishDetailMotion();
         detailToggles[next].focus({preventScroll:true});
-        revealDetailCard(detailCards[next],false);
+        revealDetailCard(detailCards[next]);
       });
       on(card.querySelector('.detail-card__toggle'),'click',()=>{
-        if(destroyed||signal?.aborted||!detailStack||!detailShell)return;
+        if(destroyed||signal?.aborted||!detailStack)return;
         animateDetails(card,!card.classList.contains('is-open'));
         haptic?.('tap');
       });
     });
-    on(detailScroll,'wheel',finishDetailMotion,{passive:true});
-    on(detailScroll,'touchmove',finishDetailMotion,{passive:true});
     on(window,'resize',finishDetailMotion,{passive:true});
 
     const resetDetails=()=>{

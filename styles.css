@@ -2157,7 +2157,7 @@ a[href] *,
   border-color:rgba(47,107,85,.18)!important;
 }
 
-/* Exercise details — session-view.js lays out once, then moves/clips rows. */
+/* Exercise details — session-view.js owns interruptible row/shell motion. */
 .details-section,
 .details-stack,
 .detail-card{
@@ -3994,27 +3994,22 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .details-stack.is-detail-animating{
   position:relative;
   isolation:isolate;
-  overflow:visible;
-  background:transparent!important;
-  border-color:transparent!important;
+  contain:layout;
 }
 .details-stack.is-detail-animating .detail-card{
   overflow:visible;
-  border-bottom-color:transparent!important;
   background:var(--surface-raised)!important;
 }
-.dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
-.dm-detail-divider{position:absolute;z-index:7;top:0;left:0;width:100%;pointer-events:none}
 .details-stack .detail-card{grid-column:auto!important}
 .detail-card{
   margin:0!important;
   border:0!important;
-  border-bottom:1px solid var(--line-soft)!important;
+  border-top:1px solid var(--line-soft)!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
 }
-.detail-card:last-of-type{border-bottom:0!important}
+.detail-card:first-of-type{border-top:0!important}
 .detail-card__heading{background:transparent;transition:background-color 175ms ease}
 .detail-card.is-open>.detail-card__heading{background:transparent!important}
 :root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{background:transparent!important}
@@ -4055,10 +4050,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   flex:0 0 18px;width:18px;
   font-size:15px!important;text-align:center;
   color:var(--muted)!important;opacity:.7;
-  transform:rotate(0deg)!important;
-  transition:transform var(--detail-duration) var(--detail-ease),color 175ms ease;
+  transform:rotate(0deg);
+  transition:color 175ms ease;
 }
-.detail-card.is-open .detail-toggle-icon{transform:rotate(180deg)!important;color:var(--accent)!important;opacity:.9}
+.detail-card.is-open .detail-toggle-icon{transform:rotate(180deg);color:var(--accent)!important;opacity:.9}
 .detail-card__inner{padding:8px 16px 16px!important;border-top:0!important}
 .detail-card__inner p,.detail-card__inner li{font-size:.9375rem!important;line-height:1.6!important;font-weight:400!important;color:var(--muted-strong)!important}
 .detail-card__inner p{margin:0}
