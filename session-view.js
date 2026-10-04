@@ -161,7 +161,7 @@
       detailStack.style.height=`${Math.max(oldHeight,previousLayoutHeight)}px`;
       cancelDetailAnimations();
       clearDetailLayout();
-      setDetailState(selected,willOpen);
+      detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
       const stackBox=detailStack.getBoundingClientRect();
       const stackStyle=getComputedStyle(detailStack);
       const borderTop=parseFloat(stackStyle.borderTopWidth)||0;
