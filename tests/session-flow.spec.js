@@ -215,25 +215,21 @@ test('technique sections expand independently without hiding the main instructio
   await expect(page.locator('.detail-card.is-open')).toHaveCount(3);
 });
 
-test('expanded technique starts scrolling immediately and stays above workout navigation',async({page})=>{
+test('expanding technique preserves scroll position and reveals the full panel',async({page})=>{
   await page.setViewportSize({width:360,height:640});
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
-
   const immediateDelta=await page.evaluate(()=>{
     const scroll=document.querySelector('#exerciseScroll');
-    const toggle=document.querySelector('#detail-progression-toggle');
     const before=scroll.scrollTop;
-    toggle.click();
+    document.querySelector('#detail-progression-toggle').click();
     return scroll.scrollTop-before;
   });
-
-  expect(immediateDelta).toBeGreaterThan(0);
+  expect(immediateDelta).toBe(0);
   await expect(page.locator('#detail-progression-toggle')).toHaveAttribute('aria-expanded','true');
-  await expect.poll(()=>page.evaluate(()=>{
-    const scroll=document.querySelector('#exerciseScroll').getBoundingClientRect();
-    const card=document.querySelector('#detail-progression-toggle').closest('.detail-card').getBoundingClientRect();
-    return Math.round(card.bottom-scroll.bottom);
-  }),{timeout:1500}).toBeLessThanOrEqual(-12);
+  await expect.poll(()=>page.locator('#detail-progression').evaluate(panel=>{
+    const inner=panel.querySelector('.detail-card__inner');
+    return Math.abs(panel.getBoundingClientRect().height-inner.getBoundingClientRect().height);
+  }),{timeout:1500}).toBeLessThanOrEqual(1);
 });
 
 test('finish-early hands timer to rest without exposing two full stages',async({page})=>{

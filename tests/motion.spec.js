@@ -192,7 +192,7 @@ test('session presentation is owned by the extracted view runtime',async({page})
   const toggles=page.locator('.detail-card__toggle');
   await toggles.nth(1).click();
   await expect(toggles.nth(1)).toHaveAttribute('aria-expanded','true');
-  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','false');
+  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','true');
 });
 
 test('iPhone rest and exercise changes paint motion instead of jumping instantly',async({page})=>{

@@ -2157,41 +2157,25 @@ a[href] *,
   border-color:rgba(47,107,85,.18)!important;
 }
 
-/* Exercise details — session-view.js lays out once, then moves/clips rows. */
+/* Exercise details — one native height transition, rows in normal flow. */
 .details-section,
 .details-stack,
-.detail-card{
-  overflow-anchor:none;
-}
-
-.detail-card{
-  transform:none;
-}
-
+.detail-card{overflow-anchor:none}
+.detail-card{transform:none}
 .detail-card__panel{
   display:block;
   height:0;
-  opacity:0;
+  opacity:1;
   overflow:hidden;
   grid-template-rows:none!important;
-  transition:none!important;
+  transition:height var(--detail-duration,240ms) var(--detail-ease,cubic-bezier(.25,.5,.25,1))!important;
   contain:layout;
 }
+.detail-card.is-open .detail-card__panel{height:auto}
+.detail-card__inner{opacity:1;transform:none;contain:layout;transition:none!important;animation:none!important}
+.detail-card.is-open .detail-card__inner{opacity:1;transform:none;animation:none!important}
+.details-stack.is-detail-resetting .detail-card__panel{transition:none!important}
 
-.detail-card.is-open .detail-card__panel{
-  height:auto;
-  opacity:1;
-}
-
-.detail-card__inner{opacity:0;transform:none;contain:layout;transition:none!important}
-
-.detail-card.is-open .detail-card__inner{
-  opacity:1;
-  transform:none;
-  animation:none!important;
-}
-
-.detail-card.is-open>.detail-card__heading{background:rgba(47,107,85,.035)}
 .detail-card__toggle .detail-toggle-icon{
   transform-origin:50% 50%;
   transition:
@@ -3948,24 +3932,28 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* Preparation cue: small, unframed and aligned with the instruction. */
+/* Reference cue: inset round-ended stripe, separate from the rounded panel. */
 .technique-key{
-  display:grid;
-  grid-template-columns:18px minmax(0,1fr);
-  align-items:start;
-  gap:10px;
-  margin:0 0 8px;
-  padding:0;
+  display:block;
+  position:relative;
+  margin:0 0 16px;
+  padding:12px 16px 12px 20px;
   border:0;
-  border-radius:0;
-  background:transparent;
+  border-radius:14px;
+  background:color-mix(in srgb,var(--accent-wash) 65%,var(--bg));
   box-shadow:none;
+  overflow:visible;
 }
-.technique-key::before{display:none!important}
-.technique-key>.hi{
-  margin-top:2px;
-  font-size:18px;
-  color:var(--accent);
+.technique-key::before{
+  content:"";
+  display:block!important;
+  position:absolute;
+  left:0;
+  top:8px;
+  bottom:8px;
+  width:4px;
+  border-radius:999px;
+  background:var(--accent);
 }
 .technique-key>#keyText{
   margin:0;
@@ -3975,52 +3963,31 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   font-weight:400;
   letter-spacing:0;
 }
-/* Technique list: one visual system, with session-view.js owning disclosure motion. */
+/* Technique list: uniform rows, one surface, consistent open and closed states. */
 .details-section{gap:0!important}
 .details-stack{
-  --detail-duration:280ms;
+  --detail-duration:240ms;
   --detail-ease:cubic-bezier(.25,.5,.25,1);
   display:block!important;
   overflow:hidden;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
+  border:1px solid var(--line-soft)!important;
+  border-radius:16px!important;
+  background:var(--surface-raised)!important;
   box-shadow:none!important;
 }
-.details-stack.is-detail-animating{
-  position:relative;
-  isolation:isolate;
-  overflow:visible;
-  background:transparent!important;
-  border-color:transparent!important;
-}
-.details-stack.is-detail-animating .detail-card{
-  overflow:visible;
-  border-bottom-color:transparent!important;
-  background:var(--surface-raised)!important;
-}
-.dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
-.dm-detail-divider{position:absolute;z-index:7;top:0;left:0;width:100%;pointer-events:none}
 .details-stack .detail-card{grid-column:auto!important}
 .detail-card{
   margin:0!important;
   border:0!important;
   border-bottom:1px solid var(--line-soft)!important;
   border-radius:0!important;
-  background:var(--surface-raised)!important;
+  background:transparent!important;
   box-shadow:none!important;
 }
-.detail-card:last-of-type{border-bottom:0!important;border-radius:0 0 16px 16px!important}
-.detail-card--support-first{border-radius:16px 16px 0 0!important}
-.detail-card--primary{
-  margin-bottom:16px!important;
-  border-bottom:0!important;
-  background:var(--bg)!important;
-}
-.details-stack.is-detail-animating .detail-card--primary{background:var(--bg)!important}
+.detail-card:last-of-type{border-bottom:0!important}
 .detail-card__heading{background:transparent;transition:background-color 175ms ease}
-.detail-card.is-open>.detail-card__heading{background:rgba(47,107,85,.025)!important}
-:root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{background:rgba(121,197,162,.035)!important}
+.detail-card.is-open>.detail-card__heading{background:transparent!important}
+:root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{background:transparent!important}
 .detail-card__toggle{
   min-height:56px!important;
   padding:12px 16px!important;
@@ -4074,53 +4041,11 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .detail-card__heading,.detail-card__toggle .detail-toggle-icon,.detail-card__toggle .qm-icon>.hi{transition:none!important}
   .detail-card__toggle .qm-icon>.hi{transform:none!important}
 }
-/* Primary steps are separate from the quiet supplementary list. */
-.detail-card--primary>.detail-card__heading,
-.detail-card--primary.is-open>.detail-card__heading,
-:root[data-theme="dark"] .detail-card--primary.is-open>.detail-card__heading{background:transparent!important}
-.detail-card--primary .detail-card__toggle{
-  min-height:48px!important;
-  padding:10px 0!important;
-  font-size:1.125rem!important;
-  font-weight:600!important;
-  letter-spacing:-.02em;
-}
-.detail-card--primary .detail-card__inner{padding:4px 0 0!important}
-.detail-card--primary .detail-card__inner li{
-  position:relative;
-  min-height:26px;
-  padding-left:38px;
-  font-size:1rem!important;
-  line-height:1.5!important;
-  color:var(--text)!important;
-}
-.detail-card--primary .detail-card__inner ol{
-  padding-left:0!important;
-  list-style:none;
-  counter-reset:exercise-step;
-  gap:16px!important;
-}
-.detail-card--primary .detail-card__inner li::before{
-  counter-increment:exercise-step;
-  content:counter(exercise-step);
-  position:absolute;
-  left:0;
-  top:1px;
-  display:grid;
-  place-items:center;
-  width:26px;
-  height:26px;
-  border-radius:50%;
-  background:var(--accent);
-  color:var(--bg);
-  font-size:.8125rem;
-  line-height:1;
-  font-weight:500;
-}
 .detail-card .technique-icon{
   --detail-icon-color:var(--muted-strong);
-  --detail-icon-bg:transparent;
+  --detail-icon-bg:var(--surface-soft);
 }
+.technique-icon--how{--detail-icon-color:var(--accent)!important;--detail-icon-bg:var(--accent-wash)!important}
 
 /* consolidated fullscreen execution refinements T1–T5. */
 /* T1 — fullscreen execution shell hierarchy only. */
