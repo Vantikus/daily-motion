@@ -10,6 +10,14 @@
     const detailCards=[...document.querySelectorAll('.detail-card')];
     const detailStack=document.querySelector('.details-stack');
     const detailScroll=document.querySelector('#exerciseScroll');
+    const detailShell=document.querySelector('.session-shell');
+    const detailSurface=detailStack?document.createElement('div'):null;
+    if(detailSurface){
+      detailSurface.className='detail-stack-surface';
+      detailSurface.setAttribute('aria-hidden','true');
+      detailStack.prepend(detailSurface);
+    }
+    let scrollReserve=0;
     const detailStyle=detailStack?getComputedStyle(detailStack):null;
     const detailDuration=parseFloat(detailStyle?.getPropertyValue('--detail-duration'))||280;
     const detailEase=detailStyle?.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.25,.5,.25,1)';
@@ -68,17 +76,56 @@
       detailMotion=null;
       if(!state)return;
       clearTimeout(state.timer);
+      cancelAnimationFrame(state.scrollFrame);
       state.animations.forEach(animation=>animation.cancel());
     };
 
+    const setScrollReserve=value=>{
+      scrollReserve=Math.max(0,value);
+      if(scrollReserve)detailShell.style.setProperty('--detail-scroll-reserve',`${scrollReserve}px`);
+      else detailShell.style.removeProperty('--detail-scroll-reserve');
+    };
+
+    const releaseScrollReserve=()=>{
+      if(detailMotion||!scrollReserve)return;
+      const naturalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve);
+      setScrollReserve(Math.min(scrollReserve,Math.max(0,detailScroll.scrollTop-naturalMax)));
+    };
+
     const finishDetailMotion=()=>{
-      if(!detailMotion)return;
-      // The animation already reaches the natural height. Cleanup must not
-      // shorten the scroll range again or move the page at the last frame.
-      detailStack.style.height=`${detailMotion.toHeight}px`;
+      const state=detailMotion;
+      if(!state)return;
+      // If a manual gesture took over, retain only the range still needed by
+      // that position. It disappears as the user scrolls back, without a clamp.
+      const naturalMax=detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-state.layoutHeight+state.toHeight;
+      setScrollReserve(Math.max(0,detailScroll.scrollTop-Math.max(0,naturalMax)));
+      detailStack.style.height=`${state.toHeight}px`;
       cancelDetailAnimations();
       clearDetailLayout();
       detailStack.style.removeProperty('height');
+      releaseScrollReserve();
+    };
+
+    const stopDetailAutoScroll=()=>{
+      if(!detailMotion)return;
+      detailMotion.manualScroll=true;
+      cancelAnimationFrame(detailMotion.scrollFrame);
+    };
+
+    const detailScrollTarget=(rows,index,willOpen,finalMax)=>{
+      const from=detailScroll.scrollTop;
+      if(!willOpen)return Math.min(from,finalMax);
+      const view=detailScroll.getBoundingClientRect();
+      const row=rows[index];
+      const next=rows[index+1];
+      const extra=next?next.card.querySelector('.detail-card__heading').getBoundingClientRect().height+8:0;
+      const top=row.box.top-view.top+from;
+      const bottom=top+row.box.height+extra;
+      const room=detailScroll.clientHeight-28;
+      let target=from;
+      if(bottom-top>room||top<from+12)target=top-12;
+      else if(bottom>from+detailScroll.clientHeight-16)target=bottom-detailScroll.clientHeight+16;
+      return Math.max(0,Math.min(target,finalMax));
     };
 
     const revealDetailCard=card=>{
@@ -97,7 +144,9 @@
     const animateDetails=(selected,willOpen)=>{
       // Read the currently displayed geometry before cancelling anything.
       // A second tap reverses from here, without first settling the old target.
-      const oldHeight=detailStack.getBoundingClientRect().height;
+      const oldHeight=detailMotion
+        ?detailSurface.getBoundingClientRect().height
+        :detailStack.getBoundingClientRect().height;
       const oldRows=detailCards.map(card=>{
         const box=card.getBoundingClientRect();
         const style=getComputedStyle(card);
@@ -108,7 +157,8 @@
           arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform};
       });
       // Keep the current scroll range while measuring the next natural layout.
-      detailStack.style.height=`${oldHeight}px`;
+      const previousLayoutHeight=detailStack.getBoundingClientRect().height;
+      detailStack.style.height=`${Math.max(oldHeight,previousLayoutHeight)}px`;
       cancelDetailAnimations();
       clearDetailLayout();
       setDetailState(selected,willOpen);
@@ -127,17 +177,24 @@
           arrowTarget:getComputedStyle(arrow).transform};
       });
       const toHeight=rows.reduce((sum,row)=>sum+row.box.height,borderTop+borderBottom);
+      const selectedIndex=detailCards.indexOf(selected);
+      const finalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-parseFloat(detailStack.style.height)+toHeight);
+      const scrollTarget=detailScrollTarget(rows,selectedIndex,willOpen,finalMax);
       if(reducedMotion()||typeof detailStack.animate!=='function'){
+        setScrollReserve(0);
         detailStack.style.removeProperty('height');
+        detailScroll.scrollTop=scrollTarget;
         return;
       }
 
-      const selectedIndex=detailCards.indexOf(selected);
       const distance=Math.abs(oldRows[selectedIndex].height-rows[selectedIndex].box.height);
       const duration=Math.max(90,detailDuration*Math.min(1,distance/Math.max(1,rows[selectedIndex].contentHeight)));
       const options={duration,easing:detailEase,fill:'both'};
-      const state={animations:[],toHeight,timer:null};
+      const layoutHeight=Math.max(previousLayoutHeight,oldHeight,toHeight);
+      const state={animations:[],toHeight,layoutHeight,timer:null,scrollFrame:null,manualScroll:false};
       detailMotion=state;
+      detailStack.style.height=`${layoutHeight}px`;
+      detailSurface.style.height=`${toHeight}px`;
       detailStack.classList.add('is-detail-animating');
       rows.forEach((row,index)=>{
         const old=oldRows[index];
@@ -164,18 +221,30 @@
         if(old.arrow!==row.arrowTarget){
           state.animations.push(row.arrow.animate([
             {transform:old.arrow},{transform:row.arrowTarget}
-          ],options));
+          ],{...options,duration:Math.min(150,duration)}));
         }
       });
-      // Only the empty shell changes height; its text is laid out once and
-      // its rows move independently. Native scrolling remains free throughout.
-      state.animations.push(detailStack.animate([
+      // The surface is absolute: changing its height never changes the
+      // scroll range. Keep one stable range until the coordinated scroll ends.
+      const surfaceMotion=detailSurface.animate([
         {height:`${oldHeight}px`},{height:`${toHeight}px`}
-      ],options));
+      ],options);
+      state.animations.push(surfaceMotion);
       const startTime=document.timeline.currentTime;
       state.animations.forEach(animation=>{animation.startTime=startTime;});
+      const scrollFrom=detailScroll.scrollTop;
+      const paintScroll=()=>{
+        if(detailMotion!==state||destroyed||signal?.aborted||state.manualScroll)return;
+        const progress=surfaceMotion.effect.getComputedTiming().progress??0;
+        detailScroll.scrollTop=scrollFrom+(scrollTarget-scrollFrom)*progress;
+        if(progress<1)state.scrollFrame=requestAnimationFrame(paintScroll);
+      };
+      if(Math.abs(scrollTarget-scrollFrom)>.5)state.scrollFrame=requestAnimationFrame(paintScroll);
       const finish=()=>{
-        if(!destroyed&&!signal?.aborted&&detailMotion===state)finishDetailMotion();
+        if(!destroyed&&!signal?.aborted&&detailMotion===state){
+          if(!state.manualScroll)detailScroll.scrollTop=scrollTarget;
+          finishDetailMotion();
+        }
       };
       Promise.allSettled(state.animations.map(animation=>animation.finished)).then(finish);
       state.timer=setTimeout(finish,duration+80);
@@ -203,10 +272,14 @@
         haptic?.('tap');
       });
     });
+    on(detailScroll,'wheel',stopDetailAutoScroll,{passive:true});
+    on(detailScroll,'touchmove',stopDetailAutoScroll,{passive:true});
+    on(detailScroll,'scroll',releaseScrollReserve,{passive:true});
     on(window,'resize',finishDetailMotion,{passive:true});
 
     const resetDetails=()=>{
       finishDetailMotion();
+      setScrollReserve(0);
       detailCards.forEach((card,index)=>setDetailState(card,index===0));
     };
 
@@ -305,6 +378,8 @@
       if(destroyed)return;
       destroyed=true;
       finishDetailMotion();
+      setScrollReserve(0);
+      detailSurface?.remove();
       exerciseAnimation?.cancel();
       exerciseAnimation=null;
       signal?.removeEventListener('abort',destroy);
