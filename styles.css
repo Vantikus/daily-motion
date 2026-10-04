@@ -1870,7 +1870,7 @@ a[href] *,
 }/* workout control cleanup and final UX polish */
 .routine-more-button{
   appearance:none;
-  grid-column:4;
+  grid-column:3;
   width:44px;
   height:44px;
   border:1px solid var(--line);
@@ -3790,30 +3790,25 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:var(--surface-raised);
   box-shadow:none;
 }
-.exercise-toolbar__meta{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  min-width:0;
-  color:var(--muted-strong);
-  white-space:nowrap;
-}
 .exercise-toolbar__title{
-  position:static;
-  transform:none;
-  min-width:0;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
   color:var(--muted-strong);
   font-size:.8125rem!important;
   line-height:1.2;
   font-weight:600;
   letter-spacing:0;
 }
-.exercise-toolbar__meta .step-indicator{
+.exercise-toolbar .step-indicator{
+  grid-column:2;
+  justify-self:end;
   width:auto!important;
   min-width:0!important;
   height:auto!important;
-  padding:0!important;
+  padding:0 4px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -3953,25 +3948,33 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* Preparation: one essential cue, attached to the primary instruction. */
+/* Preparation cue: small, unframed and aligned with the instruction. */
 .technique-key{
-  margin:0 0 12px;
-  padding:12px 14px;
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr);
+  align-items:start;
+  gap:10px;
+  margin:0 0 8px;
+  padding:0;
   border:0;
-  border-left:3px solid var(--accent);
-  border-radius:12px;
-  background:var(--accent-wash);
+  border-radius:0;
+  background:transparent;
   box-shadow:none;
 }
 .technique-key::before{display:none!important}
-.technique-key strong{
-  color:var(--text);
-  font-size:1rem!important;
+.technique-key>.hi{
+  margin-top:2px;
+  font-size:18px;
+  color:var(--accent);
+}
+.technique-key>#keyText{
+  margin:0;
+  color:var(--muted-strong);
+  font-size:.875rem;
   line-height:1.5;
-  font-weight:400!important;
+  font-weight:400;
   letter-spacing:0;
 }
-:root[data-theme="dark"] .technique-key{background:var(--accent-wash)}
 /* Technique list: one visual system, with session-view.js owning disclosure motion. */
 .details-section{gap:0!important}
 .details-stack{
@@ -4010,7 +4013,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .detail-card:last-of-type{border-bottom:0!important;border-radius:0 0 16px 16px!important}
 .detail-card--support-first{border-radius:16px 16px 0 0!important}
 .detail-card--primary{
-  margin-bottom:24px!important;
+  margin-bottom:16px!important;
   border-bottom:0!important;
   background:var(--bg)!important;
 }
@@ -4076,8 +4079,9 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 .detail-card--primary.is-open>.detail-card__heading,
 :root[data-theme="dark"] .detail-card--primary.is-open>.detail-card__heading{background:transparent!important}
 .detail-card--primary .detail-card__toggle{
-  padding:12px 0!important;
-  font-size:1.25rem!important;
+  min-height:48px!important;
+  padding:10px 0!important;
+  font-size:1.125rem!important;
   font-weight:600!important;
   letter-spacing:-.02em;
 }

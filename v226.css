@@ -36,11 +36,6 @@
   font-weight:600!important;
   letter-spacing:-.008em;
 }
-.details-title{
-  font-size:1rem;
-  font-weight:680;
-  letter-spacing:-.014em;
-}
 @media(max-width:390px){
   .exercise-head h1{
     font-size:clamp(1.8125rem,8.2vw,2rem)!important;
@@ -51,7 +46,6 @@
 .exercise-head h1{font-weight:750;letter-spacing:-.038em}
 .exercise-head p{font-weight:300}
 .exercise-facts span{font-weight:500!important}
-.details-title{font-weight:700}
 .session-nav .nav-button--back{font-weight:500}
 .session-nav .nav-button--next{font-weight:800}
 
@@ -71,15 +65,6 @@
 .exercise-facts span{
   font-weight:400!important;
 }
-.technique-key__label{
-  font-weight:600!important;
-}
-.technique-key strong{
-  font-weight:400!important;
-}
-.details-title{
-  font-weight:650!important;
-}
 .session-nav .nav-button--next{
   font-weight:700!important;
 }
@@ -94,19 +79,6 @@
 .exercise-facts{
   margin:20px 0!important;
 }
-.technique-key{
-  margin-bottom:24px!important;
-  padding:16px!important;
-  gap:8px!important;
-}
-.details-section{
-  gap:12px!important;
-}
-.details-title{
-  margin-bottom:0!important;
-  font-size:1.0625rem!important;
-  font-weight:650!important;
-}
 @media(max-width:390px){
   .step-segments{
     margin-bottom:20px!important;
@@ -114,8 +86,4 @@
   .exercise-facts{
     margin:20px 0!important;
   }
-  .technique-key{
-    margin-bottom:24px!important;
-    padding:16px!important;
   }
-}
