@@ -2157,24 +2157,40 @@ a[href] *,
   border-color:rgba(47,107,85,.18)!important;
 }
 
-/* Exercise details — one native height transition, rows in normal flow. */
+/* Exercise details — session-view.js lays out once, then moves/clips rows. */
 .details-section,
 .details-stack,
-.detail-card{overflow-anchor:none}
-.detail-card{transform:none}
+.detail-card{
+  overflow-anchor:none;
+}
+
+.detail-card{
+  transform:none;
+}
+
 .detail-card__panel{
   display:block;
   height:0;
-  opacity:1;
+  opacity:0;
   overflow:hidden;
   grid-template-rows:none!important;
-  transition:height var(--detail-duration,240ms) var(--detail-ease,cubic-bezier(.25,.5,.25,1))!important;
+  transition:none!important;
   contain:layout;
 }
-.detail-card.is-open .detail-card__panel{height:auto}
-.detail-card__inner{opacity:1;transform:none;contain:layout;transition:none!important;animation:none!important}
-.detail-card.is-open .detail-card__inner{opacity:1;transform:none;animation:none!important}
-.details-stack.is-detail-resetting .detail-card__panel{transition:none!important}
+
+.detail-card.is-open .detail-card__panel{
+  height:auto;
+  opacity:1;
+}
+
+.detail-card__inner{opacity:0;transform:none;contain:layout;transition:none!important}
+
+.detail-card.is-open .detail-card__inner{
+  opacity:1;
+  transform:none;
+  animation:none!important;
+}
+
 
 .detail-card__toggle .detail-toggle-icon{
   transform-origin:50% 50%;
@@ -3966,7 +3982,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 /* Technique list: uniform rows, one surface, consistent open and closed states. */
 .details-section{gap:0!important}
 .details-stack{
-  --detail-duration:240ms;
+  --detail-duration:280ms;
   --detail-ease:cubic-bezier(.25,.5,.25,1);
   display:block!important;
   overflow:hidden;
@@ -3975,6 +3991,20 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:var(--surface-raised)!important;
   box-shadow:none!important;
 }
+.details-stack.is-detail-animating{
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  background:transparent!important;
+  border-color:transparent!important;
+}
+.details-stack.is-detail-animating .detail-card{
+  overflow:visible;
+  border-bottom-color:transparent!important;
+  background:var(--surface-raised)!important;
+}
+.dm-detail-skin{position:absolute;z-index:-1;pointer-events:none}
+.dm-detail-divider{position:absolute;z-index:7;top:0;left:0;width:100%;pointer-events:none}
 .details-stack .detail-card{grid-column:auto!important}
 .detail-card{
   margin:0!important;
@@ -4041,11 +4071,18 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .detail-card__heading,.detail-card__toggle .detail-toggle-icon,.detail-card__toggle .qm-icon>.hi{transition:none!important}
   .detail-card__toggle .qm-icon>.hi{transform:none!important}
 }
-.detail-card .technique-icon{
-  --detail-icon-color:var(--muted-strong);
-  --detail-icon-bg:var(--surface-soft);
-}
-.technique-icon--how{--detail-icon-color:var(--accent)!important;--detail-icon-bg:var(--accent-wash)!important}
+.technique-icon--how{--detail-icon-color:#2f6b55;--detail-icon-bg:rgba(47,107,85,.10)}
+:root[data-theme="dark"] .technique-icon--how{--detail-icon-color:#79c5a2;--detail-icon-bg:rgba(121,197,162,.12)}
+.technique-icon--breath{--detail-icon-color:#28717a;--detail-icon-bg:rgba(40,113,122,.10)}
+:root[data-theme="dark"] .technique-icon--breath{--detail-icon-color:#71bcc3;--detail-icon-bg:rgba(113,188,195,.12)}
+.technique-icon--feel{--detail-icon-color:#536a9c;--detail-icon-bg:rgba(83,106,156,.10)}
+:root[data-theme="dark"] .technique-icon--feel{--detail-icon-color:#91a7d7;--detail-icon-bg:rgba(145,167,215,.12)}
+.technique-icon--mistakes{--detail-icon-color:#95604a;--detail-icon-bg:rgba(149,96,74,.10)}
+:root[data-theme="dark"] .technique-icon--mistakes{--detail-icon-color:#d49a7e;--detail-icon-bg:rgba(212,154,126,.12)}
+.technique-icon--easy{--detail-icon-color:#667a4d;--detail-icon-bg:rgba(102,122,77,.10)}
+:root[data-theme="dark"] .technique-icon--easy{--detail-icon-color:#a8ba88;--detail-icon-bg:rgba(168,186,136,.12)}
+.technique-icon--progress{--detail-icon-color:#6f6293;--detail-icon-bg:rgba(111,98,147,.10)}
+:root[data-theme="dark"] .technique-icon--progress{--detail-icon-color:#b1a5d3;--detail-icon-bg:rgba(177,165,211,.12)}
 
 /* consolidated fullscreen execution refinements T1–T5. */
 /* T1 — fullscreen execution shell hierarchy only. */
