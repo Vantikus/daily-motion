@@ -1547,7 +1547,7 @@ a[href] *,
 
 /* Workout: one spacing system from toolbar to technique */
 .session-shell{width:min(var(--layout-max),calc(100% - var(--layout-inline-space)));margin-inline:auto;padding-bottom:calc(34px + var(--detail-scroll-reserve,0px))}
-.exercise-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;background:var(--bg);padding-top:14px!important;scroll-padding-top:12px;scroll-padding-bottom:calc(86px + env(safe-area-inset-bottom,0px));backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.exercise-scroll{overflow-anchor:none;scroll-behavior:auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;background:var(--bg);padding-top:14px!important;scroll-padding-top:12px;scroll-padding-bottom:calc(86px + env(safe-area-inset-bottom,0px));backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .step-segments{
 
   grid-template-columns:repeat(var(--step-count,9),minmax(0,1fr))!important;
@@ -3982,8 +3982,8 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 /* Technique list: uniform rows, one surface, consistent open and closed states. */
 .details-section{gap:0!important}
 .details-stack{
-  --detail-duration:280ms;
-  --detail-ease:cubic-bezier(.25,.5,.25,1);
+  --detail-duration:320ms;
+  --detail-ease:cubic-bezier(.22,.68,.28,1);
   display:block!important;
   overflow:hidden;
   border:1px solid var(--line-soft)!important;
@@ -4000,8 +4000,10 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   border-color:transparent!important;
 }
 .detail-stack-surface{display:none;pointer-events:none}
-.is-detail-animating>.detail-stack-surface{display:block;position:absolute;z-index:0;top:-1px;left:-1px;width:calc(100% + 2px);border:1px solid var(--line-soft);border-radius:16px;background:var(--surface-raised)}
+.is-detail-animating>.detail-stack-surface{display:block;position:absolute;z-index:0;top:-1px;left:-1px;width:calc(100% + 2px);box-sizing:border-box;border:1px solid var(--line-soft);border-radius:16px;background:var(--surface-raised)}
 .details-stack.is-detail-animating .detail-card{
+  position:relative;
+  z-index:1;
   overflow:hidden;
   background:transparent!important;
 }

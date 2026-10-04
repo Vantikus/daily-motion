@@ -142,41 +142,33 @@
     };
 
     const animateDetails=(selected,willOpen)=>{
-      // Read the currently displayed geometry before cancelling anything.
-      // A second tap reverses from here, without first settling the old target.
+      // Keep text in its normal flow: only the two changing panels resize.
+      // Snapshot their actual heights before cancelling an interrupted motion.
+      const scrollFrom=detailScroll.scrollTop;
       const oldHeight=detailMotion
         ?detailSurface.getBoundingClientRect().height
         :detailStack.getBoundingClientRect().height;
-      const oldRows=detailCards.map(card=>{
-        const box=card.getBoundingClientRect();
-        const style=getComputedStyle(card);
-        const inset=style.clipPath.match(/^inset\(([^)]+)\)/);
-        const values=inset?inset[1].trim().split(/\s+/):[];
-        const clipped=values.length>2?parseFloat(values[2])||0:0;
-        return {top:box.top,height:Math.max(0,box.height-clipped),
-          arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform};
-      });
-      // Keep the current scroll range while measuring the next natural layout.
+      const oldRows=detailCards.map(card=>({
+        height:card.querySelector('.detail-card__panel').getBoundingClientRect().height,
+        arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform
+      }));
       const previousLayoutHeight=detailStack.getBoundingClientRect().height;
       detailStack.style.height=`${Math.max(oldHeight,previousLayoutHeight)}px`;
       cancelDetailAnimations();
       clearDetailLayout();
       detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
-      const stackBox=detailStack.getBoundingClientRect();
       const stackStyle=getComputedStyle(detailStack);
-      const borderTop=parseFloat(stackStyle.borderTopWidth)||0;
-      const borderBottom=parseFloat(stackStyle.borderBottomWidth)||0;
+      const borders=(parseFloat(stackStyle.borderTopWidth)||0)+(parseFloat(stackStyle.borderBottomWidth)||0);
       const rows=detailCards.map(card=>{
         const panel=card.querySelector('.detail-card__panel');
         const inner=card.querySelector('.detail-card__inner');
         const arrow=card.querySelector('.detail-toggle-icon');
-        const box=card.getBoundingClientRect();
-        return {card,panel,inner,arrow,box,
+        return {card,panel,inner,arrow,box:card.getBoundingClientRect(),
           contentHeight:inner.getBoundingClientRect().height,
-          open:card.classList.contains('is-open'),
+          targetHeight:panel.getBoundingClientRect().height,
           arrowTarget:getComputedStyle(arrow).transform};
       });
-      const toHeight=rows.reduce((sum,row)=>sum+row.box.height,borderTop+borderBottom);
+      const toHeight=rows.reduce((sum,row)=>sum+row.box.height,borders);
       const selectedIndex=detailCards.indexOf(selected);
       const finalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-parseFloat(detailStack.style.height)+toHeight);
       const scrollTarget=detailScrollTarget(rows,selectedIndex,willOpen,finalMax);
@@ -187,8 +179,10 @@
         return;
       }
 
-      const distance=Math.abs(oldRows[selectedIndex].height-rows[selectedIndex].box.height);
-      const duration=Math.max(90,detailDuration*Math.min(1,distance/Math.max(1,rows[selectedIndex].contentHeight)));
+      // A small newly selected panel must not rush the much larger closing one.
+      const travel=Math.max(...rows.map((row,index)=>
+        Math.abs(oldRows[index].height-row.targetHeight)/Math.max(1,row.contentHeight)));
+      const duration=Math.max(150,detailDuration*Math.min(1,travel));
       const options={duration,easing:detailEase,fill:'both'};
       const layoutHeight=Math.max(previousLayoutHeight,oldHeight,toHeight);
       const state={animations:[],toHeight,layoutHeight,timer:null,scrollFrame:null,manualScroll:false};
@@ -198,41 +192,26 @@
       detailStack.classList.add('is-detail-animating');
       rows.forEach((row,index)=>{
         const old=oldRows[index];
-        const expanding=row.open||old.height>row.box.height+.5;
-        const height=Math.max(old.height,row.box.height);
-        Object.assign(row.card.style,{
-          position:'absolute',left:'0',
-          top:`${row.box.top-stackBox.top-borderTop}px`,
-          width:`${row.box.width}px`,height:`${height}px`,zIndex:String(index+1)
-        });
-        row.panel.style.height=expanding?`${row.contentHeight}px`:'0px';
-        row.panel.style.opacity=expanding?'1':'0';
-        row.inner.style.opacity=expanding?'1':'0';
-        const delta=old.top-row.box.top;
-        const resizing=Math.abs(old.height-row.box.height)>.1;
-        const clip=visible=>`inset(0px 0px ${Math.max(0,height-visible)}px 0px)`;
-        if(resizing||Math.abs(delta)>.1){
-          row.card.style.willChange=resizing?'transform,clip-path':'transform';
-          state.animations.push(row.card.animate([
-            {transform:`translateY(${delta}px)`,...(resizing?{clipPath:clip(old.height)}:{})},
-            {transform:'translateY(0)',...(resizing?{clipPath:clip(row.box.height)}:{})}
+        if(old.height>.1||row.targetHeight>.1){
+          row.panel.style.opacity='1';
+          row.inner.style.opacity='1';
+          state.animations.push(row.panel.animate([
+            {height:`${old.height}px`},{height:`${row.targetHeight}px`}
           ],options));
         }
         if(old.arrow!==row.arrowTarget){
           state.animations.push(row.arrow.animate([
             {transform:old.arrow},{transform:row.arrowTarget}
-          ],{...options,duration:Math.min(150,duration)}));
+          ],{...options,duration:Math.min(200,duration)}));
         }
       });
-      // The surface is absolute: changing its height never changes the
-      // scroll range. Keep one stable range until the coordinated scroll ends.
+      // The fixed flow height protects the scroll range until the motion ends.
       const surfaceMotion=detailSurface.animate([
         {height:`${oldHeight}px`},{height:`${toHeight}px`}
       ],options);
       state.animations.push(surfaceMotion);
       const startTime=document.timeline.currentTime;
       state.animations.forEach(animation=>{animation.startTime=startTime;});
-      const scrollFrom=detailScroll.scrollTop;
       const paintScroll=()=>{
         if(detailMotion!==state||destroyed||signal?.aborted||state.manualScroll)return;
         const progress=surfaceMotion.effect.getComputedTiming().progress??0;
