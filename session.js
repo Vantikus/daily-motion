@@ -484,8 +484,8 @@ window.DailyMotionPages.session=function mountSession(){
     if(stage==='rest'){
       item('.execution-eyebrow',[{opacity:0,transform:'translate3d(0,5px,0)'},{opacity:1,transform:'none'}],165,0);
       item('h2',[{opacity:0,transform:'translate3d(0,6px,0)'},{opacity:1,transform:'none'}],185,18);
-      item('.execution-rest__value',[{opacity:0,transform:'translate3d(0,11px,0) scale(.92)'},{opacity:1,transform:'none'}],225,38);
-      item('p',[{opacity:0,transform:'translate3d(0,5px,0)'},{opacity:1,transform:'none'}],180,68);
+      item('.execution-rest__clock',[{opacity:0,transform:'translate3d(0,11px,0) scale(.92)'},{opacity:1,transform:'none'}],225,38);
+      item('.execution-rest__next',[{opacity:0,transform:'translate3d(0,5px,0)'},{opacity:1,transform:'none'}],180,68);
       item('.execution-rest__actions',[{opacity:0,transform:'translate3d(0,7px,0)'},{opacity:1,transform:'none'}],195,88);
     }
   }
@@ -825,7 +825,7 @@ window.DailyMotionPages.session=function mountSession(){
     lastRestCueSecond=null;
     restFinish=afterRest;
     $('#restValue').textContent=String(remaining);
-    $('#restNext').textContent=`Дальше: ${exercises[Math.min(current+1,exercises.length-1)].title}`;
+    $('#restNext').textContent=exercises[Math.min(current+1,exercises.length-1)].title;
     showExecution('rest');
     requestWakeLock();
 
