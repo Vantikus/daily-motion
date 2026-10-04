@@ -36,12 +36,6 @@
   font-weight:600!important;
   letter-spacing:-.008em;
 }
-.technique-key strong{
-  font-size:.875rem;
-  line-height:1.48;
-  font-weight:560;
-  letter-spacing:-.006em;
-}
 .details-title{
   font-size:1rem;
   font-weight:680;
@@ -57,8 +51,6 @@
 .exercise-head h1{font-weight:750;letter-spacing:-.038em}
 .exercise-head p{font-weight:300}
 .exercise-facts span{font-weight:500!important}
-.technique-key__label{font-weight:600}
-.technique-key strong{font-weight:450}
 .details-title{font-weight:700}
 .session-nav .nav-button--back{font-weight:500}
 .session-nav .nav-button--next{font-weight:800}

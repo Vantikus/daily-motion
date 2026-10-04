@@ -3775,7 +3775,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 
 /* exercise top navigation + progress hierarchy only. */
 .exercise-toolbar{
-  grid-template-columns:44px minmax(0,1fr) auto 44px!important;
+  grid-template-columns:44px minmax(0,1fr) 44px!important;
   align-items:center;
   gap:8px;
   margin-bottom:10px!important;
@@ -3790,35 +3790,43 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   background:var(--surface-raised);
   box-shadow:none;
 }
+.exercise-toolbar__meta{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:0;
+  color:var(--muted-strong);
+  white-space:nowrap;
+}
 .exercise-toolbar__title{
-  justify-self:start;
+  position:static;
+  transform:none;
   min-width:0;
   color:var(--muted-strong);
   font-size:.8125rem!important;
   line-height:1.2;
-  font-weight:700;
-  letter-spacing:-.01em;
-  text-align:left;
+  font-weight:600;
+  letter-spacing:0;
 }
-.step-indicator{
+.exercise-toolbar__meta .step-indicator{
   width:auto!important;
   min-width:0!important;
-  height:44px!important;
-  padding:0 4px!important;
+  height:auto!important;
+  padding:0!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
   display:flex!important;
   align-items:center;
-  justify-content:center;
 }
 .step-indicator>strong{
-  color:var(--muted);
-  font-size:.75rem!important;
-  line-height:1;
-  font-weight:700!important;
-  letter-spacing:.01em;
+  color:var(--muted-strong);
+  font-size:.8125rem!important;
+  line-height:1.2;
+  font-weight:600!important;
+  letter-spacing:0;
   font-variant-numeric:tabular-nums;
 }
 .step-segments{
@@ -3840,7 +3848,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 @media(max-width:390px){
   .exercise-toolbar{
-    grid-template-columns:42px minmax(0,1fr) auto 42px!important;
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
     gap:7px;
   }
   .back-link--icon,
@@ -3876,7 +3884,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 .exercise-head h1{
   margin:0;
-  max-width:12ch;
+  max-width:20ch;
   color:var(--text);
   font-size:clamp(2rem,8.4vw,2.35rem)!important;
   line-height:.99;
@@ -3945,61 +3953,35 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   }
 }
 
-/* emphasize the key cue without turning it into another heavy card. */
+/* Preparation: one essential cue, attached to the primary instruction. */
 .technique-key{
-  margin:0 0 20px;
-  padding:13px 14px 14px;
-  border:1px solid rgba(47,107,85,.09);
-  border-radius:16px;
-  background:color-mix(in srgb,var(--accent-wash) 74%,var(--surface));
+  margin:0 0 12px;
+  padding:12px 14px;
+  border:0;
+  border-left:3px solid var(--accent);
+  border-radius:12px;
+  background:var(--accent-wash);
   box-shadow:none;
-  gap:5px;
 }
-.technique-key::before{
-  display:none!important;
-}
-.technique-key__label{
-  gap:5px;
-  color:var(--accent);
-  font-size:.6875rem;
-  line-height:1.2;
-  font-weight:720;
-  letter-spacing:.02em;
-}
-.technique-key__label>.hi{
-  font-size:15px!important;
-  opacity:.82;
-}
+.technique-key::before{display:none!important}
 .technique-key strong{
   color:var(--text);
-  font-size:.9375rem;
-  line-height:1.45;
-  font-weight:650;
-  letter-spacing:-.01em;
+  font-size:1rem!important;
+  line-height:1.5;
+  font-weight:400!important;
+  letter-spacing:0;
 }
-@media(max-width:390px){
-  .technique-key{
-    margin-bottom:18px;
-    padding:12px 13px 13px;
-  }
-  .technique-key strong{
-    font-size:.875rem;
-  }
-}
-:root[data-theme="dark"] .technique-key{
-  border-color:rgba(121,197,162,.11);
-  background:color-mix(in srgb,var(--accent-soft) 58%,var(--surface));
-}/* Technique list: one visual system, with session-view.js owning disclosure motion. */
-.details-section{gap:12px!important}
-.details-title{margin:0!important;font-size:1.0625rem;font-weight:650;line-height:1.25;letter-spacing:-.02em}
+:root[data-theme="dark"] .technique-key{background:var(--accent-wash)}
+/* Technique list: one visual system, with session-view.js owning disclosure motion. */
+.details-section{gap:0!important}
 .details-stack{
   --detail-duration:280ms;
   --detail-ease:cubic-bezier(.25,.5,.25,1);
   display:block!important;
   overflow:hidden;
-  border:1px solid var(--line-soft)!important;
-  border-radius:16px!important;
-  background:var(--surface-raised)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
   box-shadow:none!important;
 }
 .details-stack.is-detail-animating{
@@ -4022,10 +4004,17 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   border:0!important;
   border-bottom:1px solid var(--line-soft)!important;
   border-radius:0!important;
-  background:transparent!important;
+  background:var(--surface-raised)!important;
   box-shadow:none!important;
 }
-.detail-card:last-of-type{border-bottom:0!important}
+.detail-card:last-of-type{border-bottom:0!important;border-radius:0 0 16px 16px!important}
+.detail-card--support-first{border-radius:16px 16px 0 0!important}
+.detail-card--primary{
+  margin-bottom:24px!important;
+  border-bottom:0!important;
+  background:var(--bg)!important;
+}
+.details-stack.is-detail-animating .detail-card--primary{background:var(--bg)!important}
 .detail-card__heading{background:transparent;transition:background-color 175ms ease}
 .detail-card.is-open>.detail-card__heading{background:rgba(47,107,85,.025)!important}
 :root[data-theme="dark"] .detail-card.is-open>.detail-card__heading{background:rgba(121,197,162,.035)!important}
@@ -4071,7 +4060,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 }
 .detail-card.is-open .detail-toggle-icon{transform:rotate(180deg)!important;color:var(--accent)!important;opacity:.9}
 .detail-card__inner{padding:8px 16px 16px!important;border-top:0!important}
-.detail-card__inner p,.detail-card__inner li{font-size:.875rem!important;line-height:1.6!important;font-weight:400!important;color:var(--muted-strong)!important}
+.detail-card__inner p,.detail-card__inner li{font-size:.9375rem!important;line-height:1.6!important;font-weight:400!important;color:var(--muted-strong)!important}
 .detail-card__inner p{margin:0}
 .detail-card__inner ol,.detail-card__inner ul{margin:0;padding-left:20px!important;display:grid;gap:12px!important}
 .detail-card__inner li{padding-left:4px}
@@ -4082,18 +4071,52 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
   .detail-card__heading,.detail-card__toggle .detail-toggle-icon,.detail-card__toggle .qm-icon>.hi{transition:none!important}
   .detail-card__toggle .qm-icon>.hi{transform:none!important}
 }
-.technique-icon--how{--detail-icon-color:#2f6b55;--detail-icon-bg:rgba(47,107,85,.10)}
-:root[data-theme="dark"] .technique-icon--how{--detail-icon-color:#79c5a2;--detail-icon-bg:rgba(121,197,162,.12)}
-.technique-icon--breath{--detail-icon-color:#28717a;--detail-icon-bg:rgba(40,113,122,.10)}
-:root[data-theme="dark"] .technique-icon--breath{--detail-icon-color:#71bcc3;--detail-icon-bg:rgba(113,188,195,.12)}
-.technique-icon--feel{--detail-icon-color:#536a9c;--detail-icon-bg:rgba(83,106,156,.10)}
-:root[data-theme="dark"] .technique-icon--feel{--detail-icon-color:#91a7d7;--detail-icon-bg:rgba(145,167,215,.12)}
-.technique-icon--mistakes{--detail-icon-color:#95604a;--detail-icon-bg:rgba(149,96,74,.10)}
-:root[data-theme="dark"] .technique-icon--mistakes{--detail-icon-color:#d49a7e;--detail-icon-bg:rgba(212,154,126,.12)}
-.technique-icon--easy{--detail-icon-color:#667a4d;--detail-icon-bg:rgba(102,122,77,.10)}
-:root[data-theme="dark"] .technique-icon--easy{--detail-icon-color:#a8ba88;--detail-icon-bg:rgba(168,186,136,.12)}
-.technique-icon--progress{--detail-icon-color:#6f6293;--detail-icon-bg:rgba(111,98,147,.10)}
-:root[data-theme="dark"] .technique-icon--progress{--detail-icon-color:#b1a5d3;--detail-icon-bg:rgba(177,165,211,.12)}
+/* Primary steps are separate from the quiet supplementary list. */
+.detail-card--primary>.detail-card__heading,
+.detail-card--primary.is-open>.detail-card__heading,
+:root[data-theme="dark"] .detail-card--primary.is-open>.detail-card__heading{background:transparent!important}
+.detail-card--primary .detail-card__toggle{
+  padding:12px 0!important;
+  font-size:1.25rem!important;
+  font-weight:600!important;
+  letter-spacing:-.02em;
+}
+.detail-card--primary .detail-card__inner{padding:4px 0 0!important}
+.detail-card--primary .detail-card__inner li{
+  position:relative;
+  min-height:26px;
+  padding-left:38px;
+  font-size:1rem!important;
+  line-height:1.5!important;
+  color:var(--text)!important;
+}
+.detail-card--primary .detail-card__inner ol{
+  padding-left:0!important;
+  list-style:none;
+  counter-reset:exercise-step;
+  gap:16px!important;
+}
+.detail-card--primary .detail-card__inner li::before{
+  counter-increment:exercise-step;
+  content:counter(exercise-step);
+  position:absolute;
+  left:0;
+  top:1px;
+  display:grid;
+  place-items:center;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:var(--accent);
+  color:var(--bg);
+  font-size:.8125rem;
+  line-height:1;
+  font-weight:500;
+}
+.detail-card .technique-icon{
+  --detail-icon-color:var(--muted-strong);
+  --detail-icon-bg:transparent;
+}
 
 /* consolidated fullscreen execution refinements T1–T5. */
 /* T1 — fullscreen execution shell hierarchy only. */

@@ -5,10 +5,10 @@ test('technique accordion exposes semantic headings and labelled regions',async(
 
   const cards=page.locator('.detail-card');
   await expect(cards).toHaveCount(6);
-  await expect(page.locator('.detail-card > h3.detail-card__heading')).toHaveCount(6);
+  await expect(page.locator('.detail-card > .detail-card__heading')).toHaveCount(6);
 
   const expected=[
-    ['detail-how','Как делать правильно'],
+    ['detail-how','Как выполнять'],
     ['detail-breathing','Дыхание и темп'],
     ['detail-feel','Что чувствовать'],
     ['detail-mistakes','Частые ошибки'],

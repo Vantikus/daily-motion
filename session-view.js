@@ -167,7 +167,7 @@
       // Commit the final layout once, then animate its already laid-out rows.
       // This also gives the correct final scroll range before compensating it.
       finishDetailMotion();
-      detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
+      setDetailState(selected,willOpen);
       if(willOpen)revealDetailCard(selected);
       if(reducedMotion()||typeof detailStack.animate!=='function')return;
 
@@ -210,12 +210,11 @@
         // or conceals it, so content does not slide against the disclosure.
         row.inner.style.opacity=expanded?'1':'0';
         row.inner.style.transform='none';
-        const radii=[
-          index===0?Math.max(0,appearance.radii[0]-appearance.leftWidth):0,
-          index===0?Math.max(0,appearance.radii[1]-appearance.rightWidth):0,
-          index===rows.length-1?Math.max(0,appearance.radii[2]-appearance.rightWidth):0,
-          index===rows.length-1?Math.max(0,appearance.radii[3]-appearance.leftWidth):0
-        ].map(value=>`${value}px`).join(' ');
+        // Each row retains its own corners: the primary instruction and
+        // supplementary list share one motion owner, but separate surfaces.
+        const cardStyle=getComputedStyle(row.card);
+        const radii=[cardStyle.borderTopLeftRadius,cardStyle.borderTopRightRadius,
+          cardStyle.borderBottomRightRadius,cardStyle.borderBottomLeftRadius].join(' ');
         const clip=visible=>`inset(0px 0px ${Math.max(0,height-visible)}px 0px round ${radii})`;
         const resizing=Math.abs(old.height-row.box.height)>.1;
         row.card.style.willChange=resizing?'transform,clip-path':'transform';
@@ -379,7 +378,7 @@
       $('#mistakesList').innerHTML=exercise.mistakes.map(item=>`<li>${item}</li>`).join('');
       $('#easyText').textContent=exercise.easy;
       $('#progressionText').textContent=exercise.progression;
-      $('#headerProgress').textContent=`${current+1} / ${exercises.length}`;
+      $('#headerProgress').textContent=`${current+1} из ${exercises.length}`;
       $('#navStepLabel').textContent=`Упражнение ${current+1} из ${exercises.length}`;
       $('#prevButton').disabled=current===0;
     };

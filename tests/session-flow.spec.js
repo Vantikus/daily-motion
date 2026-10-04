@@ -199,20 +199,20 @@ test('completion motion is choreographed and respects reduced motion',async({pag
   expect(reduced.checkOffset).toBe('0px');
 });
 
-test('technique accordion keeps at most one section expanded',async({page})=>{
+test('technique sections expand independently without hiding the main instruction',async({page})=>{
   await page.goto('/session.html?routine=morning',{waitUntil:'domcontentloaded'});
   const cards=page.locator('.detail-card');
   await expect(cards.filter({has:page.locator('[aria-expanded="true"]')})).toHaveCount(1);
 
   await page.locator('#detail-breathing-toggle').click();
   await expect(page.locator('#detail-breathing-toggle')).toHaveAttribute('aria-expanded','true');
-  await expect(page.locator('#detail-how-toggle')).toHaveAttribute('aria-expanded','false');
-  await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
+  await expect(page.locator('#detail-how-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('.detail-card.is-open')).toHaveCount(2);
 
   await page.locator('#detail-feel-toggle').click();
   await expect(page.locator('#detail-feel-toggle')).toHaveAttribute('aria-expanded','true');
-  await expect(page.locator('#detail-breathing-toggle')).toHaveAttribute('aria-expanded','false');
-  await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
+  await expect(page.locator('#detail-breathing-toggle')).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('.detail-card.is-open')).toHaveCount(3);
 });
 
 test('expanded technique starts scrolling immediately and stays above workout navigation',async({page})=>{
