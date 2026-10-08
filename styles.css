@@ -3948,7 +3948,7 @@ html:active-view-transition-type(theme)::view-transition-new(root){animation-nam
 /* Technique list: uniform rows, one surface, consistent open and closed states. */
 .details-section{gap:0!important}
 .details-stack{
-  --detail-duration:450ms;
+  --detail-duration:420ms;
   --detail-ease:cubic-bezier(.25,.1,.25,1);
   display:block!important;
   overflow:hidden;

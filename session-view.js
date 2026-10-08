@@ -16,7 +16,7 @@
     let detailAutoScrolling=false;
     let detailMotion=null;
     const detailStyle=getComputedStyle(detailStack);
-    const detailDuration=parseFloat(detailStyle.getPropertyValue('--detail-duration'))||450;
+    const detailDuration=parseFloat(detailStyle.getPropertyValue('--detail-duration'))||420;
     const detailEase=detailStyle.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.25,.1,.25,1)';
     const detailSurface=document.createElement('div');
     detailSurface.className='detail-motion-surface';
