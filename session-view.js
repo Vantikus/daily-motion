@@ -39,15 +39,34 @@
     const renderVisual=exercise=>{
       const box=$('#exerciseVisual');
       if(!box)return;
-      if(Array.isArray(exercise.visuals)&&exercise.visuals.length){
-        box.hidden=false;
-        box.classList.add('has-visuals');
-        box.innerHTML=`<div class="visual-phases" style="--phase-count:${Math.min(exercise.visuals.length,3)}">${exercise.visuals.map((src,index)=>`<figure class="visual-phase"><img src="${src}" alt="${exercise.title}, фаза ${index+1}" loading="eager" decoding="async"></figure>`).join('')}</div>`;
-        return;
-      }
-      box.hidden=true;
+      const phases=exercise.visual?.phases;
+      const hasPhases=Array.isArray(phases)&&phases.length>0;
+      box.hidden=!hasPhases;
       box.classList.remove('has-visuals','visual-placeholder');
       box.innerHTML='';
+      if(!hasPhases)return;
+      box.classList.add('has-visuals');
+      const grid=document.createElement('div');
+      grid.className='visual-phases';
+      for(const phase of phases){
+        const figure=document.createElement('figure');
+        figure.className='visual-phase';
+        const img=document.createElement('img');
+        img.src=phase.src;
+        img.alt=phase.alt;
+        img.width=480;
+        img.height=360;
+        img.decoding='async';
+        const caption=document.createElement('figcaption');
+        const breath=document.createElement('strong');
+        breath.textContent=phase.breath;
+        const label=document.createElement('span');
+        label.textContent=` · ${phase.label}`;
+        caption.append(breath,label);
+        figure.append(img,caption);
+        grid.append(figure);
+      }
+      box.append(grid);
     };
 
     const setDetailState=(card,open)=>{

@@ -177,10 +177,12 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 
 .exercise-visual{position:relative}
 .visual-placeholder{width:100%;border:1px dashed rgba(47,107,85,.2);background:#f0f4ef;display:grid;place-items:center;overflow:hidden}
-.exercise-visual.has-visuals{aspect-ratio:auto;border:0;background:transparent;display:block;overflow:visible}
-.visual-phases{display:grid;grid-template-columns:repeat(var(--phase-count,2),minmax(0,1fr));gap:10px}
-.visual-phase{margin:0;border-radius:16px;overflow:hidden;background:#eef2ee;border:1px solid var(--line)}
-.visual-phase img{display:block;width:100%;height:auto;object-fit:contain}
+.exercise-visual.has-visuals{aspect-ratio:auto;display:block;overflow:hidden;margin:18px 0 0;padding:12px;border:0;border-radius:16px;background:#eef2ee;color:#171917}
+.visual-phases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.visual-phase{margin:0;min-width:0;display:grid;grid-template-rows:minmax(0,1fr) auto;border:0;background:transparent}
+.visual-phase img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain}
+.visual-phase figcaption{padding:4px 0 8px;text-align:center;font-size:13px;line-height:1.4;font-weight:400}
+.visual-phase figcaption strong{font-weight:650;color:#2f6b55}
 
 @property --timer-progress{syntax:"<number>";inherits:false;initial-value:0}
 
@@ -2362,7 +2364,7 @@ a[href] *,
 :root[data-theme="dark"] :is(.routine-card,.activity-card,.progress-metrics article,.progress-card){background:rgba(24,33,27,.92)}
 :root[data-theme="dark"] :is(.back-link--icon,.detail-card,.settings-sheet,.nav-button--back){background:var(--surface-raised)}
 :root[data-theme="dark"] :is(.progress-track,.mini-progress,.step-segments i){background:#2a362d}
-:root[data-theme="dark"] :is(.visual-placeholder,.visual-phase,.activity-empty,.history-day,.history-empty,.data-actions button){background:var(--surface-soft)}
+:root[data-theme="dark"] :is(.visual-placeholder,.activity-empty,.history-day,.history-empty,.data-actions button){background:var(--surface-soft)}
 :root[data-theme="dark"] .timer-ring:after{background:var(--surface-raised)}
 :root[data-theme="dark"] .completion-overlay{background:rgba(16,22,18,.97)}
 :root[data-theme="dark"] .completion-card{background:var(--surface-raised)}

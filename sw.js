@@ -1,4 +1,4 @@
-const RELEASE_VERSION=298;
+const RELEASE_VERSION=299;
 const CACHE_NAME=`daily-motion-v${RELEASE_VERSION}`;
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
@@ -58,6 +58,8 @@ const APP_SHELL=[
   '/progress.js',
   '/navigation.js',
   '/manifest.webmanifest',
+  '/media/cat-cow-exhale-v1.webp',
+  '/media/cat-cow-inhale-v1.webp',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
   '/icons/daily-motion-app-192-v97.png',
