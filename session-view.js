@@ -36,7 +36,17 @@
       node.addEventListener(type,handler,signal?{...options,signal}:options);
     };
 
+    let visualState=null;
+    const clearVisual=()=>{
+      if(!visualState)return;
+      clearTimeout(visualState.settleTimer);
+      visualState.controller.abort();
+      visualState=null;
+    };
+
     const renderVisual=exercise=>{
+      clearVisual();
+      if(destroyed||signal?.aborted)return;
       const box=$('#exerciseVisual');
       if(!box)return;
       const phases=exercise.visual?.phases;
@@ -46,45 +56,105 @@
       box.innerHTML='';
       if(!hasPhases)return;
       box.classList.add('has-visuals');
-      const header=document.createElement('div');
-      header.className='visual-header';
-      const heading=document.createElement('span');
-      heading.textContent='Этапы упражнения';
-      const hint=document.createElement('span');
-      hint.id='visualSwipeHint';
-      hint.textContent='Листайте →';
-      header.append(heading,hint);
       const rail=document.createElement('div');
       rail.className='visual-phases';
       rail.tabIndex=0;
       rail.setAttribute('role','group');
       rail.setAttribute('aria-label',`Этапы упражнения: ${phases.length}`);
-      rail.setAttribute('aria-describedby',hint.id);
+      rail.setAttribute('aria-describedby','exerciseVisualCaption');
+      const caption=document.createElement('p');
+      caption.className='visual-caption';
+      caption.id='exerciseVisualCaption';
+      caption.setAttribute('aria-live','polite');
+      caption.setAttribute('aria-atomic','true');
+      const title=document.createElement('strong');
+      const label=document.createElement('span');
+      caption.append(title,label);
+      const controls=document.createElement('div');
+      controls.className='visual-stage-controls';
+      controls.setAttribute('role','group');
+      controls.setAttribute('aria-label','Выбор этапа упражнения');
+      const frames=[];
+      const buttons=[];
       phases.forEach((phase,index)=>{
         const figure=document.createElement('figure');
         figure.className='visual-phase';
+        figure.setAttribute('aria-label',`Этап ${index+1} из ${phases.length}`);
         const img=document.createElement('img');
         img.src=phase.src;
         img.alt=phase.alt;
         img.width=1200;
-        img.height=900;
+        img.height=750;
         img.decoding='async';
-        const caption=document.createElement('figcaption');
-        const number=document.createElement('span');
-        number.className='visual-phase__number';
-        number.textContent=`${index+1} / ${phases.length}`;
-        const title=document.createElement('strong');
-        title.textContent=phase.title||phase.breath||'';
-        caption.append(number,title);
-        if(phase.label){
-          const label=document.createElement('span');
-          label.textContent=` · ${phase.label}`;
-          caption.append(label);
-        }
-        figure.append(img,caption);
+        figure.append(img);
         rail.append(figure);
+        frames.push(figure);
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='visual-stage-button';
+        button.textContent=String(index+1);
+        button.setAttribute('aria-label',`Этап ${index+1} из ${phases.length}: ${phase.title||phase.breath||''}${phase.label?`, ${phase.label}`:''}`);
+        button.setAttribute('aria-controls','exerciseVisualCaption');
+        controls.append(button);
+        buttons.push(button);
       });
-      box.append(header,rail);
+      box.append(rail,caption,controls);
+      const state={controller:new AbortController(),settleTimer:null,index:-1,requested:null,width:rail.clientWidth};
+      visualState=state;
+      const active=()=>!destroyed&&!signal?.aborted&&!state.controller.signal.aborted&&visualState===state;
+      const listen=(node,type,handler,options={})=>node.addEventListener(type,handler,{...options,signal:state.controller.signal});
+      const setPhase=index=>{
+        if(!active())return;
+        index=Math.max(0,Math.min(phases.length-1,index));
+        if(state.index===index)return;
+        state.index=index;
+        const phase=phases[index];
+        title.textContent=phase.title||phase.breath||'';
+        label.textContent=phase.label?` · ${phase.label}`:'';
+        buttons.forEach((button,i)=>{
+          button.classList.toggle('is-current',i===index);
+          if(i===index)button.setAttribute('aria-current','step');
+          else button.removeAttribute('aria-current');
+          frames[i].setAttribute('aria-hidden',String(i!==index));
+        });
+      };
+      const selectPhase=(index,behavior=reducedMotion()?'instant':'smooth')=>{
+        if(!active())return;
+        index=Math.max(0,Math.min(phases.length-1,index));
+        clearTimeout(state.settleTimer);
+        state.requested=index;
+        setPhase(index);
+        rail.scrollTo({left:frames[index].offsetLeft-frames[0].offsetLeft,behavior});
+      };
+      const settle=()=>{
+        if(!active()||rail.clientWidth<=0)return;
+        const index=Math.max(0,Math.min(phases.length-1,Math.round(rail.scrollLeft/rail.clientWidth)));
+        if(state.requested!==null&&index!==state.requested)return;
+        state.requested=null;
+        setPhase(index);
+      };
+      const releaseRequested=()=>{state.requested=null;};
+      listen(rail,'pointerdown',releaseRequested,{passive:true});
+      listen(rail,'touchstart',releaseRequested,{passive:true});
+      listen(rail,'wheel',releaseRequested,{passive:true});
+      buttons.forEach((button,index)=>listen(button,'click',()=>selectPhase(index)));
+      listen(rail,'keydown',event=>{
+        const targets={ArrowLeft:state.index-1,ArrowRight:state.index+1,Home:0,End:phases.length-1};
+        if(!(event.key in targets)||event.altKey||event.ctrlKey||event.metaKey)return;
+        event.preventDefault();
+        selectPhase(targets[event.key]);
+      });
+      if('onscrollend' in rail)listen(rail,'scrollend',settle);
+      else listen(rail,'scroll',()=>{
+        clearTimeout(state.settleTimer);
+        state.settleTimer=setTimeout(settle,140);
+      },{passive:true});
+      listen(window,'resize',()=>{
+        if(!active()||rail.clientWidth<=0||rail.clientWidth===state.width)return;
+        state.width=rail.clientWidth;
+        selectPhase(state.index,'instant');
+      },{passive:true});
+      setPhase(0);
     };
 
     const setDetailState=(card,open)=>{
@@ -405,6 +475,7 @@
     const destroy=()=>{
       if(destroyed)return;
       destroyed=true;
+      clearVisual();
       finishDetailMotion();
       setScrollReserve(0);
       clearTimeout(reserveTimer);
