@@ -15,7 +15,20 @@
     let reserveTimer=null;
     let detailAutoScrolling=false;
     let detailMotion=null;
-    const detailDuration=parseFloat(getComputedStyle(detailStack).getPropertyValue('--detail-duration'))||260;
+    const detailStyle=getComputedStyle(detailStack);
+    const detailDuration=parseFloat(detailStyle.getPropertyValue('--detail-duration'))||260;
+    const detailEase=detailStyle.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.22,.68,.28,1)';
+    const detailSurface=document.createElement('div');
+    detailSurface.className='detail-motion-surface';
+    detailSurface.setAttribute('aria-hidden','true');
+    const surfaceParts=['top','fill','bottom'].map(part=>{
+      const node=document.createElement('span');
+      node.className=`detail-motion-surface__${part}`;
+      detailSurface.append(node);
+      return node;
+    });
+    const [,surfaceFill,surfaceBottom]=surfaceParts;
+    detailStack.prepend(detailSurface);
     let exerciseAnimation=null;
     let destroyed=false;
     const on=(node,type,handler,options={})=>{
@@ -58,15 +71,33 @@
       setScrollReserve(Math.min(scrollReserve,Math.max(0,detailScroll.scrollTop-naturalMax)));
     };
 
+    const clearDetailLayout=()=>{
+      detailStack.classList.remove('is-detail-animating');
+      detailCards.forEach(card=>{
+        for(const property of ['position','top','left','width','height','transform','will-change','z-index'])card.style.removeProperty(property);
+        for(const node of [card.querySelector('.detail-card__panel'),card.querySelector('.detail-card__content')]){
+          for(const property of ['height','transform','will-change'])node.style.removeProperty(property);
+        }
+      });
+    };
+
+    const cancelDetailMotion=()=>{
+      const state=detailMotion;
+      detailMotion=null;
+      if(!state)return;
+      clearTimeout(state.timer);
+      state.animations.forEach(animation=>animation.cancel());
+    };
+
     const finishDetailMotion=()=>{
       const state=detailMotion;
       if(!state)return;
-      clearTimeout(state.timer);
-      detailMotion=null;
-      // Release the temporary range without clamping an active touch gesture
-      // or a native smooth scroll. Remaining space is reclaimed at scroll end.
-      const naturalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve);
+      // Commit the natural layout without clamping a native scroll or gesture.
+      const naturalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-state.layoutHeight+state.toHeight);
       setScrollReserve(Math.max(0,detailScroll.scrollTop-naturalMax));
+      cancelDetailMotion();
+      clearDetailLayout();
+      detailStack.style.removeProperty('height');
       releaseScrollReserve();
     };
 
@@ -88,42 +119,111 @@
       if(Math.abs(delta)>1)detailScroll.scrollTo({top:detailScroll.scrollTop+delta,behavior:reducedMotion()?'instant':'smooth'});
     };
 
+    const translateY=node=>{
+      const transform=getComputedStyle(node).transform;
+      return !transform||transform==='none'?0:new DOMMatrixReadOnly(transform).m42;
+    };
+    const moveY=value=>`translate3d(0,${value}px,0)`;
+
     const animateDetails=(selected,willOpen)=>{
-      clearTimeout(detailMotion?.timer);
       clearTimeout(reserveTimer);
       stopDetailAutoScroll();
       const from=detailScroll.scrollTop;
+      const before=detailStack.getBoundingClientRect();
+      const oldHeight=detailMotion?surfaceBottom.getBoundingClientRect().bottom-before.top:before.height;
+      // All layout reads happen on the tap, never on an animation frame.
+      const oldRows=detailCards.map(card=>{
+        const panel=card.querySelector('.detail-card__panel');
+        const box=card.getBoundingClientRect();
+        const panelHeight=panel.getBoundingClientRect().height;
+        const visible=Math.max(0,Math.min(panelHeight,panelHeight+translateY(panel)));
+        return {top:box.top-before.top-1,visible,
+          arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform};
+      });
+      detailStack.style.height=`${before.height}px`;
+      cancelDetailMotion();
+      clearDetailLayout();
+      detailStack.classList.add('is-detail-animating');
+      detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
       const stackBox=detailStack.getBoundingClientRect();
-      const view=detailScroll.getBoundingClientRect();
+      const rows=detailCards.map(card=>{
+        const panel=card.querySelector('.detail-card__panel');
+        const content=card.querySelector('.detail-card__content');
+        const inner=card.querySelector('.detail-card__inner');
+        const box=card.getBoundingClientRect();
+        return {card,panel,content,box,
+          top:box.top-stackBox.top-1,
+          contentHeight:inner.getBoundingClientRect().height,
+          target:panel.getBoundingClientRect().height,
+          arrow:card.querySelector('.detail-toggle-icon')};
+      });
+      const toHeight=rows.reduce((sum,row)=>sum+row.box.height,2);
       const index=detailCards.indexOf(selected);
-      // Measure only on interaction. CSS owns interpolation and reversal.
-      const rows=detailCards.map(card=>({
-        heading:card.querySelector('.detail-card__heading').getBoundingClientRect().height,
-        border:parseFloat(getComputedStyle(card).borderTopWidth)||0,
-        content:card.querySelector('.detail-card__inner').getBoundingClientRect().height
-      }));
-      const heights=rows.map((row,i)=>row.heading+row.border+(willOpen&&i===index?row.content:0));
-      const naturalHeight=heights.reduce((sum,height)=>sum+height,2);
-      const finalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-stackBox.height+naturalHeight);
+      const view=detailScroll.getBoundingClientRect();
+      const finalMax=Math.max(0,detailScroll.scrollHeight-detailScroll.clientHeight-scrollReserve-before.height+toHeight);
       let target=Math.min(from,finalMax);
       if(willOpen){
-        const top=stackBox.top-view.top+from+1+heights.slice(0,index).reduce((sum,height)=>sum+height,0);
-        const extra=rows[index+1]?rows[index+1].heading+rows[index+1].border+8:0;
-        const bottom=top+heights[index]+extra;
+        const top=rows[index].box.top-view.top+from;
+        const next=rows[index+1];
+        const extra=next?next.box.height-next.target+8:0;
+        const bottom=top+rows[index].box.height+extra;
         if(bottom-top>detailScroll.clientHeight-28||top<from+12)target=top-12;
         else if(bottom>from+detailScroll.clientHeight-16)target=bottom-detailScroll.clientHeight+16;
         target=Math.max(0,Math.min(target,finalMax));
       }
-      setScrollReserve(scrollReserve+Math.abs(naturalHeight-stackBox.height));
-      detailCards.forEach(card=>setDetailState(card,card===selected&&willOpen));
-      const state={timer:null};
+      if(reducedMotion()||typeof detailStack.animate!=='function'){
+        clearDetailLayout();
+        detailStack.style.removeProperty('height');
+        setScrollReserve(0);
+        detailScroll.scrollTo({top:target,behavior:'instant'});
+        return;
+      }
+      const travel=Math.max(...rows.map((row,i)=>Math.abs(oldRows[i].visible-row.target)/Math.max(1,row.contentHeight)));
+      const duration=Math.max(90,detailDuration*Math.min(1,travel));
+      const options={duration,easing:detailEase,fill:'both'};
+      const layoutHeight=Math.max(before.height,oldHeight,toHeight);
+      const state={animations:[],layoutHeight,toHeight,timer:null};
       detailMotion=state;
-      detailAutoScrolling=!reducedMotion()&&Math.abs(target-from)>.5;
-      detailScroll.scrollTo({top:target,behavior:reducedMotion()?'instant':'smooth'});
-      if(reducedMotion())finishDetailMotion();
-      else state.timer=setTimeout(()=>{
+      detailStack.style.height=`${layoutHeight}px`;
+      const animate=(node,first,last,settings=options)=>{
+        state.animations.push(node.animate([{transform:first},{transform:last}],settings));
+      };
+      rows.forEach((row,i)=>{
+        const old=oldRows[i];
+        const header=row.box.height-row.target;
+        const contentHeight=Math.max(row.contentHeight,old.visible);
+        Object.assign(row.card.style,{position:'absolute',left:'0',top:`${row.top}px`,
+          width:`${row.box.width}px`,height:`${header+contentHeight}px`,zIndex:String(i+1)});
+        if(Math.abs(old.top-row.top)>.1){
+          row.card.style.willChange='transform';
+          animate(row.card,moveY(old.top-row.top),moveY(0));
+        }
+        if(old.visible>.1||row.target>.1){
+          row.panel.style.height=`${contentHeight}px`;
+          row.panel.style.willChange='transform';
+          row.content.style.willChange='transform';
+          // A fixed clipping window moves; its contents move by the exact
+          // opposite amount. Text keeps its size and position inside the row.
+          animate(row.panel,moveY(old.visible-contentHeight),moveY(row.target-contentHeight));
+          animate(row.content,moveY(contentHeight-old.visible),moveY(contentHeight-row.target));
+        }
+        const end=row.card.classList.contains('is-open')?'rotate(180deg)':'rotate(0deg)';
+        animate(row.arrow,old.arrow,end,{...options,duration:Math.min(180,duration)});
+      });
+      // Only the empty background stretches. Separate caps retain their radius.
+      const fillHeight=Math.max(1,layoutHeight-30);
+      surfaceFill.style.height=`${fillHeight}px`;
+      animate(surfaceFill,`scaleY(${Math.max(0,oldHeight-30)/fillHeight})`,`scaleY(${Math.max(0,toHeight-30)/fillHeight})`);
+      animate(surfaceBottom,moveY(oldHeight-16),moveY(toHeight-16));
+      const startTime=document.timeline.currentTime;
+      state.animations.forEach(animation=>{animation.startTime=startTime;});
+      detailAutoScrolling=Math.abs(target-from)>.5;
+      detailScroll.scrollTo({top:target,behavior:'smooth'});
+      const finish=()=>{
         if(!destroyed&&!signal?.aborted&&detailMotion===state)finishDetailMotion();
-      },detailDuration+40);
+      };
+      Promise.allSettled(state.animations.map(animation=>animation.finished)).then(finish);
+      state.timer=setTimeout(finish,duration+80);
     };
 
     const detailToggles=detailCards.map(card=>card.querySelector('.detail-card__toggle'));
@@ -161,15 +261,13 @@
     on(window,'resize',finishDetailMotion,{passive:true});
 
     const resetDetails=()=>{
-      clearTimeout(detailMotion?.timer);
+      cancelDetailMotion();
+      clearDetailLayout();
+      detailStack.style.removeProperty('height');
       clearTimeout(reserveTimer);
-      detailMotion=null;
       stopDetailAutoScroll();
       setScrollReserve(0);
-      detailStack.classList.add('is-detail-resetting');
       detailCards.forEach((card,index)=>setDetailState(card,index===0));
-      void detailStack.offsetHeight;
-      detailStack.classList.remove('is-detail-resetting');
     };
 
     const renderStepSegments=()=>{
@@ -270,6 +368,7 @@
       setScrollReserve(0);
       clearTimeout(reserveTimer);
       stopDetailAutoScroll();
+      detailSurface.remove();
       exerciseAnimation?.cancel();
       exerciseAnimation=null;
       signal?.removeEventListener('abort',destroy);
