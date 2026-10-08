@@ -16,8 +16,8 @@
     let detailAutoScrolling=false;
     let detailMotion=null;
     const detailStyle=getComputedStyle(detailStack);
-    const detailDuration=parseFloat(detailStyle.getPropertyValue('--detail-duration'))||260;
-    const detailEase=detailStyle.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.22,.68,.28,1)';
+    const detailDuration=parseFloat(detailStyle.getPropertyValue('--detail-duration'))||450;
+    const detailEase=detailStyle.getPropertyValue('--detail-ease').trim()||'cubic-bezier(.25,.1,.25,1)';
     const detailSurface=document.createElement('div');
     detailSurface.className='detail-motion-surface';
     detailSurface.setAttribute('aria-hidden','true');
@@ -138,6 +138,7 @@
         const panelHeight=panel.getBoundingClientRect().height;
         const visible=Math.max(0,Math.min(panelHeight,panelHeight+translateY(panel)));
         return {top:box.top-before.top-1,visible,
+          opacity:Number(getComputedStyle(card.querySelector('.detail-card__content')).opacity),
           arrow:getComputedStyle(card.querySelector('.detail-toggle-icon')).transform};
       });
       detailStack.style.height=`${before.height}px`;
@@ -179,14 +180,15 @@
         return;
       }
       const travel=Math.max(...rows.map((row,i)=>Math.abs(oldRows[i].visible-row.target)/Math.max(1,row.contentHeight)));
-      const duration=Math.max(90,detailDuration*Math.min(1,travel));
+      // Short reversals keep a soft pace instead of snapping through 90 ms.
+      const duration=detailDuration*Math.max(.6,Math.sqrt(Math.min(1,travel)));
       const options={duration,easing:detailEase,fill:'both'};
       const layoutHeight=Math.max(before.height,oldHeight,toHeight);
       const state={animations:[],layoutHeight,toHeight,timer:null};
       detailMotion=state;
       detailStack.style.height=`${layoutHeight}px`;
-      const animate=(node,first,last,settings=options)=>{
-        state.animations.push(node.animate([{transform:first},{transform:last}],settings));
+      const animate=(node,first,last)=>{
+        state.animations.push(node.animate([first,last],options));
       };
       rows.forEach((row,i)=>{
         const old=oldRows[i];
@@ -196,25 +198,27 @@
           width:`${row.box.width}px`,height:`${header+contentHeight}px`,zIndex:String(i+1)});
         if(Math.abs(old.top-row.top)>.1){
           row.card.style.willChange='transform';
-          animate(row.card,moveY(old.top-row.top),moveY(0));
+          animate(row.card,{transform:moveY(old.top-row.top)},{transform:moveY(0)});
         }
         if(old.visible>.1||row.target>.1){
           row.panel.style.height=`${contentHeight}px`;
           row.panel.style.willChange='transform';
-          row.content.style.willChange='transform';
+          row.content.style.willChange='transform, opacity';
           // A fixed clipping window moves; its contents move by the exact
           // opposite amount. Text keeps its size and position inside the row.
-          animate(row.panel,moveY(old.visible-contentHeight),moveY(row.target-contentHeight));
-          animate(row.content,moveY(contentHeight-old.visible),moveY(contentHeight-row.target));
+          animate(row.panel,{transform:moveY(old.visible-contentHeight)},{transform:moveY(row.target-contentHeight)});
+          animate(row.content,
+            {transform:moveY(contentHeight-old.visible),opacity:old.opacity},
+            {transform:moveY(contentHeight-row.target),opacity:row.target>.1?1:0});
         }
         const end=row.card.classList.contains('is-open')?'rotate(180deg)':'rotate(0deg)';
-        animate(row.arrow,old.arrow,end,{...options,duration:Math.min(180,duration)});
+        animate(row.arrow,{transform:old.arrow},{transform:end});
       });
       // Only the empty background stretches. Separate caps retain their radius.
       const fillHeight=Math.max(1,layoutHeight-30);
       surfaceFill.style.height=`${fillHeight}px`;
-      animate(surfaceFill,`scaleY(${Math.max(0,oldHeight-30)/fillHeight})`,`scaleY(${Math.max(0,toHeight-30)/fillHeight})`);
-      animate(surfaceBottom,moveY(oldHeight-16),moveY(toHeight-16));
+      animate(surfaceFill,{transform:`scaleY(${Math.max(0,oldHeight-30)/fillHeight})`},{transform:`scaleY(${Math.max(0,toHeight-30)/fillHeight})`});
+      animate(surfaceBottom,{transform:moveY(oldHeight-16)},{transform:moveY(toHeight-16)});
       const startTime=document.timeline.currentTime;
       state.animations.forEach(animation=>{animation.startTime=startTime;});
       detailAutoScrolling=Math.abs(target-from)>.5;

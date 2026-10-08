@@ -8,7 +8,7 @@ CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
 ## Animation rule
 
 Never introduce frame-by-frame JavaScript animation or scroll interpolation. Use browser-owned CSS/WAAPI transitions and native smooth scrolling. Preserve timer accounting and the approved Settings behavior.
-For the technique list, do not animate height, grid-template-rows or clip-path. Keep text unscaled, animate transform endpoints, and preserve current geometry on interruption.
+For the technique list, do not animate height, grid-template-rows or clip-path. Keep text unscaled, animate transform/opacity endpoints, and preserve current geometry and opacity on interruption.
 
 ## Product contracts
 
