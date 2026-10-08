@@ -5,6 +5,10 @@ GitHub code; use GitHub only for final publication. The user has authorized auto
 publication after required checks; do not ask for confirmation again. Read HANDOFF.md, README.md,
 CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
 
+## Animation rule
+
+Never introduce frame-by-frame JavaScript animation or scroll interpolation. Use browser-owned CSS/WAAPI transitions and native smooth scrolling. Preserve timer accounting and the approved Settings behavior.
+
 ## Product contracts
 
 - Static HTML/CSS/JavaScript PWA. No framework, backend or runtime npm dependency.
