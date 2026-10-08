@@ -1103,6 +1103,10 @@ window.DailyMotionPages.session=function mountSession(){
   });
 
   listen($('#nextButton'),'click',async()=>{
+    if(routine.completed){
+      window.location.href='index.html';
+      return;
+    }
     const timer=timerData(exercises[current]);
     const isDone=Number(routine.completedUntil||0)>current||timer.remaining===0;
 

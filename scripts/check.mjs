@@ -78,14 +78,14 @@ for(const [file,content] of Object.entries(html)){
   if(/\?v=\d+/.test(content))fail(`${file}: runtime query versions must not return`);
 }
 for(const mutable of [
-  '/styles.css','/heroicons.css','/v226.css','/theme.js','/program.js','/state.js','/audio.js',
+  '/styles.css','/heroicons.css','/theme.js','/program.js','/state.js','/audio.js',
   '/gsap.min.js','/motion.js','/ui.js','/session-view.js','/pwa.js','/app.js','/session.js',
-  '/progress.js','/navigation.js','/v226.js','/sw.js'
+  '/progress.js','/navigation.js','/sw.js'
 ]){
   if(!headers.includes(`${mutable}\n  Cache-Control: no-cache`))fail(`_headers: mutable runtime must revalidate ${mutable}`);
 }
 if(!sw.includes("const MUTABLE_STATIC_URLS=new Set(["))fail('sw.js: mutable runtime revalidation set missing');
-for(const mutable of ['/styles.css','/heroicons.css','/v226.css','/theme.js','/program.js','/state.js','/audio.js','/gsap.min.js','/motion.js','/ui.js','/session-view.js','/pwa.js','/app.js','/session.js','/progress.js','/navigation.js','/v226.js','/manifest.webmanifest']){
+for(const mutable of ['/styles.css','/heroicons.css','/theme.js','/program.js','/state.js','/audio.js','/gsap.min.js','/motion.js','/ui.js','/session-view.js','/pwa.js','/app.js','/session.js','/progress.js','/navigation.js','/manifest.webmanifest']){
   if(!sw.includes(`  '${mutable}',`)&&!sw.includes(`  '${mutable}'\n`))fail(`sw.js: mutable runtime missing ${mutable}`);
 }
 if(!sw.includes("fetch(request,{cache:'no-cache'})"))fail('sw.js: mutable runtime must revalidate through HTTP cache');

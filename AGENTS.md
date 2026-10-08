@@ -1,9 +1,12 @@
 # Daily Motion: instructions for code changes
 
-Use only the latest ZIP supplied by the user. Do not read, download or compare
-GitHub code; use GitHub only for final publication. The user has authorized automatic
-publication after required checks; do not ask for confirmation again. Read HANDOFF.md, README.md,
-CSS_GUIDE.md and WORKING_WITH_GPT.md before changing the corresponding area.
+In a new chat, clone the current main of Vantikus/daily-motion once. Continue all
+work from that local copy, including after deployment; do not download GitHub code
+again or compare against it. Read current instructions and HANDOFF.md once, then
+only inspect relevant code. Historical notes are not current behavior.
+The user authorizes automatic publication to main after necessary checks. Do not
+ask again, create ZIPs, or run a full audit unless requested. Preserve working UI,
+animations and product behavior; clean only related code and files.
 
 ## Animation rule
 

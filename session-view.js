@@ -332,7 +332,7 @@
       const hasProgress=(timer.paused||timer.remaining<timer.duration)&&timer.remaining>0;
 
       if(routine.completed){
-        paintNextButton('Комплекс завершён',true);
+        paintNextButton('На главную');
         return;
       }
 

@@ -1,4 +1,4 @@
-const RELEASE_VERSION=297;
+const RELEASE_VERSION=298;
 const CACHE_NAME=`daily-motion-v${RELEASE_VERSION}`;
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
@@ -13,8 +13,6 @@ const APP_SHELL=[
   '/',
   '/index.html',
   '/session.html',
-  '/v226.css',
-  '/v226.js',
   '/progress.html',
   '/heroicons.css',
   '/fonts/onest-variable.ttf',
@@ -24,7 +22,6 @@ const APP_SHELL=[
   '/vendor/heroicons/x-mark.svg',
   '/vendor/heroicons/speaker-wave.svg',
   '/vendor/heroicons/arrow-right.svg',
-  '/vendor/heroicons/arrow-uturn-left.svg',
   '/vendor/heroicons/clock.svg',
   '/vendor/heroicons/pause-circle.svg',
   '/vendor/heroicons/sun.svg',
@@ -32,16 +29,12 @@ const APP_SHELL=[
   '/vendor/heroicons/chevron-left.svg',
   '/vendor/heroicons/chevron-down.svg',
   '/vendor/heroicons/chevron-right.svg',
-  '/vendor/heroicons/ellipsis-horizontal.svg',
-  '/vendor/heroicons/arrows-up-down.svg',
-  '/vendor/heroicons/key.svg',
   '/vendor/heroicons/list-bullet.svg',
   '/vendor/heroicons/signal.svg',
   '/vendor/heroicons/bolt.svg',
   '/vendor/heroicons/exclamation-triangle.svg',
   '/vendor/heroicons/sparkles.svg',
   '/vendor/heroicons/arrow-trending-up.svg',
-  '/vendor/heroicons/plus.svg',
   '/vendor/heroicons/arrow-path.svg',
   '/vendor/heroicons/check-circle.svg',
   '/vendor/heroicons/fire.svg',
@@ -75,7 +68,6 @@ const APP_SHELL=[
 const MUTABLE_STATIC_URLS=new Set([
   '/styles.css',
   '/heroicons.css',
-  '/v226.css',
   '/theme.js',
   '/program.js',
   '/state.js',
@@ -89,7 +81,6 @@ const MUTABLE_STATIC_URLS=new Set([
   '/session.js',
   '/progress.js',
   '/navigation.js',
-  '/v226.js',
   '/manifest.webmanifest'
 ]);
 

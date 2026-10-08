@@ -16,9 +16,6 @@
 /heroicons.css
   Cache-Control: no-cache
 
-/v226.css
-  Cache-Control: no-cache
-
 /theme.js
   Cache-Control: no-cache
 
@@ -56,9 +53,6 @@
   Cache-Control: no-cache
 
 /navigation.js
-  Cache-Control: no-cache
-
-/v226.js
   Cache-Control: no-cache
 
 /sw.js
