@@ -46,27 +46,45 @@
       box.innerHTML='';
       if(!hasPhases)return;
       box.classList.add('has-visuals');
-      const grid=document.createElement('div');
-      grid.className='visual-phases';
-      for(const phase of phases){
+      const header=document.createElement('div');
+      header.className='visual-header';
+      const heading=document.createElement('span');
+      heading.textContent='Этапы упражнения';
+      const hint=document.createElement('span');
+      hint.id='visualSwipeHint';
+      hint.textContent='Листайте →';
+      header.append(heading,hint);
+      const rail=document.createElement('div');
+      rail.className='visual-phases';
+      rail.tabIndex=0;
+      rail.setAttribute('role','group');
+      rail.setAttribute('aria-label',`Этапы упражнения: ${phases.length}`);
+      rail.setAttribute('aria-describedby',hint.id);
+      phases.forEach((phase,index)=>{
         const figure=document.createElement('figure');
         figure.className='visual-phase';
         const img=document.createElement('img');
         img.src=phase.src;
         img.alt=phase.alt;
-        img.width=480;
-        img.height=360;
+        img.width=1200;
+        img.height=900;
         img.decoding='async';
         const caption=document.createElement('figcaption');
-        const breath=document.createElement('strong');
-        breath.textContent=phase.breath;
-        const label=document.createElement('span');
-        label.textContent=` · ${phase.label}`;
-        caption.append(breath,label);
+        const number=document.createElement('span');
+        number.className='visual-phase__number';
+        number.textContent=`${index+1} / ${phases.length}`;
+        const title=document.createElement('strong');
+        title.textContent=phase.title||phase.breath||'';
+        caption.append(number,title);
+        if(phase.label){
+          const label=document.createElement('span');
+          label.textContent=` · ${phase.label}`;
+          caption.append(label);
+        }
         figure.append(img,caption);
-        grid.append(figure);
-      }
-      box.append(grid);
+        rail.append(figure);
+      });
+      box.append(header,rail);
     };
 
     const setDetailState=(card,open)=>{
