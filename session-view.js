@@ -39,7 +39,6 @@
     let visualState=null;
     const clearVisual=()=>{
       if(!visualState)return;
-      clearTimeout(visualState.settleTimer);
       visualState.controller.abort();
       visualState=null;
     };
@@ -99,7 +98,7 @@
         buttons.push(button);
       });
       box.append(rail,caption,controls);
-      const state={controller:new AbortController(),settleTimer:null,index:-1,requested:null,width:rail.clientWidth};
+      const state={controller:new AbortController(),index:-1,width:rail.clientWidth};
       visualState=state;
       const active=()=>!destroyed&&!signal?.aborted&&!state.controller.signal.aborted&&visualState===state;
       const listen=(node,type,handler,options={})=>node.addEventListener(type,handler,{...options,signal:state.controller.signal});
@@ -118,25 +117,25 @@
           frames[i].setAttribute('aria-hidden',String(i!==index));
         });
       };
-      const selectPhase=(index,behavior=reducedMotion()?'instant':'smooth')=>{
+      const selectPhase=index=>{
         if(!active())return;
         index=Math.max(0,Math.min(phases.length-1,index));
-        clearTimeout(state.settleTimer);
-        state.requested=index;
+        // Number buttons select a still image without traversing intermediate stages.
+        rail.scrollTo({left:frames[index].offsetLeft-frames[0].offsetLeft,behavior:'instant'});
         setPhase(index);
-        rail.scrollTo({left:frames[index].offsetLeft-frames[0].offsetLeft,behavior});
       };
-      const settle=()=>{
+      const syncVisiblePhase=()=>{
         if(!active()||rail.clientWidth<=0)return;
-        const index=Math.max(0,Math.min(phases.length-1,Math.round(rail.scrollLeft/rail.clientWidth)));
-        if(state.requested!==null&&index!==state.requested)return;
-        state.requested=null;
-        setPhase(index);
+        const origin=frames[0].offsetLeft;
+        let nearest=0;
+        let distance=Infinity;
+        frames.forEach((frame,index)=>{
+          const delta=Math.abs(frame.offsetLeft-origin-rail.scrollLeft);
+          if(delta<distance){distance=delta;nearest=index;}
+        });
+        // Commit only a discrete stage change; native scrolling owns all motion.
+        setPhase(nearest);
       };
-      const releaseRequested=()=>{state.requested=null;};
-      listen(rail,'pointerdown',releaseRequested,{passive:true});
-      listen(rail,'touchstart',releaseRequested,{passive:true});
-      listen(rail,'wheel',releaseRequested,{passive:true});
       buttons.forEach((button,index)=>listen(button,'click',()=>selectPhase(index)));
       listen(rail,'keydown',event=>{
         const targets={ArrowLeft:state.index-1,ArrowRight:state.index+1,Home:0,End:phases.length-1};
@@ -144,15 +143,12 @@
         event.preventDefault();
         selectPhase(targets[event.key]);
       });
-      if('onscrollend' in rail)listen(rail,'scrollend',settle);
-      else listen(rail,'scroll',()=>{
-        clearTimeout(state.settleTimer);
-        state.settleTimer=setTimeout(settle,140);
-      },{passive:true});
+      listen(rail,'scroll',syncVisiblePhase,{passive:true});
+      listen(rail,'scrollend',syncVisiblePhase,{passive:true});
       listen(window,'resize',()=>{
         if(!active()||rail.clientWidth<=0||rail.clientWidth===state.width)return;
         state.width=rail.clientWidth;
-        selectPhase(state.index,'instant');
+        selectPhase(state.index);
       },{passive:true});
       setPhase(0);
     };

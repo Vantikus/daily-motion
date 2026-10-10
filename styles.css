@@ -181,7 +181,7 @@ button,.back-link{-webkit-tap-highlight-color:transparent}
 .visual-phases{position:relative;display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none}
 .visual-phases::-webkit-scrollbar{display:none}
 .visual-phases:focus-visible{outline:2px solid #2f6b55;outline-offset:-2px;border-radius:8px}
-.visual-phase{flex:0 0 100%;margin:0;min-width:0;border:0;background:transparent;scroll-snap-align:center}
+.visual-phase{flex:0 0 100%;margin:0;min-width:0;border:0;background:transparent;scroll-snap-align:center;scroll-snap-stop:always}
 .visual-phase img{display:block;width:100%;height:auto;max-height:260px;aspect-ratio:8/5;object-fit:contain}
 .visual-caption{margin:4px 0;text-align:center;min-height:21px;font-size:14px;line-height:1.5;font-weight:400}
 .visual-caption strong{font-weight:650;color:#2f6b55}
