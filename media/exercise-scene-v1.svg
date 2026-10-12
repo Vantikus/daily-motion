@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs>
+    <linearGradient id="mat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A4B9AB"/>
+      <stop offset="1" stop-color="#97AE9F"/>
+    </linearGradient>
+    <radialGradient id="contact">
+      <stop offset="0" stop-color="#334A3D" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#334A3D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(42 36) scale(.93)">
+  <path d="M141 638H1059Q1079 638 1088 650L1135 708Q1144 721 1126 725H74Q57 722 66 710L113 650Q123 638 141 638Z" fill="#738F7C"/>
+  <path d="M141 634H1059Q1079 634 1088 646L1135 704Q1144 717 1126 721H74Q57 718 66 706L113 646Q123 634 141 634Z" fill="url(#mat)" stroke="#879F8D" stroke-width="2"/>
+  <ellipse cx="345" cy="692" rx="270" ry="26" fill="url(#contact)"/>
+  <ellipse cx="935" cy="686" rx="125" ry="22" fill="url(#contact)"/>
+  </g>
+</svg>
