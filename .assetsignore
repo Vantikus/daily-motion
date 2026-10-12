@@ -31,3 +31,4 @@ _verify*.png
 package*.json
 .assetsignore
 _handoff/
+artwork/
