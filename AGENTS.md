@@ -1,53 +1,38 @@
-# Daily Motion: instructions for code changes
+# Daily Motion — правила работы
 
-In a new chat, clone the current main of Vantikus/daily-motion once. Continue all
-work from that local copy, including after deployment; do not download GitHub code
-again or compare against it. Read current instructions and HANDOFF.md once, then
-only inspect relevant code. Historical notes are not current behavior.
-The user authorizes automatic publication to main after necessary checks. Do not
-ask again, create ZIPs, or run a full audit unless requested. Preserve working UI,
-animations and product behavior; clean only related code and files.
+Работаем с Daily Motion — Vantikus/daily-motion. Действуй по этим правилам:
 
-## Animation rule
+1. Источник: в новом чате один раз взять актуальный main и создать локальную рабочую копию. Весь чат работать только с ней, последовательно вносить задачи и продолжать после публикации. Повторно GitHub-код не скачивать и не использовать для сравнения.
 
-Never introduce frame-by-frame JavaScript animation or scroll interpolation. Use browser-owned CSS/WAAPI transitions and native smooth scrolling. Preserve timer accounting and the approved Settings behavior.
-For the technique list, do not animate height, grid-template-rows or clip-path. Keep text unscaled, animate transform/opacity endpoints, and preserve current geometry and opacity on interruption.
+2. Контекст: один раз прочитать AGENTS.md и начало HANDOFF.md с текущим состоянием; ILLUSTRATIONS.md — при работе с картинками. Дальше изучать только необходимое. Исторические записи не считать текущим состоянием. Последние указания пользователя важнее старых правил. Загрузка проекта не является заданием на очистку, редизайн или генерацию.
 
-## Product contracts
+3. Объём: менять связанные элементы, стили, структуру и код, когда это нужно для задачи или устранения её причины. Не делать несвязанных улучшений и не менять продуктовую логику без соответствующего запроса. Обычные решения принимать самостоятельно; уточнять только существенную неоднозначность.
 
-- Static HTML/CSS/JavaScript PWA. No framework, backend or runtime npm dependency.
-- Morning has nine exercises. Day and Evening remain unavailable.
-- Preserve exercise copy, order, durations, FLOW v97 assets and Heroicons 1.7px.
-- Preserve localStorage v3 keys, valid history, migrations and timer accounting.
-- Preserve iOS safe areas, offline behavior and GSAP bottom-sheet physics.
-- Change visuals or these contracts only when the task explicitly requests it.
+4. Сохранение: небольшой запрос выполнять небольшой правкой, не пересоздавая работающую систему. Сохранять оформление, утверждённые анимации, упражнения, данные, таймер, историю, навигацию, PWA/offline и safe areas. Существующие картинки и исходники использовать повторно; не заменять их без задачи на замену.
 
-## Ownership
+5. Простота: устранять причину проблемы, удалять связанный мёртвый код, дубли и ненужные зависимости. Не наслаивать обходные решения. Объединять файлы только ради понятности и удобства поддержки.
 
-- `session.js`: workout state, countdown/timer/rest, persistence and completion.
-- `session-view.js`: exercise presentation and next-button state.
-- `ui.js`: shared UI primitives and page lifecycle cancellation.
-- `navigation.js`: Swup mount/unmount, native page snapshots and GSAP fallback.
-- `motion.js`: GSAP sheets, press feedback and completion motion.
-- `pwa.js` / `sw.js`: installation, update safety and offline shell.
-- `state.js`: data normalization, statistics and migrations.
+6. Анимации: ориентироваться прежде всего на iPhone при 60 Гц. Не использовать покадровый JavaScript для UI-анимаций и прокрутки; предпочитать браузерные transform/opacity-анимации и нативную прокрутку. Сохранять стабильный текст, корректное прерывание и повторные нажатия. Не скрывать лаги увеличением длительности. Не возвращать удалённые Swup/GSAP/page-transition механизмы без отдельной задачи; действующее поведение Settings сохранять.
 
-Use each mounted page's lifecycle for listeners and one-shot frames/timeouts.
-Check cancellation after asynchronous work. Keep the timer's endAt-based clock
-and smooth ring painting; update text and buttons only when their state changes.
+7. Иллюстрации: при необходимости новой генерации использовать актуальные исходники и промпты проекта как референсы. Генерировать цельные позы одного упражнения согласованной серией, по возможности на одном листе. Сохранять персонажа, пропорции, одежду, носки, палитру, контуры, свет, тени, ракурс и сцену. Неизменные по технике точки опоры не должны сдвигаться; меняется движение упражнения. Число этапов выбирать по смыслу упражнения, без ограничения двумя картинками; повторную позу использовать повторно. Не склеивать части тела, не пересаживать ноги/руки между кадрами, не деформировать отдельные участки и не перекрашивать тело пиксельными масками. Техника и анатомия обязательны; одинаковый промпт не гарантирует одинаковый результат.
 
-## Validation and release
+8. Масштаб и качество: использовать общий стандарт из ILLUSTRATIONS.md. Извлекать целые кадры и масштабировать всю сцену равномерно; один коэффициент для серии. Не подгонять каждый силуэт отдельно: поднятая рука не должна уменьшать персонажа. Небольшие правки размера или полей делать из существующих исходников без новой генерации. Сохранять исходники без потерь, для сайта готовить компактные изображения с проверкой качества после сжатия. Проверять этапы рядом и между упражнениями — в большом и телефонном размере. Не публиковать обнаруженные дефекты как готовый результат.
 
-Run `npm run check` and meaningful Chromium/WebKit regressions. Navigation tests
-must prove the document survived a Swup visit. Real service-worker tests require
-Chromium; WebKit has no Playwright service-worker support.
+9. Проверки: выполнять необходимые проверки по объёму изменения. Для картинок проверять анатомию, стиль, масштаб, опору, поля, резкость, вес, подписи, порядок этапов и offline-ссылки. Для кода — затронутые сценарии и сохранение продуктовых контрактов. Проверку кода, изображений, браузера, production и реального устройства различать; не заявлять о непроведённых проверках и пиксельном совпадении без доказательства.
 
-Visual references live in `tests/visual-baselines/`. Do not regenerate them merely
-to pass a test. Inspect expected/actual/diff images and change a reference only for
-an explicitly requested visual change. Preserve CSS source order unless a scoped
-change and visual/state coverage demonstrate that moving a rule is safe.
+10. Публикация и время: после успешных проверок сразу публиковать готовые изменения в main без повторного подтверждения. «Деплой» означает публикацию текущей рабочей копии. Обновлять PWA/cache по действующему механизму при изменении приложения. Не ждать CI без необходимости. Не делать полный аудит, ZIP, тяжёлые browser-тесты, повторное чтение проекта и дополнительные артефакты без необходимости задачи.
 
-Keep HTML asset versions and the service-worker cache version synchronized.
-Validate on a branch before merging into main; Cloudflare deploys main.
-Explain visible changes, how to check them, and unresolved limitations in plain language.
-Do not show code, logs or commits unless requested. Keep HANDOFF.md current.
+11. Общение и преемственность: объяснять кратко и понятно дизайнеру — что изменилось, что проверено, что осталось неопределённым и где посмотреть. Код, логи и внутренности показывать только по необходимости или запросу. В начале HANDOFF.md фиксировать текущее состояние, существенные решения, действующие исходники, нерешённые замечания и отвергнутые подходы. Не объявлять рабочий вариант утверждённым без подтверждения пользователя. Сохранять хорошее, менять необходимое.
+
+## Технические контракты
+
+- Статичная HTML/CSS/JavaScript PWA без backend, framework и runtime npm dependency.
+- Утро: девять упражнений. День и Вечер недоступны.
+- Сохранять тексты, порядок, длительности, FLOW v97 и Heroicons 1.7px.
+- Сохранять localStorage v3, миграции, корректную историю и учёт времени по endAt.
+- Владельцы: session.js — состояние тренировки и таймер; session-view.js — представление; ui.js — общие UI и lifecycle; navigation.js — навигация; motion.js — действующее движение; pwa.js/sw.js — PWA и offline; state.js — нормализация данных.
+- Использовать lifecycle страницы для listeners, frames и timeouts; проверять отмену после async-операций.
+- Не анимировать height, grid-template-rows и clip-path списка техники; не масштабировать текст.
+- npm run check и release guard запускать для изменений приложения; дополнительные регрессии выбирать по затронутым сценариям. Документация не требует повышения cache или browser-тестов.
+- Не перезаписывать visual baselines только ради успешного теста. Сохранять порядок CSS без обоснованной необходимости.
+- Валидировать изменения на рабочей ветке перед публикацией. Не считать HTTP-проверку файлов browser/device-тестом.
