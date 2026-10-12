@@ -1,4 +1,4 @@
-const RELEASE_VERSION=305;
+const RELEASE_VERSION=306;
 const CACHE_NAME=`daily-motion-v${RELEASE_VERSION}`;
 const SWUP_VENDOR_URLS=[
   '/vendor/swup/swup-4.10.0.js',
@@ -58,12 +58,11 @@ const APP_SHELL=[
   '/progress.js',
   '/navigation.js',
   '/manifest.webmanifest',
-  '/media/exercise-scene-v1.svg',
-  '/media/cat-cow-exhale-v5.png',
-  '/media/cat-cow-inhale-v5.png',
-  '/media/thoracic-rotation-setup-v5.png',
-  '/media/thoracic-rotation-start-v5.png',
-  '/media/thoracic-rotation-open-v5.png',
+  '/media/cat-cow-exhale-v6.webp',
+  '/media/cat-cow-inhale-v6.webp',
+  '/media/thoracic-rotation-setup-v6.webp',
+  '/media/thoracic-rotation-start-v6.webp',
+  '/media/thoracic-rotation-open-v6.webp',
   '/icons/daily-motion-favicon-32-v97.png',
   '/icons/daily-motion-app-180-v97.png',
   '/icons/daily-motion-app-192-v97.png',
