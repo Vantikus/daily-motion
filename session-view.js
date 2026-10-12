@@ -39,6 +39,8 @@
     let visualState=null;
     const clearVisual=()=>{
       if(!visualState)return;
+      clearTimeout(visualState.settleTimer);
+      visualState.animation?.cancel();
       visualState.controller.abort();
       visualState=null;
     };
@@ -50,31 +52,32 @@
       if(!box)return;
       const phases=exercise.visual?.phases;
       const hasPhases=Array.isArray(phases)&&phases.length>0;
+      $('.exercise-main')?.classList.toggle('has-exercise-visual',hasPhases);
       box.hidden=!hasPhases;
       box.classList.remove('has-visuals','visual-placeholder');
       box.innerHTML='';
       if(!hasPhases)return;
       box.classList.add('has-visuals');
+      const presentation=document.createElement('div');
+      presentation.className='visual-presentation';
       const rail=document.createElement('div');
       rail.className='visual-phases';
       rail.tabIndex=0;
       rail.setAttribute('role','group');
       rail.setAttribute('aria-label',`Этапы упражнения: ${phases.length}`);
       rail.setAttribute('aria-describedby','exerciseVisualCaption');
-      const caption=document.createElement('p');
+      const caption=document.createElement('div');
       caption.className='visual-caption';
       caption.id='exerciseVisualCaption';
       caption.setAttribute('aria-live','polite');
       caption.setAttribute('aria-atomic','true');
-      const title=document.createElement('strong');
-      const label=document.createElement('span');
-      caption.append(title,label);
       const controls=document.createElement('div');
       controls.className='visual-stage-controls';
       controls.setAttribute('role','group');
       controls.setAttribute('aria-label','Выбор этапа упражнения');
       const frames=[];
       const buttons=[];
+      const captions=[];
       phases.forEach((phase,index)=>{
         const figure=document.createElement('figure');
         figure.className='visual-phase';
@@ -88,6 +91,15 @@
         figure.append(img);
         rail.append(figure);
         frames.push(figure);
+        const description=document.createElement('p');
+        description.className='visual-caption__phase';
+        const title=document.createElement('strong');
+        const label=document.createElement('span');
+        title.textContent=phase.title||phase.breath||'';
+        label.textContent=phase.label?` · ${phase.label}`:'';
+        description.append(title,label);
+        caption.append(description);
+        captions.push(description);
         const button=document.createElement('button');
         button.type='button';
         button.className='visual-stage-button';
@@ -97,8 +109,9 @@
         controls.append(button);
         buttons.push(button);
       });
-      box.append(rail,caption,controls);
-      const state={controller:new AbortController(),index:-1,width:rail.clientWidth};
+      presentation.append(rail,caption);
+      box.append(presentation,controls);
+      const state={controller:new AbortController(),index:-1,target:0,width:rail.getBoundingClientRect().width,sequence:0,animation:null,settleTimer:null,selecting:false,pointerDown:false};
       visualState=state;
       const active=()=>!destroyed&&!signal?.aborted&&!state.controller.signal.aborted&&visualState===state;
       const listen=(node,type,handler,options={})=>node.addEventListener(type,handler,{...options,signal:state.controller.signal});
@@ -107,48 +120,120 @@
         index=Math.max(0,Math.min(phases.length-1,index));
         if(state.index===index)return;
         state.index=index;
-        const phase=phases[index];
-        title.textContent=phase.title||phase.breath||'';
-        label.textContent=phase.label?` · ${phase.label}`:'';
+        if(!state.selecting)state.target=index;
         buttons.forEach((button,i)=>{
           button.classList.toggle('is-current',i===index);
           if(i===index)button.setAttribute('aria-current','step');
           else button.removeAttribute('aria-current');
           frames[i].setAttribute('aria-hidden',String(i!==index));
+          captions[i].classList.toggle('is-current',i===index);
+          captions[i].setAttribute('aria-hidden',String(i!==index));
         });
       };
-      const selectPhase=index=>{
+      const cancelPhaseMotion=()=>{
+        state.sequence++;
+        state.animation?.cancel();
+        state.animation=null;
+        state.selecting=false;
+        clearTimeout(state.settleTimer);
+      };
+      const nearestPhase=()=>Math.max(0,Math.min(phases.length-1,Math.round(rail.scrollLeft/state.width)));
+      const syncSettledPhase=()=>{
+        clearTimeout(state.settleTimer);
+        if(!active()||state.pointerDown||state.selecting||state.width<=0)return;
+        const index=nearestPhase();
+        // Captions follow a fully snapped frame, never the middle of a swipe.
+        if(Math.abs(rail.scrollLeft-index*state.width)>1)return;
+        setPhase(index);
+        caption.classList.remove('is-scrolling');
+      };
+      const scheduleSettle=()=>{
+        clearTimeout(state.settleTimer);
+        state.settleTimer=setTimeout(syncSettledPhase,120);
+      };
+      const selectPhase=async(index,{animate=true,force=false}={})=>{
         if(!active())return;
         index=Math.max(0,Math.min(phases.length-1,index));
-        // Number buttons select a still image without traversing intermediate stages.
-        rail.scrollTo({left:frames[index].offsetLeft-frames[0].offsetLeft,behavior:'instant'});
-        setPhase(index);
-      };
-      const syncVisiblePhase=()=>{
-        if(!active()||rail.clientWidth<=0)return;
-        const origin=frames[0].offsetLeft;
-        let nearest=0;
-        let distance=Infinity;
-        frames.forEach((frame,index)=>{
-          const delta=Math.abs(frame.offsetLeft-origin-rail.scrollLeft);
-          if(delta<distance){distance=delta;nearest=index;}
-        });
-        // Commit only a discrete stage change; native scrolling owns all motion.
-        setPhase(nearest);
+        if(!force&&state.target===index&&state.selecting)return;
+        if(!force&&state.index===index&&!state.selecting&&Math.abs(rail.scrollLeft-index*state.width)<=1)return;
+        const opacity=state.animation?Number(getComputedStyle(presentation).opacity):1;
+        cancelPhaseMotion();
+        presentation.style.opacity=String(opacity);
+        state.target=index;
+        state.selecting=true;
+        caption.classList.remove('is-scrolling');
+        const sequence=state.sequence;
+        const current=()=>active()&&sequence===state.sequence;
+        const commit=()=>{
+          rail.scrollTo({left:index*state.width,behavior:'instant'});
+          setPhase(index);
+        };
+        if(!animate||reducedMotion()||typeof presentation.animate!=='function'){
+          commit();
+          state.selecting=false;
+          presentation.style.removeProperty('opacity');
+          return;
+        }
+        const img=frames[index].querySelector('img');
+        if(!img.complete&&typeof img.decode==='function'){
+          try{await img.decode();}catch{}
+          if(!current())return;
+        }
+        const fade=async(from,to,duration)=>{
+          const previous=state.animation;
+          const animation=presentation.animate([{opacity:from},{opacity:to}],{
+            duration,easing:motionTokens.easeStandard,fill:'forwards'
+          });
+          state.animation=animation;
+          previous?.cancel();
+          try{await animation.finished;}catch{return false;}
+          return current();
+        };
+        // A short out/in fade changes the whole pose and its caption together.
+        // Non-adjacent buttons never travel through intermediate exercise poses.
+        if(!await fade(opacity,0,Math.max(1,(motionTokens.enterMs-motionTokens.exitMs)*opacity)))return;
+        commit();
+        if(!await fade(0,1,motionTokens.exitMs))return;
+        presentation.style.removeProperty('opacity');
+        cancelPhaseMotion();
       };
       buttons.forEach((button,index)=>listen(button,'click',()=>selectPhase(index)));
       listen(rail,'keydown',event=>{
-        const targets={ArrowLeft:state.index-1,ArrowRight:state.index+1,Home:0,End:phases.length-1};
+        const targets={ArrowLeft:state.target-1,ArrowRight:state.target+1,Home:0,End:phases.length-1};
         if(!(event.key in targets)||event.altKey||event.ctrlKey||event.metaKey)return;
         event.preventDefault();
         selectPhase(targets[event.key]);
       });
-      listen(rail,'scroll',syncVisiblePhase,{passive:true});
-      listen(rail,'scrollend',syncVisiblePhase,{passive:true});
+      listen(rail,'pointerdown',()=>{
+        cancelPhaseMotion();
+        presentation.style.removeProperty('opacity');
+        state.target=state.index;
+        state.pointerDown=true;
+      },{passive:true});
+      const releasePointer=()=>{
+        if(!state.pointerDown)return;
+        state.pointerDown=false;
+        scheduleSettle();
+      };
+      listen(window,'pointerup',releasePointer,{passive:true});
+      listen(window,'pointercancel',releasePointer,{passive:true});
+      listen(rail,'wheel',()=>{
+        cancelPhaseMotion();
+        presentation.style.removeProperty('opacity');
+        state.target=state.index;
+      },{passive:true});
+      listen(rail,'scroll',()=>{
+        if(!active()||state.selecting)return;
+        if(Math.abs(rail.scrollLeft-state.index*state.width)>1)caption.classList.add('is-scrolling');
+        scheduleSettle();
+      },{passive:true});
+      listen(rail,'scrollend',syncSettledPhase,{passive:true});
       listen(window,'resize',()=>{
-        if(!active()||rail.clientWidth<=0||rail.clientWidth===state.width)return;
-        state.width=rail.clientWidth;
-        selectPhase(state.index);
+        const width=rail.getBoundingClientRect().width;
+        if(!active()||width<=0||Math.abs(width-state.width)<.01)return;
+        const index=state.selecting?state.target:state.index;
+        state.width=width;
+        selectPhase(index,{animate:false,force:true});
       },{passive:true});
       setPhase(0);
     };
