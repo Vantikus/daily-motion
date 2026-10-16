@@ -40,8 +40,8 @@ test('consolidated workout CSS preserves the compact mobile contract',async({pag
   expect(layout.mainPadding).toBe('0px');
   expect(layout.mainBorder).toBe('0px');
   expect(layout.headGap).toBe('8px');
-  expect(layout.factsGap).toBe('16px');
-  expect(layout.techniqueMargin).toBe('24px');
+  expect(layout.factsGap).toBe('20px');
+  expect(layout.techniqueMargin).toBe('16px');
 });
 
 test('P3 timer urgency never changes ring geometry',async({page,browserName})=>{
@@ -337,8 +337,8 @@ test('R2 component targets and switch contrast stay accessible',async({page,brow
     adjustment:[...document.querySelectorAll('.execution-adjustments button')].map(el=>getComputedStyle(el).minHeight)
   }));
   expect(execution.close).toBe('44px');
-  expect(execution.secondary.every(value=>value==='40px')).toBe(true);
-  expect(execution.adjustment.every(value=>value==='43px')).toBe(true);
+  expect(execution.secondary.every(value=>value==='44px')).toBe(true);
+  expect(execution.adjustment.every(value=>value==='44px')).toBe(true);
 });
 
 test('R3 visual hierarchy stays coherent across pages',async({page,browserName})=>{

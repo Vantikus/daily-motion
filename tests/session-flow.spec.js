@@ -291,7 +291,7 @@ test('rest skip hands through countdown before starting the next timer',async({p
   await expect(page.locator('#executionRestStage')).toBeVisible();
   await page.locator('#restSkip').evaluate(button=>button.click());
 
-  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await expect(page.locator('#headerProgress')).toHaveText('2 из 9');
   await expect(page.locator('#executionOverlay')).toHaveAttribute('data-stage','countdown');
   await expect(page.locator('#executionCountdownStage')).toBeVisible();
   await expect(page.locator('#executionRestStage')).toBeHidden();
@@ -343,7 +343,7 @@ test('rest actions match their result',async({page})=>{
   await expect(page.locator('#restTechnique')).toHaveText('Посмотреть технику');
 
   await page.locator('#restSkip').evaluate(button=>button.click());
-  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await expect(page.locator('#headerProgress')).toHaveText('2 из 9');
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('#timerCard')).toBeVisible();
   await expect(page.locator('#timerState')).toHaveText('Идёт');
@@ -440,4 +440,35 @@ for(const autoNext of [true,false]){
       expect(routine.activeSeconds).toBeLessThan(5);
     });
   }
+}
+
+for(const navigationAvailable of [true,false]){
+  test(`completed routine returns home with ${navigationAvailable?'shared navigation':'native replace fallback'}`,async({page})=>{
+    await page.goto('/index.html');
+    await expectSwup(page);
+    await page.evaluate(()=>{
+      const routine=DailyMotionState.getRoutine('morning');
+      routine.completed=true;
+      routine.completedUntil=DailyMotionProgram.morning.length;
+      routine.completedAt=new Date().toISOString();
+      DailyMotionState.save();
+    });
+    await page.goto('/session.html?routine=morning');
+    await expectSwup(page);
+    const before=await page.evaluate(available=>{
+      window.__completedReturnToken=crypto.randomUUID();
+      if(!available)window.DailyMotionNavigate=undefined;
+      return {token:window.__completedReturnToken,length:history.length};
+    },navigationAvailable);
+    await page.locator('#nextButton').click();
+    await expect(page.locator('#todayCard')).toBeVisible();
+    await expect(page).toHaveURL(/\/index\.html$/);
+    await expectSwup(page);
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+    const after=await page.evaluate(()=>({token:window.__completedReturnToken,length:history.length,completed:DailyMotionState.getRoutine('morning').completed}));
+    expect(after.length).toBe(before.length);
+    expect(after.completed).toBe(true);
+    if(navigationAvailable)expect(after.token).toBe(before.token);
+    else expect(after.token).toBeUndefined();
+  });
 }

@@ -192,7 +192,8 @@ test('session presentation is owned by the extracted view runtime',async({page})
   const toggles=page.locator('.detail-card__toggle');
   await toggles.nth(1).click();
   await expect(toggles.nth(1)).toHaveAttribute('aria-expanded','true');
-  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','true');
+  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded','false');
+  await expect(page.locator('.detail-card.is-open')).toHaveCount(1);
 });
 
 test('iPhone rest and exercise changes paint motion instead of jumping instantly',async({page})=>{
@@ -229,10 +230,10 @@ test('iPhone rest and exercise changes paint motion instead of jumping instantly
   await expect(page.locator('#timerCard')).toBeHidden();
   await page.locator('#restTechnique').evaluate(button=>button.click());
   await expect(page.locator('#executionOverlay')).toHaveAttribute('aria-hidden','true');
-  await expect(page.locator('#headerProgress')).toHaveText('2 / 9');
+  await expect(page.locator('#headerProgress')).toHaveText('2 из 9');
   await page.waitForTimeout(300);
   const exercise=await capture('.exercise-main','#prevButton');
   expect(exercise.some(frame=>frame.x< -1)).toBe(true);
   expect(exercise.at(-1).x).toBe(0);
-  await expect(page.locator('#headerProgress')).toHaveText('1 / 9');
+  await expect(page.locator('#headerProgress')).toHaveText('1 из 9');
 });

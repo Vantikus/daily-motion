@@ -129,67 +129,35 @@ test('local navigation works when external scripts are blocked',async({page})=>{
   expect(await page.evaluate(()=>window.__localToken)).toBe(token);
 });
 
-test('iPhone navigation freezes the old page and reveals only after styles and fonts settle',async({page})=>{
-  await page.addInitScript(()=>{
-    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
-    });
-    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
-    window.__dmPageAnimations=[];
-    const animate=Element.prototype.animate;
-    Element.prototype.animate=function(keyframes,options){
-      if(this.matches?.('#swup,.dm-page-ghost,.dm-page-shield,.exercise-head,#headerProgress')){
-        window.__dmPageAnimations.push({
-          kind:this.classList.contains('dm-page-shield')?'shield':this.id==='swup'?'page':this.classList.contains('dm-page-ghost')?'ghost':'text',
-          keyframes:Array.from(keyframes,frame=>({...frame})),
-          options:{...options}
-        });
-      }
-      return animate.call(this,keyframes,options);
-    };
+for(const native of [true,false]){
+  test(`iPhone navigation preserves the document with ${native?'native transitions':'the fallback'}`,async({page})=>{
+    await page.addInitScript(native=>{
+      Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=> 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile Safari/604.1'});
+      Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
+      if(!native)document.startViewTransition=undefined;
+      window.__snapshots=0;
+      window.__nativeSupported=Boolean(document.startViewTransition);
+      const start=document.startViewTransition?.bind(document);
+      if(start)document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
+    },native);
+    await page.goto('/index.html');
+    await expectSwup(page);
+    const token=await page.evaluate(()=>window.__navigationToken=crypto.randomUUID());
+    await page.locator('a[href="progress.html"]').click();
+    await expect(page.locator('#historyCalendar')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+    expect(await page.evaluate(()=>window.__navigationToken)).toBe(token);
+    const result=await page.evaluate(()=>({supported:window.__nativeSupported,count:window.__snapshots}));
+    expect(result.count).toBe(result.supported?1:0);
+    await expect(page.locator('#swup')).toHaveCSS('opacity','1');
+    await expect(page.locator('#swup')).toHaveCSS('transform','none');
+    await expect(page.locator('.dm-page-ghost,.dm-page-depth')).toHaveCount(0);
+    await page.goBack();
+    await expect(page.locator('#todayCard')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+    expect(await page.evaluate(()=>window.__navigationToken)).toBe(token);
   });
-  await page.goto('/index.html');
-  await expectSwup(page);
-
-  await page.evaluate(()=>{
-    window.__dmPageAnimations=[];
-    DailyMotionNavigate('session.html?routine=morning&resume=1',{animation:'workout'});
-  });
-  await expect(page.locator('#exerciseTitle')).toBeVisible();
-  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-freeze|dm-page-stabilize/);
-  const calls=await page.evaluate(()=>window.__dmPageAnimations);
-  expect(calls.filter(call=>call.kind==='page')).toHaveLength(0);
-  expect(calls.filter(call=>call.kind==='ghost')).toHaveLength(0);
-  expect(calls.filter(call=>call.kind==='text')).toHaveLength(0);
-  expect(calls.filter(call=>call.kind==='shield')).toHaveLength(2);
-  await expect(page.locator('html')).not.toHaveClass(/dm-page-freeze|dm-page-stabilize/);
-  await expect(page.locator('#swup')).toHaveCSS('transform','none');
-  await expect(page.locator('.dm-page-shield')).toHaveCount(0);
-  expect(await page.evaluate(()=>document.fonts.check('700 16px "Onest"'))).toBe(true);
-});
-
-test('iPhone navigation uses the compositor fallback instead of page snapshots',async({page})=>{
-  await page.addInitScript(()=>{
-    Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=>
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Version/26.0 Mobile/15E148 Safari/604.1'
-    });
-    Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'iPhone'});
-    window.__snapshots=0;
-    const start=document.startViewTransition?.bind(document);
-    if(start){
-      document.startViewTransition=(...args)=>{window.__snapshots++;return start(...args);};
-    }
-  });
-  await page.goto('/index.html');
-  await expectSwup(page);
-  const token=await page.evaluate(()=>window.__iosFallbackToken=crypto.randomUUID());
-  await page.evaluate(()=>DailyMotionNavigate('progress.html',{animation:'progress'}));
-  await expect(page.locator('#historyCalendar')).toBeVisible();
-  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition/);
-  await expect(page.locator('#swup')).toHaveCSS('opacity','1');
-  expect(await page.evaluate(()=>window.__iosFallbackToken)).toBe(token);
-  expect(await page.evaluate(()=>window.__snapshots)).toBe(0);
-});
+}
 
 test('reduced motion skips page snapshots',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -251,7 +219,7 @@ test.describe('mobile content motion',()=>{
   // backing surface when proving standalone routing at a wide viewport.
   test.use({deviceScaleFactor:1});
 for(const mode of ['phone','android','standalone']){
-  test(`${mode} replaces pages only behind an opaque themed cover and cleans up on back`,async({page})=>{
+  test(`${mode} forward and back preserve state and release the screen`,async({page})=>{
     await page.setViewportSize({width:mode==='standalone'?1024:390,height:844});
     await page.addInitScript(mode=>{
       if(mode==='android'){
@@ -259,42 +227,6 @@ for(const mode of ['phone','android','standalone']){
         Object.defineProperty(navigator,'platform',{configurable:true,get:()=> 'Linux armv8l'});
       }
       if(mode==='standalone')Object.defineProperty(navigator,'standalone',{configurable:true,value:true});
-      window.__coveredReplacements=[];
-      window.__mobilePaints=[];
-      window.__pageSnapshots=0;
-      const start=document.startViewTransition?.bind(document);
-      if(start)document.startViewTransition=(...args)=>{window.__pageSnapshots++;return start(...args);};
-      document.addEventListener('DOMContentLoaded',()=>{
-        new MutationObserver(records=>{
-          if(!records.some(record=>Array.from(record.addedNodes).some(node=>node.id==='swup')))return;
-          const cover=document.querySelector('.dm-page-shield');
-          const surface=document.querySelector('#swup');
-          const content=surface.querySelector('.exercise-main,.app-shell');
-          const nav=surface.querySelector('.session-nav');
-          const frames=[];
-          window.__mobilePaints.push(frames);
-          const started=performance.now();
-          const sample=()=>{
-            if(!content.isConnected)return;
-            const transform=getComputedStyle(content).transform;
-            frames.push({
-              x:transform==='none'?0:new DOMMatrixReadOnly(transform).m41,
-              cover:cover?.isConnected?Number(getComputedStyle(cover).opacity):0,
-              navX:nav?.getBoundingClientRect().x,
-              navBottom:nav?.getBoundingClientRect().bottom
-            });
-            if(performance.now()-started<700)requestAnimationFrame(sample);
-          };
-          requestAnimationFrame(sample);
-          window.__coveredReplacements.push({
-            opacity:cover?getComputedStyle(cover).opacity:null,
-            background:cover?getComputedStyle(cover).backgroundColor:null,
-            expected:getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
-            transform:getComputedStyle(surface).transform,
-            ghosts:document.querySelectorAll('.dm-page-ghost').length
-          });
-        }).observe(document.body,{childList:true});
-      });
     },mode);
     await page.goto('/index.html');
     await expectSwup(page);
@@ -302,42 +234,21 @@ for(const mode of ['phone','android','standalone']){
     const token=await page.evaluate(()=>window.__mobileVisitToken=crypto.randomUUID());
     await page.evaluate(()=>DailyMotionNavigate('session.html?routine=morning&resume=1'));
     await expect(page.locator('#exerciseTitle')).toBeVisible();
-    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-freeze|dm-page-stabilize/);
-    await page.waitForTimeout(350);
-    await page.evaluate(()=>DailyMotionBack());
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+    await expect(page.locator('#swup')).toHaveCSS('transform','none');
+    await expect(page.locator('#nextButton')).toBeVisible();
+    const nav=await page.locator('.session-nav').boundingBox();
+    expect(nav.y+nav.height).toBeLessThanOrEqual(845);
+    await page.locator('[data-nav-back]').click();
     await expect(page.locator('#todayCard')).toBeVisible();
-    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-freeze|dm-page-stabilize/);
-    await page.waitForTimeout(350);
-    const result=await page.evaluate(()=>({
-      records:window.__coveredReplacements,snapshots:window.__pageSnapshots,token:window.__mobileVisitToken,
-      paints:window.__mobilePaints,
-      animations:document.getAnimations().filter(animation=>animation.effect?.target?.matches?.('.dm-page-shield,#swup,.exercise-main,.app-shell')).length
-    }));
-    expect(result.token).toBe(token);
-    expect(result.snapshots).toBe(0);
-    expect(result.records).toHaveLength(2);
-    for(const record of result.records){
-      expect(record.opacity).toBe('1');
-      expect(record.background).toBe('rgb(16, 22, 18)');
-      expect(record.transform).toBe('none');
-      expect(record.ghosts).toBe(0);
-    }
-    expect(result.animations).toBe(0);
-    expect(result.paints).toHaveLength(2);
-    for(const [index,frames] of result.paints.entries()){
-      // Prove the content actually moves while uncovered, in both directions.
-      const moving=frames.filter(frame=>frame.cover<.1&&Math.abs(frame.x)>2);
-      expect(moving.length,JSON.stringify(frames)).toBeGreaterThan(0);
-      expect(moving.every(frame=>index===0?frame.x>0:frame.x<0)).toBe(true);
-      expect(Math.abs(frames.at(-1).x)).toBeLessThan(.1);
-      const fixed=frames.filter(frame=>frame.navBottom!==undefined);
-      if(fixed.length){
-        expect(Math.max(...fixed.map(frame=>frame.navX))-Math.min(...fixed.map(frame=>frame.navX))).toBeLessThan(.1);
-        expect(Math.max(...fixed.map(frame=>frame.navBottom))-Math.min(...fixed.map(frame=>frame.navBottom))).toBeLessThan(.1);
-      }
-    }
-    await expect(page.locator('.dm-page-shield')).toHaveCount(0);
+    await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+    expect(await page.evaluate(()=>window.__mobileVisitToken)).toBe(token);
+    await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+    await expect(page.locator('.dm-page-ghost,.dm-page-depth')).toHaveCount(0);
     await expect(page.locator('#swup')).not.toHaveAttribute('inert');
+    await expect(page.locator('#swup')).toHaveCSS('transform','none');
+    await page.locator('#settingsBtn').click();
+    await expect(page.locator('#settingsOverlay')).toHaveAttribute('aria-hidden','false');
   });
 }
 });

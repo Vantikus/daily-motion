@@ -59,7 +59,7 @@ test('typography tokens scale readable text without horizontal overflow',async({
     facts:getComputedStyle(document.querySelector('.exercise-facts span')).fontSize,
     description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize
   }));
-  expect(base).toEqual({eyebrow:'11px',facts:'11px',description:'13px'});
+  expect(base).toEqual({eyebrow:'11px',facts:'12px',description:'13px'});
 
   await page.evaluate(()=>{document.documentElement.style.fontSize='20px';});
   const scaled=await page.evaluate(()=>({
@@ -68,7 +68,7 @@ test('typography tokens scale readable text without horizontal overflow',async({
     description:getComputedStyle(document.querySelector('.exercise-head p')).fontSize,
     overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth
   }));
-  expect(scaled).toEqual({eyebrow:'13.75px',facts:'13.75px',description:'16.25px',overflow:false});
+  expect(scaled).toEqual({eyebrow:'13.75px',facts:'15px',description:'16.25px',overflow:false});
 
   for(const url of ['/index.html','/progress.html']){
     await page.goto(url,{waitUntil:'domcontentloaded'});
