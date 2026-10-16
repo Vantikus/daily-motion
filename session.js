@@ -1104,7 +1104,8 @@ window.DailyMotionPages.session=function mountSession(){
 
   listen($('#nextButton'),'click',async()=>{
     if(routine.completed){
-      window.location.href='index.html';
+      if(window.DailyMotionNavigate){window.DailyMotionNavigate('index.html',{replace:true,animation:'completion-home'});return;}
+      location.replace('index.html');
       return;
     }
     const timer=timerData(exercises[current]);

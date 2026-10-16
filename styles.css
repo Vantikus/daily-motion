@@ -1241,9 +1241,6 @@ a[href],
   to{opacity:1;transform:none}
 }
 
-  65%{opacity:1;transform:scale(1.08) rotate(2deg)}
-  100%{transform:scale(1) rotate(0)}
-}
 
 @keyframes qmCardReveal{
   from{opacity:0;transform:translateY(7px)}
@@ -1293,8 +1290,6 @@ a[href],
 @keyframes qmFadeDownSoft{
   from{opacity:0;transform:translateY(-5px)}
   to{opacity:1;transform:none}
-}
-  68%{opacity:1;transform:scale(1.035)}
 }
 
 /* Shared interaction motion: fast contact, soft release, stable footprints */
@@ -1766,9 +1761,6 @@ a[href] *,
 @keyframes qmDetailSoft{
   from{opacity:0;transform:translateY(-3px)}
   to{opacity:1;transform:none}
-}
-  75%{opacity:1;transform:scale(1.025)}
-  100%{opacity:1;transform:scale(1)}
 }
 
 @media(max-width:520px){
