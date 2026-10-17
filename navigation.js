@@ -309,6 +309,7 @@
     removePageDepth();
     removePageGhost();
 
+    const scrollY=window.scrollY;
     const layer=document.createElement('div');
     layer.className=['dm-page-ghost',...document.body.classList].join(' ');
     layer.setAttribute('aria-hidden','true');
@@ -331,47 +332,25 @@
     const clone=source.cloneNode(true);
     clone.removeAttribute('id');
     for(const node of clone.querySelectorAll('[id]'))node.removeAttribute('id');
-    const scrollState=[];
+
     if(mobilePageMotion){
-      // Freeze only rendered branches. Hidden panels stay hidden in the inert
-      // outgoing copy; their descendants need neither styles nor scroll reads.
-      const freezeBranch=(original,copy)=>{
-        const style=getComputedStyle(original);
-        if(style.display==='none'){
-          copy.style.setProperty('display','none','important');
-          return;
-        }
-        copy.style.cssText=Array.from(style,property=>`${property}:${style.getPropertyValue(property)}!important`).join(';');
-        copy.style.setProperty('animation','none','important');
-        copy.style.setProperty('transition','none','important');
-        copy.style.setProperty('view-transition-name','none','important');
-        // A transparent parent also hides every descendant; keep its layout
-        // frozen, but do not serialize the invisible subtree.
-        if(Number(style.opacity)===0)return;
-        const top=original.scrollTop,left=original.scrollLeft;
-        if(top||left)scrollState.push({copy,top,left});
-        for(let index=0;index<original.children.length;index++){
-          freezeBranch(original.children[index],copy.children[index]);
-        }
-      };
-      freezeBranch(source,clone);
       clone.querySelector('.session-nav')?.style.setProperty('visibility','hidden','important');
       layer.style.zIndex='2147483000';
     }
-    const scrollY=window.scrollY;
+
     Object.assign(clone.style,{
       position:'absolute',
       left:'0',
       right:'0',
       top:`-${scrollY}px`,
       width:'100%',
-      minHeight:`${Math.max(document.documentElement.scrollHeight,window.innerHeight)}px`
+      minHeight:`${Math.max(document.documentElement.scrollHeight,window.innerHeight)}px`,
+      pointerEvents:'none'
     });
+
     layer.append(clone);
     document.body.append(layer);
-    if(mobilePageMotion){
-      for(const {copy,top,left} of scrollState){copy.scrollTop=top;copy.scrollLeft=left;}
-    }else copyScrollState(source,clone);
+    copyScrollState(source,clone);
     pageGhost=layer;
     if(!mobilePageMotion&&pageDirection==='forward')createPageDepth(layer,0);
   };
