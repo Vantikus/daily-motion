@@ -34,6 +34,7 @@
   document.documentElement.classList.toggle('dm-mobile-page-motion',prefersMobilePageMotion());
   const canUseNativePageTransition=()=>Boolean(document.startViewTransition)&&!reducedMotion.matches;
 
+  // Single owner of page-transition styles; theme and Settings keep their own motion.
   const installPageMotionStyles=()=>{
     if(document.getElementById('dm-page-motion'))return;
     const style=document.createElement('style');
@@ -330,18 +331,30 @@
     const clone=source.cloneNode(true);
     clone.removeAttribute('id');
     for(const node of clone.querySelectorAll('[id]'))node.removeAttribute('id');
+    const scrollState=[];
     if(mobilePageMotion){
-      // Freeze the whole old appearance: new body classes and removed IDs must
-      // not restyle its descendants while the fallback copy is on screen.
-      const originals=[source,...source.querySelectorAll('*')];
-      const copies=[clone,...clone.querySelectorAll('*')];
-      originals.forEach((node,index)=>{
-        const style=getComputedStyle(node);
-        copies[index].style.cssText=Array.from(style,property=>`${property}:${style.getPropertyValue(property)}!important`).join(';');
-        copies[index].style.setProperty('animation','none','important');
-        copies[index].style.setProperty('transition','none','important');
-        copies[index].style.setProperty('view-transition-name','none','important');
-      });
+      // Freeze only rendered branches. Hidden panels stay hidden in the inert
+      // outgoing copy; their descendants need neither styles nor scroll reads.
+      const freezeBranch=(original,copy)=>{
+        const style=getComputedStyle(original);
+        if(style.display==='none'){
+          copy.style.setProperty('display','none','important');
+          return;
+        }
+        copy.style.cssText=Array.from(style,property=>`${property}:${style.getPropertyValue(property)}!important`).join(';');
+        copy.style.setProperty('animation','none','important');
+        copy.style.setProperty('transition','none','important');
+        copy.style.setProperty('view-transition-name','none','important');
+        // A transparent parent also hides every descendant; keep its layout
+        // frozen, but do not serialize the invisible subtree.
+        if(Number(style.opacity)===0)return;
+        const top=original.scrollTop,left=original.scrollLeft;
+        if(top||left)scrollState.push({copy,top,left});
+        for(let index=0;index<original.children.length;index++){
+          freezeBranch(original.children[index],copy.children[index]);
+        }
+      };
+      freezeBranch(source,clone);
       clone.querySelector('.session-nav')?.style.setProperty('visibility','hidden','important');
       layer.style.zIndex='2147483000';
     }
@@ -356,7 +369,9 @@
     });
     layer.append(clone);
     document.body.append(layer);
-    copyScrollState(source,clone);
+    if(mobilePageMotion){
+      for(const {copy,top,left} of scrollState){copy.scrollTop=top;copy.scrollLeft=left;}
+    }else copyScrollState(source,clone);
     pageGhost=layer;
     if(!mobilePageMotion&&pageDirection==='forward')createPageDepth(layer,0);
   };

@@ -20,6 +20,7 @@ const cases=[
 test.use({serviceWorkers:'block',reducedMotion:'reduce',deviceScaleFactor:1});
 for(const scenario of cases){
   test(`visual matrix · ${scenario.name}`,async({page,baseURL},testInfo)=>{
+    await page.emulateMedia({reducedMotion:'reduce'});
     const time=new Date('2026-09-22T08:00:00+05:00');
     await page.clock.install({time});
     await page.clock.pauseAt(new Date(time.getTime()+1000));
@@ -57,12 +58,21 @@ for(const scenario of cases){
     await page.clock.runFor(64);
     if(scenario.state==='settings')await expect(page.locator('.settings-sheet h2')).toHaveCSS('opacity','1');
     if(scenario.state==='rest')await expect(page.locator('#restValue')).toHaveText('15');
-    if(scenario.state==='completion')await expect(page.locator('#completionTitle')).toBeVisible();
+    if(scenario.state==='completion'){
+      await expect(page.locator('#completionTitle')).toBeVisible();
+      await page.clock.runFor(1200);
+      await expect(page.locator('#completionTitle')).toHaveCSS('opacity','1');
+      await expect(page.locator('#completionMeta')).toHaveCSS('transform','none');
+    }
     await page.evaluate(()=>{
       document.querySelector('#toast')?.classList.remove('show');
       document.activeElement?.blur?.();
     });
     const name=`${scenario.name}.png`;
+    await page.evaluate(async()=>{
+      await document.fonts.ready;
+      await Promise.all([...document.images].filter(image=>image.getClientRects().length).map(image=>image.decode().catch(()=>{})));
+    });
     await expect(page).toHaveScreenshot(name,{fullPage:true,animations:'disabled',caret:'hide',scale:'css',maxDiffPixels:0});
     if(capture){
       const path=testInfo.snapshotPath(name);

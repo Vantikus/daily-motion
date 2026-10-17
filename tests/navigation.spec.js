@@ -268,3 +268,50 @@ test('desktop fallback releases filled animations after the visit',async({page,b
   expect(await page.evaluate(()=>document.querySelector('#swup').getAnimations().length)).toBe(0);
   expect(await page.evaluate(()=>window.__desktopFallbackToken)).toBe(token);
 });
+
+test('mobile fallback preserves the scrolled gallery without reading invisible descendants',async({page})=>{
+  await page.addInitScript(()=>{
+    document.startViewTransition=undefined;
+    window.__hiddenStyleReads=0;
+    const read=window.getComputedStyle;
+    window.getComputedStyle=function(node,...args){
+      if(node.matches?.('[data-hidden-probe]'))window.__hiddenStyleReads++;
+      return read.call(this,node,...args);
+    };
+    const animate=Element.prototype.animate;
+    Element.prototype.animate=function(...args){
+      if(this.matches('.dm-page-ghost')){
+        const rail=this.querySelector('.visual-phases');
+        window.__ghostSnapshot={left:rail.scrollLeft,width:rail.getBoundingClientRect().width,
+          caption:this.querySelector('.visual-caption__phase.is-current').textContent,
+          ids:this.querySelectorAll('[id]').length};
+      }
+      return animate.apply(this,args);
+    };
+  });
+  await page.goto('/session.html?routine=morning');
+  await expectSwup(page);
+  await page.locator('.visual-stage-button').nth(1).click();
+  await expect(page.locator('.visual-stage-button').nth(1)).toHaveAttribute('aria-current','step');
+  await expect.poll(()=>page.locator('.visual-phases').evaluate(el=>Math.abs(el.scrollLeft-el.getBoundingClientRect().width))).toBeLessThan(1);
+  const before=await page.locator('.visual-phases').evaluate(el=>({left:el.scrollLeft,width:el.getBoundingClientRect().width}));
+  await page.evaluate(()=>{
+    for(const style of ['display:none','opacity:0']){
+      const parent=document.createElement('div');parent.style.cssText=style+';position:fixed;width:1px;height:1px;overflow:hidden';
+      for(let i=0;i<20;i++){
+        const child=document.createElement('span');child.dataset.hiddenProbe='';child.textContent='Hidden';parent.append(child);
+      }
+      document.querySelector('#swup').append(parent);
+    }
+  });
+  await page.evaluate(()=>DailyMotionNavigate('progress.html'));
+  await expect(page.locator('#historyCalendar')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveClass(/is-changing|dm-page-transition|dm-page-fallback/);
+  const result=await page.evaluate(()=>({snapshot:window.__ghostSnapshot,reads:window.__hiddenStyleReads}));
+  expect(result.reads).toBe(0);
+  expect(result.snapshot.left).toBeCloseTo(before.left,0);
+  expect(result.snapshot.width).toBeCloseTo(before.width,0);
+  expect(result.snapshot.caption).toContain('Вдох');
+  expect(result.snapshot.ids).toBe(0);
+  await expect(page.locator('.dm-page-ghost')).toHaveCount(0);
+});

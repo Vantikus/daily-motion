@@ -29,6 +29,10 @@ test.describe('Daily Motion visual baselines',()=>{
       await expect(page.locator(anchor)).toBeVisible();
       await page.evaluate(()=>document.fonts.ready);
       await page.clock.runFor(600);
+      await page.evaluate(async()=>{
+        await document.fonts.ready;
+        await Promise.all([...document.images].filter(image=>image.getClientRects().length).map(image=>image.decode().catch(()=>{})));
+      });
       await expect(page).toHaveScreenshot(`${name}-390x844.png`,{
         fullPage:true,animations:'disabled',caret:'hide',scale:'css',maxDiffPixels:0
       });
